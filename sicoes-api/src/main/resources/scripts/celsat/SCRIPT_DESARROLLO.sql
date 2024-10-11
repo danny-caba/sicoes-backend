@@ -1,0 +1,1 @@
+UPDATE SICOES_TM_USUARIO set DE_CORREO = 'celsat.sicoes@gmail.com' where DE_CORREO like '%@osinergmin.gob.pe' ;

@@ -1,0 +1,129 @@
+package pe.gob.osinergmin.sicoes.controller;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
+import pe.gob.osinergmin.sicoes.model.Division;
+import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.model.UsuarioReasignacion;
+import pe.gob.osinergmin.sicoes.service.ConfBandejaService;
+import pe.gob.osinergmin.sicoes.util.Raml;
+
+@RestController
+@RequestMapping("/api/confbandejas")
+public class ConfBandejaRestController extends BaseRestController {
+
+	@Autowired
+	ConfBandejaService confBandejaService;
+	
+	private Logger logger = LogManager.getLogger(ConfBandejaRestController.class);
+	
+//	@GetMapping
+//	@Raml("documento.listar.properties")
+//	public Page<Documento> buscar(@RequestParam Long  idSolicitud,Pageable pageable){
+//		Page<Documento> documentos= documentoService.buscar(idSolicitud,pageable,getContexto());
+//		return documentos;
+//	}
+	
+	@PostMapping
+	@Raml("confBandeja.obtener.properties")
+	public ConfiguracionBandeja registrar(@RequestBody ConfiguracionBandeja confBandeja) {
+		logger.info("registrar {} ",confBandeja);
+		ConfiguracionBandeja documentoBD=  confBandejaService.guardar(confBandeja,getContexto());
+		return documentoBD;
+	}
+	
+//	@PutMapping("/{id}")
+//	@Raml("documento.obtener.properties")
+//	public Documento modificar(@PathVariable Long  id,@RequestBody Documento documento) {
+//		logger.info("modificar {} {}",id,documento);
+//		documento.setIdDocumento(id);
+//		return documentoService.guardar(documento,getContexto());
+//		
+//	}
+	
+	@DeleteMapping("/{id}")
+	public void eliminar(@PathVariable Long  id){
+		logger.info("eliminar {} ",id);
+		confBandejaService.eliminar(id,getContexto());
+	}
+	
+	@GetMapping("/{id}")
+	@Raml("confBandeja.obtener.properties")
+	public ConfiguracionBandeja obtener(@PathVariable Long  id){
+		logger.info("obtener {} ",id);
+		return confBandejaService.obtener(id,getContexto());
+	}
+	
+	@PostMapping("/registrar-config-bandeja")
+	public ConfiguracionBandeja registrarConfigBandeja(@RequestBody ConfiguracionBandeja configuracionBandeja, HttpServletRequest request) {
+		logger.info("registrar {} ",configuracionBandeja);
+		 return confBandejaService.registrarConfiguracionBandeja(configuracionBandeja, getContextoAnonimo());
+	}
+	
+	@PostMapping("/modificar-config-bandeja")
+	public ConfiguracionBandeja modificarConfigBandeja(@RequestBody ConfiguracionBandeja configuracionBandeja, HttpServletRequest request) {
+		logger.info("modificar {} ",configuracionBandeja);
+		 return confBandejaService.actualizarConfiguracionBandeja(configuracionBandeja, getContextoAnonimo());
+	}
+	
+	@PostMapping("/actualizar-estado-config-bandeja")
+    public void actualizarConfiguracionBandeja(@RequestBody ConfiguracionBandeja configuracionBandeja, HttpServletRequest request) {
+		confBandejaService.actualizarEstadoConfigBandeja(configuracionBandeja, getContextoAnonimo());
+    }
+
+	@GetMapping("/listar-perfiles")
+    public Map<String, Object> listarPerfiles(@RequestParam(value = "idUsuario",required = true) Long idUsuario, @RequestParam(value = "offset",required = true) int offset, 
+    		@RequestParam(value = "pageSize",required = true) int pageSize, Pageable pageable, HttpServletRequest request) throws Exception {
+		
+    	return confBandejaService.listarPerfiles(idUsuario, offset, pageSize);
+    }
+	
+	@GetMapping("/listar-config-bandeja")
+    public Map<String, Object> listarConfigBandejaPorIdUsuario(@RequestParam(value = "idUsuario",required = true) Long idUsuario,@RequestParam(value = "idPerfil",required = false) Long idPerfil,
+    		@RequestParam(value = "idRol",required = true) Long idRol, @RequestParam(value = "offset",required = true) int offset, 
+    		@RequestParam(value = "pageSize",required = true) int pageSize, Pageable pageable, HttpServletRequest request) throws Exception {
+		
+    	return confBandejaService.listarConfigBandejaPorIdUsuario(idUsuario,idPerfil,idRol,offset,pageSize);
+    }
+	
+	@GetMapping("/listar-config-reasignadas")
+    public List<ConfiguracionBandeja> listarConfiguracionesReasignadas(@RequestParam(value = "idUsuario",required = true) Long idUsuario, HttpServletRequest request) throws Exception {
+		
+    	return confBandejaService.listarConfiguracionesReasignadas(idUsuario);
+    }
+	
+	@GetMapping("/listar-historial-reasignaciones")
+    public List<UsuarioReasignacion> listarBandejaHistorialReasig(@RequestParam(value = "nombreUsuario",required = false) String nombreUsuario,@RequestParam(value = "fechaInicio",required = false) String fechaInicio,
+    		@RequestParam(value = "fechaFin",required = false) String fechaFin,@RequestParam(value = "idDivision",required = false) Long idDivision,
+    		@RequestParam(value = "offset",required = true) int offset, @RequestParam(value = "pageSize",required = true) int pageSize, HttpServletRequest request) throws Exception {
+		
+    	return confBandejaService.listarBandejaHistorialReasignaciones(nombreUsuario, fechaInicio, fechaFin, idDivision, offset, pageSize);
+    }
+	
+	@GetMapping("/obtener-divisiones")
+    public List<Division> obtenerDivisiones(HttpServletRequest request) throws Exception {
+		
+    	return confBandejaService.obtenerDivisiones();
+    }
+	
+}

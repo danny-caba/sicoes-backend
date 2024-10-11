@@ -1,0 +1,54 @@
+package pe.gob.osinergmin.sicoes.service;
+
+import java.io.File;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import pe.gob.osinergmin.sicoes.model.Archivo;
+import pe.gob.osinergmin.sicoes.model.Documento;
+import pe.gob.osinergmin.sicoes.model.OtroRequisito;
+import pe.gob.osinergmin.sicoes.model.ProcesoItem;
+import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.SolicitudNotificacion;
+import pe.gob.osinergmin.sicoes.util.Contexto;
+
+public interface ArchivoService extends BaseService<Archivo, Long> {
+
+	public Archivo obtener(Long idArhivo,Contexto contexto);
+	public Archivo obtener(String codigo, Contexto contexto);
+	public Page<Archivo> buscar(Pageable pageable,Contexto contexto);
+	public List<Archivo> buscar(Long idEstudio,Long idDocumento,Long idOtroRequisito, Contexto contexto) ;
+	public List<Archivo> buscarPropuesta(Long idPropuestaTecnica, Contexto contexto) ;
+	public List<Object[]> buscarPropuesta (String procesoItemUuid,Contexto contexto) ;
+	public List<Archivo> buscar(Long idSolicitud, Contexto contexto) ;
+	public List<Archivo> buscarPresentacion(Long idSolicitud,String tipoArchivo, Contexto contexto);
+	public List<Archivo> buscarArchivo(SolicitudNotificacion solicitudNotificacion, Contexto contexto);
+	public void asociarArchivos(Long idSolicitud,Long idEstudio, List<Archivo> archivos,Contexto contexto);
+	public void asociarArchivo(Documento documentoBD, Archivo archivo, Contexto contexto);
+	public void asociarArchivos(Long idPropuestaTecnica, List<Archivo> archivos, Contexto contexto);
+	public void asociarArchivo(SolicitudNotificacion solicitudNotificacion, Archivo archivo, Contexto contexto);
+	public void asociarArchivo(OtroRequisito otroRequisito, Archivo archivo, Contexto contexto);
+	public List<File> obtenerArchivoContenido(Long idSolicitud,String tipoArchivo, Contexto contexto);
+	public Page<Archivo> buscarArchivo(String codigo, String solicitudUuid, Pageable pageable, Contexto contexto);
+	public Page<Archivo> buscarArchivoPropuestaEconomica(String codigo, String propuestaUuid, Pageable pageable, Contexto contexto);
+	public Page<Archivo> buscarArchivoPropuestaTecnica(String codigo, String propuestaUuid, Pageable pageable, Contexto contexto);
+	public Archivo obtenerTipoArchivo(Long idSolicitud, String formato);
+	public void eliminarIdEstudio(Long id, Contexto contexto);
+	public void eliminarIdOtroRequisito(Long id, Contexto contexto);
+	public void eliminarIdDocumento(Long id, Contexto contexto);
+	public List<Archivo> listarEvidencias(Long idSolicitud);
+	public void eliminarXIDSolicitud(Long idSolicitud);
+	public List<File> obtenerArchivosContenido(Long idNotificacion);
+	public List<Archivo> listarXTecnica(String propuestaUuid, Contexto contexto);
+	public List<Archivo> listarXEconomica(String propuestaUuid, Contexto contexto);
+	public String generarArchivoContenido(Propuesta propuesta, Contexto contexto);
+	public String generarArchivoContenido(ProcesoItem procesoItem, Contexto contexto);
+	public Archivo obtenerTipoArchivo(Long idSolicitud, String codigoFormato, Long idAsignacion);
+	public List<Archivo> obtenerDocumentoTecnicosPendientes(Contexto contexto);
+	public void actualizarEstado(Archivo archivo,Long estado, Contexto contexto);
+	public Archivo obtenerContenido(Long idArhivo,Contexto contexto);
+
+
+}

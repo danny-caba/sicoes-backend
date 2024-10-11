@@ -1,0 +1,4660 @@
+{
+	"info": {
+		"_postman_id": "81bae6d3-15fa-49af-a61c-6cdf3b09bf96",
+		"name": "01 - SICOES",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Registro de Solicitud PJ",
+			"item": [
+				{
+					"name": "06 Mantenimiento Otros Requisitos",
+					"item": [
+						{
+							"name": "02 Registrar Otros Requisitos",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 64\r\n    },\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 1\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/otrosRequisitos",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"otrosRequisitos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "02 Listar Otro Requisito",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/otrosRequisitos?idSolicitud=1",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"otrosRequisitos"
+									],
+									"query": [
+										{
+											"key": "idSolicitud",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "02 obtener Otro Requisito",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/otrosRequisitos/3",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"otrosRequisitos",
+										"3"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "05 Mantenimiento Documentos",
+					"item": [
+						{
+							"name": "05 Listar Documentos",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/documentos",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"documentos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "05 Obtener Documento",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/documentos/1",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"documentos",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "05 Registrar Documento",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n     \"tipoDocumento\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"pais\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"tipoCambio\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\":1\r\n    }\r\n    ,\r\n    \"numeroDocumento\": \"asd\",\r\n    \"codigoContrato\": \"sd\",\r\n    \"descripcionContrato\": \"asd\",\r\n    \"fechaInicio\": \"13/10/2022\",\r\n    \"fechaFin\": \"13/10/2022\",\r\n    \"flagVigente\": \"1\",\r\n    \"fechaConformidad\": \"13/10/2022\",\r\n    \"montoContrato\": 123,\r\n    \"montoTipoCambio\": 123,\r\n    \"montoContratoSoles\":123,\r\n    \"archivo\":{\"idArchivo\":1}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/documentos",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"documentos"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "01 Consulta Sunat",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/pido/sunat/20376082114",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"pido",
+								"sunat",
+								"20376082114"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Consulta SNE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/pido/SNE?tipoDocumento=1&nroDocumento=20605040421",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"pido",
+								"SNE"
+							],
+							"query": [
+								{
+									"key": "tipoDocumento",
+									"value": "1"
+								},
+								{
+									"key": "nroDocumento",
+									"value": "20605040421"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Consulta Partida",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/pido/sunarp/CELSAT SAC",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"pido",
+								"sunarp",
+								"CELSAT SAC"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Registrar Requisito Documento",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"tipoDocumento\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"tipoCambio\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\":1\r\n    }\r\n    ,\r\n    \"numeroDocumento\": \"asd\",\r\n    \"codigoContrato\": \"sd\",\r\n    \"descripcionContrato\": \"asd\",\r\n    \"fechaInicio\": \"13/10/2022\",\r\n    \"fechaFin\": \"13/10/2022\",\r\n    \"flagVigente\": \"1\",\r\n    \"fechaConformidad\": \"13/10/2022\",\r\n    \"montoContrato\": 123,\r\n    \"montoTipoCambio\": 123,\r\n    \"montoContratoSoles\":123,\r\n    \"archivo\":{\"idArchivo\":1}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/requisitos/documentos",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"requisitos",
+								"documentos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Obtener Codigo Validación Correo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"correo\":\"rios.jader.20.04@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/enviar-codigo-validacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"enviar-codigo-validacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Validación Codigo Correo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\":\"869301\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/validar-codigo-validacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"validar-codigo-validacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "07 Registrar Borrador PJ",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "07 Enviar Solicitud",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/1/enviar",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"1",
+								"enviar"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Registro de Solicitud PN",
+			"item": [
+				{
+					"name": "07 Mantenimiento Perfil",
+					"item": [
+						{
+							"name": "01 Registrar Perfil",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"sector\": {\r\n        \"idListadoDetalle\": 32\r\n    },\r\n    \"subsector\": {\r\n        \"idListadoDetalle\": 34\r\n    },\r\n    \"actividad\": {\r\n        \"idListadoDetalle\": 38\r\n    },\r\n    \"categoria\": {\r\n        \"idListadoDetalle\": 32\r\n    },\r\n    \"perfil\": {\r\n        \"idListadoDetalle\": 32\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 48\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/perfil",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"perfil"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "02 Obtener Perfil",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/perfil/2",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"perfil",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "03 Listar Perfil",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 13\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/perfil?idSolicitud=48",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"perfil"
+									],
+									"query": [
+										{
+											"key": "idSolicitud",
+											"value": "48"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "03 Eliminar Perfil",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 13\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/requisitos/4",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"requisitos",
+										"4"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "08 Mantenimiento Estudios - Capacitación",
+					"item": [
+						{
+							"name": "08 Estudio",
+							"item": [
+								{
+									"name": "08 Registrar Estudio",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 94\r\n    },\r\n    \"flagEgresado\": \"1\",\r\n    \"especialidad\": \"ESPECIALIDAD\",\r\n    \"fechaVigenciaGrado\": \"08/11/2022\",\r\n    \"institucion\": \"URP\",\r\n    \"flagColegiatura\": \"1\",\r\n    \"colegiatura\": \"NRO COLEGIATURA\",\r\n    \"fechaVigenciaColegiatura\": \"08/11/2022\",\r\n    \"institucionColegiatura\": \"URP\",\r\n    \"solicitud\": {\"idSolicitud\": 1},\r\n    \"archivos\":[\r\n        {\r\n            \"idArchivo\":1\r\n        },\r\n        {\"idArchivo\":2\r\n        }\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/academicos",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"academicos"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Consulta SUNEDU",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/sunedu?idSolicitud=1",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"sunedu"
+											],
+											"query": [
+												{
+													"key": "idSolicitud",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Obtener Estudio",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/academicos/8",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"academicos",
+												"8"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Listar Estudios",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 13\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/academicos?idSolicitud=1",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"academicos"
+											],
+											"query": [
+												{
+													"key": "idSolicitud",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Eliminar Estudios",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 13\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/academicos/8",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"academicos",
+												"8"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "08 Capacitacion",
+							"item": [
+								{
+									"name": "08 Registrar Capacitacion",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"especialidad\": \"ESPECIALIDAD\",\r\n    \"institucion\": \"URP\",\r\n    \"hora\":4,\r\n    \"fechaVigencia\": \"29/11/2022\",\r\n    \"fechaInicio\": \"05/11/2022\",\r\n    \"fechaFin\": \"08/11/2022\",\r\n    \"archivo\":{\"idArchivo\":1},\r\n    \"solicitud\": {\"idSolicitud\": 1},\r\n    \"archivos\":[\r\n        {\r\n            \"idArchivo\":1\r\n        }\r\n    ]\r\n   \r\n    \r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/capacitaciones",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"capacitaciones"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Obtener Capacitacion",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/capacitaciones/16",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"capacitaciones",
+												"16"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Listar Estudios",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 13\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/capacitaciones?idSolicitud=1",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"capacitaciones"
+											],
+											"query": [
+												{
+													"key": "idSolicitud",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "08 Eliminar Estudios",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{Authorization}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{Authorization}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"tipoRequisito\": {\r\n        \"idListadoDetalle\": 66\r\n    },\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 13\r\n    },\r\n    \"flagElectronico\":\"1\",\r\n    \"flagFirmaDigital\":\"1\",\r\n    \"flagActivo\":\"1\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{PATH_SERVER}}/api/estudios/2",
+											"host": [
+												"{{PATH_SERVER}}"
+											],
+											"path": [
+												"api",
+												"estudios",
+												"2"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "09 Mantenimiento Documentos",
+					"item": [
+						{
+							"name": "05 Listar Documentos",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/documentos?idSolicitud=1",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"documentos"
+									],
+									"query": [
+										{
+											"key": "idSolicitud",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "05 Obtener Documento",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/documentos/21",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"documentos",
+										"21"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "05 Registrar Documento",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n     \"tipoDocumento\": {\r\n        \"idListadoDetalle\": 14\r\n    },\r\n    \"numeroDocumento\": \"20605040421\",\r\n    \"nombreEntidad\":\"PLADIT SAC\",\r\n    \"descripcionContrato\": \"desarrollo\",\r\n    \"fechaInicio\": \"13/10/2022\",\r\n    \"fechaFin\": \"14/10/2022\",\r\n    \"flagVigente\": \"0\",    \r\n    \"archivo\":{\"idArchivo\":1},\r\n    \"solicitud\":{\"idSolicitud\":1}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/documentos",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"documentos"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "01 Consulta Reniec",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/pido/reniec/46438819",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"pido",
+								"reniec",
+								"46438819"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Consulta Sunat",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/pido/sunat/20376082114",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"pido",
+								"sunat",
+								"20376082114"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Consulta SNE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/pido/SNE?tipoDocumento=2&nroDocumento=46438819",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"pido",
+								"SNE"
+							],
+							"query": [
+								{
+									"key": "tipoDocumento",
+									"value": "2"
+								},
+								{
+									"key": "nroDocumento",
+									"value": "46438819"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Departamentos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/departamentos",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 Provincia",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/departamentos/150000/provincias",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"150000",
+								"provincias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06 Distritos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/provincias/150100/distritos",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"provincias",
+								"150100",
+								"distritos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Obtener Codigo Validación Correo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"correo\":\"rios.jader.20.04@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/enviar-codigo-validacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"enviar-codigo-validacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 Validación Codigo Correo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\":\"869301\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/validar-codigo-validacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"validar-codigo-validacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06 Registrar Borrador PN",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "07 Enviar Solicitud",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/61/enviar",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"61",
+								"enviar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "07 Export PDF",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/5/PDF",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"5",
+								"PDF"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "08 Descargar Archivo",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/archivos/f2411cd2-068a-4d93-9dcb-beb1762f6987/descarga",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"archivos",
+								"f2411cd2-068a-4d93-9dcb-beb1762f6987",
+								"descarga"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Asignar Evaluador",
+			"item": [
+				{
+					"name": "01 Asignar Evaluador Administrativo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 1\r\n    },\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 101\r\n    },\r\n    \"usuario\": {\r\n        \"idUsuario\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios?codigoRol=02",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							],
+							"query": [
+								{
+									"key": "codigoRol",
+									"value": "02"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "01 Asignar Evaluador Administrativo Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 1\r\n    },\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 101\r\n    },\r\n    \"usuario\": {\r\n        \"idUsuario\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/asignaciones",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"asignaciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "01 Asignar Evaluador Tecnico",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 1\r\n    },\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 102\r\n    },\r\n    \"usuario\": {\r\n        \"idUsuario\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/asignaciones",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"asignaciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "01 Asignar Aprobador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\r\n    \"solicitud\": {\r\n        \"idSolicitud\": 1\r\n    },\r\n    \"tipo\": {\r\n        \"idListadoDetalle\": 544\r\n    },\r\n    \"grupo\":{\r\n        \"idListadoDetalle\": 542\r\n    },\r\n    \"usuario\": {\r\n        \"idUsuario\": 1\r\n    }\r\n}\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/asignaciones",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"asignaciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Obtener Evaluador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/asignaciones/6",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"asignaciones",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Modificar Asignación",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"evaluacion\": {\r\n        \"codigo\": \"APROBADO\"\r\n    },\r\n    \"observacion\":\"sadfasdfsad\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/asignaciones/1",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"asignaciones",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Listar Evaluadores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/asignaciones?idSolicitud=1",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"asignaciones"
+							],
+							"query": [
+								{
+									"key": "idSolicitud",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bandeja Solicitudes - Interno",
+			"item": [
+				{
+					"name": "01 Consultar Solicitudes",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/responsable?nroExpediente&idTipoSolicitud&idEstadoSolicitud&solicitante&idEstadoRevision",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"responsable"
+							],
+							"query": [
+								{
+									"key": "fechaDesde",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "fechaHasta",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "nroExpediente",
+									"value": null
+								},
+								{
+									"key": "idTipoSolicitud",
+									"value": null
+								},
+								{
+									"key": "idEstadoSolicitud",
+									"value": null
+								},
+								{
+									"key": "solicitante",
+									"value": null
+								},
+								{
+									"key": "idEstadoRevision",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Obtener Solicitud",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/1",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Evaluar Otro Requisito",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n \"evaluacion\":{\r\n     \"idListadoDetalle\":79\r\n }  ,\r\n \"observacion\":\"observacion\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/requisitos/otrosRequisitos/3/evaluar",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"requisitos",
+								"otrosRequisitos",
+								"3",
+								"evaluar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Actualizar Observaciones",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"observacionAdmnistrativa\": \"asdfasdfasd\",\r\n    \"observacionTecnica\":\"asdfasdfasd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/61/observaciones",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"61",
+								"observaciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Actualizar Resultado Administrativo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"resultadoAdministrativo\":{\r\n        \"idListadoDetalle\":141\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/solicitudes/1/resultado",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"1",
+								"resultado"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 Evidencias",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/ADMIN/Downloads/archivos/01_Titulo.pdf"
+								},
+								{
+									"key": "temp",
+									"value": "OJO: Hay que volver a adjuntar el archivo",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "codigo",
+									"value": "TA10",
+									"type": "text"
+								},
+								{
+									"key": "descripcion",
+									"value": "descripcion",
+									"type": "text"
+								},
+								{
+									"key": "idSolicitud",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/archivos",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"archivos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06 Evidencias Modificar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/ADMIN/Downloads/archivos/01_Titulo.pdf"
+								},
+								{
+									"key": "temp",
+									"value": "OJO: Hay que volver a adjuntar el archivo",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "codigo",
+									"value": "TA10",
+									"type": "text"
+								},
+								{
+									"key": "descripcion",
+									"value": "descripcion 2",
+									"type": "text"
+								},
+								{
+									"key": "idSolicitud",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/archivos/7",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"archivos",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "07 Eliminar Archivo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/archivos/7",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"archivos",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06 Listar Evidencia",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData=pm.response.json();\r",
+									"console.log(responseData);\r",
+									"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/archivos?codigo=TA10&idSolicitud=1",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"archivos"
+							],
+							"query": [
+								{
+									"key": "codigo",
+									"value": "TA10"
+								},
+								{
+									"key": "idSolicitud",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Suspencion Cancelacion",
+			"item": [
+				{
+					"name": "01 Buscar",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/suspension-cancelacion/export?nroExpediente=&idTipoDocumento=&idTipoPersona&ruc&nombres&idEstado",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"suspension-cancelacion",
+								"export"
+							],
+							"query": [
+								{
+									"key": "nroExpediente",
+									"value": ""
+								},
+								{
+									"key": "idTipoDocumento",
+									"value": ""
+								},
+								{
+									"key": "idTipoPersona",
+									"value": null
+								},
+								{
+									"key": "ruc",
+									"value": null
+								},
+								{
+									"key": "nombres",
+									"value": null
+								},
+								{
+									"key": "idEstado",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "01 Buscar",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/suspension-cancelacion/export?nroExpediente=&idTipoDocumento=&idTipoPersona&ruc&nombres&idEstado",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"suspension-cancelacion",
+										"export"
+									],
+									"query": [
+										{
+											"key": "nroExpediente",
+											"value": ""
+										},
+										{
+											"key": "idTipoDocumento",
+											"value": ""
+										},
+										{
+											"key": "idTipoPersona",
+											"value": null
+										},
+										{
+											"key": "ruc",
+											"value": null
+										},
+										{
+											"key": "nombres",
+											"value": null
+										},
+										{
+											"key": "idEstado",
+											"value": null
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "http://localhost:4200"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "DELETE, GET, OPTIONS, PATCH, POST, PUT"
+								},
+								{
+									"key": "Access-Control-Max-Age",
+									"value": "3600"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "x-requested-with, authorization, Content-Type, Authorization, credential, X-XSRF-TOKEN"
+								},
+								{
+									"key": "Content-Disposition",
+									"value": "attachment; filename=Empresas_Supervisoras.xlsx"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 25 Mar 2023 04:57:42 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=20"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000b\u0000\u0000\u0000_rels/.rels���J\u00031\u0010���\u0010��Ͷ��4�E��D�\u0003���n��LH�u��\u0006/j킂�d2�����v\u001a\u0007u��=\u0007\u0003˪\u0006E���5�\\܁ʂ����\f�(�vs}�~�\u0001�4��Ǭ\n%d\u0003�H��:ێF�\u0015G\n��p\u001aQ�1�:���%���[��2���v�@ڹ%�=����4�7N�+s_\u0015p)�\"�&���[z`{\u0018)ȅ��\u0017��lV�6��S�ҋ1��\u000eMB��[Ē@I|��Y��\u000bN�\u0013�Mj~4z$A��\u001f�\u001fJ��.��wPK\u0007\bS\u0019\u0002;�\u0000\u0000\u0000V\u0002\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0013\u0000\u0000\u0000[Content_Types].xml�SMO\u00021\u0010���\u001f6��m��1���\u001fG%\u0011@mgنn�t\n¿wZ0F�\u0004C8M'��{��v4^��ZBD�]Æ|�*p�k�f\r{�>׷��$���;h�\u001a���//F�u\u0000�h�aú�\u0010�:�%r\u001f�\u0011����Dm�� �\\�@\\\u000f\u00067By���:e\r��\u001e��\u000b���\r��\u001b&C�F�D����\u001d�z+�#����\u0004�\"\u0002��V���\u0012���Q\u001e���/����h4�+�o[�@{��i�C�ՠ�\u0010�\u0018��m։��E�$(�<!\u0014\u0005I��ܿ��|��,3�Dϝ\u001bc� 5v\u0000��\u001c;\u0019A��H/�o��\u0015�\bgM��v�&r���w\u000bTy/����������9\u0013d�r>\u0014��(J\u0019�$\u0011����\u000bPK\u0007\b4��A\u0001\u0000\u00003\u0004\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0010\u0000\u0000\u0000docProps/app.xmlM��\n�0\u0010D��\u0010ro�z\u0010�4� �'{�\u000f\b��\u0006�MHV�盓z�\u0019��T��E�1e\u0017�����\u0002Ɇ�ѳ����:�No7jH!bb�Y�\u0007�V���\u0004�����T�)$o���0M��9ؗGb�7�\u0001pe�\u0011�*~�R�>��Y�EB��\u0014�\u0018nW\u0005������\u0000PK\u0007\b6n�!�\u0000\u0000\u0000�\u0000\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0011\u0000\u0000\u0000docProps/core.xmlm�oK�0\u0010��\u000b~���m�vS\tm�(\u0003Aq�D�]Hζ��!�v����VA}yw�=����N��\u000b�p�R�@\u000b#;�T�y�N�0�k�{���{�xU����2a\u001cl���B\u0007\u001eE��L�\n�!XF�\u0017-(��H�8|7N�\u0010K�\u0010��\u0007o��^\u0010\u0005�K\u001e8\u0019�������bV�O�O\u0002)\b��@\u0007O�4#?l\u0000���\u000b�d&w���a\u0018ҡ��xQF^\u001f�N��\u000b���G9\u0013\u000ex\u0000��������&/���v���EB�$_n�-/�\"{+ɯ���P\u0019W_�PZ@�ǻ���\u0011\"�oPK\u0007\b�BR.\r\u0001\u0000\u0000�\u0001\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0014\u0000\u0000\u0000xl/sharedStrings.xml�V�n�@\u0010�W�;�|J\u000f��\u0010�F�jX/�����z���\n�n�T �$�+��Soy\u001d^���$�kG����v�Y������bUΖ��݊\u0002(\u0016W�/�ŷ����������~Y��jy�X�R�$�����m�v���\u0000�Ϣ<\u000f��뛳0,�����l-o�\u0005I�.W���շ��Y\u0015�/�uQ����N\u0014���t�\b\u0006�r6��A?t/[b�y�t�!�`�ɸ4b�[�G`(\u0019O�mI��4�ܠ!���Ka�F�\u000f��x�E��2i\u0018%�*�P4�(fS.sU�Jb��F\u0015���\u0004���\u0004B��'����3H�\u000e)�\u000579ƞ\u001f�Y��ǵ�z\u0001�\\\\�\u0018���:.�a����/\u000b�#�T�#�&\bB��\u0004^��C�cA��Mf�\t����J�ی��7�p���\u00042�2K��2����N��o{�T�\u000e�g����8\u000f\b�e��+�\u0001ʱ\u0015��\u0012���v�\u0014\u000e�D\u000b�\u000b��2�(�\u0011��c�Ê\u001a���7\u0018��z���\u000b�k�!��\"/\u0013�\u0015C=���tHd�G'������óFi�3U\u000f\f��Y\u0007Rԛ�\\���\u001a[\nmv�kc\u001dX��o�#>{��\u0018�6~��Ua'�\u001c\u001dF��v�I\"z���^乤\fi!P�3�n���v:�����\u0003���j?�^\r�\u001f4��yWЦZt���͵�R{��i�ƥ\u001b\u000b��T�X��\u0011�<x��2?�q;�ii�N�\"\u001a^0��\u0001��oZL�`Z�b-Oq7�/��^_��<���k]o\u0017&)2.1\u0015u\u000b�\u0019��W�㝒%4��T./�E��\u001dD�\u001a�H�\u0010υ��:;r7N��p�\t����v�|L\u001bF�`9\u0003ﴻm��U��!}�N7��BW3�\u001eƢ�{r\u0006\u0014\u001e\u0013n`b�v�K�0�ɐ�=퐾\u0014\u0006\u0000PK\u0007\bl֏�\n\u0003\u0000\u0000W\b\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\r\u0000\u0000\u0000xl/styles.xml�X]o�0\u0014}���`�}\r1��)I5Ub��^�I{5��X�Gd�\n���\u000f P�bT\u0014Yj^�7��s��\r��3�D��R�0�\u001aA@D)+*�\u001c�~������L�5#�-!\u0006�\n�s�\u001a�}K\u0012]��c}%;\"�Z*��uU��N\u0011\\iW�Y�F�i�1\u0015��ĒϹѠ�Kar8�I��R�\u00114�!Rd�\u0019<af�9q6��L*@EEV�����\u0004�$d�aF\u0017�z@�)[�0r\u0001/u�ǩ��\u0005��\u0012>{��b拶�(�/�+� �]\u0004ר%9\u0005m��`\u001f���!�x\\n\u0006��` \u0018\b\u0006���]\b����\u0017mQ(c��h\u0002C��:l\fQbn\u001d��\u001f�\u001dه�yG�+�\u001e(���\n-\u0019�NM�i��ᱧ~ K�\nw�~�[_HUٹt��\u0014nCE�Hml��M�V#;w\u001b�1�[����\u00023G���\u0018\u0016�$�ݻa�O}���A�JVn \u0005�\u0006lM+hc\u0006��8�}���\u0007���q���\u0011�V�\u001e�\u0006���z.�\u0012�l\u0016���\u001b��0���>�K��s��7��_'D�&\u001c_�pri��3\u0012��¿\u0019'=��\r�!�k�\u0017D����ۥ�m�k/e|�\u0014�,�H(m���\u001af\u0011h��@C:�AD\u001a�\b\u0014��q\f\"&1���A�4\u0006\u00111��4�����1Q\f\u001d\u0013��1Q\f\u001d\u0013��1��\u0007Ht�\t�1ټ�X����\u000bPK\u0007\b<�w�M\u0002\u0000\u0000-\u0018\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000f\u0000\u0000\u0000xl/workbook.xml��1O�0\u0010�w$��u;�\u0003\bA\u0014�\u000bBtc(�W�Ҹ���lZ~>N�\u0000#���������\u001fĉ8�\u00184T+\u0005���օ������#����\u001c����(\n\u001f��>籖2��<�U\u001c)����1��{�F&��'�~��J=H�.��P�\u001c�뜡�h>=�|�0\r���Ի1A��썅�LՓ����\bd�L͇�s�\u0005�(�dw�-�4����y�򊀞4��\u0003�\n\u0004��j���\u00031��\u0012�ٰ����\u001bPK\u0007\bަ.��\u0000\u0000\u0000^\u0001\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u001a\u0000\u0000\u0000xl/_rels/workbook.xml.rels���j�0\f���}q�A\u0019�^/����=���84���n���]ak�\n;�$$���@���8�w$�S4�T5(�.�>v\u0006�6��\u0007P,6z;��\u0006&dX>��,^p�R�8��U�D6\u0010D���\u0002����1�M�h�RZ�t�nk;Գ��k:e�o�Z{\u0003��\r���\u000e�\u0000\u0007K�_��\u001eW\u0005]VS��\u0004���\u001d>'�\u001b1�\u001f��\f\u000e����DG�\u0001���E�,p�#�h�\u0001Q\u000e��4�v�\u000e8�賯��\u001ePK\u0007\bgNM|�\u0000\u0000\u0000@\u0002\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0018\u0000\u0000\u0000xl/worksheets/sheet1.xml��[s�H\u0014Fߧj�\u0003��\u0000���ROM.�b�e��D[��H\nH<?\u001ah�ٽ\u001dK\u001f�@\\�ѽ{�\u0005G�f[�\u0017e���&X�i��\"_��������o��}��/�}^�(7�W�\u0018�+�榪>��v���,)�����+��ȒJ�\u0016k��(x�l\u0006e[�9N`gI�3'�e��]}E�૱�;��dԀ��|_*�F}��<�Q�<,Ǧ�_���ɷ|Qqq^\u0015��\u001emkç�T^\u000bc�W���#���t���2}�N1h�o�淑���M#K~6��ڌM�Z��\u001f0�4\u0016�e�g���4�5�yYMӪ�F��d\u0016�b\u000b\u00188�\u001b����,��\u0012\u000b�<�����,��\u0017X��\\��y�2���P�\u000bΞT ��~��\u0015_��Pf�}Vdy,\u000e���\u0017ɨ����\u001b��.��eT���:��\u000e�\u001c<u�� �� ��'\u0006����\u0015CxI��=��\u0003�tj\u0007�A\u0011߳\u001c\u0016^\"+\u001ċ^}\u0010�_�t�\u001e|�1�\\`>\u001cԇ�}׳B7b�\u0005i\u0007����9\u0016\u0004�\u0019-�n�b�Co�*���|o\u0014u[\u0014��\u000fD�6Ā�4���_\u0013\u0018�_�P�#�n��\rq\u001b8�\u0003�!�\u001b�\u0010W-\u0011)�;$�[\"V\boHܴD���\u0010��J\u0004\u0014$\u0018\"S�0\u0005\t�ȝD\\\u0005��ȽD<\u0005��ȃD|\u0005\u0001g�<J&P\u0019\u001823ɨ�\u0005T�'ɨ�\u0005T�d�\n\u0003*�s�0�Āj�\"\u00198^�W��5\u0006�\u000fo�Q�\f!-�׉�5�Ԫ\u0003ڙ+\u001dAE�&B����\bC)�\u0004�vnJ h��\b\u0004��=��m{ \u0010�k�\u0004�vdF hc�\b\u0004�N ���:��\u0010\b��+���\u0011�K+�w���\u0015�\u0011�\u0018\u0011�\u0015�\u0011M1\u0002��\u0011\bV�@�b:�b�\b\u0004+v\u001a�\u0011sA�\u0013��D�\u0013\b\u0012��@�.�\u0010\bV�@�b\u0004rD��S,�� ;�t�Î\u0011\b��\r����\u0012\b�cJ Ȏ;\u001d�\u001c#\u0016�\u001d�\u0011�yy���$�N\u0012sb5��\u00115���\u0004�D~%\u0010$����v�W��\u0015��`:��\"Bp\u0007�\u0011��\u0011\b�`\u0004�;\u0018�`�\b\u0004ۥ#\u001e*�#��E�t�ǂ\u0011\bZ�\\G�\u000eF ��\u0011\b�`\u0004�;\u0018�\u001c�`�ֻ{H8�\"67q^�J|�?��\u0016:��<�\u0000���l ��#٬�fDv��\u0019���Mm�\u0019*�Ś_�m�h�\u001d\u001f�����|\u0003f��G���X���x�+��66\u001d�~X]�yŋ�L�\u0019ox��N�|U5�i\u0014�7]�q�ȱ�E�o�&�\u0001PK\u0007\bQ��$\u001e\u0004\u0000\u0000�\u0013\u0000\u0000PK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVS\u0019\u0002;�\u0000\u0000\u0000V\u0002\u0000\u0000\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000_rels/.relsPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV4��A\u0001\u0000\u00003\u0004\u0000\u0000\u0013\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000#\u0001\u0000\u0000[Content_Types].xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV6n�!�\u0000\u0000\u0000�\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u0002\u0000\u0000docProps/app.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV�BR.\r\u0001\u0000\u0000�\u0001\u0000\u0000\u0011\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000v\u0003\u0000\u0000docProps/core.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVl֏�\n\u0003\u0000\u0000W\b\u0000\u0000\u0014\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u0004\u0000\u0000xl/sharedStrings.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV<�w�M\u0002\u0000\u0000-\u0018\u0000\u0000\r\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000e\b\u0000\u0000xl/styles.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVަ.��\u0000\u0000\u0000^\u0001\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\n\u0000\u0000xl/workbook.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVgNM|�\u0000\u0000\u0000@\u0002\u0000\u0000\u001a\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u000b\u0000\u0000xl/_rels/workbook.xml.relsPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVQ��$\u001e\u0004\u0000\u0000�\u0013\u0000\u0000\u0018\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\f\u0000\u0000xl/worksheets/sheet1.xmlPK\u0005\u0006\u0000\u0000\u0000\u0000\t\u0000\t\u0000?\u0002\u0000\u00005\u0011\u0000\u0000\u0000\u0000"
+						},
+						{
+							"name": "01 Buscar",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/suspension-cancelacion/export?nroExpediente=&idTipoDocumento=&idTipoPersona&ruc&nombres&idEstado",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"suspension-cancelacion",
+										"export"
+									],
+									"query": [
+										{
+											"key": "nroExpediente",
+											"value": ""
+										},
+										{
+											"key": "idTipoDocumento",
+											"value": ""
+										},
+										{
+											"key": "idTipoPersona",
+											"value": null
+										},
+										{
+											"key": "ruc",
+											"value": null
+										},
+										{
+											"key": "nombres",
+											"value": null
+										},
+										{
+											"key": "idEstado",
+											"value": null
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "http://localhost:4200"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "DELETE, GET, OPTIONS, PATCH, POST, PUT"
+								},
+								{
+									"key": "Access-Control-Max-Age",
+									"value": "3600"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "x-requested-with, authorization, Content-Type, Authorization, credential, X-XSRF-TOKEN"
+								},
+								{
+									"key": "Content-Disposition",
+									"value": "attachment; filename=Empresas_Supervisoras.xlsx"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 25 Mar 2023 04:57:42 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=20"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000b\u0000\u0000\u0000_rels/.rels���J\u00031\u0010���\u0010��Ͷ��4�E��D�\u0003���n��LH�u��\u0006/j킂�d2�����v\u001a\u0007u��=\u0007\u0003˪\u0006E���5�\\܁ʂ����\f�(�vs}�~�\u0001�4��Ǭ\n%d\u0003�H��:ێF�\u0015G\n��p\u001aQ�1�:���%���[��2���v�@ڹ%�=����4�7N�+s_\u0015p)�\"�&���[z`{\u0018)ȅ��\u0017��lV�6��S�ҋ1��\u000eMB��[Ē@I|��Y��\u000bN�\u0013�Mj~4z$A��\u001f�\u001fJ��.��wPK\u0007\bS\u0019\u0002;�\u0000\u0000\u0000V\u0002\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0013\u0000\u0000\u0000[Content_Types].xml�SMO\u00021\u0010���\u001f6��m��1���\u001fG%\u0011@mgنn�t\n¿wZ0F�\u0004C8M'��{��v4^��ZBD�]Æ|�*p�k�f\r{�>׷��$���;h�\u001a���//F�u\u0000�h�aú�\u0010�:�%r\u001f�\u0011����Dm�� �\\�@\\\u000f\u00067By���:e\r��\u001e��\u000b���\r��\u001b&C�F�D����\u001d�z+�#����\u0004�\"\u0002��V���\u0012���Q\u001e���/����h4�+�o[�@{��i�C�ՠ�\u0010�\u0018��m։��E�$(�<!\u0014\u0005I��ܿ��|��,3�Dϝ\u001bc� 5v\u0000��\u001c;\u0019A��H/�o��\u0015�\bgM��v�&r���w\u000bTy/����������9\u0013d�r>\u0014��(J\u0019�$\u0011����\u000bPK\u0007\b4��A\u0001\u0000\u00003\u0004\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0010\u0000\u0000\u0000docProps/app.xmlM��\n�0\u0010D��\u0010ro�z\u0010�4� �'{�\u000f\b��\u0006�MHV�盓z�\u0019��T��E�1e\u0017�����\u0002Ɇ�ѳ����:�No7jH!bb�Y�\u0007�V���\u0004�����T�)$o���0M��9ؗGb�7�\u0001pe�\u0011�*~�R�>��Y�EB��\u0014�\u0018nW\u0005������\u0000PK\u0007\b6n�!�\u0000\u0000\u0000�\u0000\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0011\u0000\u0000\u0000docProps/core.xmlm�oK�0\u0010��\u000b~���m�vS\tm�(\u0003Aq�D�]Hζ��!�v����VA}yw�=����N��\u000b�p�R�@\u000b#;�T�y�N�0�k�{���{�xU����2a\u001cl���B\u0007\u001eE��L�\n�!XF�\u0017-(��H�8|7N�\u0010K�\u0010��\u0007o��^\u0010\u0005�K\u001e8\u0019�������bV�O�O\u0002)\b��@\u0007O�4#?l\u0000���\u000b�d&w���a\u0018ҡ��xQF^\u001f�N��\u000b���G9\u0013\u000ex\u0000��������&/���v���EB�$_n�-/�\"{+ɯ���P\u0019W_�PZ@�ǻ���\u0011\"�oPK\u0007\b�BR.\r\u0001\u0000\u0000�\u0001\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0014\u0000\u0000\u0000xl/sharedStrings.xml�V�n�@\u0010�W�;�|J\u000f��\u0010�F�jX/�����z���\n�n�T �$�+��Soy\u001d^���$�kG����v�Y������bUΖ��݊\u0002(\u0016W�/�ŷ����������~Y��jy�X�R�$�����m�v���\u0000�Ϣ<\u000f��뛳0,�����l-o�\u0005I�.W���շ��Y\u0015�/�uQ����N\u0014���t�\b\u0006�r6��A?t/[b�y�t�!�`�ɸ4b�[�G`(\u0019O�mI��4�ܠ!���Ka�F�\u000f��x�E��2i\u0018%�*�P4�(fS.sU�Jb��F\u0015���\u0004���\u0004B��'����3H�\u000e)�\u000579ƞ\u001f�Y��ǵ�z\u0001�\\\\�\u0018���:.�a����/\u000b�#�T�#�&\bB��\u0004^��C�cA��Mf�\t����J�ی��7�p���\u00042�2K��2����N��o{�T�\u000e�g����8\u000f\b�e��+�\u0001ʱ\u0015��\u0012���v�\u0014\u000e�D\u000b�\u000b��2�(�\u0011��c�Ê\u001a���7\u0018��z���\u000b�k�!��\"/\u0013�\u0015C=���tHd�G'������óFi�3U\u000f\f��Y\u0007Rԛ�\\���\u001a[\nmv�kc\u001dX��o�#>{��\u0018�6~��Ua'�\u001c\u001dF��v�I\"z���^乤\fi!P�3�n���v:�����\u0003���j?�^\r�\u001f4��yWЦZt���͵�R{��i�ƥ\u001b\u000b��T�X��\u0011�<x��2?�q;�ii�N�\"\u001a^0��\u0001��oZL�`Z�b-Oq7�/��^_��<���k]o\u0017&)2.1\u0015u\u000b�\u0019��W�㝒%4��T./�E��\u001dD�\u001a�H�\u0010υ��:;r7N��p�\t����v�|L\u001bF�`9\u0003ﴻm��U��!}�N7��BW3�\u001eƢ�{r\u0006\u0014\u001e\u0013n`b�v�K�0�ɐ�=퐾\u0014\u0006\u0000PK\u0007\bl֏�\n\u0003\u0000\u0000W\b\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\r\u0000\u0000\u0000xl/styles.xml�X]o�0\u0014}���`�}\r1��)I5Ub��^�I{5��X�Gd�\n���\u000f P�bT\u0014Yj^�7��s��\r��3�D��R�0�\u001aA@D)+*�\u001c�~������L�5#�-!\u0006�\n�s�\u001a�}K\u0012]��c}%;\"�Z*��uU��N\u0011\\iW�Y�F�i�1\u0015��ĒϹѠ�Kar8�I��R�\u00114�!Rd�\u0019<af�9q6��L*@EEV�����\u0004�$d�aF\u0017�z@�)[�0r\u0001/u�ǩ��\u0005��\u0012>{��b拶�(�/�+� �]\u0004ר%9\u0005m��`\u001f���!�x\\n\u0006��` \u0018\b\u0006���]\b����\u0017mQ(c��h\u0002C��:l\fQbn\u001d��\u001f�\u001dه�yG�+�\u001e(���\n-\u0019�NM�i��ᱧ~ K�\nw�~�[_HUٹt��\u0014nCE�Hml��M�V#;w\u001b�1�[����\u00023G���\u0018\u0016�$�ݻa�O}���A�JVn \u0005�\u0006lM+hc\u0006��8�}���\u0007���q���\u0011�V�\u001e�\u0006���z.�\u0012�l\u0016���\u001b��0���>�K��s��7��_'D�&\u001c_�pri��3\u0012��¿\u0019'=��\r�!�k�\u0017D����ۥ�m�k/e|�\u0014�,�H(m���\u001af\u0011h��@C:�AD\u001a�\b\u0014��q\f\"&1���A�4\u0006\u00111��4�����1Q\f\u001d\u0013��1Q\f\u001d\u0013��1��\u0007Ht�\t�1ټ�X����\u000bPK\u0007\b<�w�M\u0002\u0000\u0000-\u0018\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000f\u0000\u0000\u0000xl/workbook.xml��1O�0\u0010�w$��u;�\u0003\bA\u0014�\u000bBtc(�W�Ҹ���lZ~>N�\u0000#���������\u001fĉ8�\u00184T+\u0005���օ������#����\u001c����(\n\u001f��>籖2��<�U\u001c)����1��{�F&��'�~��J=H�.��P�\u001c�뜡�h>=�|�0\r���Ի1A��썅�LՓ����\bd�L͇�s�\u0005�(�dw�-�4����y�򊀞4��\u0003�\n\u0004��j���\u00031��\u0012�ٰ����\u001bPK\u0007\bަ.��\u0000\u0000\u0000^\u0001\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u001a\u0000\u0000\u0000xl/_rels/workbook.xml.rels���j�0\f���}q�A\u0019�^/����=���84���n���]ak�\n;�$$���@���8�w$�S4�T5(�.�>v\u0006�6��\u0007P,6z;��\u0006&dX>��,^p�R�8��U�D6\u0010D���\u0002����1�M�h�RZ�t�nk;Գ��k:e�o�Z{\u0003��\r���\u000e�\u0000\u0007K�_��\u001eW\u0005]VS��\u0004���\u001d>'�\u001b1�\u001f��\f\u000e����DG�\u0001���E�,p�#�h�\u0001Q\u000e��4�v�\u000e8�賯��\u001ePK\u0007\bgNM|�\u0000\u0000\u0000@\u0002\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0018\u0000\u0000\u0000xl/worksheets/sheet1.xml��[s�H\u0014Fߧj�\u0003��\u0000���ROM.�b�e��D[��H\nH<?\u001ah�ٽ\u001dK\u001f�@\\�ѽ{�\u0005G�f[�\u0017e���&X�i��\"_��������o��}��/�}^�(7�W�\u0018�+�榪>��v���,)�����+��ȒJ�\u0016k��(x�l\u0006e[�9N`gI�3'�e��]}E�૱�;��dԀ��|_*�F}��<�Q�<,Ǧ�_���ɷ|Qqq^\u0015��\u001emkç�T^\u000bc�W���#���t���2}�N1h�o�淑���M#K~6��ڌM�Z��\u001f0�4\u0016�e�g���4�5�yYMӪ�F��d\u0016�b\u000b\u00188�\u001b����,��\u0012\u000b�<�����,��\u0017X��\\��y�2���P�\u000bΞT ��~��\u0015_��Pf�}Vdy,\u000e���\u0017ɨ����\u001b��.��eT���:��\u000e�\u001c<u�� �� ��'\u0006����\u0015CxI��=��\u0003�tj\u0007�A\u0011߳\u001c\u0016^\"+\u001ċ^}\u0010�_�t�\u001e|�1�\\`>\u001cԇ�}׳B7b�\u0005i\u0007����9\u0016\u0004�\u0019-�n�b�Co�*���|o\u0014u[\u0014��\u000fD�6Ā�4���_\u0013\u0018�_�P�#�n��\rq\u001b8�\u0003�!�\u001b�\u0010W-\u0011)�;$�[\"V\boHܴD���\u0010��J\u0004\u0014$\u0018\"S�0\u0005\t�ȝD\\\u0005��ȽD<\u0005��ȃD|\u0005\u0001g�<J&P\u0019\u001823ɨ�\u0005T�'ɨ�\u0005T�d�\n\u0003*�s�0�Āj�\"\u00198^�W��5\u0006�\u000fo�Q�\f!-�׉�5�Ԫ\u0003ڙ+\u001dAE�&B����\bC)�\u0004�vnJ h��\b\u0004��=��m{ \u0010�k�\u0004�vdF hc�\b\u0004�N ���:��\u0010\b��+���\u0011�K+�w���\u0015�\u0011�\u0018\u0011�\u0015�\u0011M1\u0002��\u0011\bV�@�b:�b�\b\u0004+v\u001a�\u0011sA�\u0013��D�\u0013\b\u0012��@�.�\u0010\bV�@�b\u0004rD��S,�� ;�t�Î\u0011\b��\r����\u0012\b�cJ Ȏ;\u001d�\u001c#\u0016�\u001d�\u0011�yy���$�N\u0012sb5��\u00115���\u0004�D~%\u0010$����v�W��\u0015��`:��\"Bp\u0007�\u0011��\u0011\b�`\u0004�;\u0018�`�\b\u0004ۥ#\u001e*�#��E�t�ǂ\u0011\bZ�\\G�\u000eF ��\u0011\b�`\u0004�;\u0018�\u001c�`�ֻ{H8�\"67q^�J|�?��\u0016:��<�\u0000���l ��#٬�fDv��\u0019���Mm�\u0019*�Ś_�m�h�\u001d\u001f�����|\u0003f��G���X���x�+��66\u001d�~X]�yŋ�L�\u0019ox��N�|U5�i\u0014�7]�q�ȱ�E�o�&�\u0001PK\u0007\bQ��$\u001e\u0004\u0000\u0000�\u0013\u0000\u0000PK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVS\u0019\u0002;�\u0000\u0000\u0000V\u0002\u0000\u0000\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000_rels/.relsPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV4��A\u0001\u0000\u00003\u0004\u0000\u0000\u0013\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000#\u0001\u0000\u0000[Content_Types].xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV6n�!�\u0000\u0000\u0000�\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u0002\u0000\u0000docProps/app.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV�BR.\r\u0001\u0000\u0000�\u0001\u0000\u0000\u0011\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000v\u0003\u0000\u0000docProps/core.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVl֏�\n\u0003\u0000\u0000W\b\u0000\u0000\u0014\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u0004\u0000\u0000xl/sharedStrings.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV<�w�M\u0002\u0000\u0000-\u0018\u0000\u0000\r\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000e\b\u0000\u0000xl/styles.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVަ.��\u0000\u0000\u0000^\u0001\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\n\u0000\u0000xl/workbook.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVgNM|�\u0000\u0000\u0000@\u0002\u0000\u0000\u001a\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u000b\u0000\u0000xl/_rels/workbook.xml.relsPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVQ��$\u001e\u0004\u0000\u0000�\u0013\u0000\u0000\u0018\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\f\u0000\u0000xl/worksheets/sheet1.xmlPK\u0005\u0006\u0000\u0000\u0000\u0000\t\u0000\t\u0000?\u0002\u0000\u00005\u0011\u0000\u0000\u0000\u0000"
+						},
+						{
+							"name": "01 Buscar",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{Authorization}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{PATH_SERVER}}/api/suspension-cancelacion/export?nroExpediente=&idTipoDocumento=&idTipoPersona&ruc&nombres&idEstado",
+									"host": [
+										"{{PATH_SERVER}}"
+									],
+									"path": [
+										"api",
+										"suspension-cancelacion",
+										"export"
+									],
+									"query": [
+										{
+											"key": "nroExpediente",
+											"value": ""
+										},
+										{
+											"key": "idTipoDocumento",
+											"value": ""
+										},
+										{
+											"key": "idTipoPersona",
+											"value": null
+										},
+										{
+											"key": "ruc",
+											"value": null
+										},
+										{
+											"key": "nombres",
+											"value": null
+										},
+										{
+											"key": "idEstado",
+											"value": null
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "http://localhost:4200"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "DELETE, GET, OPTIONS, PATCH, POST, PUT"
+								},
+								{
+									"key": "Access-Control-Max-Age",
+									"value": "3600"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "x-requested-with, authorization, Content-Type, Authorization, credential, X-XSRF-TOKEN"
+								},
+								{
+									"key": "Content-Disposition",
+									"value": "attachment; filename=Empresas_Supervisoras.xlsx"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 25 Mar 2023 04:57:42 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=20"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000b\u0000\u0000\u0000_rels/.rels���J\u00031\u0010���\u0010��Ͷ��4�E��D�\u0003���n��LH�u��\u0006/j킂�d2�����v\u001a\u0007u��=\u0007\u0003˪\u0006E���5�\\܁ʂ����\f�(�vs}�~�\u0001�4��Ǭ\n%d\u0003�H��:ێF�\u0015G\n��p\u001aQ�1�:���%���[��2���v�@ڹ%�=����4�7N�+s_\u0015p)�\"�&���[z`{\u0018)ȅ��\u0017��lV�6��S�ҋ1��\u000eMB��[Ē@I|��Y��\u000bN�\u0013�Mj~4z$A��\u001f�\u001fJ��.��wPK\u0007\bS\u0019\u0002;�\u0000\u0000\u0000V\u0002\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0013\u0000\u0000\u0000[Content_Types].xml�SMO\u00021\u0010���\u001f6��m��1���\u001fG%\u0011@mgنn�t\n¿wZ0F�\u0004C8M'��{��v4^��ZBD�]Æ|�*p�k�f\r{�>׷��$���;h�\u001a���//F�u\u0000�h�aú�\u0010�:�%r\u001f�\u0011����Dm�� �\\�@\\\u000f\u00067By���:e\r��\u001e��\u000b���\r��\u001b&C�F�D����\u001d�z+�#����\u0004�\"\u0002��V���\u0012���Q\u001e���/����h4�+�o[�@{��i�C�ՠ�\u0010�\u0018��m։��E�$(�<!\u0014\u0005I��ܿ��|��,3�Dϝ\u001bc� 5v\u0000��\u001c;\u0019A��H/�o��\u0015�\bgM��v�&r���w\u000bTy/����������9\u0013d�r>\u0014��(J\u0019�$\u0011����\u000bPK\u0007\b4��A\u0001\u0000\u00003\u0004\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0010\u0000\u0000\u0000docProps/app.xmlM��\n�0\u0010D��\u0010ro�z\u0010�4� �'{�\u000f\b��\u0006�MHV�盓z�\u0019��T��E�1e\u0017�����\u0002Ɇ�ѳ����:�No7jH!bb�Y�\u0007�V���\u0004�����T�)$o���0M��9ؗGb�7�\u0001pe�\u0011�*~�R�>��Y�EB��\u0014�\u0018nW\u0005������\u0000PK\u0007\b6n�!�\u0000\u0000\u0000�\u0000\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0011\u0000\u0000\u0000docProps/core.xmlm�oK�0\u0010��\u000b~���m�vS\tm�(\u0003Aq�D�]Hζ��!�v����VA}yw�=����N��\u000b�p�R�@\u000b#;�T�y�N�0�k�{���{�xU����2a\u001cl���B\u0007\u001eE��L�\n�!XF�\u0017-(��H�8|7N�\u0010K�\u0010��\u0007o��^\u0010\u0005�K\u001e8\u0019�������bV�O�O\u0002)\b��@\u0007O�4#?l\u0000���\u000b�d&w���a\u0018ҡ��xQF^\u001f�N��\u000b���G9\u0013\u000ex\u0000��������&/���v���EB�$_n�-/�\"{+ɯ���P\u0019W_�PZ@�ǻ���\u0011\"�oPK\u0007\b�BR.\r\u0001\u0000\u0000�\u0001\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0014\u0000\u0000\u0000xl/sharedStrings.xml�V�n�@\u0010�W�;�|J\u000f��\u0010�F�jX/�����z���\n�n�T �$�+��Soy\u001d^���$�kG����v�Y������bUΖ��݊\u0002(\u0016W�/�ŷ����������~Y��jy�X�R�$�����m�v���\u0000�Ϣ<\u000f��뛳0,�����l-o�\u0005I�.W���շ��Y\u0015�/�uQ����N\u0014���t�\b\u0006�r6��A?t/[b�y�t�!�`�ɸ4b�[�G`(\u0019O�mI��4�ܠ!���Ka�F�\u000f��x�E��2i\u0018%�*�P4�(fS.sU�Jb��F\u0015���\u0004���\u0004B��'����3H�\u000e)�\u000579ƞ\u001f�Y��ǵ�z\u0001�\\\\�\u0018���:.�a����/\u000b�#�T�#�&\bB��\u0004^��C�cA��Mf�\t����J�ی��7�p���\u00042�2K��2����N��o{�T�\u000e�g����8\u000f\b�e��+�\u0001ʱ\u0015��\u0012���v�\u0014\u000e�D\u000b�\u000b��2�(�\u0011��c�Ê\u001a���7\u0018��z���\u000b�k�!��\"/\u0013�\u0015C=���tHd�G'������óFi�3U\u000f\f��Y\u0007Rԛ�\\���\u001a[\nmv�kc\u001dX��o�#>{��\u0018�6~��Ua'�\u001c\u001dF��v�I\"z���^乤\fi!P�3�n���v:�����\u0003���j?�^\r�\u001f4��yWЦZt���͵�R{��i�ƥ\u001b\u000b��T�X��\u0011�<x��2?�q;�ii�N�\"\u001a^0��\u0001��oZL�`Z�b-Oq7�/��^_��<���k]o\u0017&)2.1\u0015u\u000b�\u0019��W�㝒%4��T./�E��\u001dD�\u001a�H�\u0010υ��:;r7N��p�\t����v�|L\u001bF�`9\u0003ﴻm��U��!}�N7��BW3�\u001eƢ�{r\u0006\u0014\u001e\u0013n`b�v�K�0�ɐ�=퐾\u0014\u0006\u0000PK\u0007\bl֏�\n\u0003\u0000\u0000W\b\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\r\u0000\u0000\u0000xl/styles.xml�X]o�0\u0014}���`�}\r1��)I5Ub��^�I{5��X�Gd�\n���\u000f P�bT\u0014Yj^�7��s��\r��3�D��R�0�\u001aA@D)+*�\u001c�~������L�5#�-!\u0006�\n�s�\u001a�}K\u0012]��c}%;\"�Z*��uU��N\u0011\\iW�Y�F�i�1\u0015��ĒϹѠ�Kar8�I��R�\u00114�!Rd�\u0019<af�9q6��L*@EEV�����\u0004�$d�aF\u0017�z@�)[�0r\u0001/u�ǩ��\u0005��\u0012>{��b拶�(�/�+� �]\u0004ר%9\u0005m��`\u001f���!�x\\n\u0006��` \u0018\b\u0006���]\b����\u0017mQ(c��h\u0002C��:l\fQbn\u001d��\u001f�\u001dه�yG�+�\u001e(���\n-\u0019�NM�i��ᱧ~ K�\nw�~�[_HUٹt��\u0014nCE�Hml��M�V#;w\u001b�1�[����\u00023G���\u0018\u0016�$�ݻa�O}���A�JVn \u0005�\u0006lM+hc\u0006��8�}���\u0007���q���\u0011�V�\u001e�\u0006���z.�\u0012�l\u0016���\u001b��0���>�K��s��7��_'D�&\u001c_�pri��3\u0012��¿\u0019'=��\r�!�k�\u0017D����ۥ�m�k/e|�\u0014�,�H(m���\u001af\u0011h��@C:�AD\u001a�\b\u0014��q\f\"&1���A�4\u0006\u00111��4�����1Q\f\u001d\u0013��1Q\f\u001d\u0013��1��\u0007Ht�\t�1ټ�X����\u000bPK\u0007\b<�w�M\u0002\u0000\u0000-\u0018\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000f\u0000\u0000\u0000xl/workbook.xml��1O�0\u0010�w$��u;�\u0003\bA\u0014�\u000bBtc(�W�Ҹ���lZ~>N�\u0000#���������\u001fĉ8�\u00184T+\u0005���օ������#����\u001c����(\n\u001f��>籖2��<�U\u001c)����1��{�F&��'�~��J=H�.��P�\u001c�뜡�h>=�|�0\r���Ի1A��썅�LՓ����\bd�L͇�s�\u0005�(�dw�-�4����y�򊀞4��\u0003�\n\u0004��j���\u00031��\u0012�ٰ����\u001bPK\u0007\bަ.��\u0000\u0000\u0000^\u0001\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u001a\u0000\u0000\u0000xl/_rels/workbook.xml.rels���j�0\f���}q�A\u0019�^/����=���84���n���]ak�\n;�$$���@���8�w$�S4�T5(�.�>v\u0006�6��\u0007P,6z;��\u0006&dX>��,^p�R�8��U�D6\u0010D���\u0002����1�M�h�RZ�t�nk;Գ��k:e�o�Z{\u0003��\r���\u000e�\u0000\u0007K�_��\u001eW\u0005]VS��\u0004���\u001d>'�\u001b1�\u001f��\f\u000e����DG�\u0001���E�,p�#�h�\u0001Q\u000e��4�v�\u000e8�賯��\u001ePK\u0007\bgNM|�\u0000\u0000\u0000@\u0002\u0000\u0000PK\u0003\u0004\u0014\u0000\b\b\b\u00005�xV\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0018\u0000\u0000\u0000xl/worksheets/sheet1.xml��[s�H\u0014Fߧj�\u0003��\u0000���ROM.�b�e��D[��H\nH<?\u001ah�ٽ\u001dK\u001f�@\\�ѽ{�\u0005G�f[�\u0017e���&X�i��\"_��������o��}��/�}^�(7�W�\u0018�+�榪>��v���,)�����+��ȒJ�\u0016k��(x�l\u0006e[�9N`gI�3'�e��]}E�૱�;��dԀ��|_*�F}��<�Q�<,Ǧ�_���ɷ|Qqq^\u0015��\u001emkç�T^\u000bc�W���#���t���2}�N1h�o�淑���M#K~6��ڌM�Z��\u001f0�4\u0016�e�g���4�5�yYMӪ�F��d\u0016�b\u000b\u00188�\u001b����,��\u0012\u000b�<�����,��\u0017X��\\��y�2���P�\u000bΞT ��~��\u0015_��Pf�}Vdy,\u000e���\u0017ɨ����\u001b��.��eT���:��\u000e�\u001c<u�� �� ��'\u0006����\u0015CxI��=��\u0003�tj\u0007�A\u0011߳\u001c\u0016^\"+\u001ċ^}\u0010�_�t�\u001e|�1�\\`>\u001cԇ�}׳B7b�\u0005i\u0007����9\u0016\u0004�\u0019-�n�b�Co�*���|o\u0014u[\u0014��\u000fD�6Ā�4���_\u0013\u0018�_�P�#�n��\rq\u001b8�\u0003�!�\u001b�\u0010W-\u0011)�;$�[\"V\boHܴD���\u0010��J\u0004\u0014$\u0018\"S�0\u0005\t�ȝD\\\u0005��ȽD<\u0005��ȃD|\u0005\u0001g�<J&P\u0019\u001823ɨ�\u0005T�'ɨ�\u0005T�d�\n\u0003*�s�0�Āj�\"\u00198^�W��5\u0006�\u000fo�Q�\f!-�׉�5�Ԫ\u0003ڙ+\u001dAE�&B����\bC)�\u0004�vnJ h��\b\u0004��=��m{ \u0010�k�\u0004�vdF hc�\b\u0004�N ���:��\u0010\b��+���\u0011�K+�w���\u0015�\u0011�\u0018\u0011�\u0015�\u0011M1\u0002��\u0011\bV�@�b:�b�\b\u0004+v\u001a�\u0011sA�\u0013��D�\u0013\b\u0012��@�.�\u0010\bV�@�b\u0004rD��S,�� ;�t�Î\u0011\b��\r����\u0012\b�cJ Ȏ;\u001d�\u001c#\u0016�\u001d�\u0011�yy���$�N\u0012sb5��\u00115���\u0004�D~%\u0010$����v�W��\u0015��`:��\"Bp\u0007�\u0011��\u0011\b�`\u0004�;\u0018�`�\b\u0004ۥ#\u001e*�#��E�t�ǂ\u0011\bZ�\\G�\u000eF ��\u0011\b�`\u0004�;\u0018�\u001c�`�ֻ{H8�\"67q^�J|�?��\u0016:��<�\u0000���l ��#٬�fDv��\u0019���Mm�\u0019*�Ś_�m�h�\u001d\u001f�����|\u0003f��G���X���x�+��66\u001d�~X]�yŋ�L�\u0019ox��N�|U5�i\u0014�7]�q�ȱ�E�o�&�\u0001PK\u0007\bQ��$\u001e\u0004\u0000\u0000�\u0013\u0000\u0000PK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVS\u0019\u0002;�\u0000\u0000\u0000V\u0002\u0000\u0000\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000_rels/.relsPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV4��A\u0001\u0000\u00003\u0004\u0000\u0000\u0013\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000#\u0001\u0000\u0000[Content_Types].xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV6n�!�\u0000\u0000\u0000�\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u0002\u0000\u0000docProps/app.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV�BR.\r\u0001\u0000\u0000�\u0001\u0000\u0000\u0011\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000v\u0003\u0000\u0000docProps/core.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVl֏�\n\u0003\u0000\u0000W\b\u0000\u0000\u0014\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u0004\u0000\u0000xl/sharedStrings.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xV<�w�M\u0002\u0000\u0000-\u0018\u0000\u0000\r\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000e\b\u0000\u0000xl/styles.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVަ.��\u0000\u0000\u0000^\u0001\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\n\u0000\u0000xl/workbook.xmlPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVgNM|�\u0000\u0000\u0000@\u0002\u0000\u0000\u001a\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\u000b\u0000\u0000xl/_rels/workbook.xml.relsPK\u0001\u0002\u0014\u0000\u0014\u0000\b\b\b\u00005�xVQ��$\u001e\u0004\u0000\u0000�\u0013\u0000\u0000\u0018\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000�\f\u0000\u0000xl/worksheets/sheet1.xmlPK\u0005\u0006\u0000\u0000\u0000\u0000\t\u0000\t\u0000?\u0002\u0000\u00005\u0011\u0000\u0000\u0000\u0000"
+						}
+					]
+				},
+				{
+					"name": "01 Export",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/suspension-cancelacion?nroExpediente=&idTipoDocumento=&idTipoPersona&ruc&nombres&idEstado",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"suspension-cancelacion"
+							],
+							"query": [
+								{
+									"key": "nroExpediente",
+									"value": ""
+								},
+								{
+									"key": "idTipoDocumento",
+									"value": ""
+								},
+								{
+									"key": "idTipoPersona",
+									"value": null
+								},
+								{
+									"key": "ruc",
+									"value": null
+								},
+								{
+									"key": "nombres",
+									"value": null
+								},
+								{
+									"key": "idEstado",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 Obtener",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/suspension-cancelacion/1",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"suspension-cancelacion",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Registrar Suspendida",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"supervisora\": {\r\n        \"idSupervisora\": 1\r\n    },\r\n    \"tipo\": {\r\n        \"codigo\": \"SUSPENDIDA\", \r\n        \"nombre\": \"Suspendida\"\r\n    },\r\n    \"fechaInicio\": \"08/03/2023\",\r\n    \"fechaFin\": \"08/03/2023\",\r\n    \"causal\": {\r\n        \"idListadoDetalle\": 694\r\n    },\r\n    \"sustento\": \"Listado 48 CAUSAL_SUSPENSION\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/suspension-cancelacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"suspension-cancelacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Registrar Cancelada",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"supervisora\": {\r\n        \"idSupervisora\": 2\r\n    },\r\n    \"tipo\": {\r\n        \"codigo\": \"CANCELADA\"\r\n    },\r\n    \"fechaInicio\": \"08/03/2023\",\r\n    \"fechaFin\": \"08/03/2023\",\r\n    \"causal\": {\r\n        \"idListadoDetalle\": 698\r\n    },\r\n    \"sustento\": \"Listado 49 CAUSAL_CANCELACION\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/suspension-cancelacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"suspension-cancelacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Eliminar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/suspension-cancelacion/2",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"suspension-cancelacion",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Empresa Extranjera",
+			"item": [
+				{
+					"name": "03 Registrar Usuario Extranjero",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"pais\":{\r\n       \"idListadoDetalle\":527\r\n   },\r\n    \"tipoDocumento\":{\r\n        \"idListadoDetalle\":667\r\n    },\r\n    \"codigoRuc\":\"20605040422\",\r\n    \"razonSocial\":\"PLADIT S.A.C\",\r\n    \"telefono\":987456123,\r\n    \"contrasenia\":\"123456\",\r\n    \"correo\":\"rios.jader.20.04@gmail.com\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 Obtener Codigo Validación Correo Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"correo\":\"rios.jader.20.04@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/enviar-codigo-validacion?codigoTipo=CONTRASENIA",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"enviar-codigo-validacion"
+							],
+							"query": [
+								{
+									"key": "codigoTipo",
+									"value": "CONTRASENIA"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 Validación Codigo Correo Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\":\"869301\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/validar-codigo-validacion",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"validar-codigo-validacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 Validación Obtener correo",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigo\":\"869301\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/publico/obtener-correo?idPais=528&idTipoDocumento=668&nroDocumento=20605040421",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"publico",
+								"obtener-correo"
+							],
+							"query": [
+								{
+									"key": "idPais",
+									"value": "528"
+								},
+								{
+									"key": "idTipoDocumento",
+									"value": "668"
+								},
+								{
+									"key": "nroDocumento",
+									"value": "20605040421"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 Validación Obtener correo Copy",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "{{Authorization}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"codigoRuc\": \"20605040421\",\r\n    \"tipoDocumento\": {\r\n        \"idListadoDetalle\": 668\r\n    },\r\n    \"pais\": {\r\n        \"idListadoDetalle\": 528\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/api/usuarios/publico/recuperar-contrasenia",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"publico",
+								"recuperar-contrasenia"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "00 Autenticacion Empresa Extranjera",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+									"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+									"pm.test(\"Ok\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+									"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "12345",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "app",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{\"idTipoDocumento\":667,\n\"idPais\":527,\n\"ruc\":\"20605040421\"}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "123456",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "token",
+									"value": "ARb3+X2ceVwRds8BVbs2NLo78H5PIMW+DNbceLl3DOA6MRDr7b0GvFS3Lk/aVE2R0GHx/29AP/BDSKufoDxRCjQwhT76De0sOAUpAXYvpEDRLZMR+GaWnI1xxhSk7pr2x8+sQuPIVOBeJfx6IbTiSI6+hvXvEiGgqDvaPUxUwf7iIyBfqV3p5iln2GMgtVJWrtHWEHhAQ2inPU/b7wntYnXB0p/fSBjaqsSd0ZwYv//89YbHm3Z13SbHJKPniRoxfttORHSI36KCeWmE4KFog30T6JKZF/dg0LNYqkIzI/U=&session=81C17E1C341DA45801559344A18924C4",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "codigoRuc",
+									"value": "",
+									"type": "default",
+									"disabled": true
+								},
+								{
+									"key": "pais",
+									"value": "",
+									"type": "default",
+									"disabled": true
+								},
+								{
+									"key": "tipoDocumento",
+									"value": "",
+									"type": "default",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{PATH_SERVER}}/oauth/token",
+							"host": [
+								"{{PATH_SERVER}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07 Obtener Expediente SIGED",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Authorization}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{Authorization}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"codigo\": \"20002\",\r\n    \"representante\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"123456789\",\r\n        \"nombreRepresentante\": \"MARIO\",\r\n        \"apellidoPaterno\": \"TRAVERZO\",\r\n        \"apellidoMaterno\": \"VILA\"\r\n    },\r\n    \"persona\": {\r\n        \"tipoDocumento\": {\r\n            \"idListadoDetalle\": 3\r\n        },\r\n        \"numeroDocumento\": \"20566213932\",\r\n        \"nombreRazonSocial\": \"CELSAT SAC\",\r\n        \"nombre\": \"NOMBRE\",\r\n        \"apellidoPaterno\": \"PATERNO\",\r\n        \"apellidoMaterno\": \"MATERNO\",\r\n        \"codigoRuc\": \"22222222\",\r\n        \"direccion\": \"DIRECCION\",\r\n        \"codigoDepartamento\": \"0011\",\r\n        \"codigoProvincia\": \"002\",\r\n        \"codigoDistrito\": \"003\",\r\n        \"codigoPartidaRegistral\": \"12315\",\r\n        \"telefono1\": \"1111111\",\r\n        \"telefono2\": \"222222\",\r\n        \"telefono3\": \"333333\",\r\n        \"correo\": \"CELSAT@GMAIL.COM\"\r\n    },\r\n    \"estado\": {\r\n        \"idListadoDetalle\": 1\r\n    },\r\n    \"otrosRequisitos\":[\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":66\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":67\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":68\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":5}\r\n        },\r\n        {\r\n            \"tipo\": {\r\n                \"idListadoDetalle\": 64\r\n            },\r\n            \"tipoRequisito\":{\r\n                \"idListadoDetalle\":69\r\n            },\r\n            \"flagActivo\":1,\r\n            \"archivo\":{\"idArchivo\":7}\r\n        }\r\n        \r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/api/solicitudes/1/expediente-siged",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"api",
+						"solicitudes",
+						"1",
+						"expediente-siged"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "00 Autenticacion Externo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "app",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "{\n\"ruc\":\"\",\n\"token\":\"ARb3+X2ceVwRds8BVbs2NLo78H5PIMW+DNbceLl3DOA6MRDr7b0GvFS3Lk/aVE2R0GHx/29AP/BDSKufoDxRCjQwhT76De0sOAUpAXYvpEDRLZMR+GaWnI1xxhSk7pr2x8+sQuPIVOBeJfx6IbTiSI6+hvXvEiGgqDvaPUxUwf7iIyBfqV3p5iln2GMgtVJWrtHWEHhAQ2inPU/b7wntYnXB0p/fSBjaqsSd0ZwYv//89YbHm3Z13SbHJKPniRoxfttORHSI36KCeWmE4KFog30T6JKZF/dg0LNYqkIzI/U=&session=81C17E1C341DA45801559344A18924C4\"\n}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "token",
+							"value": "ARb3+X2ceVwRds8BVbs2NLo78H5PIMW+DNbceLl3DOA6MRDr7b0GvFS3Lk/aVE2R0GHx/29AP/BDSKufoDxRCjQwhT76De0sOAUpAXYvpEDRLZMR+GaWnI1xxhSk7pr2x8+sQuPIVOBeJfx6IbTiSI6+hvXvEiGgqDvaPUxUwf7iIyBfqV3p5iln2GMgtVJWrtHWEHhAQ2inPU/b7wntYnXB0p/fSBjaqsSd0ZwYv//89YbHm3Z13SbHJKPniRoxfttORHSI36KCeWmE4KFog30T6JKZF/dg0LNYqkIzI/U=&session=81C17E1C341DA45801559344A18924C4",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/oauth/token",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "00 Autenticacion Interno",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "Yjcg_SYYesu12345::944::4xxFZamMyPirTE24Df/FAzSlYcTFR/v1XrkJ8qc/9vgH6KRT5WrnrznDmceFH7TLqKvK2Wgz35Gt/gSl6GRdIJklwUTpvDCg9Y0tE18iF4QGQj0dOpK3LRaD1kgWe96LZhXOp2X5e0TCRiLSH0cqoOT1MFZt33a8L+eIzPCT/MLOYu8xPncNq9Kw+IWUmoq5",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "4xxFZamMyPirTE24Df/FAzSlYcTFR/v1XrkJ8qc/9vgH6KRT5WrnrznDmceFH7TLqKvK2Wgz35Gt/gSl6GRdIJklwUTpvDCg9Y0tE18iF4QGQj0dOpK3LRaD1kgWe96LZhXOp2X5e0TCRiLSH0cqoOT1MFZt33a8L+eIzPCT/MLOYu8xPncNq9Kw+IWUmoq5",
+							"type": "text"
+						},
+						{
+							"key": "scope",
+							"value": "sisseg_as",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://srvdesawssisseg.osinergmin.gob.pe/sisseg-as-backend/oauth2/token",
+					"protocol": "https",
+					"host": [
+						"srvdesawssisseg",
+						"osinergmin",
+						"gob",
+						"pe"
+					],
+					"path": [
+						"sisseg-as-backend",
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 Autenticacion E. Administrativo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "app",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/oauth/token",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 Perfil",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Authorization}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "idTipoDocumento",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "ruc",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "nombres",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "perfil",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "fechaInicio",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "fechaFin",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/api/supervisora-perfiles",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"api",
+						"supervisora-perfiles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 Perfil Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Authorization}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "idTipoDocumento",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "ruc",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "nombres",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "perfil",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "fechaInicio",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "fechaFin",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/api/supervisora-perfiles",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"api",
+						"supervisora-perfiles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 Perfil Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Authorization}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "idTipoDocumento",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "ruc",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "nombres",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "perfil",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "fechaInicio",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "fechaFin",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/api/supervisora-perfiles",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"api",
+						"supervisora-perfiles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 Autenticacion E. Tecnico",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "app",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "tecnico",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/oauth/token",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 Autenticacion R. Administrativo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "app",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "resadmin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/oauth/token",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04 Autenticacion R. Tecnico",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "app",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "restecnico",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/oauth/token",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 Autenticacion Evaluador Fina",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authorization = postman.getResponseHeader(\"Authorization\")\r",
+							"postman.setEnvironmentVariable(\"Authorization\", authorization);\r",
+							"pm.test(\"Ok\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    postman.setEnvironmentVariable(\"Authorization\", jsonData.access_token);\r",
+							"    postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "app",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "evafina",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/oauth/token",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 Registrar Archivos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let responseData=pm.response.json();\r",
+							"console.log(responseData);\r",
+							"pm.environment.set(\"adjunto11\", responseData.idAdjunto);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Authorization}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ADMIN/Downloads/archivos/01_Titulo.pdf"
+						},
+						{
+							"key": "temp",
+							"value": "OJO: Hay que volver a adjuntar el archivo",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "codigo",
+							"value": "TA01",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{PATH_SERVER}}/api/archivos",
+					"host": [
+						"{{PATH_SERVER}}"
+					],
+					"path": [
+						"api",
+						"archivos"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

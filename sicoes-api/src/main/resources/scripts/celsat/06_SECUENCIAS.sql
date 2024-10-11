@@ -1,0 +1,4 @@
+drop sequence SICOES_SEQ_USUARIO;
+drop sequence SICOES_SEQ_USUARIO_ROL;
+create sequence SICOES_SEQ_USUARIO START WITH 148;
+create sequence SICOES_SEQ_USUARIO_ROL START WITH 158;
