@@ -1,6 +1,9 @@
 package pe.gob.osinergmin.sicoes.service;
 
+import java.util.List;
+
 import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.PropuestaConsorcio;
 import pe.gob.osinergmin.sicoes.model.PropuestaEconomica;
 import pe.gob.osinergmin.sicoes.model.PropuestaTecnica;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
@@ -24,4 +27,8 @@ public interface BitacoraService {
 	public void registroPropuestaEconomicaFin(PropuestaEconomica propuestaEconomica, Contexto contexto);
 	public void registrarPropuestaTecnicaError(PropuestaTecnica propuestaTecnica,String error, Contexto contexto);
 	public void registrarPropuestaEconomicaError(PropuestaEconomica propuestaEconomica,String error, Contexto contexto);
+	public void registrarEmpresaConsorcio(PropuestaConsorcio propuestaConsorcio, Contexto contexto);
+	public void registrarEmpresaConsorcioError(PropuestaConsorcio propuestaConsorcio, Contexto contexto);
+	public void registrarParticipacionEmpresaConsorcio(List<PropuestaConsorcio> propuestaConsorcio ,Contexto contexto);
+	public void registrarParticipacionEmpresaConsorcioError(List<PropuestaConsorcio> propuestaConsorcio ,Contexto contexto);
 }

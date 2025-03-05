@@ -29,6 +29,8 @@ public interface SupervisoraService extends BaseService<Supervisora, Long>  {
 
 	public Supervisora obtenerXCodigo(Long codigoCliente, Contexto contexto);
 
+	public Supervisora obtenerPorCodigoUsuario(Long codigoUsuario, Contexto contexto);
+
 	public void cancelar(Supervisora supervisora);
 
 	public void supender(Supervisora supervisora);

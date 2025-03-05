@@ -12,6 +12,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -28,10 +30,9 @@ public abstract class BaseModel {
 	@JsonIgnore
 	protected DecimalFormat decimalFormat =  new DecimalFormat("###,###.00",DecimalFormatSymbols.getInstance(Locale.forLanguageTag("es_PE"))); 
 
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
 	@Column(name="FE_CREACION", nullable=false,insertable=true,updatable=false)
-	@JsonIgnore
 	private Date fecCreacion;
 	
 	@Column(name="IP_CREACION", nullable=false, insertable=true,updatable=false)
@@ -60,6 +61,8 @@ public abstract class BaseModel {
 	@Transient
 	@JsonIgnore
 	protected String origen;
+	
+	
 	
 	public Date getFecActualizacion() {
 		return fecActualizacion;

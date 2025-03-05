@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -76,8 +77,10 @@ public interface UsuarioDao extends PagingAndSortingRepository<Usuario, Long> {
 	public Long[] obtenerCodigoPeril(String uuidSolicitud);
 
 	@Query("select distinct ss.idListadoDetalle from OtroRequisito ot  left join ot.solicitud s left join ot.perfil p left join ot.subsector ss "
-			+ "where s.solicitudUuid=:uuidSolicitud and p.idListadoDetalle is null and ss.idListadoDetalle is not null ")
-	public Long[] obtenerCodigoSector(String uuidSolicitud);
+			+ "where s.solicitudUuid=:uuidSolicitud and p.idListadoDetalle is null and ss.idListadoDetalle is not null "
+			+ "AND ( (ot.fecCreacion > :fechaLimite AND ot.usuario IS NOT NULL) " 
+		    + "      OR ot.fecCreacion <= :fechaLimite )")
+	public Long[] obtenerCodigoSector(String uuidSolicitud, Date fechaLimite);
 
 	@Query(value="select ur.usuario from UsuarioRol ur "
 			+ "left join ur.usuario u "

@@ -19,103 +19,110 @@ import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-
 /**
  * The persistent class for the listado database table.
  * 
  */
 @Entity
-@Table(name="SICOES_TR_DOCUMENTO")
+@Table(name = "SICOES_TR_DOCUMENTO")
 public class Documento extends BaseModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_DOCUMENTO")
-	@SequenceGenerator(name="GEN_SICOES_SEQ_DOCUMENTO", sequenceName = "SICOES_SEQ_DOCUMENTO", allocationSize = 1)
-	@Column(name = "ID_DOCUMENTO")	
+	@SequenceGenerator(name = "GEN_SICOES_SEQ_DOCUMENTO", sequenceName = "SICOES_SEQ_DOCUMENTO", allocationSize = 1)
+	@Column(name = "ID_DOCUMENTO")
 	private Long idDocumento;
 
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_LD")	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_TIPO_LD")
 	private ListadoDetalle tipo;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_DOCUMENTO_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_TIPO_DOCUMENTO_LD")
 	private ListadoDetalle tipoDocumento;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_CAMBIO_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_TIPO_CAMBIO_LD")
 	private ListadoDetalle tipoCambio;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_CONFORMIDAD_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_CONFORMIDAD_LD")
 	private ListadoDetalle cuentaConformidad;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_ID_TRIBURARIO_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_TIPO_ID_TRIBURARIO_LD")
 	private ListadoDetalle tipoIdentificacion;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_PAIS_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_PAIS_LD")
 	private ListadoDetalle pais;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_SOLICITUD")
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_SUBSECTOR")
+	private ListadoDetalle subSectorDoc;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_ACTIVIDAD_AREA")
+	private ListadoDetalle actividadArea;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_SOLICITUD")
 	private Solicitud solicitud;
 
-	@Column(name="ID_DOCUMENTO_PADRE")	
+	@Column(name = "ID_DOCUMENTO_PADRE")
 	private Long idDocumentoPadre;
-	
-	@Column(name="NU_DOCUMENTO")	
+
+	@Column(name = "NU_DOCUMENTO")
 	private String numeroDocumento;
-	
-	@Column(name="NO_ENTIDAD")	
+
+	@Column(name = "NO_ENTIDAD")
 	private String nombreEntidad;
-	
-	@Column(name="CO_CONTRATO")	
+
+	@Column(name = "CO_CONTRATO")
 	private String codigoContrato;
-	
-	@Column(name="DE_CONTRATO")	
+
+	@Column(name = "DE_CONTRATO")
 	private String descripcionContrato;
-	
+
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-	@Column(name="FE_INICIO_CONTRATO")
+	@Column(name = "FE_INICIO_CONTRATO")
 	private Date fechaInicio;
-	
+
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-	@Column(name="FE_FIN_CONTRATO")
+	@Column(name = "FE_FIN_CONTRATO")
 	private Date fechaFin;
-	
-	@Column(name="DE_DURACION")
+
+	@Column(name = "DE_DURACION")
 	private String duracion;
 
-	@Column(name="FL_VIGENTE")	
+	@Column(name = "FL_VIGENTE")
 	private String flagVigente;
-	
+
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-	@Column(name="FE_CONFORMIDAD")
+	@Column(name = "FE_CONFORMIDAD")
 	private Date fechaConformidad;
-	
-	@Column(name="MO_CONTRATO")	
+
+	@Column(name = "MO_CONTRATO")
 	private Double montoContrato;
-	
-	@Column(name="MO_TIPO_CAMBIO")	
-	private Double montoTipoCambio;	
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_EVALUACION_LD")	
+
+	@Column(name = "MO_TIPO_CAMBIO")
+	private Double montoTipoCambio;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_EVALUACION_LD")
 	private ListadoDetalle evaluacion;
-	
-	@Column(name="MO_CONTRATO_SOL")	
+
+	@Column(name = "MO_CONTRATO_SOL")
 	private Double montoContratoSol;
-	
-	@Column(name="DE_OBSERVACION")	
+
+	@Column(name = "DE_OBSERVACION")
 	private String observacion;
-	
-	@Column(name="FL_SIGED")	
+
+	@Column(name = "FL_SIGED")
 	private Long flagSiged;
 
 	@Transient
@@ -175,6 +182,21 @@ public class Documento extends BaseModel implements Serializable {
 
 	public void setPais(ListadoDetalle pais) {
 		this.pais = pais;
+	}
+	public ListadoDetalle getSubSectorDoc() {
+		return subSectorDoc;
+	}
+
+	public void setSubSectorDoc(ListadoDetalle subSectorDoc) {
+		this.subSectorDoc = subSectorDoc;
+	}
+	
+	public ListadoDetalle getActividadArea() {
+		return actividadArea;
+	}
+
+	public void setActividadArea(ListadoDetalle actividadArea) {
+		this.actividadArea = actividadArea;
 	}
 
 	public Solicitud getSolicitud() {
@@ -309,13 +331,13 @@ public class Documento extends BaseModel implements Serializable {
 	public String toString() {
 		return "Documento [idDocumento=" + idDocumento + ", tipo=" + tipo + ", tipoDocumento=" + tipoDocumento
 				+ ", tipoCambio=" + tipoCambio + ", cuentaConformidad=" + cuentaConformidad + ", tipoIdentificacion="
-				+ tipoIdentificacion + ", pais=" + pais + ", solicitud=" + solicitud 
+				+ tipoIdentificacion + ", pais=" + pais + ", solicitud=" + solicitud
 				+ ", numeroDocumento=" + numeroDocumento + ", nombreEntidad=" + nombreEntidad + ", codigoContrato="
 				+ codigoContrato + ", descripcionContrato=" + descripcionContrato + ", fechaInicio=" + fechaInicio
 				+ ", fechaFin=" + fechaFin + ", duracion=" + duracion + ", flagVigente=" + flagVigente
 				+ ", fechaConformidad=" + fechaConformidad + ", montoContrato=" + montoContrato + ", montoTipoCambio="
 				+ montoTipoCambio + ", evaluacion=" + evaluacion + ", montoContratoSol=" + montoContratoSol
-				+ ", observacion=" + observacion + ", archivo=" + archivo + "]";
+				+ ", observacion=" + observacion + ", archivo=" + archivo + ", subSectorDoc=" + subSectorDoc + "]";
 	}
 
 	public Long getIdDocumentoPadre() {
@@ -334,11 +356,11 @@ public class Documento extends BaseModel implements Serializable {
 		this.flagSiged = flagSiged;
 	}
 
-//	public Long getFlagUltimo() {
-//		return flagUltimo;
-//	}
-//
-//	public void setFlagUltimo(Long flagUltimo) {
-//		this.flagUltimo = flagUltimo;
-//	}
+	// public Long getFlagUltimo() {
+	// return flagUltimo;
+	// }
+	//
+	// public void setFlagUltimo(Long flagUltimo) {
+	// this.flagUltimo = flagUltimo;
+	// }
 }

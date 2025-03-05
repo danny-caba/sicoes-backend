@@ -108,6 +108,14 @@ public interface SupervisoraMovimientoDao  extends JpaRepository<SupervisoraMovi
 			+ "order by m.fechaRegistro desc ")			
 	public List<SupervisoraMovimiento> listarXProfesional(Long idSupervisora,Long idSubsector);
 	
+	@Query("SELECT sm FROM SupervisoraMovimiento sm " +
+		       "JOIN sm.propuestaProfesional pp " +
+		       "JOIN pp.propuesta p " +
+		       "JOIN p.procesoItem pi " +
+		       "WHERE sm.supervisora.id = :idSupervisora " +
+		       "AND sm.subsector.id = :idSubsector " +
+		       "ORDER BY sm.fechaRegistro desc ")
+	public List<SupervisoraMovimiento> listarXProfesionalXItem(Long idSupervisora, Long idSubsector);
 	
 	@Query("select m from SupervisoraMovimiento m "
 			+ "left join fetch m.sector s "

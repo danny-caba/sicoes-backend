@@ -46,4 +46,10 @@ public class ListadoServiceImpl implements ListadoService{
 		listadoDao.deleteById(id);
 		
 	}
+
+	@Override
+	public Listado obtenerPorCodigo(String codigo, Contexto contexto) {
+		return listadoDao.obtenerPorCodigo(codigo);
+	}
+	
 }

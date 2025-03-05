@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.job;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,15 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import pe.gob.osinergmin.sicoes.model.Asignacion;
-import pe.gob.osinergmin.sicoes.service.AsignacionService;
-import pe.gob.osinergmin.sicoes.service.ConfBandejaService;
-import pe.gob.osinergmin.sicoes.service.NotificacionService;
-import pe.gob.osinergmin.sicoes.service.ProcesoService;
-import pe.gob.osinergmin.sicoes.service.PropuestaService;
-import pe.gob.osinergmin.sicoes.service.SolicitudService;
-import pe.gob.osinergmin.sicoes.service.SuspensionCancelacionService;
+import org.springframework.web.multipart.MultipartFile;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.service.*;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ExcelUtils;
 
 @Component
 public class ScheduledTasks {
@@ -45,12 +43,27 @@ public class ScheduledTasks {
 	
 	@Autowired
 	private ConfBandejaService confBandejaService;
+
+	@Autowired
+	private ProcesoEtapaService procesoEtapaService;
+
+	@Autowired
+	private ProcesoConsultaService procesoConsultaService;
+
+	@Autowired
+	private ProcesoDocumentoService procesoDocumentoService;
+
+	@Autowired
+	private ListadoDetalleService listadoDetalleService;
+
+	@Autowired
+	private SicoesSolicitudService sicoesSolicitudService;
 	
 	
 	@Value("${path.temporal}")
 	private String path;
 	
-	@Scheduled(fixedRate = 5*1000)
+//	@Scheduled(fixedRate = 5*1000)
 	public void reportCurrentTime() throws Exception {
 		logger.info("Inicio el Job");
 //		solicitudService.subirDocumentoTecnicos(getContextoAnonimo());
@@ -116,5 +129,40 @@ public class ScheduledTasks {
 		logger.info("Inicio de la actualización de evaluaciones pendientes por vacaciones");
 		asignacionService.actualizarEvaluacionPendientePorVacaciones(getContextoAnonimo());
 		logger.info("Fin de la actualización de evaluaciones pendientes por vacaciones");
+	}
+
+	@Scheduled(cron = "0 1 0 * * ?")
+	public void tareaDiariaConsolidadoConsultas() throws Exception {
+		logger.info("Inicio de la tarea diaria de consolidado de consultas");
+		ListadoDetalle etapaFormulacion = listadoDetalleService.obtenerListadoDetalleOrden(Constantes.LISTADO.ETAPA_PROCESO.CODIGO,
+				Constantes.LISTADO.ETAPA_PROCESO.ETAPA_FORMULACION_ORDEN);
+		List<Object[]> lstEtapaProceso = procesoEtapaService.listarEtapasFormulacionConsultas(etapaFormulacion.getIdListadoDetalle());
+		for(Object[] etapaProceso : lstEtapaProceso) {
+			try {
+				Long idProceso = Long.parseLong(etapaProceso[0].toString());
+				Long idEtapa = Long.parseLong(etapaProceso[1].toString());
+				InputStream is = procesoConsultaService.generarExport(idProceso);
+				MultipartFile xls = ExcelUtils.crearArchivoXls(is, "consultasFormuladas");
+
+				procesoDocumentoService.registrarXls(xls, idEtapa, idProceso, "Consultas_Formuladas", getContextoAnonimo());
+			} catch (Exception e) {
+				logger.error("Error procesando la etapa del proceso: " + etapaProceso[0] + ", " + etapaProceso[1], e);
+			}
+		}
+		logger.info("Fin de la tarea diaria de consolidado de consultas");
+	}
+
+	@Scheduled(cron = "0 0 3,19 * * *")
+	public void actualizarSolicitudesPerfContObservadasNotificadas() throws Exception {
+		logger.info("Inicio actualizarSolicitudesPerfContObservadasNotificadas");
+		sicoesSolicitudService.registrarNotificacionSolicitudPerfCont(getContextoAnonimo());
+		logger.info("Fin actualizarSolicitudesPerfContObservadasNotificadas");
+	}
+
+	@Scheduled(cron = "0 1 0 * * ?")
+	public void archivarSolicitudesPerfContNoPresentadas() throws Exception {
+		logger.info("Inicio archivarSolicitudesPerfContNoPresentadas");
+		sicoesSolicitudService.archivarSolicitudesPerfContNoPresentadas(getContextoAnonimo());
+		logger.info("Fin archivarSolicitudesPerfContNoPresentadas");
 	}
 }

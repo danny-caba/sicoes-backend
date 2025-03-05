@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +14,7 @@ import pe.gob.osinergmin.sicoes.model.Bitacora;
 import pe.gob.osinergmin.sicoes.model.Proceso;
 import pe.gob.osinergmin.sicoes.model.ProcesoItem;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.PropuestaConsorcio;
 import pe.gob.osinergmin.sicoes.model.PropuestaEconomica;
 import pe.gob.osinergmin.sicoes.model.PropuestaTecnica;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
@@ -182,5 +184,33 @@ public class BitacoraServiceImpl implements BitacoraService {
 		String mensaje = messageSource.getMessage(Constantes.BITACORA.COD_MENSAJE.REGISTRO_PRO_ECONOMICA_ERROR, parametros,Constantes.BITACORA.COD_MENSAJE.MENSAJE_DEFECTO, Locale.getDefault());
 		bitacora.setDescripcion(mensaje);
 		bitacoraDao.save(bitacora);
+	}
+
+	@Override
+	public void registrarEmpresaConsorcio(PropuestaConsorcio propuestaConsorcio, Contexto contexto) {
+		Bitacora bitacora=getBitacora(contexto.getUsuario(), contexto);
+		bitacora.setDescripcion("Registro de empresa consorcio");
+		bitacoraDao.save(bitacora);		
+	}
+
+	@Override
+	public void registrarEmpresaConsorcioError(PropuestaConsorcio propuestaConsorcio, Contexto contexto) {
+		Bitacora bitacora=getBitacora(contexto.getUsuario(), contexto);
+		bitacora.setDescripcion("Registro de empresa consorcio - Error al registrar");
+		bitacoraDao.save(bitacora);				
+	}
+
+	@Override
+	public void registrarParticipacionEmpresaConsorcio(List<PropuestaConsorcio> propuestaConsorcio, Contexto contexto) {
+		Bitacora bitacora=getBitacora(contexto.getUsuario(), contexto);
+		bitacora.setDescripcion("Registro de participación de cada empresa consorcio");
+		bitacoraDao.save(bitacora);		
+	}
+
+	@Override
+	public void registrarParticipacionEmpresaConsorcioError(List<PropuestaConsorcio> propuestaConsorcio, Contexto contexto) {
+		Bitacora bitacora=getBitacora(contexto.getUsuario(), contexto);
+		bitacora.setDescripcion("Registro de participación de cada empresa consorcio - Error al registrar");
+		bitacoraDao.save(bitacora);			
 	}
 }

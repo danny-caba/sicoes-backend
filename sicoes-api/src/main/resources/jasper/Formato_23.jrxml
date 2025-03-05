@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Formato_23" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="425" leftMargin="85" rightMargin="85" topMargin="85" bottomMargin="85" uuid="4f4b3c34-8984-453d-8d2d-18f9c5648327">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="net.sf.jasperreports.datasnapshot.SAVESNAPSHOT" value="C:\Users\nalarcon\Desktop\test.jrds"/>
+	<parameter name="P_ID_SOLICITUD" class="java.lang.Long" isForPrompting="false">
+		<defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_LOGO_OSINERGMIN" class="java.io.InputStream"/>
+	<parameter name="P_LOGO_APP" class="java.io.InputStream"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["C:\\data\\sicoes\\jasper\\"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="numeroExpediente" class="java.lang.String"/>
+	<field name="supervisora.nombreRazonSocial" class="java.lang.String"/>
+	<field name="supervisora.codigoRuc" class="java.lang.String"/>
+	<field name="seccionDoc" class="java.util.List"/>
+	<field name="seccionPer" class="java.util.List"/>
+	<field name="seccionFiel" class="java.util.List"/>
+	<field name="seccionMonto" class="java.util.List"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="90" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="10" width="425" height="30" uuid="a85e6acf-4564-460d-a56f-2b4322fa9b88"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RESULTADO DE SOLICITUD DE INSCRIPCIÓN]]></text>
+			</staticText>
+			<image scaleImage="FillFrame">
+				<reportElement x="0" y="-40" width="90" height="30" uuid="c9a2d95d-5a54-4a38-b1ec-6dd8115e131c">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA[$P{P_LOGO_APP}]]></imageExpression>
+			</image>
+			<image scaleImage="FillFrame">
+				<reportElement x="290" y="-40" width="135" height="30" uuid="ced8d0de-9c28-4566-863f-3f741c8df1cc">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA[$P{P_LOGO_OSINERGMIN}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="40" width="425" height="40" uuid="d8513085-54c0-49c4-ad92-3e6e8fc91852">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Estimado solicitante "+$F{supervisora.codigoRuc} +" - " +$F{supervisora.nombreRazonSocial}+" se le comunica que su solicitud de Perfeccionamiento de contrato en el Sistema de Registro de Empresas Supervisoras - SICOES del Osinergmin, tramitada mediante expediente N° "+$F{numeroExpediente}+" ,ha tenido el siguiente resultado:"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="23">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="280" height="23" backcolor="#E3DEDE" uuid="74ef16fc-8238-45b5-b314-cbf07c8afe61">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="799e902a-0fcf-429f-94e6-4a4b2b33aef1"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[   Detalle de requisitos]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="280" y="0" width="140" height="23" backcolor="#E3DEDE" uuid="0dcdc0d3-9b47-4f13-91cc-6093a3918e6d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="af189024-bcef-45df-ad28-9a6ff8f22bfb"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Resultado]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="49">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="420" height="20" backcolor="#E3DEDE" uuid="63992581-96f1-4757-aade-6980b668a20e"/>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[   Documentos requeridos para suscribir el contrato ]]></text>
+			</staticText>
+			<subreport overflowType="Stretch">
+				<reportElement x="-85" y="20" width="595" height="29" uuid="a489e5a5-0559-4c70-8197-bd161ecb4eb6"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{seccionDoc})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR}+"Formato_23_Doc.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="49">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="420" height="20" backcolor="#E3DEDE" uuid="96fa3810-cd5b-4d25-95ea-930f32a5af82"/>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[   Del personal Propuesto]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="-85" y="20" width="595" height="29" uuid="ca92169f-d6e2-4ba5-8ddd-8fbdb266faa7"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{seccionPer})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR}+"Formato_23_Per.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="420" height="20" backcolor="#E3DEDE" uuid="b3c104c0-4283-4a08-983e-c2433ca5afdb"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[   Carta Fianza de Fiel cumplimiento]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="-85" y="20" width="595" height="30" uuid="814212ae-77eb-4df5-9bf2-45972e5e8863"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{seccionFiel})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR}+"Formato_23_Fiel.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="420" height="20" backcolor="#E3DEDE" uuid="77c43043-7c34-4e07-adc1-2c9d315259d4"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true"/>
+				</textElement>
+				<text><![CDATA[   Carta Fianza por el Monto diferencial]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="-85" y="20" width="595" height="30" uuid="ce2c03b6-43f2-4f60-96d0-c2fa19bdabe4"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{seccionMonto})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR}+"Formato_23_Monto.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<summary>
+		<band height="201">
+			<staticText>
+				<reportElement x="0" y="100" width="425" height="60" uuid="5f24ead6-e246-4467-a334-4cb6464f2c4a"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Nota 3: En caso el resultado sea Observado, a fian de continuar con la evaluación, agradeceremos sirva subsanar las observaciones en el plazo de cuatro (4) días hábiles a través de SICOES. Tenga en cuenta que, superado el plazo para subsanar la observación, su solicitud de perfeccionamiento de contrato será considerado como no presentado y será archivado, cumpliendo con lo establecido en la Directiva para la Contratación de Empresas Supervisoras de Osinergmin.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="10" width="425" height="30" uuid="c6d7de7a-4366-4998-9095-614252e16220"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Nota 1: Para visualizar el detalle del resultado de su solicitud de inscripción, ingrese al sistema SICOES / bandeja de solicitudes de contrato / Ver Solicitudes.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="50" width="425" height="40" uuid="157dbd12-8b5d-4ae0-9e57-184331f4df80"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Nota 2: En el caso el resultado sea que no califica el expediente de su solicitud será archivada, cumpliendo con lo establecido en la Directiva para la Contratación de Empresas Supervisoras.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="175" width="80" height="20" uuid="321c323f-0008-4f75-9e89-34787eeaa295"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[«image:osifirma»]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

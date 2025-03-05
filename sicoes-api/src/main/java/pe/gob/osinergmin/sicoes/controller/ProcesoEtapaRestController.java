@@ -38,7 +38,7 @@ public class ProcesoEtapaRestController extends BaseRestController{
 	@GetMapping("/etapas/{id}")
 	@Raml("procesoEtapa.obtener.properties")
 	public ProcesoEtapa obtener(@PathVariable Long  id,@RequestParam(required=true) String procesoUuid) {
-		return procesoEtapaService.obtener(id,procesoUuid, getContexto());
+		return procesoEtapaService.obtener(id, procesoUuid, getContexto());
 	}
 	
 	@PutMapping("/etapas/{id}")

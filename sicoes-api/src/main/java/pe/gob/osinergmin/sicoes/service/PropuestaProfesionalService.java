@@ -22,6 +22,8 @@ public interface PropuestaProfesionalService extends BaseService<PropuestaProfes
 
 	public List<PropuestaProfesional> listar(String propuestaUuid, Contexto contexto);
 
+	public List<PropuestaProfesional> listarPorId(Long id, Contexto contexto);
+
 	public PropuestaProfesional cancelarInvitacion(Long id, PropuestaProfesional propuestaProfesional,String propuestaUuid, Contexto contexto);
 
 	public List<Object[]> listarProfesionalesXPerfil(String procesoItemUuid,Contexto contexto);

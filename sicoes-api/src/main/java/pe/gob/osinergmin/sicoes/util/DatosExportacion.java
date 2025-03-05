@@ -11,6 +11,8 @@ public class DatosExportacion {
 	private Date fecha;
 	
 	private String titulo;
+
+	private String subtitulo;
 	
 	private String[][] filtros;
 	
@@ -46,6 +48,14 @@ public class DatosExportacion {
 
 	public void setTitulo(String titulo) {
 		this.titulo = titulo;
+	}
+
+	public String getSubtitulo() {
+		return subtitulo;
+	}
+
+	public void setSubtitulo(String subtitulo) {
+		this.subtitulo = subtitulo;
 	}
 
 	public String[][] getFiltros() {

@@ -62,6 +62,7 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public Solicitud obtenerUltimaSolicitudPresentadaPorUsuario(Contexto contexto);
         public void anularSolicitud(Long idSolicitud, Contexto contexto);
 	public void cancelarSolicitud(String solicitudUuid, Contexto contexto);
+	public List<Long> obtenerSubsectoresXUsuarioSolicitud(String uuid,Long idUsuario);
 	public Archivo generarInformeAdministrativo(Long idSolicitud, Long idAsignacion, Contexto contexto) throws Exception; //AFC
 	public void subirDocumentoAdministrativos(Archivo informeVT, Contexto contexto); //AFC
 

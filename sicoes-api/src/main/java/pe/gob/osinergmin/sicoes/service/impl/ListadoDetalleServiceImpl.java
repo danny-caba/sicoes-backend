@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,12 +8,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import pe.gob.osinergmin.sicoes.model.Listado;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetallePerfilDTO;
+import pe.gob.osinergmin.sicoes.model.dto.PerfilDetalleDTO;
 import pe.gob.osinergmin.sicoes.repository.ListadoDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetallePerfilDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.ListadoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -29,6 +33,9 @@ public class ListadoDetalleServiceImpl implements ListadoDetalleService{
 	
 	@Autowired
 	ListadoDao listadoDao;
+
+	@Autowired
+	ListadoService listadoService;
 
 	@Override
 	public ListadoDetalle guardar(ListadoDetalle listadoDetalle, Contexto contexto) {
@@ -76,6 +83,11 @@ public class ListadoDetalleServiceImpl implements ListadoDetalleService{
 	}
 
 	@Override
+	public ListadoDetalle obtenerListadoDetalleOrden(String codigo, Long orden) {
+		return listadoDetalleDao.obtenerListadoDetalleOrden(codigo, orden);
+	}
+
+	@Override
 	public List<ListadoDetallePerfilDTO> buscarPerfiles(Long idSubSector) {
 		return listadoDetallePerfilDao.buscarListadoDetallePerfiles(idSubSector);
 	}
@@ -94,6 +106,31 @@ public class ListadoDetalleServiceImpl implements ListadoDetalleService{
 	@Override
 	public List<ListadoDetalle> listarListadoDetallePorCoodigo(String codigo, Contexto contexto) {
 		return listadoDetalleDao.listarListadoDetallePorCoodigo(codigo);
+	}
+
+	@Override
+	public List<PerfilDetalleDTO> buscarPerfilesDetalle(Contexto contexto) {
+
+		Listado listadoPerfil = listadoService.obtenerPorCodigo(Constantes.LISTADO.PERFILES, contexto);
+
+		List<Object[]> perfiles =  listadoDetalleDao.listarPerfilesDetalleV2(listadoPerfil.getIdListado());
+		List<PerfilDetalleDTO> listaDto = new ArrayList<>();
+
+		for (Object[] fila : perfiles) {
+			PerfilDetalleDTO dto = new PerfilDetalleDTO(
+					((Number) fila[0]).longValue(),
+					((Number) fila[1]).longValue(),
+					(String) fila[2],
+					(String) fila[3]
+			);
+			listaDto.add(dto);
+		}
+		return listaDto;
+	}
+
+	@Override
+	public List<ListadoDetalle> buscarPerfilesDetallePorDivision(Long idDivision, Contexto contexto) {
+		return listadoDetalleDao.listarPerfilesDetallePorDivision(idDivision);
 	}
 	
 }

@@ -100,6 +100,11 @@ public class SupervisoraMovimientoServiceImpl implements SupervisoraMovimientoSe
 			return sup;
 		}
 	}
+	
+	@Override
+	public List<SupervisoraMovimiento> listarXProfesionalXItem(Long idSupervisora, Long idSubsector) {
+		return supervisoraMovimientoDao.listarXProfesionalXItem(idSupervisora,idSubsector);
+	}
 
 	
 }

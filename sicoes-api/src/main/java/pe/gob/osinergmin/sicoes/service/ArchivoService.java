@@ -6,12 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Documento;
-import pe.gob.osinergmin.sicoes.model.OtroRequisito;
-import pe.gob.osinergmin.sicoes.model.ProcesoItem;
-import pe.gob.osinergmin.sicoes.model.Propuesta;
-import pe.gob.osinergmin.sicoes.model.SolicitudNotificacion;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface ArchivoService extends BaseService<Archivo, Long> {
@@ -31,9 +26,11 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	public void asociarArchivo(SolicitudNotificacion solicitudNotificacion, Archivo archivo, Contexto contexto);
 	public void asociarArchivo(OtroRequisito otroRequisito, Archivo archivo, Contexto contexto);
 	public List<File> obtenerArchivoContenido(Long idSolicitud,String tipoArchivo, Contexto contexto);
+	public List<File> obtenerArchivoContenidoPerfCont(List<Archivo> archivosRegistrados, SicoesSolicitud solicitud, Contexto contexto);
 	public Page<Archivo> buscarArchivo(String codigo, String solicitudUuid, Pageable pageable, Contexto contexto);
 	public Page<Archivo> buscarArchivoPropuestaEconomica(String codigo, String propuestaUuid, Pageable pageable, Contexto contexto);
 	public Page<Archivo> buscarArchivoPropuestaTecnica(String codigo, String propuestaUuid, Pageable pageable, Contexto contexto);
+	public Page<Archivo> buscarArchivoProceso(String codigo, Long idProceso, Pageable pageable, Contexto contexto);
 	public Archivo obtenerTipoArchivo(Long idSolicitud, String formato);
 	public void eliminarIdEstudio(Long id, Contexto contexto);
 	public void eliminarIdOtroRequisito(Long id, Contexto contexto);
@@ -49,6 +46,10 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	public List<Archivo> obtenerDocumentoTecnicosPendientes(Contexto contexto);
 	public void actualizarEstado(Archivo archivo,Long estado, Contexto contexto);
 	public Archivo obtenerContenido(Long idArhivo,Contexto contexto);
-
-
+	public Archivo guardarEnSiged(Long idProceso, Archivo archivo, Contexto contexto);
+	public Archivo obtenerArchivoXlsPorProceso(Long idProceso);
+	List<Archivo> buscarPorPerfContrato(Long idPerfContrato, Contexto contexto);
+	Archivo guardarArchivoSubsanacionContrato(Archivo archivo, Contexto contexto);
+	List<Archivo> obtenerArchivosPorRequisitos(List<Long> requisitosIds, Contexto contexto);
+	void eliminarArchivoCodigo(String codigo, Contexto contexto);
 }

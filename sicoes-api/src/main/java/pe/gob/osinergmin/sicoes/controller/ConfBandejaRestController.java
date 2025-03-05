@@ -75,7 +75,7 @@ public class ConfBandejaRestController extends BaseRestController {
 	}
 	
 	@PostMapping("/registrar-config-bandeja")
-	public ConfiguracionBandeja registrarConfigBandeja(@RequestBody ConfiguracionBandeja configuracionBandeja, HttpServletRequest request) {
+	public List<Map<String, List<ConfiguracionBandeja>>> registrarConfigBandeja(@RequestBody ConfiguracionBandeja configuracionBandeja, HttpServletRequest request) {
 		logger.info("registrar {} ",configuracionBandeja);
 		 return confBandejaService.registrarConfiguracionBandeja(configuracionBandeja, getContextoAnonimo());
 	}

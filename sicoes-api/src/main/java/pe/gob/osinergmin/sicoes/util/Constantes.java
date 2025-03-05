@@ -154,6 +154,14 @@ public class Constantes {
 			public static final String INFORME_TECNICO	= "TA21";
 			public static final String INFORME_ADMINISTRATIVO	= "TA22";
 
+			public static final String INFORMACION_PROCESO = "TA24";
+
+			public static final String INFORMACION_FORMULACION_CONSULTAS = "TA25";
+
+			public static final String PERFECCIONAMIENTO_CONTRATO = "ARCHIVO_PERFECCIONAMIENTO";
+
+			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
+
 		}
 		
 		public static final class ESTADO_REQUISITO {
@@ -301,7 +309,9 @@ public class Constantes {
 			public static final String EVALUACION_5_DIAS					= "PLAZO-15";
 			public static final String EVALUACION_1_DIA						= "PLAZO-16";
 			public static final String EVALUACION_9_DIAS					= "PLAZO-17";
-			
+			public static final String PRESENTAR_PERFECCIONAMIENTO			= "PLAZO-18";
+			public static final String SUBSANAR_PERFECCIONAMIENTO			= "PLAZO-19";
+
 		}
 		
 		public static final class TIPO_NOTIFICACION_SOLICITUD {
@@ -483,7 +493,9 @@ public class Constantes {
 
 		public static final class ETAPA_PROCESO {
 			public static final String CODIGO 			= "ETAPA_PROCESO";
-			public static final String ETAPA_PRESENTADO 	= "ETAPA_PRESENTADO";		
+			public static final String ETAPA_PRESENTADO 	= "ETAPA_PRESENTADO";
+			public static final Long ETAPA_ABSOLUCION_ORDEN = 5L;
+			public static final Long ETAPA_FORMULACION_ORDEN = 4L;
 		}
 		
 		public static final class ESTADO_PRESENTACION{
@@ -558,6 +570,25 @@ public class Constantes {
 			public static final String REV_RECHAZADO = "REV_RECHAZADO";
 		}
 		
+		public static final class ESTADO_PACE {
+			public static final String ESTADO_PACE_REGISTRADO = "PACE_REG";
+			public static final String ESTADO_PACE_ACTUALIZADO = "PACE_ACT";
+			public static final String ESTADO_PACE_APROBADO_DIVISION = "PACE_APR_DV";
+			public static final String ESTADO_PACE_OBSERVADO = "PACE_OBS";
+			public static final String ESTADO_PACE_APROBADO_ENVIADO = "PACE_APR_EN";
+			public static final String ESTADO_PACE_CANCELADO= "PACE_CAN";
+
+		}
+
+		public static final String PERFILES = "PERFILES";
+
+		public static final class RECAPTCHA {
+			public static final String CODIGO = "ESTADO_RECAPTCHA";
+			public static final String ACTIVO = "ACTIVO";
+			public static final String INACTIVO = "INACTIVO";
+			public static final String ESTADO_ACTUAL = "ESTADO_ACTUAL";
+		}
+
 	}
 	
 
@@ -795,6 +826,20 @@ public class Constantes {
 		
 		public static final String ESTADO_NO_EN_PROCESO	= "V00995";
 		public static final String EVALUACION_NO_FINALIZADO = "V00996";
+		public static final String NRO_DE_CONTRATO_YA_EXISTE = "V00998";
+		public static final String DOCUMENTO_EXISTE_SOLICITUD_SECTOR_SUBSECTOR = "V00999";
+		public static final String EXISTE_SECTOR_SUBSECTOR = "V01000";
+		public static final String SECCION_NO_ENVIADA = "V01001";
+		public static final String NUMERAL_NO_ENVIADA = "V01002";
+		public static final String LITERAL_NO_ENVIADA = "V01003";
+		public static final String PAGINA_NO_ENVIADA = "V01004";
+		public static final String CONSULTA_NO_ENVIADA = "V01005";
+		public static final String NO_EXISTE_ETAPA = "V01006";
+		public static final String FUERA_FECHA_CONSULTA = "V01007";
+
+		public static final String ASIGNACION_FUERA_PROCESO = "V01009";
+		public static final String ARCHIVO_ELIMINAR_USUARIO = "V01010";
+		public static final String EVALUACION_FINALIZADO = "V01011";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -833,6 +878,37 @@ public class Constantes {
 		public static final class IDENTIFICADOR {
 			public static final Long ID_GSM = 5L;
 		}
+	}
+
+	public static final class TIPO_SOLICITUD_PERF_CONTRATO {
+		public static final String INSCRIPCION 			= "1";
+		public static final String SUBSANACION 		= "2";
+	}
+
+	public static final class FLAG_PROCESO_SUBSANACION {
+		public static final String INSCRIPCION 			= "0";
+		public static final String SUBSANACION 		= "1";
+	}
+
+	public static final class FLAG_PERSONAL_PERF_CONTRATO {
+		public static final String SI 		= "1";
+		public static final String NO 		= "0";
+	}
+
+	public static final class ESTADO_PROCESO_PERF_CONTRATO {
+		public static final String PRELIMINAR 		= "1";
+		public static final String EN_PROCESO 		= "2";
+		public static final String OBSERVADO 		= "3";
+		public static final String CONCLUIDO 		= "4";
+		public static final String ARCHIVADO 		= "5";
+	}
+
+	public static final class DESC_PROCESO_PERF_CONTRATO {
+		public static final String PRELIMINAR 		= "PRELIMINAR";
+		public static final String EN_PROCESO 		= "EN_PROCESO";
+		public static final String OBSERVADO 		= "OBSERVADO";
+		public static final String CONCLUIDO 		= "CONCLUIDO";
+		public static final String ARCHIVADO 		= "ARCHIVADO";
 	}
 
 }

@@ -75,4 +75,7 @@ public interface AsignacionService extends BaseService<Asignacion, Long> {
 	public Long obtenerIdArchivo(String numeroExpediente, String nombreUsuario) throws Exception;
 	
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital(String token, String usuario) throws Exception;
+
+	Asignacion validarAprobador(Asignacion asignacion, Contexto contexto);
+
 }

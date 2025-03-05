@@ -344,4 +344,11 @@ public class SolicitudRestController extends BaseRestController{
 		logger.info("cancelar {}",solicitudUuid);
 		solicitudService.cancelarSolicitud(solicitudUuid, getContexto());
 	}
+
+	@GetMapping("/{solicitudUuid}/subsector-usuario")
+	public List<Long> subsectoresUsuario(@PathVariable String solicitudUuid){
+		logger.info("obtener {} ", solicitudUuid);
+		return solicitudService.obtenerSubsectoresXUsuarioSolicitud(solicitudUuid, getContexto().getUsuario().getIdUsuario());
+	}
+	
 }

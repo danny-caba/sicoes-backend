@@ -1,0 +1,127 @@
+# Author: @jnunez                                                                                                                                                                              
+# Project: Osingerg                                                                                                                                                                                     
+# Template: maven-build                                                                                                                                                                                 
+# This template allows you to test and build your Java project with Maven.                                                                                                                              
+# The workflow allows running tests, code checkstyle and security scans on the default branch.                                                                                                          
+# Prerequisites: pom.xml and appropriate project structure should exist in the repository.  test pipeline feature                                                                                       
+# Variables Bitbucket: $BITBUCKET_PROJECT_KEY; $BITBUCKET_REPO_SLUG; $BITBUCKET_BUILD_NUMBER                                                                                                            
+# Variables Globales: $USERNEXUS; $PASSNEXUS; $URLNEXUS                                                                                                                                                 
+# Variables Repositorio: $PATHPOM; $ARTIFACTSNAME; $ARTIFACTS                                                                                                                                           
+                                                                                                                                                                                                        
+image: maven:3.3.9                                                                                                                                                                                      
+definitions:                                                                                                                                                                                            
+  steps:                                                                                                                                                                                                
+    - step: &MVNBuild                                                                                                                                                                                   
+        name: MVN Build                                                                                                                                                                                 
+        caches:                                                                                                                                                                                         
+          - maven                                                                                                                                                                                       
+        script:                                                                                                                                                                                         
+          - mvn clean install -U -X verify -s devops/settings.xml --file $_PATHSOURCE/pom.xml                                                                                                            
+          - echo ls -ltr $_PATHSOURCE/target/
+          - echo $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/
+          - curl -v -u $USERNEXUS:$PASSNEXUS --upload-file $_PATHSOURCE/target/$_ARTIFACTNAME.war $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/
+          - if curl --head --silent --fail -u $USERNEXUS:$PASSNEXUS $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/$_ARTIFACTNAME.war > /dev/null; then echo "El archivo subio correctamente al NEXUS-OSINERGMIN"; else echo "Error en subida de archivo al NEXUS-OSINERGMIN"; exit 1; fi          
+          - curl -v -u $USERNEXUS:$PASSNEXUS --upload-file $_PATHSOURCE/templates/$_TEMPLATE1.template $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/
+          - if curl --head --silent --fail -u $USERNEXUS:$PASSNEXUS $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/$_TEMPLATE1.template > /dev/null; then echo "El archivo subio correctamente al NEXUS-OSINERGMIN"; else echo "Error en subida de archivo al NEXUS-OSINERGMIN"; exit 1; fi          
+
+#        artifacts:
+#          - "**/target/*.war"
+#          - "**/templates/*.template"
+#        after-script:
+
+                    
+    - step: &MVNBuildFeature                                                                                                                                                                            
+        name: MVN Build                                                                                                                                                                                 
+        caches:                                                                                                                                                                                         
+          - maven                                                                                                                                                                                       
+        script:                                                                                                                                                                                         
+          - mvn clean install -U -X verify -s devops/settings.xml --file $_PATHSOURCE/pom.xml                                                                                                            
+    - step: &MVNTest                                                                                                                                                                                    
+        name: MVN Test                                                                                                                                                                                  
+        caches:                                                                                                                                                                                         
+          - maven                                                                                                                                                                                       
+        script:                                                                                                                                                                                         
+          - mvn test verify -s devops/settings.xml --file $_PATHSOURCE/pom.xml                                                                                                                           
+    - step: &sonarqube                                                                                                                                                                                  
+        name: Sonarqube Scan                                                                                                                                                                            
+        image: maven:3-jdk-11                                                                                                                                                                           
+        caches:                                                                                                                                                                                         
+          - maven                                                                                                                                                                                       
+        script:                                                                                                                                                                                         
+          - mvn -U verify sonar:sonar -s devops/settings.xml --file $_PATHSOURCE/pom.xml -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_API_TOKEN -Dsonar.projectVersion=$BITBUCKET_BUILD_NUMBER  
+    - step: &SecurityScan                                                                                                                                                                               
+        name: Security Scan                                                                                                                                                                             
+        script:                                                                                                                                                                                         
+          - pipe: atlassian/git-secrets-scan:0.5.1                                                                                                                                                      
+    - step: &TagsVersion                                                                                                                                                                                
+        name: Tags Version                                                                                                                                                                              
+        script:                                                                                                                                                                                         
+          - git tag -a $BITBUCKET_BUILD_NUMBER -m "version number"                                                                                                                                      
+          - git push origin --tags                                                                                                                                                                      
+    - step: &Deploy_Stage                                                                                                                                                                               
+        runs-on:                                                                                                                                                                                        
+          - srvbamboo04                                                                                                                                                                                 
+          - self.hosted                                                                                                                                                                                 
+          - linux.shell                                                                                                                                                                                 
+        clone:                                                                                                                                                                                          
+          enabled: true                                                                                                                                                                                 
+        script:
+          - echo "Descarga de Artefactos"
+          - echo $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/$_ARTIFACTNAME.war                   
+          - curl -v -u $USERNEXUS:$PASSNEXUS -L -X GET $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/$_ARTIFACTNAME.war --output $_ARTIFACTNAME.war
+          - curl -v -u $USERNEXUS:$PASSNEXUS -L -X GET $URLNEXUS/$_COD_APP/$_ARTIFACTNAME/$BITBUCKET_BUILD_NUMBER/$_TEMPLATE1.template --output $_TEMPLATE1.template
+          - echo "Generacion de Archivos properties"
+          - $_PARSER_HOME/bin/parser2.sh $_ENV_TYPE $_UBICACION_WORK $_IP_SERVER_ENV $_MANAGED_SERVER $BITBUCKET_CLONE_DIR $_DATA1.data $_TEMPLATE1.template $_PROPERTIE1.properties
+          - ls -ltr                                                                                                                                                                                                   
+          - echo "Copiado de properties"                                                                                                                                                                
+          - ssh -i $_ID_RSA_PATH root@$_IP_SERVER_ENV mkdir -p $_WLS_DOMAIN_HOME/data/$ARTIFACTS/properties                                                                                             
+          - scp -i $_ID_RSA_PATH $_PARSER_HOME/work/$_ENV_TYPE/$_PATHSOURCE/$_PROPERTIE1.properties root@$_IP_SERVER_ENV:$_WLS_DOMAIN_HOME/$_RUTA_PROPERTIES                                     
+          - ssh -i $_ID_RSA_PATH root@$_IP_SERVER_ENV chown -R wls.oinstall $_WLS_DOMAIN_HOME/data                                                                                                     
+          - echo "Despliegue de Web Logic"                                                                                                                                                              
+          - $_SCRIPTWEBLOGIC/$_WEBLOGICSSHDEPLOY $_ARTIFACTS $_ARTIFACTNAME.war                                                                                                                                
+
+options:
+  size: 4x
+  runtime:
+    cloud:
+      atlassian-ip-ranges: true
+
+pipelines:                                                                                                                                                                                              
+  default:                                                                                                                                                                                              
+    - step: *MVNBuildFeature                                                                                                                                                                            
+    - parallel:                                                                                                                                                                                       
+        - step:                                                                                                                                                                                           
+            <<: *Deploy_Stage                                                                                                                                                                             
+            name: Deploy to CRT1-N1                                                                                                                                                                           
+            deployment: CRT1-N1                                                                                                                                                                               
+            trigger: manual                                                                                                                                                                               
+        - step:                                                                                                                                                                                           
+            <<: *Deploy_Stage                                                                                                                                                                             
+            name: Deploy to CRT2-N1                                                                                                                                                                           
+            deployment: CRT2-N1                                                                                                                                                                               
+            trigger: manual     
+                                                                                                                                                                                                        
+  branches:                                                                                                                                                                                             
+    master:                                                                                                                                                                                             
+      - parallel:                                                                                                                                                                                       
+          - step: *MVNTest                                                                                                                                                                              
+          - step: *sonarqube                                                                                                                                                                           
+          - step: *SecurityScan                                                                                                                                                                         
+      - step: *MVNBuild                                                                                                                                                                                 
+      - step: *TagsVersion                                                                                                                                                                              
+      - parallel:                                                                                                                                                                                       
+          - step:                                                                                                                                                                                           
+              <<: *Deploy_Stage                                                                                                                                                                             
+              name: Deploy to CRT1-N1                                                                                                                                                                           
+              deployment: CRT1-N1                                                                                                                                                                               
+              trigger: manual                                                                                                                                                                               
+          - step:                                                                                                                                                                                           
+              <<: *Deploy_Stage                                                                                                                                                                             
+              name: Deploy to CRT2-N1                                                                                                                                                                           
+              deployment: CRT2-N1                                                                                                                                                                               
+              trigger: manual                                                                                                                                                                               
+          - step:                                                                                                                                                                                           
+              <<: *Deploy_Stage                                                                                                                                                                             
+              name: Deploy to PRD1-N1                                                                                                                                                                           
+              deployment: PRD1-N1                                                                                                                                                                               
+              trigger: manual                                                                                                                                                                            

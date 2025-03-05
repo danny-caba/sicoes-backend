@@ -16,25 +16,35 @@ import pe.gob.osinergmin.sicoes.util.Constantes;
 @Repository
 public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 	
-	@Query("select a from Asignacion a "	
+	@Query("select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.grupo g "
 			+ "left join fetch a.usuario u "
 			+ "left join fetch a.evaluacion e  "
-		+ "where a.idAsignacion=:idAsignacion  and a.flagActivo=1 ")	
+			+ "where a.idAsignacion=:idAsignacion  and a.flagActivo=1 ")
 	public Asignacion obtener(Long idAsignacion);
-	
-	@Query("select a from Asignacion a "	
+
+	@Query("select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.grupo g "
 			+ "left join fetch a.usuario u "
 			+ "left join fetch a.evaluacion e  "
-		+ "where s.idSolicitud=:idSolicitud and u.idUsuario=:idUsuario")	
+			+ "where s.idSolicitud=:idSolicitud and u.idUsuario=:idUsuario")
 	public List<Asignacion> obtener(Long idSolicitud, Long idUsuario);
-	
-	@Query(value="select a from Asignacion a "	
+
+	@Query("select a from Asignacion a "
+			+ "left join fetch a.solicitud s "
+			+ "left join fetch a.tipo td "
+			+ "left join fetch a.grupo g "
+			+ "left join fetch a.usuario u "
+			+ "left join fetch a.evaluacion e  "
+			+ "where s.idSolicitud=:idSolicitud and u.idUsuario=:idUsuario and td.codigo='"
+			+ Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO + "'")
+	public List<Asignacion> obtenerAsignacionTecnico(Long idSolicitud, Long idUsuario);
+
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.grupo g "
@@ -43,17 +53,16 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "left join fetch a.otroRequisito r "
 			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 "
 			+ "and (:codigoTipoAprobador is null or td.codigo=:codigoTipoAprobador ) "
-			+ "order by td.orden asc, g.orden  asc ",
-			countQuery = "select count(a) from Asignacion a "
+			+ "order by td.orden asc, g.orden  asc ", countQuery = "select count(a) from Asignacion a "
 					+ "left join  a.solicitud s "
 					+ "left join  a.tipo td "
 					+ "left join  a.grupo g "
 					+ "left join  a.usuario u "
 					+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 "
-					+ "and (:codigoTipoAprobador is null or td.codigo=:codigoTipoAprobador )")			
-		 Page<Asignacion> buscar(Long idSolicitud, String codigoTipoAprobador, Pageable pageable);
+					+ "and (:codigoTipoAprobador is null or td.codigo=:codigoTipoAprobador )")
+	Page<Asignacion> buscar(Long idSolicitud, String codigoTipoAprobador, Pageable pageable);
 
-	@Query(value="select a from Asignacion a "	
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.usuario u "
@@ -61,26 +70,26 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "left join fetch a.evaluacion e  "
 			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 ")
 	public List<Asignacion> obtenerAsignaciones(Long idSolicitud);
-	
-	@Query(value="select a from Asignacion a "	
+
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.usuario u "
 			+ "left join fetch a.grupo g  "
 			+ "left join fetch a.evaluacion e  "
 			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 and td.idListadoDetalle = :idTipo order by g.orden asc")
-	public List<Asignacion> obtenerAsignaciones(Long idSolicitud,Long idTipo);
-	
-	@Query(value="select a from Asignacion a "	
+	public List<Asignacion> obtenerAsignaciones(Long idSolicitud, Long idTipo);
+
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.usuario u "
 			+ "left join fetch a.grupo g  "
 			+ "left join fetch a.evaluacion e  "
 			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 and td.idListadoDetalle = :idTipo and e.idListadoDetalle = :idEstado order by g.orden asc")
-	public List<Asignacion> obtenerAsignacionesxEstado(Long idSolicitud,Long idTipo,Long idEstado );
-	
-	@Query(value="select a from Asignacion a "	
+	public List<Asignacion> obtenerAsignacionesxEstado(Long idSolicitud, Long idTipo, Long idEstado);
+
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.grupo g "
@@ -88,9 +97,9 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "left join fetch a.evaluacion ae "
 			+ "where s.solicitudUuid=:solicitudUuid "
 			+ "and a.flagActivo=1"
-			+ "and ( td.codigo='"+Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO+ "' or td.codigo='"+Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO +"') "
-			+ "order by td.orden asc, a.fechaRegistro desc ",
-			countQuery = "select count(a) from Asignacion a "
+			+ "and ( td.codigo='" + Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO + "' or td.codigo='"
+			+ Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO + "') "
+			+ "order by td.orden asc, a.fechaRegistro desc ", countQuery = "select count(a) from Asignacion a "
 					+ "left join  a.solicitud s "
 					+ "left join  a.tipo td "
 					+ "left join  a.grupo g "
@@ -98,70 +107,70 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 					+ "left join a.evaluacion ae "
 					+ "where s.solicitudUuid=:solicitudUuid "
 					+ "and a.flagActivo=1"
-					+ "and ( td.codigo='"+Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO+ "' or td.codigo='"+Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO +"')")			
+					+ "and ( td.codigo='" + Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO + "' or td.codigo='"
+					+ Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO + "')")
 	public Page<Asignacion> buscar(String solicitudUuid, Pageable pageable);
 
 	@Modifying
-	@Query(value="delete from Asignacion a  where a.solicitud.idSolicitud=:idSolicitud")
+	@Query(value = "delete from Asignacion a  where a.solicitud.idSolicitud=:idSolicitud")
 	public void eliminarXIdSolicitud(Long idSolicitud);
-	
-//	@Query(value="select a from Asignacion a "	
-//			+ "left join fetch a.solicitud s "
-//			+ "left join fetch a.tipo td "
-//			+ "left join fetch a.usuario u "
-//			+ "left join fetch a.grupo g  "
-//			+ "left join fetch a.evaluacion e  "
-//			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 and td.codigo = :codigoAprobadorTecnico order by g.orden asc")
-//	public List<Asignacion> listarAprobadoresTecnicos(Long idSolicitud,Long idAprobador, String codigoAprobadorTecnico);
-	
-	
 
-	@Query(value="select a from Asignacion a "	
-					+ "left join fetch a.solicitud s "
-					+ "left join fetch a.tipo td "
-					+ "left join fetch a.usuario u "
-					+ "left join fetch a.grupo g  "
-					+ "left join fetch a.evaluacion e  "
-					+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 "
-					+ "and td.codigo = '"+Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO+"' "
-					+ "and g.codigo = '"+Constantes.LISTADO.GRUPOS.G1+"' "
-					+ "and a.usuario in "
-					+ "(select u from Usuario u "
-					+ "where u in "
-					+ "(select cb.usuario from ConfiguracionBandeja cb "
-					+ "where cb.perfil in "
-					+"(select o.perfil from OtroRequisito o "	
-					+ "where o.perfil in "
-					+ "(select c.perfil from ConfiguracionBandeja c "
-					+ "left join c.usuario u "
-					+ "where u.idUsuario =:idAprobador ))))")
-	public List<Asignacion> listarAprobadoresTecnicos(Long idSolicitud,Long idAprobador);
-	
-	
-	@Query(value="select a from Asignacion a "	
+	// @Query(value="select a from Asignacion a "
+	// + "left join fetch a.solicitud s "
+	// + "left join fetch a.tipo td "
+	// + "left join fetch a.usuario u "
+	// + "left join fetch a.grupo g "
+	// + "left join fetch a.evaluacion e "
+	// + "where s.idSolicitud=:idSolicitud and a.flagActivo=1 and td.codigo =
+	// :codigoAprobadorTecnico order by g.orden asc")
+	// public List<Asignacion> listarAprobadoresTecnicos(Long idSolicitud,Long
+	// idAprobador, String codigoAprobadorTecnico);
+
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.usuario u "
 			+ "left join fetch a.grupo g  "
 			+ "left join fetch a.evaluacion e  "
 			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 "
-			+ "and td.codigo = '"+Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO+"' "
-			+ "and g.codigo = '"+Constantes.LISTADO.GRUPOS.G1+"' "
+			+ "and td.codigo = '" + Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO + "' "
+			+ "and g.codigo = '" + Constantes.LISTADO.GRUPOS.G1 + "' "
+			+ "and a.usuario in "
+			+ "(select u from Usuario u "
+			+ "where u in "
+			+ "(select cb.usuario from ConfiguracionBandeja cb "
+			+ "where cb.perfil in "
+			+ "(select o.perfil from OtroRequisito o "
+			+ "where o.perfil in "
+			+ "(select c.perfil from ConfiguracionBandeja c "
+			+ "left join c.usuario u "
+			+ "where u.idUsuario =:idAprobador ))))")
+	public List<Asignacion> listarAprobadoresTecnicos(Long idSolicitud, Long idAprobador);
+
+	@Query(value = "select a from Asignacion a "
+			+ "left join fetch a.solicitud s "
+			+ "left join fetch a.tipo td "
+			+ "left join fetch a.usuario u "
+			+ "left join fetch a.grupo g  "
+			+ "left join fetch a.evaluacion e  "
+			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 "
+			+ "and td.codigo = '" + Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO + "' "
+			+ "and g.codigo = '" + Constantes.LISTADO.GRUPOS.G1 + "' "
 			+ "and a.usuario in "
 			+ "(select u from Usuario u "
 			+ "where u in "
 			+ "(select cb.usuario from ConfiguracionBandeja cb "
 			+ "where cb.perfil is null "
 			+ "and cb.subsector in "
-			+"(select o.subsector from OtroRequisito o "	
+			+ "(select o.subsector from OtroRequisito o "
 			+ "where o.subsector in "
 			+ "(select c.subsector from ConfiguracionBandeja c "
 			+ "left join c.usuario u "
 			+ "where c.perfil is null "
 			+ "and u.idUsuario =:idAprobador ))))")
-	public List<Asignacion> listarAprobadoresTecnicosPJ(Long idSolicitud,Long idAprobador);
-	
-	@Query(value="select max(g.orden) from Asignacion a "	
+	public List<Asignacion> listarAprobadoresTecnicosPJ(Long idSolicitud, Long idAprobador);
+
+	@Query(value = "select max(g.orden) from Asignacion a "
 			+ "left join a.solicitud s "
 			+ "left join a.tipo td "
 			+ "left join a.usuario u "
@@ -169,7 +178,7 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "left join a.evaluacion e  "
 			+ "where s.idSolicitud=:idSolicitud and a.flagActivo=1 and td.idListadoDetalle = :idTipo order by g.orden asc")
 	public Long obtenerMaximoGrupo(Long idSolicitud, Long idTipo);
-	
+
 	@Query("select a from Asignacion a "	
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
@@ -259,7 +268,7 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "and u.idUsuario =:idUsuario ))))")
 	public List<Asignacion> listarAprobadoresAdministrativosPJ(Long idSolicitud, Long idUsuario);
 	
-	@Query(value="select a from Asignacion a "	
+	@Query(value = "select a from Asignacion a "
 			+ "left join fetch a.solicitud s "
 			+ "left join fetch a.tipo td "
 			+ "left join fetch a.usuario u "
@@ -268,8 +277,21 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "where u.idUsuario =:idAprobador "
 			+ "and a.flagActivo = 1 "
 			+ "and (e.codigo = '" + Constantes.LISTADO.RESULTADO_EVALUACION_TEC_ADM.ASIGNADO + "' or e.codigo is null)"
-			+ "and g.codigo = '" + Constantes.LISTADO.GRUPOS.G2 + "' "
-			)
+			+ "and g.codigo = '" + Constantes.LISTADO.GRUPOS.G2 + "' ")
 	public List<Asignacion> listarAsignacionesPendintesAprobacion(Long idAprobador);
+	
+	@Query(value = "select a from Asignacion a "
+			+ "left join fetch a.solicitud s "
+			+ "left join fetch a.tipo td "
+			+ "left join fetch a.grupo g  "
+			+ "left join fetch a.evaluacion e  "
+			+ "where a.flagActivo = 1 "
+			+ "and s.idSolicitud = :idSolicitud "
+			+ "and (e.codigo = '" + Constantes.LISTADO.RESULTADO_EVALUACION_TEC_ADM.ASIGNADO + "'"
+			+ "or e.codigo is null) "
+			+ "and td.idListadoDetalle = :idTipo "
+			+ "and g.idListadoDetalle = :idGrupo ")
+	List<Asignacion> obtenerAsignados(Long idSolicitud, Long idTipo, Long idGrupo);
+	
 }
 

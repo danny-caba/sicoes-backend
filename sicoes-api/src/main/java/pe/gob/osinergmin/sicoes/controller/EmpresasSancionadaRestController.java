@@ -3,6 +3,7 @@ package pe.gob.osinergmin.sicoes.controller;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -60,7 +61,7 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	            LocalDate fechaCese = LocalDate.parse(rpt, formatter);
 
-	            LocalDate fechaLimite = LocalDate.now().minusMonths(12);
+	            LocalDate fechaLimite = LocalDate.now().minusDays(1);
 		            if (fechaCese.isAfter(fechaLimite)) {
 		            	valor.put("respuestaFec","1");	
 		            	valor.put("respuestaPN","2");	
@@ -82,6 +83,63 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 		
 		}
 		
+		return valor;
+	}
+
+	@GetMapping("/sancion-vigente-pn-contr")
+	public Map<String,String> ValidadSancionPerfContr(@RequestParam(required=false) String ruc){
+		Map<String,String> valor=new HashMap<>();
+		String documento = getContexto().getUsuario().getCodigoRuc();
+		documento = documento.trim();
+		if (documento.startsWith("20") && ruc == null) {
+		valor.put("respuesta", empresasSancionadaService.validadSancion(documento));
+		valor.put("respuestaPN", "2");
+		valor.put("respuestaFec", "2");
+		}else {
+			Map<String,String> resultados = null;
+
+			if (ruc == null) {
+
+				resultados =  empresasSancionadaService.validadSancionPersonNaturalV2(documento);
+			}else {
+
+				resultados =  empresasSancionadaService.validadSancionPersonNaturalV2(ruc);
+			}
+
+		 if (resultados != null) {
+
+			 String rpt = resultados.get("fechaCeseStr");
+
+			 if(!rpt.equalsIgnoreCase("2")) {
+
+	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	            LocalDate fechaCese = LocalDate.parse(rpt, formatter);
+
+	            LocalDate fechaLimite = LocalDate.now().minusDays(1);
+		            if (fechaCese.isAfter(fechaLimite)) {
+		            	valor.put("respuestaFec","1");
+		            	valor.put("respuestaPN","2");
+						valor.put("areaOperativa",resultados.get("areaOperativa"));
+						valor.put("fechaIngreso",resultados.get("fechaIngreso"));
+						valor.put("descripcionPuesto",resultados.get("descripcionPuesto"));
+					}else {
+						valor.put("respuestaFec","2");
+						valor.put("respuestaPN","2");
+					}
+		     }else {
+    			valor.put("respuestaFec","2");
+            	valor.put("respuestaPN","2");
+    		}
+        }else {
+            // Si fechaCese es null
+        	valor.put("respuestaFec","2");
+        	valor.put("respuestaPN", "1");
+        }
+
+		valor.put("respuesta", "2");
+
+		}
+
 		return valor;
 	}
 }

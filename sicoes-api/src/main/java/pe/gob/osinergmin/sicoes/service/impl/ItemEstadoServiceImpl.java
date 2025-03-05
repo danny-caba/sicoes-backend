@@ -18,13 +18,7 @@ import pe.gob.osinergmin.sicoes.model.PropuestaProfesional;
 import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
 import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.repository.ItemEstadoDao;
-import pe.gob.osinergmin.sicoes.service.ItemEstadoService;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.ProcesoItemService;
-import pe.gob.osinergmin.sicoes.service.PropuestaProfesionalService;
-import pe.gob.osinergmin.sicoes.service.PropuestaService;
-import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
-import pe.gob.osinergmin.sicoes.service.SupervisoraPerfilService;
+import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -52,10 +46,12 @@ public class ItemEstadoServiceImpl implements ItemEstadoService {
 	
 	@Autowired
 	private SupervisoraPerfilService supervisoraPerfilService;
-	
-	
+
 	@Autowired
 	private SupervisoraMovimientoService supervisoraMovimientoService;
+
+	@Autowired
+	private SicoesSolicitudService sicoesSolicitudService;
 	
 
 	@Override
@@ -109,6 +105,11 @@ public class ItemEstadoServiceImpl implements ItemEstadoService {
 			List<PropuestaProfesional> profesionalesNoGanadores = propuestaProfesionalService.listarNoGanadoresXItem(procesoItem.getProcesoItemUuid(),contexto);
 			ListadoDetalle motivoPostorNoGanador = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.POSTOR_NO_GANADOR);
 			desbloquear(profesionalesNoGanadores,motivoPostorNoGanador,contexto);
+			try {
+				sicoesSolicitudService.guardarContratoConsentido(ganadora, contexto);
+			} catch (Exception e) {
+				logger.error("Error al guardar solicitud de contrato consentido",e);
+			}
 		}
 		
 		itemEstado.setUsuario(contexto.getUsuario());
@@ -121,8 +122,6 @@ public class ItemEstadoServiceImpl implements ItemEstadoService {
 	}
 	
 	private void desbloquear (List<PropuestaProfesional> profesionales,ListadoDetalle motivo ,Contexto contexto) {
-		
-		
 		
 		for(PropuestaProfesional profesional:profesionales) {
 			

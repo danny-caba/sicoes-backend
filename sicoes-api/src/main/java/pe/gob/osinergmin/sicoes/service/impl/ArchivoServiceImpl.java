@@ -1,19 +1,23 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+import gob.osinergmin.siged.remote.rest.ro.in.*;
+import gob.osinergmin.siged.remote.rest.ro.in.list.ArchivoListInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.list.ClienteListInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
+import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,19 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lowagie.text.pdf.PdfReader;
 
+import org.springframework.web.multipart.MultipartFile;
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Documento;
-import pe.gob.osinergmin.sicoes.model.OtroRequisito;
-import pe.gob.osinergmin.sicoes.model.ProcesoItem;
-import pe.gob.osinergmin.sicoes.model.Propuesta;
-import pe.gob.osinergmin.sicoes.model.SolicitudNotificacion;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
-import pe.gob.osinergmin.sicoes.service.ArchivoService;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.PropuestaService;
-import pe.gob.osinergmin.sicoes.service.SolicitudService;
+import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -64,12 +62,33 @@ public class ArchivoServiceImpl implements ArchivoService {
 	
 	@Autowired
 	private PropuestaService propuestaService;
+
+	@Autowired
+	private ProcesoService procesoService;
+
+	@Autowired
+	private SigedApiConsumer sigedApiConsumer;
+
+	@Autowired
+	private Environment env;
 	
 	@Value("${peso.acreditacion}")
 	private Long pesoAcreditacion;
 	
 	@Value("${peso.proceso}")
 	private Long pesoProceso;
+
+	@Value("${siged.titulo.absolucion}")
+	private String TITULO_ABSOLUCION;
+
+	@Value("${siged.old.proyecto}")
+	private String SIGLA_PROYECTO;
+
+	@Value("${siged.ws.cliente.osinergmin.tipo.documento}")
+	private Integer tipoDocumentoOsinergmin;
+
+	@Value("${siged.ws.cliente.osinergmin.numero.documento}")
+	private String numeroDocumentoOsinergmin;
 
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
@@ -148,10 +167,16 @@ public class ArchivoServiceImpl implements ArchivoService {
 			}
 			PdfReader reader;
 			try {
-				reader = new PdfReader(archivo.getFile().getBytes());
-				int count = reader.getNumberOfPages();
-				archivo.setNroFolio(count * 1L);
-				archivo.setPeso(archivo.getFile().getSize());
+				if ("application/pdf".equals(archivo.getFile().getContentType())) {
+					reader = new PdfReader(archivo.getFile().getBytes());
+					int count = reader.getNumberOfPages();
+					archivo.setNroFolio(count * 1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				} else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(archivo.getFile().getContentType()) ||
+						"application/vnd.ms-excel".equals(archivo.getFile().getContentType())) {
+					archivo.setNroFolio(1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				}
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
 			}
@@ -165,7 +190,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(), archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(), archivo);
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -202,7 +227,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(), archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -240,7 +265,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 	@Override
 	public void eliminar(Long id, Contexto contexto) {
 		archivoDao.deleteById(id);
-
 	}
 
 	@Override
@@ -454,6 +478,39 @@ public class ArchivoServiceImpl implements ArchivoService {
 		return files;
 	}
 
+	@Override
+	public List<File> obtenerArchivoContenidoPerfCont(List<Archivo> archivosRegistrados, SicoesSolicitud solicitud, Contexto contexto) {
+		List<File> files = new ArrayList<>();
+		String pathPresentacion = path + solicitud.getIdSolicitud();
+		String pathSubsanacion = path + "subsanacion/" + solicitud.getIdSolicitud();
+		String pathFinal = solicitud.getIdSolicitudPadre() != null ? pathSubsanacion : pathPresentacion;
+		File dir = new File(pathFinal);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		for (Archivo archivo : archivosRegistrados) {
+			Archivo archivoDB = archivoDao.obtener(archivo.getIdArchivo());
+
+			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivoDB);
+			String pathRutaPresentacion = path;
+			String pathRutaSubsanacion = path + "subsanacion";
+			String pathRutaFinal = solicitud.getIdSolicitudPadre() != null ? pathRutaSubsanacion : pathRutaPresentacion;
+			try {
+				String ruta = pathRutaFinal + File.separator +"temporales"+ File.separator + solicitud.getIdSolicitud() + File.separator + archivo.getNombreReal();
+				logger.info(ruta);
+				File file = new File(ruta);
+				FileUtils.writeByteArrayToFile(file, contenido);
+				files.add(file);
+				logger.info(file.getName());
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			}
+		}
+
+		return files;
+	}
+
 	public Page<Archivo> buscarArchivo(String codigo, String solicitudUuid, Pageable pageable, Contexto contexto) {
 		Long idSolicitud = solicitudService.obtenerId(solicitudUuid);
 		return archivoDao.buscarArchivo(codigo, idSolicitud, pageable);
@@ -635,6 +692,187 @@ public class ArchivoServiceImpl implements ArchivoService {
 		Archivo archivo = archivoDao.obtener(idArhivo);
 		archivo.setContenido(sigedOldConsumer.descargarArchivosAlfresco(archivo));
 		return archivo;
+	}
+
+	@Override
+	public Page<Archivo> buscarArchivoProceso(String codigo, Long idProceso, Pageable pageable, Contexto contexto) {
+		return archivoDao.buscarArchivoProceso(codigo, idProceso, pageable);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarEnSiged(Long idProceso, Archivo archivo, Contexto contexto) {
+		boolean nuevo = archivo.getIdArchivo() == null;
+		if(archivo.getSolicitudUuid() != null) {
+			archivo.setIdSolicitud(solicitudService.obtenerId(archivo.getSolicitudUuid()));
+		}
+		if(archivo.getPropuestaUuid() != null) {
+			archivo.setIdPropuesta(propuestaService.obtener(archivo.getPropuestaUuid(),contexto).getIdPropuesta());
+		}
+		if (nuevo) {
+			cargarAbsolucion(idProceso, archivo, contexto);
+			return registrar(archivo, contexto);
+		} else {
+			return modificar(archivo, contexto);
+		}
+	}
+
+	@Override
+	public Archivo obtenerArchivoXlsPorProceso(Long idProceso) {
+
+		Archivo archivo;
+
+		try {
+			ListadoDetalle ldArchivoFormulacionConsultas = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO, Constantes.LISTADO.TIPO_ARCHIVO.INFORMACION_FORMULACION_CONSULTAS);
+			archivo = archivoDao.obtenerArchivoXlsPorProceso(idProceso, ldArchivoFormulacionConsultas.getIdListadoDetalle());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
+		}
+
+		return archivo;
+	}
+
+	@Override
+	public List<Archivo> buscarPorPerfContrato(Long idPerfContrato, Contexto contexto) {
+		return archivoDao.buscarPorPerfContrato(idPerfContrato);
+	}
+
+	@Override
+	public Archivo guardarArchivoSubsanacionContrato(Archivo archivo, Contexto contexto) {
+		return archivoDao.save(archivo);
+	}
+
+	@Override
+	public List<Archivo> obtenerArchivosPorRequisitos(List<Long> requisitosIds, Contexto contexto) {
+		return archivoDao.obtenerArchivosPorRequisitos(requisitosIds);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public void eliminarArchivoCodigo(String codigo, Contexto contexto) {
+
+		Archivo archivo = archivoDao.obtener(codigo);
+		if (archivo == null) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
+		}
+		try {
+			Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
+
+			if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+			}
+		} catch (NumberFormatException e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+		}
+		archivoDao.deleteById(archivo.getIdArchivo());
+
+	}
+
+	public void cargarAbsolucion(Long idProceso, Archivo archivo, Contexto contexto) {
+		Proceso procesoDB = procesoService.obtener(idProceso, contexto);
+		ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(procesoDB);
+		List<File> archivosAlfresco = new ArrayList<>();
+		try {
+			archivosAlfresco.add(convertirMultipartFileAFile(archivo));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO);
+		}
+		try {
+			DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+			if(documentoOutRO.getResultCode()!=1) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO,documentoOutRO.getMessage());
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			if (e instanceof ValidacionException) {
+				throw (ValidacionException) e;
+			}
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO);
+		}
+	}
+
+	public File convertirMultipartFileAFile(Archivo archivo) throws IOException {
+		MultipartFile multipartFile = archivo.getFile();
+
+		File file = new File(multipartFile.getOriginalFilename());
+
+		if (!file.createNewFile()) {
+			logger.info("El archivo ya existe, se sobreescribirá" + file.getName());
+		}
+
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+			fos.write(multipartFile.getBytes());
+		}
+
+		return file;
+	}
+
+	public ExpedienteInRO crearExpedienteAgregarDocumentos(Proceso proceso) {
+		return crearExpediente(proceso,
+				Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear.anexo")));
+	}
+
+	public ExpedienteInRO crearExpediente(Proceso proceso, Integer tipoDocumento) {
+		ExpedienteInRO expediente = new ExpedienteInRO();
+		DocumentoInRO documento = new DocumentoInRO();
+		ClienteListInRO clientes = new ClienteListInRO();
+		ClienteInRO cs = new ClienteInRO();
+		List<ClienteInRO> cliente = new ArrayList<>();
+		ClienteConsultaOutRO clienteOutRO = sigedApiConsumer.buscarCliente(tipoDocumentoOsinergmin, numeroDocumentoOsinergmin);
+		DireccionxClienteListInRO direcciones = new DireccionxClienteListInRO();
+		DireccionxClienteInRO d = new DireccionxClienteInRO();
+		List<DireccionxClienteInRO> direccion = new ArrayList<>();
+		ArchivoListInRO archivos = new ArchivoListInRO();
+		List<ArchivoInRO> arch = new ArrayList<>();
+
+		expediente.setDocumento(documento);
+		if (proceso.getNumeroExpediente() != null) {
+			expediente.setNroExpediente(proceso.getNumeroExpediente());
+		}
+
+		documento.setAsunto(TITULO_ABSOLUCION);
+		documento.setAppNameInvokes(SIGLA_PROYECTO);
+		documento.setNumeroDocumento(proceso.getNumeroProceso());
+
+		ArchivoInRO ar = new ArchivoInRO();
+		ar.setDescripcion(proceso.getNombreProceso());
+		arch.add(ar);
+		archivos.setArchivo(arch);
+		documento.setArchivos(archivos);
+
+		cs.setCodigoTipoIdentificacion(clienteOutRO.getTipoIdentificacion());
+		cs.setRazonSocial(clienteOutRO.getNombre());
+		cs.setNroIdentificacion(clienteOutRO.getNroIdentificacion());
+		cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
+		cliente.add(cs);
+		clientes.setCliente(cliente);
+
+		d.setDireccion("-");
+		d.setDireccionPrincipal(true);
+		d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
+		d.setTelefono(clienteOutRO.getTelefonoOtro());
+		d.setUbigeo(Integer.parseInt(env.getProperty("siged.ws.cliente.osinergmin.ubigeo")));
+		direccion.add(d);
+		direcciones.setDireccion(direccion);
+		cs.setDirecciones(direcciones);
+		documento.setClientes(clientes);
+		documento.setCodTipoDocumento(tipoDocumento);
+		documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
+		documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
+		documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
+		documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
+		documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente.no").charAt(0));
+		documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
+		documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
+
+		return expediente;
+	}
+
+	private List<Archivo> buscarSolicitud(Long idPerfCont, String tipoArchivo, Contexto contexto) {
+		return null;
 	}
 
 }

@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ import pe.gob.osinergmin.sicoes.model.ProcesoItem;
 import pe.gob.osinergmin.sicoes.model.ProcesoItemPerfil;
 import pe.gob.osinergmin.sicoes.model.ProcesoMiembro;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.PropuestaConsorcio;
 import pe.gob.osinergmin.sicoes.model.PropuestaEconomica;
 import pe.gob.osinergmin.sicoes.model.PropuestaProfesional;
 import pe.gob.osinergmin.sicoes.model.PropuestaTecnica;
@@ -33,7 +36,9 @@ import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
 import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.ProcesoDao;
+import pe.gob.osinergmin.sicoes.repository.PropuestaConsorcioDao;
 import pe.gob.osinergmin.sicoes.repository.PropuestaDao;
+import pe.gob.osinergmin.sicoes.repository.SupervisoraDictamenDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DocumentoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -69,6 +74,12 @@ public class PropuestaServiceImpl implements PropuestaService {
 	
 	@Autowired
 	private PropuestaDao propuestaDao;
+	
+	@Autowired
+	private PropuestaConsorcioDao propuestaConsorcioDao;
+	
+	@Autowired
+	private SupervisoraDictamenDao supervisoraDictamenDao;
 	
 	@Autowired
 	private PropuestaTecnicaService propuestaTecnicaService;
@@ -183,6 +194,25 @@ public class PropuestaServiceImpl implements PropuestaService {
 	public Propuesta obtener(String propuestaUuid, Contexto contexto) {
 		
 		Propuesta propuestaBD = propuestaDao.obtener(propuestaUuid);
+		Long idPropuestaTecnica = propuestaBD.getIdPropuesta();
+	    Long idSectorListadoDetalle = propuestaBD.getProcesoItem().getProceso().getSector().getIdListadoDetalle();
+
+		List<PropuestaConsorcio> consorcio = propuestaConsorcioDao.obtenerConsorcios(idPropuestaTecnica);
+	    propuestaBD.getPropuestaTecnica().setConsorcios(consorcio);
+	    List<SupervisoraDictamen> facturacion = supervisoraDictamenDao.obtenerConsorciosConFacturado(idPropuestaTecnica, idSectorListadoDetalle);
+	    // Crear un mapa para relacionar idSupervisora con montoFacturado
+	    Map<Long, Double> facturacionMap = facturacion.stream()
+	        .collect(Collectors.toMap(f -> f.getSupervisora().getIdSupervisora(), SupervisoraDictamen::getMontoFacturado));
+	    for (PropuestaConsorcio c : consorcio) {
+	        if (c.getSupervisora() != null && facturacionMap.containsKey(c.getSupervisora().getIdSupervisora())) {
+	            c.setFacturacion(facturacionMap.get(c.getSupervisora().getIdSupervisora()));
+	        } else {
+	            c.setFacturacion(0.0); // Default value if no facturation is found
+	        }
+	    }
+	    //propuestaBD.getSupervisora().setFacturacion(facturacion);
+	    
+	    
 		ProcesoEtapa etapa = procesoEtapaService.obtener(propuestaBD.getProcesoItem().getProceso().getIdProceso(), contexto);
 		List<ProcesoEtapa> etapas = procesoEtapaService.listar(propuestaBD.getProcesoItem().getProceso().getProcesoUuid(), contexto);
 		List<ProcesoItemPerfil> perfiles =procesoItemPerfilService.listar(propuestaBD.getProcesoItem().getProcesoItemUuid(), contexto);
@@ -207,7 +237,7 @@ public class PropuestaServiceImpl implements PropuestaService {
 		}else {
 			propuestaBD.setProEconomica(false);
 		}
-		//FIXME: REVISAR ESTADO
+
 		propuestaBD.setPresentarPro(false);
 		
 		return propuestaBD;
@@ -484,11 +514,13 @@ public class PropuestaServiceImpl implements PropuestaService {
 				Constantes.LISTADO.CARGO_MIEMBRO.C_PRESIDENTE, contexto);
 		ProcesoMiembro primerMiembro = procesoMiembroService.obtenerXtipo(procesoBD.getProcesoUuid(),
 				Constantes.LISTADO.CARGO_MIEMBRO.C_PRIMER, contexto);
+		ProcesoMiembro miembro3 = procesoMiembroService.obtenerXtipo(procesoBD.getProcesoUuid(),
+				Constantes.LISTADO.CARGO_MIEMBRO.C_MIEMBRO, contexto);
 		
 		Usuario usuario = contexto.getUsuario();
-		
 		if (!((presidente.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
-				|| (primerMiembro.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno())))) {
+				|| (primerMiembro.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
+				|| (miembro3.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno())))) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.SELECCIONAR_GANADOR);
 		}
 

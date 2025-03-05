@@ -105,7 +105,13 @@ public class Proceso extends BaseModel implements Serializable {
 	private boolean items;
 	
 	@Transient
+	private boolean informacion;
+	
+	@Transient
 	private List<ProcesoEtapa> etapas;
+
+	@Transient
+	private Long idPace;	
 
 	public Long getIdProceso() {
 		return idProceso;
@@ -185,6 +191,10 @@ public class Proceso extends BaseModel implements Serializable {
 
 	public boolean isItems() {
 		return items;
+	}
+	
+	public boolean isInformacion() {
+		return informacion;
 	}
 
 	public List<ProcesoEtapa> getEtapas() {
@@ -267,12 +277,24 @@ public class Proceso extends BaseModel implements Serializable {
 		this.miembros = miembros;
 	}
 
+	public void setInformacion(boolean informacion) {
+		this.informacion = informacion;
+	}
+
 	public void setItems(boolean items) {
 		this.items = items;
 	}
 
 	public void setEtapas(List<ProcesoEtapa> etapas) {
 		this.etapas = etapas;
+	}
+	
+	public Long getIdPace() {
+		return idPace;
+	}
+
+	public void setIdPace(Long idPace) {
+		this.idPace = idPace;
 	}
 	
 }

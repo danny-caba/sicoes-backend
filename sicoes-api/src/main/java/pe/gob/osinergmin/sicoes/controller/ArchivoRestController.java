@@ -95,6 +95,15 @@ public class ArchivoRestController extends BaseRestController{
 			) {
 		return archivoService.buscarArchivoPropuestaEconomica(codigo,propuestaUuid,pageable,getContexto());
 	}
+	
+	@GetMapping("/archivos/proceso")	
+	public Page<Archivo> buscarProceso(
+			@RequestParam(value = "codigo",required = false) String codigo,
+			@RequestParam(value = "idProceso",required = false) Long idProceso,
+			Pageable pageable
+			) {
+		return archivoService.buscarArchivoProceso(codigo,idProceso,pageable,getContexto());
+	}
 
 	
 	@PostMapping(value = "/archivos",consumes = { "multipart/form-data" })
@@ -106,7 +115,9 @@ public class ArchivoRestController extends BaseRestController{
 			@RequestParam(value = "propuestaUuid",required = false) String propuestaUuid,
 			@RequestParam(value = "idPropuestaEconomica",required = false) Long idPropuestaEconomica,
 			@RequestParam(value = "idPropuestaTecnica",required = false) Long idPropuestaTecnica,
-			@RequestParam(value = "idArchivo",required = false) Long idArchivo){
+			@RequestParam(value = "idArchivo",required = false) Long idArchivo,
+			@RequestParam(value = "idProceso",required = false) Long idProceso,
+		 	@RequestParam(value = "idSolicitudSeccion",required = false) Long idSolicitudSeccion){
 		
 		
 		Archivo archivo=new Archivo();
@@ -124,7 +135,12 @@ public class ArchivoRestController extends BaseRestController{
 			archivo.setFile(file);
 		}
 		if(!"".equals(codigo) && codigo  != null) {
-			ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,codigo);
+			ListadoDetalle tipoArchivo;
+			if (idSolicitudSeccion == null) {
+				tipoArchivo = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,codigo);
+			} else {
+				tipoArchivo = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,Constantes.LISTADO.TIPO_ARCHIVO.PERFECCIONAMIENTO_CONTRATO);
+			}
 			archivo.setTipoArchivo(tipoArchivo);
 		}
 		archivo.setIdArchivo(idArchivo);
@@ -133,6 +149,8 @@ public class ArchivoRestController extends BaseRestController{
 		archivo.setPropuestaUuid(propuestaUuid);
 		archivo.setIdPropuestaEconomica(idPropuestaEconomica);
 		archivo.setIdPropuestaTecnica(idPropuestaTecnica);
+		archivo.setIdProceso(idProceso);
+		archivo.setIdSeccionRequisito(idSolicitudSeccion);
 		Archivo value= archivoService.guardar(archivo, getContexto());
 		value.setFile(null);
 		
@@ -147,6 +165,7 @@ public class ArchivoRestController extends BaseRestController{
 			@RequestParam(value = "solicitudUuid",required = false) String solicitudUuid,
 			@RequestParam(value = "idPropuestaEconomica",required = false) Long idPropuestaEconomica,
 			@RequestParam(value = "idPropuestaTecnica",required = false) Long idPropuestaTecnica,
+			@RequestParam(value = "idProceso",required = false) Long idProceso,
 			@PathVariable Long  id) {		
 
 		Archivo archivo=new Archivo();
@@ -156,6 +175,7 @@ public class ArchivoRestController extends BaseRestController{
 		archivo.setSolicitudUuid(solicitudUuid);
 		archivo.setIdPropuestaEconomica(idPropuestaEconomica);
 		archivo.setIdPropuestaTecnica(idPropuestaTecnica);
+		archivo.setIdProceso(idProceso);
 		Archivo value= archivoService.guardar(archivo, getContexto());
 		value.setFile(null);
 		
@@ -258,6 +278,17 @@ public class ArchivoRestController extends BaseRestController{
 	public void eliminar(@PathVariable Long  id){
 		logger.info("eliminar {} ",id);
 		archivoService.eliminar(id,getContexto());
+	}
+
+	@GetMapping("/archivos/procesos/{idProceso}")
+	public Archivo obtenerArchivoXlsPorProceso(@PathVariable Long idProceso) {
+		return archivoService.obtenerArchivoXlsPorProceso(idProceso);
+	}
+
+	@DeleteMapping("/archivos/codigo/{codigo}")
+	public void eliminarPorCodigo(@PathVariable String codigo){
+		logger.info("eliminar {} ",codigo);
+		archivoService.eliminarArchivoCodigo(codigo, getContexto());
 	}
 
 }

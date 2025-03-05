@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -371,8 +372,6 @@ public class SolicitudServiceImpl implements SolicitudService {
 			ListadoDetalle plazoTecnico = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.PLAZOS.CODIGO,Constantes.LISTADO.PLAZOS.CONCLUIR_EVALUACION_TECNICA);
 			solicitudBD.setNumeroPlazoTecnico(Long.parseLong(plazoTecnico.getValor()));
 			solicitudBD.setFechaPlazoTecnico(calcularFechaFin(solicitudBD.getFechaPresentacion(), solicitudBD.getNumeroPlazoTecnico()));
-
-
 			ExpedienteInRO expedienteInRO=null;
 			inicioParcial=getDate();
 			try {
@@ -500,7 +499,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 			logger.info("enviarMensajeSolicitudInscripcion01 :"+(getDate()-inicioParcial));
 			logger.info("guardado total :"+(getDate()-inicioTotal));
-			
+			// ASIGNAR USUARIOS A SOLICITUD PERSONAS NATUALES
 			List<OtroRequisito> listaPerfiles = new ArrayList<OtroRequisito>();
 			listaPerfiles = otroRequisitoService.listarOtroRequisitosPerfil(solicitudBD.getIdSolicitud());
 			for (OtroRequisito perfil : listaPerfiles)
@@ -610,6 +609,114 @@ public class SolicitudServiceImpl implements SolicitudService {
 				}
 			}
 
+			// ASIGNAR USUARIOS A SOLICITUD PERSONAS JURÍDICAS
+			List<Documento> listaDocumentos = new ArrayList<>();
+			listaDocumentos = documentoService.buscar(solicitudBD.getIdSolicitud(), contexto);
+			
+			for(Documento doc: listaDocumentos) {
+				if (doc.getActividadArea() != null && (solicitudBD.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.JURIDICA) ||
+						solicitudBD.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_POSTOR))){
+					List<PerfilAprobador> perfilesAprobador = new ArrayList<PerfilAprobador>();
+					// OBTENER PERFIL APROBADOR POR EL ID DE ACTIVIDAD AREA
+					perfilesAprobador = perfilAprobadorDao.obtenerPerfilAprobadorPorIdPerfil(doc.getActividadArea().getIdListadoDetalle());
+					
+					//Verificar si el perfil cuenta con más de un evaluador
+					List<Long> idEvaluadores = new ArrayList<Long>();
+
+					if (perfilesAprobador.get(0).getEvaluador() != null) {
+						idEvaluadores.add(perfilesAprobador.get(0).getEvaluador().getIdUsuario());
+					
+						if (perfilesAprobador.get(0).getEvaluador2() != null) {
+							idEvaluadores.add(perfilesAprobador.get(0).getEvaluador2().getIdUsuario());
+						
+							if (perfilesAprobador.get(0).getEvaluador3() != null) {
+								idEvaluadores.add(perfilesAprobador.get(0).getEvaluador3().getIdUsuario());
+						
+								if (perfilesAprobador.get(0).getEvaluador4() != null) {
+									idEvaluadores.add(perfilesAprobador.get(0).getEvaluador4().getIdUsuario());
+								
+									if (perfilesAprobador.get(0).getEvaluador5() != null) {
+										idEvaluadores.add(perfilesAprobador.get(0).getEvaluador5().getIdUsuario());
+									
+										if (perfilesAprobador.get(0).getEvaluador6() != null) {
+											idEvaluadores.add(perfilesAprobador.get(0).getEvaluador6().getIdUsuario());
+										
+											if (perfilesAprobador.get(0).getEvaluador7() != null) {
+												idEvaluadores.add(perfilesAprobador.get(0).getEvaluador7().getIdUsuario());
+											
+												if (perfilesAprobador.get(0).getEvaluador8() != null)
+													idEvaluadores.add(perfilesAprobador.get(0).getEvaluador8().getIdUsuario());
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					//Comparar el número de evaluaciones pendientes de cada evaluador
+					Long numeroEvaluacionesPendientes = 0L;
+					Long idEvaluadorAsignado = 0L;
+					
+					//Primer evaluador
+					Integer ordenEvaluador = 0;
+					Long numeroEvaluacionesEvaluadorAsignado = new Long(otroRequisitoDao.listarPerfilesPendientesDeEvaluacionPorIdUsuario(idEvaluadores.get(0)).size());
+					
+					for (int i = 0; i < idEvaluadores.size(); i++) {
+						
+						numeroEvaluacionesPendientes  = new Long(otroRequisitoDao.listarPerfilesPendientesDeEvaluacionPorIdUsuario(idEvaluadores.get(i)).size());
+						
+						if (numeroEvaluacionesEvaluadorAsignado > numeroEvaluacionesPendientes) {
+							numeroEvaluacionesEvaluadorAsignado = numeroEvaluacionesPendientes;
+							ordenEvaluador = i;
+						}				
+					}
+					
+					switch (ordenEvaluador) {
+						case 0:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador().getIdUsuario().toString());
+							break;
+						case 1:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador2().getIdUsuario().toString());
+							break;
+						case 2:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador3().getIdUsuario().toString());
+							break;
+						case 3:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador4().getIdUsuario().toString());
+							break;
+						case 4:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador5().getIdUsuario().toString());
+							break;
+						case 5:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador6().getIdUsuario().toString());
+							break;
+						case 6:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador7().getIdUsuario().toString());
+							break;
+						case 7:
+							idEvaluadorAsignado = Long.parseLong(perfilesAprobador.get(0).getEvaluador8().getIdUsuario().toString());
+							break;
+					}
+					
+					List<Asignacion> asignaciones = new ArrayList<Asignacion>();
+					
+					Asignacion asignacionActual = new Asignacion();
+					asignacionActual.setSolicitud(solicitudBD);
+					
+					ListadoDetalle tipoActual = new ListadoDetalle();
+					tipoActual.setIdListadoDetalle(Long.parseLong("102"));
+					tipoActual.setCodigo("TECNICO");
+					asignacionActual.setTipo(tipoActual);
+					
+					Usuario usuarioActual = new Usuario();
+					usuarioActual.setIdUsuario(idEvaluadorAsignado);					
+					asignacionActual.setUsuario(usuarioActual);
+					asignaciones.add(asignacionActual);
+					documentoService.asignarEvaluadorPerfil(doc, asignaciones, contexto);
+				}
+			}
+			
 			return solicitudBD;
 		} else if (solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.OBSERVADO)) {
 			inicioParcial=getDate();
@@ -908,28 +1015,28 @@ public class SolicitudServiceImpl implements SolicitudService {
 	}
 
 	private void actualizarEstadoFlagEnviado(Solicitud solicitudBD, Contexto contexto) {
-		List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudBD.getIdSolicitud());
-		for (OtroRequisito requisito : otrosRequisito) {
-			AuditoriaUtil.setAuditoriaRegistro(requisito, contexto);
-			requisito.setFlagSiged(Constantes.FLAG.ACTIVO);
-			otroRequisitoDao.save(requisito);
-		}
+	    List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudBD.getIdSolicitud());
+	    for (OtroRequisito requisito : otrosRequisito) {
+	        AuditoriaUtil.setAuditoriaRegistro(requisito, contexto);
+	        requisito.setFlagSiged(Constantes.FLAG.ACTIVO);
+	    }
+	    otroRequisitoDao.saveAll(otrosRequisito);
 
-		List<Estudio> estudios = estudioService.buscar(solicitudBD.getIdSolicitud(), contexto);
-		for (Estudio estudio : estudios) {
-			AuditoriaUtil.setAuditoriaRegistro(estudio, contexto);
-			estudio.setFlagSiged(Constantes.FLAG.ACTIVO);
-			estudioDao.save(estudio);
-		}
+	    List<Estudio> estudios = estudioService.buscar(solicitudBD.getIdSolicitud(), contexto);
+	    for (Estudio estudio : estudios) {
+	        AuditoriaUtil.setAuditoriaRegistro(estudio, contexto);
+	        estudio.setFlagSiged(Constantes.FLAG.ACTIVO);
+	    }
+	    estudioDao.saveAll(estudios);
 
-		List<Documento> documentos = documentoService.buscar(solicitudBD.getIdSolicitud(), contexto);
-		for (Documento documento : documentos) {
-			AuditoriaUtil.setAuditoriaRegistro(documento, contexto);
-			documento.setFlagSiged(Constantes.FLAG.ACTIVO);
-			documentoDao.save(documento);
-		}
-
+	    List<Documento> documentos = documentoService.buscar(solicitudBD.getIdSolicitud(), contexto);
+	    for (Documento documento : documentos) {
+	        AuditoriaUtil.setAuditoriaRegistro(documento, contexto);
+	        documento.setFlagSiged(Constantes.FLAG.ACTIVO);
+	    }
+	    documentoDao.saveAll(documentos);
 	}
+
 
 	private void actualizarEstadoRequisito(Solicitud solicitudBD, Contexto contexto) {
 		List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudBD.getIdSolicitud());
@@ -1083,7 +1190,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 		} else {
 			List<OtroRequisito> otroRequisitos = solicitud.getOtrosRequisitos();
-			List<OtroRequisito> otroRequisitosActualizados = new ArrayList<OtroRequisito>();
+			List<OtroRequisito> otroRequisitosActualizados = new ArrayList<>();
 			if (otroRequisitos != null) {
 				List<OtroRequisito> otroRequisitosBD = otroRequisitoService.listarOtroRequisito(
 						Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.OTRO_REQUISITO, solicitudBD.getIdSolicitud());
@@ -1093,28 +1200,27 @@ public class SolicitudServiceImpl implements SolicitudService {
 					for (OtroRequisito otroRequisito : otroRequisitos) {
 						if (otroRequisitoBD.getIdOtroRequisito().equals(otroRequisito.getIdOtroRequisito())) {
 							encontrado = true;
-							if (otroRequisitoBD.getFlagActivo() != null
-									&& !otroRequisitoBD.getFlagActivo().equals(otroRequisito.getFlagActivo())) {
+							if (!Objects.equals(otroRequisitoBD.getFlagActivo(), otroRequisito.getFlagActivo())) {
+								logger.info("Cambio en flagActivo: BD={} | Nuevo={}", otroRequisitoBD.getFlagActivo(), otroRequisito.getFlagActivo());
 								otroRequisitosActualizados.add(otroRequisito);
-								break;
 							}
-							if (otroRequisitoBD.getFlagFirmaDigital() != null && !otroRequisitoBD.getFlagFirmaDigital()
-									.equals(otroRequisito.getFlagFirmaDigital())) {
+							if (!Objects.equals(otroRequisitoBD.getFlagFirmaDigital(), otroRequisito.getFlagFirmaDigital())) {
+								logger.info("Cambio en flagFirmaDigital: BD={} | Nuevo={}", otroRequisitoBD.getFlagFirmaDigital(), otroRequisito.getFlagFirmaDigital());
 								otroRequisitosActualizados.add(otroRequisito);
-								break;
 							}
-							if (otroRequisitoBD.getFlagElectronico() != null && !otroRequisitoBD.getFlagElectronico()
-									.equals(otroRequisito.getFlagElectronico())) {
+							if (!Objects.equals(otroRequisitoBD.getFlagElectronico(), otroRequisito.getFlagElectronico())) {
+								logger.info("Cambio en flagElectronico: BD={} | Nuevo={}", otroRequisitoBD.getFlagElectronico(), otroRequisito.getFlagElectronico());
 								otroRequisitosActualizados.add(otroRequisito);
-								break;
 							}
-							List<Archivo> archivoOtroRQ = archivoService.buscar(null, null,
-									otroRequisito.getIdOtroRequisito(), contexto);
+							if (!Objects.equals(otroRequisitoBD.getArchivo(),otroRequisito.getArchivo())) {
+								logger.info("Cambio en Archivo: BD={} | Nuevo={}", otroRequisitoBD.getArchivo(), otroRequisito.getArchivo());
+								otroRequisitosActualizados.add(otroRequisito);
+							}
+							List<Archivo> archivoOtroRQ = archivoService.buscar(null, null, otroRequisito.getIdOtroRequisito(), contexto);
 							for (Archivo archivoBD : archivoOtroRQ) {
-								if (otroRequisito.getArchivo() != null && !archivoBD.getIdArchivo()
-										.equals(otroRequisito.getArchivo().getIdArchivo())) {
+								if (otroRequisito.getArchivo() != null && 
+									!Objects.equals(archivoBD.getIdArchivo(), otroRequisito.getArchivo().getIdArchivo())) {
 									otroRequisitosActualizados.add(otroRequisito);
-									break;
 								}
 							}
 							break;
@@ -1127,10 +1233,10 @@ public class SolicitudServiceImpl implements SolicitudService {
 				for (OtroRequisito otroRequisito : otroRequisitosActualizados) {
 					otroRequisito.setSolicitud(solicitudBD);
 					otroRequisito = otroRequisitoService.guardar(otroRequisito, contexto);
-
 				}
 			}
 		}
+
 		return solicitudBD;
 	}
 
@@ -1242,6 +1348,98 @@ public class SolicitudServiceImpl implements SolicitudService {
 		return expediente;
 	}
 	
+	//AFC
+	
+		public ExpedienteInRO crearExpedienteAgregarDocumentosAdminstrativos(Solicitud solicitud,Integer codigoUsuario, Contexto contexto) {
+			return crearExpedienteAdminstrativos(solicitud,
+					Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.administrativo")), codigoUsuario,contexto);
+		}
+
+		public ExpedienteInRO crearExpedienteAdminstrativos(Solicitud solicitud, Integer codigoTipoDocumento,Integer codigoUsuario, Contexto contexto) {
+			ExpedienteInRO expediente = new ExpedienteInRO();
+			DocumentoInRO documento = new DocumentoInRO();
+			ClienteListInRO clientes = new ClienteListInRO();
+			ClienteInRO cs = new ClienteInRO();
+			List<ClienteInRO> cliente = new ArrayList<>();
+			DireccionxClienteListInRO direcciones = new DireccionxClienteListInRO();
+			DireccionxClienteInRO d = new DireccionxClienteInRO();
+			List<DireccionxClienteInRO> direccion = new ArrayList<>();
+			expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
+			expediente.setDocumento(documento);
+			if (solicitud.getNumeroExpediente() != null) {
+				expediente.setNroExpediente(solicitud.getNumeroExpediente());
+			}
+			if (solicitud.getPersona() != null) {
+				documento.setAsunto(String.format(TITULO_REGISTRO, solicitud.getPersona().getNumeroDocumento()));
+			}
+
+			documento.setAppNameInvokes(SIGLA_PROYECTO);
+			ListadoDetalle tipoDocumento = listadoDetalleService
+					.obtener(solicitud.getPersona().getTipoDocumento().getIdListadoDetalle(), contexto);
+			cs.setCodigoTipoIdentificacion(Integer.parseInt(tipoDocumento.getValor()));
+			if (cs.getCodigoTipoIdentificacion() == 1) {
+				cs.setNombre(solicitud.getPersona().getNombreRazonSocial());
+				cs.setApellidoPaterno("-");
+				cs.setApellidoMaterno("-");
+			} else if(cs.getCodigoTipoIdentificacion() == 3){
+				cs.setNombre(solicitud.getPersona().getNombres());
+				cs.setApellidoPaterno(solicitud.getPersona().getApellidoPaterno());
+				cs.setApellidoMaterno(solicitud.getPersona().getApellidoMaterno());
+			}else{
+				cs.setNombre(solicitud.getPersona().getNombres());
+				cs.setApellidoPaterno(solicitud.getPersona().getApellidoPaterno());
+				cs.setApellidoMaterno(solicitud.getPersona().getApellidoMaterno());
+			}
+			if (solicitud.getRepresentante() != null) {
+				cs.setRepresentanteLegal(
+						solicitud.getRepresentante().getNombres() + " " + solicitud.getRepresentante().getApellidoPaterno()
+								+ " " + solicitud.getRepresentante().getApellidoMaterno());
+			}
+			cs.setRazonSocial(solicitud.getPersona().getNombreRazonSocial());
+			cs.setNroIdentificacion(solicitud.getPersona().getNumeroDocumento());
+			cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
+			cliente.add(cs);
+			d.setDireccion(solicitud.getPersona().getDireccion());
+			d.setDireccionPrincipal(true);
+			d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
+			d.setTelefono(solicitud.getPersona().getTelefono1());
+			if (solicitud.getPersona().getCodigoDistrito() != null) {
+				d.setUbigeo(Integer.parseInt(solicitud.getPersona().getCodigoDistrito()));
+			}
+			direccion.add(d);
+			direcciones.setDireccion(direccion);
+			cs.setDirecciones(direcciones);
+			clientes.setCliente(cliente);
+			documento.setClientes(clientes);
+			documento.setCodTipoDocumento(codigoTipoDocumento);
+			documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
+			documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
+			documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
+			documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente").charAt(0));
+			documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
+			documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
+			String stecnico=env.getProperty("crear.expediente.parametros.tipo.documento.informe.administrativo");
+			int vtenico= Integer.parseInt(stecnico);
+			
+			if(vtenico==codigoTipoDocumento) {
+				if(codigoUsuario!=null) {
+					documento.setUsuarioCreador(codigoUsuario);
+					documento.setFirmante(codigoUsuario);
+				}	
+			}
+	                if(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.respuesta.solicitud.pn"))==codigoTipoDocumento) {
+				
+					documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
+					documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
+					
+			}else{
+				documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
+			}
+			logger.info("DOC_EXPEDIENTE--- :"+documento);
+			logger.info("EXPEDIENTE_INFORME_ADM :"+expediente);
+			return expediente;
+		}
+	
 	Integer getInteger(Long date){
 		try {
 			return Integer.parseInt(date.toString());
@@ -1251,100 +1449,6 @@ public class SolicitudServiceImpl implements SolicitudService {
 		return null;
 	}
 	
-	
-	//AFC
-	
-	public ExpedienteInRO crearExpedienteAgregarDocumentosAdminstrativos(Solicitud solicitud,Integer codigoUsuario, Contexto contexto) {
-		return crearExpedienteAdminstrativos(solicitud,
-				Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.administrativo")), codigoUsuario,contexto);
-	}
-
-	public ExpedienteInRO crearExpedienteAdminstrativos(Solicitud solicitud, Integer codigoTipoDocumento,Integer codigoUsuario, Contexto contexto) {
-		ExpedienteInRO expediente = new ExpedienteInRO();
-		DocumentoInRO documento = new DocumentoInRO();
-		ClienteListInRO clientes = new ClienteListInRO();
-		ClienteInRO cs = new ClienteInRO();
-		List<ClienteInRO> cliente = new ArrayList<>();
-		DireccionxClienteListInRO direcciones = new DireccionxClienteListInRO();
-		DireccionxClienteInRO d = new DireccionxClienteInRO();
-		List<DireccionxClienteInRO> direccion = new ArrayList<>();
-		expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
-		expediente.setDocumento(documento);
-		if (solicitud.getNumeroExpediente() != null) {
-			expediente.setNroExpediente(solicitud.getNumeroExpediente());
-		}
-		if (solicitud.getPersona() != null) {
-			documento.setAsunto(String.format(TITULO_REGISTRO, solicitud.getPersona().getNumeroDocumento()));
-		}
-
-		documento.setAppNameInvokes(SIGLA_PROYECTO);
-		ListadoDetalle tipoDocumento = listadoDetalleService
-				.obtener(solicitud.getPersona().getTipoDocumento().getIdListadoDetalle(), contexto);
-		cs.setCodigoTipoIdentificacion(Integer.parseInt(tipoDocumento.getValor()));
-		if (cs.getCodigoTipoIdentificacion() == 1) {
-			cs.setNombre(solicitud.getPersona().getNombreRazonSocial());
-			cs.setApellidoPaterno("-");
-			cs.setApellidoMaterno("-");
-		} else if(cs.getCodigoTipoIdentificacion() == 3){
-			cs.setNombre(solicitud.getPersona().getNombres());
-			cs.setApellidoPaterno(solicitud.getPersona().getApellidoPaterno());
-			cs.setApellidoMaterno(solicitud.getPersona().getApellidoMaterno());
-		}else{
-			cs.setNombre(solicitud.getPersona().getNombres());
-			cs.setApellidoPaterno(solicitud.getPersona().getApellidoPaterno());
-			cs.setApellidoMaterno(solicitud.getPersona().getApellidoMaterno());
-		}
-		if (solicitud.getRepresentante() != null) {
-			cs.setRepresentanteLegal(
-					solicitud.getRepresentante().getNombres() + " " + solicitud.getRepresentante().getApellidoPaterno()
-							+ " " + solicitud.getRepresentante().getApellidoMaterno());
-		}
-		cs.setRazonSocial(solicitud.getPersona().getNombreRazonSocial());
-		cs.setNroIdentificacion(solicitud.getPersona().getNumeroDocumento());
-		cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
-		cliente.add(cs);
-		d.setDireccion(solicitud.getPersona().getDireccion());
-		d.setDireccionPrincipal(true);
-		d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
-		d.setTelefono(solicitud.getPersona().getTelefono1());
-		if (solicitud.getPersona().getCodigoDistrito() != null) {
-			d.setUbigeo(Integer.parseInt(solicitud.getPersona().getCodigoDistrito()));
-		}
-		direccion.add(d);
-		direcciones.setDireccion(direccion);
-		cs.setDirecciones(direcciones);
-		clientes.setCliente(cliente);
-		documento.setClientes(clientes);
-		documento.setCodTipoDocumento(codigoTipoDocumento);
-		documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
-		documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
-		documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
-		documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente").charAt(0));
-		documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
-		documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
-		String stecnico=env.getProperty("crear.expediente.parametros.tipo.documento.informe.administrativo");
-		int vtenico= Integer.parseInt(stecnico);
-		
-		if(vtenico==codigoTipoDocumento) {
-			if(codigoUsuario!=null) {
-				documento.setUsuarioCreador(codigoUsuario);
-				documento.setFirmante(codigoUsuario);
-			}	
-		}
-                if(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.respuesta.solicitud.pn"))==codigoTipoDocumento) {
-			
-				documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
-				documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
-				
-		}else{
-			documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
-		}
-		logger.info("DOC_EXPEDIENTE--- :"+documento);
-		logger.info("EXPEDIENTE_INFORME_ADM :"+expediente);
-		return expediente;
-	}
-	
-	//AFC
 	@Override
 	public Solicitud obtener(String solicitudUuid, Contexto contexto) {
 		Long idSolicitud = solicitudDao.obtenerId(solicitudUuid);
@@ -2220,11 +2324,11 @@ public class SolicitudServiceImpl implements SolicitudService {
 		List<OtroRequisito> listOtroRequisito = otroRequisitoService
 				.listarOtroRequisito(Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL, solicitudBD.getIdSolicitud());
 		for (OtroRequisito otroRequisito : listOtroRequisito) {
-			if (otroRequisito.getEvaluacion() != null &&
+			if (otroRequisito.getActividad() != null && otroRequisito.getEvaluacion() != null &&
 					Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR.equals(otroRequisito.getEvaluacion().getCodigo())) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUE_TODO_REQUISITOS);
 			}
-			if (otroRequisito.getFinalizado() == null) {
+			if (otroRequisito.getActividad() != null  && otroRequisito.getFinalizado() == null) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.FINALICE_TODO_REQUISITOS);
 			}
 		}
@@ -3051,6 +3155,221 @@ public class SolicitudServiceImpl implements SolicitudService {
 		return archivo;
 	}
 	
+	//AFC
+		private Archivo generarInformeAdministrativoPN(Solicitud solicitud, Asignacion asignacion, Contexto contexto) throws Exception {
+			Long idSolicitud = solicitud.getIdSolicitud();
+			Long idUsuario = asignacion.getUsuario().getIdUsuario();
+			Archivo archivo = new Archivo();
+			SimpleDateFormat sdf2=new SimpleDateFormat("ddMMyyyyhhmm");
+			String fechaHoy = sdf2.format(new Date());
+			archivo.setNombre("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
+			archivo.setNombreReal("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
+			archivo.setIdAsignacion(asignacion.getIdAsignacion());
+			archivo.setTipo("application/pdf");
+			archivo.setTipoArchivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+					Constantes.LISTADO.TIPO_ARCHIVO.INFORME_ADMINISTRATIVO)); //CAMBIO
+			archivo.setIdSolicitud(idSolicitud);		
+			
+			List<OtroRequisito> otrosRequisitos = new ArrayList<OtroRequisito>();
+			List<OtroRequisito> otrosRequisitosAdm = new ArrayList<OtroRequisito>();
+
+			List<Asignacion> aprobadores = null;
+			StringBuilder observacionesConcatenadas = new StringBuilder();
+
+				otrosRequisitos = otroRequisitoService.listarOtroRequisitoXSolicitudAdmin( idSolicitud );
+				otrosRequisitosAdm = otroRequisitoService.listarOtroRequisitoXSolicitudAdminUser( idSolicitud );
+				
+				
+			String usuario = otrosRequisitosAdm.get(0).getUsuActualizacion();
+			Date fechaAct = asignacion.getFechaRegistro();
+			boolean observacionAgregada = false;
+
+			for (OtroRequisito requisito : otrosRequisitosAdm) {
+				if (!(requisito.getObservacion()== null)) { 
+					if (requisito.getObservacion().length() > 0) {
+						observacionesConcatenadas.append(requisito.getObservacion() + "\n"); 
+						observacionAgregada = true;
+			        }
+			    }
+				
+				if(usuario == null) {
+					if (requisito.getUsuActualizacion()!= null) {
+						usuario = requisito.getUsuActualizacion();
+						}
+				    }
+				if(fechaAct ==null) {
+					if (requisito.getFecActualizacion()!= null) {
+						fechaAct = requisito.getFecActualizacion();
+						}
+				    }
+				}
+		    if (!observacionAgregada) { 
+			      observacionesConcatenadas.append("Cumple con todos los requisitos solicitados."); 
+			      observacionAgregada = true;
+			   }
+			
+			for (OtroRequisito requisito : otrosRequisitos) {
+			//if ((requisito.getFecActualizacion()== null)) { 
+			//	requisito.setFecActualizacion(fechaAct);
+			//    }else {
+			     requisito.setFecActualizacion(fechaAct);
+			//    }
+			
+			}
+			
+			removerTerminosCondiciones(otrosRequisitos);
+			
+			solicitud.setObservacionAdmnistrativa(observacionesConcatenadas.substring(0));
+			solicitud.setOtrosRequisitos(otrosRequisitos);
+			aprobadores = asignacionService.buscarAprobadoresAdministrativos(idSolicitud,Long.parseLong(usuario));
+			solicitud.setAsignados(aprobadores);
+			File jrxml = new File(pathJasper + "Formato_informe_PN_admin.jrxml");
+			
+
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			logger.info("SUBREPORT_DIR: {}", pathJasper);
+			parameters.put("SUBREPORT_DIR", pathJasper);
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			JasperPrint print = null;
+			InputStream appLogo = null;
+			InputStream osinermingLogo = null;
+			try {
+				appLogo = new FileInputStream(pathJasper + "logo-sicoes.png");
+				osinermingLogo = new FileInputStream(pathJasper + "logo-osinerming.png");
+				parameters.put("P_LOGO_APP", appLogo);
+				parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
+				List<Solicitud> solicitudes = new ArrayList<Solicitud>();
+				solicitudes.add(solicitud);
+				JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
+				JasperReport jasperReport = getJasperCompilado(jrxml);
+				print = JasperFillManager.fillReport(jasperReport, parameters, ds);
+				output = new ByteArrayOutputStream();
+				JasperExportManager.exportReportToPdfStream(print, output);
+
+			} catch (Exception e) {
+				throw e;
+
+			} finally {
+				close(appLogo);
+				close(osinermingLogo);
+			}
+
+			byte[] bytesSalida = output.toByteArray();
+			archivo.setPeso(bytesSalida.length * 1L);
+			archivo.setNroFolio(1L);
+			archivo.setContenido(bytesSalida);
+			return archivo;
+		}
+	
+		private Archivo generarInformeAdministrativoPJ(Solicitud solicitud, Asignacion asignacion, Contexto contexto) throws Exception {
+			Long idSolicitud = solicitud.getIdSolicitud();
+			Long idUsuario = asignacion.getUsuario().getIdUsuario();
+			Archivo archivo = new Archivo();
+			SimpleDateFormat sdf2=new SimpleDateFormat("ddMMyyyyhhmm");
+			String fechaHoy = sdf2.format(new Date());
+			archivo.setNombre("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
+			archivo.setNombreReal("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
+			archivo.setTipo("application/pdf");
+			archivo.setIdAsignacion(asignacion.getIdAsignacion());
+			archivo.setTipoArchivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+					Constantes.LISTADO.TIPO_ARCHIVO.INFORME_ADMINISTRATIVO));
+			archivo.setIdSolicitud(idSolicitud);		
+			
+			List<OtroRequisito> otrosRequisitos = new ArrayList<OtroRequisito>();
+			List<OtroRequisito> otrosRequisitosAdm = new ArrayList<OtroRequisito>();
+
+			List<Asignacion> aprobadores = null;
+
+				otrosRequisitos = otroRequisitoService.listarOtroRequisitoXSolicitudAdmin(idSolicitud);
+				otrosRequisitosAdm = otroRequisitoService.listarOtroRequisitoXSolicitudAdminUser( idSolicitud );
+
+			StringBuilder observacionesConcatenadas = new StringBuilder();
+			String usuario = otrosRequisitosAdm.get(0).getUsuActualizacion();
+			Date fechaAct = asignacion.getFechaRegistro();		
+			boolean observacionAgregada = false;
+
+			for (OtroRequisito requisito : otrosRequisitosAdm) {
+				if (!(requisito.getObservacion()== null)) { 
+					if (requisito.getObservacion().length() > 0) {
+						observacionesConcatenadas.append(requisito.getObservacion() + "\n"); 
+						observacionAgregada = true;
+			        }
+					
+			    }
+				
+				if(usuario == null) {
+					if (requisito.getUsuActualizacion()!= null) {
+						usuario = requisito.getUsuActualizacion();
+						}
+				    }
+				if(fechaAct ==null) {
+					if (requisito.getFecActualizacion()!= null) {
+						fechaAct = requisito.getFecActualizacion();
+						}
+				    }
+				}
+		    if (!observacionAgregada) { 
+			      observacionesConcatenadas.append("Cumple con todos los requisitos solicitados."); 
+			      observacionAgregada = true;
+			   }
+			
+			for (OtroRequisito requisito : otrosRequisitos) {
+			//if ((requisito.getFecActualizacion()== null)) { 
+			//	requisito.setFecActualizacion(fechaAct);
+			//    }else {
+			     requisito.setFecActualizacion(fechaAct);
+			//    }
+			
+			}
+			
+			
+			removerTerminosCondiciones(otrosRequisitos);
+			
+			solicitud.setObservacionAdmnistrativa(observacionesConcatenadas.substring(0));
+			solicitud.setOtrosRequisitos(otrosRequisitos);
+			aprobadores = asignacionService.buscarAprobadoresAdministrativos(idSolicitud,Long.parseLong(usuario));
+			solicitud.setAsignados(aprobadores);
+
+			File jrxml = new File(pathJasper + "Formato_Informe_PJ_admin.jrxml");
+
+
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			logger.info("SUBREPORT_DIR: {}", pathJasper);
+			parameters.put("SUBREPORT_DIR", pathJasper);
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			JasperPrint print = null;
+			InputStream appLogo = null;
+			InputStream osinermingLogo = null;
+			try {
+				appLogo = new FileInputStream(pathJasper + "logo-sicoes.png");
+				osinermingLogo = new FileInputStream(pathJasper + "logo-osinerming.png");
+				parameters.put("P_LOGO_APP", appLogo);
+				parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
+				List<Solicitud> solicitudes = new ArrayList<Solicitud>();
+				solicitudes.add(solicitud);
+				JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
+				JasperReport jasperReport = getJasperCompilado(jrxml);
+				print = JasperFillManager.fillReport(jasperReport, parameters, ds);
+				output = new ByteArrayOutputStream();
+				JasperExportManager.exportReportToPdfStream(print, output);
+
+			} catch (Exception e) {
+				throw e;
+
+			} finally {
+				close(appLogo);
+				close(osinermingLogo);
+			}
+
+			byte[] bytesSalida = output.toByteArray();
+			archivo.setPeso(bytesSalida.length * 1L);
+			archivo.setNroFolio(1L);
+			archivo.setContenido(bytesSalida);
+			return archivo;
+		}
+		//AFC
+		
+	
 	private Archivo generarInformeTecnicoPN(Solicitud solicitud, Asignacion asignacion, Contexto contexto) throws Exception {
 		Long idSolicitud = solicitud.getIdSolicitud();
 		Long idUsuario = asignacion.getUsuario().getIdUsuario();
@@ -3137,221 +3456,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 		archivo.setContenido(bytesSalida);
 		return archivo;
 	}
-	//AFC
-	private Archivo generarInformeAdministrativoPN(Solicitud solicitud, Asignacion asignacion, Contexto contexto) throws Exception {
-		Long idSolicitud = solicitud.getIdSolicitud();
-		Long idUsuario = asignacion.getUsuario().getIdUsuario();
-		Archivo archivo = new Archivo();
-		SimpleDateFormat sdf2=new SimpleDateFormat("ddMMyyyyhhmm");
-		String fechaHoy = sdf2.format(new Date());
-		archivo.setNombre("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
-		archivo.setNombreReal("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
-		archivo.setIdAsignacion(asignacion.getIdAsignacion());
-		archivo.setTipo("application/pdf");
-		archivo.setTipoArchivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
-				Constantes.LISTADO.TIPO_ARCHIVO.INFORME_ADMINISTRATIVO)); //CAMBIO
-		archivo.setIdSolicitud(idSolicitud);		
-		
-		List<OtroRequisito> otrosRequisitos = new ArrayList<OtroRequisito>();
-		List<OtroRequisito> otrosRequisitosAdm = new ArrayList<OtroRequisito>();
 
-		List<Asignacion> aprobadores = null;
-		StringBuilder observacionesConcatenadas = new StringBuilder();
-
-			otrosRequisitos = otroRequisitoService.listarOtroRequisitoXSolicitudAdmin( idSolicitud );
-			otrosRequisitosAdm = otroRequisitoService.listarOtroRequisitoXSolicitudAdminUser( idSolicitud );
-			
-			
-		String usuario = otrosRequisitosAdm.get(0).getUsuActualizacion();
-		Date fechaAct = asignacion.getFechaRegistro();
-		boolean observacionAgregada = false;
-
-		for (OtroRequisito requisito : otrosRequisitosAdm) {
-			if (!(requisito.getObservacion()== null)) { 
-				if (requisito.getObservacion().length() > 0) {
-					observacionesConcatenadas.append(requisito.getObservacion() + "\n"); 
-					observacionAgregada = true;
-		        }
-		    }
-			
-			if(usuario == null) {
-				if (requisito.getUsuActualizacion()!= null) {
-					usuario = requisito.getUsuActualizacion();
-					}
-			    }
-			if(fechaAct ==null) {
-				if (requisito.getFecActualizacion()!= null) {
-					fechaAct = requisito.getFecActualizacion();
-					}
-			    }
-			}
-	    if (!observacionAgregada) { 
-		      observacionesConcatenadas.append("Cumple con todos los requisitos solicitados."); 
-		      observacionAgregada = true;
-		   }
-		
-		for (OtroRequisito requisito : otrosRequisitos) {
-		//if ((requisito.getFecActualizacion()== null)) { 
-		//	requisito.setFecActualizacion(fechaAct);
-		//    }else {
-		     requisito.setFecActualizacion(fechaAct);
-		//    }
-		
-		}
-		
-		removerTerminosCondiciones(otrosRequisitos);
-		
-		solicitud.setObservacionAdmnistrativa(observacionesConcatenadas.substring(0));
-		solicitud.setOtrosRequisitos(otrosRequisitos);
-		aprobadores = asignacionService.buscarAprobadoresAdministrativos(idSolicitud,Long.parseLong(usuario));
-		solicitud.setAsignados(aprobadores);
-		File jrxml = new File(pathJasper + "Formato_informe_PN_admin.jrxml");
-		
-
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		logger.info("SUBREPORT_DIR: {}", pathJasper);
-		parameters.put("SUBREPORT_DIR", pathJasper);
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		JasperPrint print = null;
-		InputStream appLogo = null;
-		InputStream osinermingLogo = null;
-		try {
-			appLogo = new FileInputStream(pathJasper + "logo-sicoes.png");
-			osinermingLogo = new FileInputStream(pathJasper + "logo-osinerming.png");
-			parameters.put("P_LOGO_APP", appLogo);
-			parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
-			List<Solicitud> solicitudes = new ArrayList<Solicitud>();
-			solicitudes.add(solicitud);
-			JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
-			JasperReport jasperReport = getJasperCompilado(jrxml);
-			print = JasperFillManager.fillReport(jasperReport, parameters, ds);
-			output = new ByteArrayOutputStream();
-			JasperExportManager.exportReportToPdfStream(print, output);
-
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			close(appLogo);
-			close(osinermingLogo);
-		}
-
-		byte[] bytesSalida = output.toByteArray();
-		archivo.setPeso(bytesSalida.length * 1L);
-		archivo.setNroFolio(1L);
-		archivo.setContenido(bytesSalida);
-		return archivo;
-	}
-	
-	
-	private Archivo generarInformeAdministrativoPJ(Solicitud solicitud, Asignacion asignacion, Contexto contexto) throws Exception {
-		Long idSolicitud = solicitud.getIdSolicitud();
-		Long idUsuario = asignacion.getUsuario().getIdUsuario();
-		Archivo archivo = new Archivo();
-		SimpleDateFormat sdf2=new SimpleDateFormat("ddMMyyyyhhmm");
-		String fechaHoy = sdf2.format(new Date());
-		archivo.setNombre("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
-		archivo.setNombreReal("INFORME_RESULTADO_ADMINISTRATIVO_"+reemplazarCaracteres(asignacion.getUsuario().getUsuario().toUpperCase())+"_"+fechaHoy+".pdf");
-		archivo.setTipo("application/pdf");
-		archivo.setIdAsignacion(asignacion.getIdAsignacion());
-		archivo.setTipoArchivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
-				Constantes.LISTADO.TIPO_ARCHIVO.INFORME_ADMINISTRATIVO));
-		archivo.setIdSolicitud(idSolicitud);		
-		
-		List<OtroRequisito> otrosRequisitos = new ArrayList<OtroRequisito>();
-		List<OtroRequisito> otrosRequisitosAdm = new ArrayList<OtroRequisito>();
-
-		List<Asignacion> aprobadores = null;
-
-			otrosRequisitos = otroRequisitoService.listarOtroRequisitoXSolicitudAdmin(idSolicitud);
-			otrosRequisitosAdm = otroRequisitoService.listarOtroRequisitoXSolicitudAdminUser( idSolicitud );
-
-		StringBuilder observacionesConcatenadas = new StringBuilder();
-		String usuario = otrosRequisitosAdm.get(0).getUsuActualizacion();
-		Date fechaAct = asignacion.getFechaRegistro();		
-		boolean observacionAgregada = false;
-
-		for (OtroRequisito requisito : otrosRequisitosAdm) {
-			if (!(requisito.getObservacion()== null)) { 
-				if (requisito.getObservacion().length() > 0) {
-					observacionesConcatenadas.append(requisito.getObservacion() + "\n"); 
-					observacionAgregada = true;
-		        }
-				
-		    }
-			
-			if(usuario == null) {
-				if (requisito.getUsuActualizacion()!= null) {
-					usuario = requisito.getUsuActualizacion();
-					}
-			    }
-			if(fechaAct ==null) {
-				if (requisito.getFecActualizacion()!= null) {
-					fechaAct = requisito.getFecActualizacion();
-					}
-			    }
-			}
-	    if (!observacionAgregada) { 
-		      observacionesConcatenadas.append("Cumple con todos los requisitos solicitados."); 
-		      observacionAgregada = true;
-		   }
-		
-		for (OtroRequisito requisito : otrosRequisitos) {
-		//if ((requisito.getFecActualizacion()== null)) { 
-		//	requisito.setFecActualizacion(fechaAct);
-		//    }else {
-		     requisito.setFecActualizacion(fechaAct);
-		//    }
-		
-		}
-		
-		
-		removerTerminosCondiciones(otrosRequisitos);
-		
-		solicitud.setObservacionAdmnistrativa(observacionesConcatenadas.substring(0));
-		solicitud.setOtrosRequisitos(otrosRequisitos);
-		aprobadores = asignacionService.buscarAprobadoresAdministrativos(idSolicitud,Long.parseLong(usuario));
-		solicitud.setAsignados(aprobadores);
-
-		File jrxml = new File(pathJasper + "Formato_Informe_PJ_admin.jrxml");
-
-
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		logger.info("SUBREPORT_DIR: {}", pathJasper);
-		parameters.put("SUBREPORT_DIR", pathJasper);
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		JasperPrint print = null;
-		InputStream appLogo = null;
-		InputStream osinermingLogo = null;
-		try {
-			appLogo = new FileInputStream(pathJasper + "logo-sicoes.png");
-			osinermingLogo = new FileInputStream(pathJasper + "logo-osinerming.png");
-			parameters.put("P_LOGO_APP", appLogo);
-			parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
-			List<Solicitud> solicitudes = new ArrayList<Solicitud>();
-			solicitudes.add(solicitud);
-			JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
-			JasperReport jasperReport = getJasperCompilado(jrxml);
-			print = JasperFillManager.fillReport(jasperReport, parameters, ds);
-			output = new ByteArrayOutputStream();
-			JasperExportManager.exportReportToPdfStream(print, output);
-
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			close(appLogo);
-			close(osinermingLogo);
-		}
-
-		byte[] bytesSalida = output.toByteArray();
-		archivo.setPeso(bytesSalida.length * 1L);
-		archivo.setNroFolio(1L);
-		archivo.setContenido(bytesSalida);
-		return archivo;
-	}
-	//AFC
-	
 	@Override
 	public Archivo generarInformeTecnico(Long idSolicitud, Long idAsignacion, Contexto contexto) throws Exception {
 		Solicitud solicitud = obtenerSinAsignados(idSolicitud, contexto);
@@ -3362,20 +3467,20 @@ public class SolicitudServiceImpl implements SolicitudService {
 			return generarInformeTecnicoPN(solicitud,asignacion,contexto);
 		}
 	}
-
-	//AFC
-	@Override
-	public Archivo generarInformeAdministrativo(Long idSolicitud, Long idAsignacion, Contexto contexto) throws Exception {
-		Solicitud solicitud = obtenerSinAsignados(idSolicitud, contexto);
-		Asignacion asignacion = asignacionService.obtener(idAsignacion, contexto);
-		if (validarJuridicoPostor(solicitud.getSolicitudUuid())) {
-			return generarInformeAdministrativoPJ(solicitud,asignacion,contexto);
-		} else {
-			return generarInformeAdministrativoPN(solicitud,asignacion,contexto);
-		}
-	}
-	//AFC
 	
+	//AFC
+		@Override
+		public Archivo generarInformeAdministrativo(Long idSolicitud, Long idAsignacion, Contexto contexto) throws Exception {
+			Solicitud solicitud = obtenerSinAsignados(idSolicitud, contexto);
+			Asignacion asignacion = asignacionService.obtener(idAsignacion, contexto);
+			if (validarJuridicoPostor(solicitud.getSolicitudUuid())) {
+				return generarInformeAdministrativoPJ(solicitud,asignacion,contexto);
+			} else {
+				return generarInformeAdministrativoPN(solicitud,asignacion,contexto);
+			}
+		}
+		//AFC
+
 	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 	public void subirDocumentoTecnicos(Contexto contexto) {
 		logger.info("subirDocumentoTecnicos Inicio");
@@ -3417,46 +3522,47 @@ public class SolicitudServiceImpl implements SolicitudService {
 	}
 	
 	//AFC
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-	public void subirDocumentoAdministrativos(Contexto contexto) {
-		logger.info("subirDocumentoAdministrativos Inicio");
-		List<Archivo> archivos=archivoService.obtenerDocumentoTecnicosPendientes(contexto);
-		for(Archivo archivoAux:archivos) {
-			subirDocumentoAdministrativos(archivoAux, contexto);
-		}
-		logger.info("subirDocumentoAdministrativos Fin");
-	}
-	
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-	public void subirDocumentoAdministrativos(Archivo archivoAux,Contexto contexto) {
-		logger.info("subirDocumentoAdministrativos Inicio");
-		Archivo archivo = archivoService.obtenerContenido(archivoAux.getIdArchivo(), contexto);
-		List<File> archivosAlfresco=new ArrayList<File>();
-		try {
-			File file = null;
-			try {
-				File dir = new File(pathTemporal + File.separator +"temporales"+ File.separator+ archivo.getIdSolicitud());
-				if (!dir.exists()) {
-					dir.mkdirs();
-				}
-				file = new File(pathTemporal + File.separator +"temporales"+ File.separator+ archivo.getIdSolicitud() + File.separator + archivo.getNombreReal());
-				FileUtils.writeByteArrayToFile(file, archivo.getContenido());
-			} catch (Exception e) {
-				logger.error(e.getMessage(), e);				
+		@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+		public void subirDocumentoAdministrativos(Contexto contexto) {
+			logger.info("subirDocumentoAdministrativos Inicio");
+			List<Archivo> archivos=archivoService.obtenerDocumentoTecnicosPendientes(contexto);
+			for(Archivo archivoAux:archivos) {
+				subirDocumentoAdministrativos(archivoAux, contexto);
 			}
-			archivosAlfresco.add(file);				
-			Asignacion asignacion=asignacionService.obtener(archivo.getIdAsignacion(), contexto);
-			Solicitud solicitud=obtener(archivo.getIdSolicitud(), contexto);
-			ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentosAdminstrativos(solicitud,getInteger(asignacion.getUsuario().getCodigoUsuarioInterno()),contexto);
-			DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
-			logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
-		} catch (Exception e) {
-			logger.error("ERROR 3 {} ", e.getMessage(), e);
-			throw new ValidacionException(e);								
+			logger.info("subirDocumentoAdministrativos Fin");
 		}
-		logger.info("subirDocumentoAdministrativos Fin");
-	}
-	//AFC
+		
+		@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+		public void subirDocumentoAdministrativos(Archivo archivoAux,Contexto contexto) {
+			logger.info("subirDocumentoAdministrativos Inicio");
+			Archivo archivo = archivoService.obtenerContenido(archivoAux.getIdArchivo(), contexto);
+			List<File> archivosAlfresco=new ArrayList<File>();
+			try {
+				File file = null;
+				try {
+					File dir = new File(pathTemporal + File.separator +"temporales"+ File.separator+ archivo.getIdSolicitud());
+					if (!dir.exists()) {
+						dir.mkdirs();
+					}
+					file = new File(pathTemporal + File.separator +"temporales"+ File.separator+ archivo.getIdSolicitud() + File.separator + archivo.getNombreReal());
+					FileUtils.writeByteArrayToFile(file, archivo.getContenido());
+				} catch (Exception e) {
+					logger.error(e.getMessage(), e);				
+				}
+				archivosAlfresco.add(file);				
+				Asignacion asignacion=asignacionService.obtener(archivo.getIdAsignacion(), contexto);
+				Solicitud solicitud=obtener(archivo.getIdSolicitud(), contexto);
+				ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentosAdminstrativos(solicitud,getInteger(asignacion.getUsuario().getCodigoUsuarioInterno()),contexto);
+				DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+				logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
+			} catch (Exception e) {
+				logger.error("ERROR 3 {} ", e.getMessage(), e);
+				throw new ValidacionException(e);								
+			}
+			logger.info("subirDocumentoAdministrativos Fin");
+		}
+		//AFC
+	
 	@Override
 	public Solicitud obtenerUltimaSolicitudPresentadaPorUsuario(Contexto contexto) {
 		Long idUsuario = -1L;
@@ -3480,6 +3586,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 		
 		Solicitud currentSolicitud = null;
 		currentSolicitud = solicitudDao.obtener(idSolicitud);
+		List<OtroRequisito> perfiles = otroRequisitoService.listarOtroRequisito(Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL, idSolicitud);
 		
 		//ID_ESTADO_LD
 		ListadoDetalle estado = listadoDetalleService.obtener(Long.parseLong("72"), contexto);		
@@ -3489,6 +3596,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 		ListadoDetalle estadoRevision = listadoDetalleService.obtener(Long.parseLong("77"), contexto);		
 		currentSolicitud.setEstadoRevision(estadoRevision);
 		
+		//NULL DE PERFILES
+		for(OtroRequisito perfil : perfiles){
+			perfil.setPerfil(null);
+		}
+		currentSolicitud.setPerfiles(perfiles);
+
 		//FL_ACTIVO
 		currentSolicitud.setFlagActivo(Long.parseLong("0"));
 		
@@ -3509,30 +3622,44 @@ public class SolicitudServiceImpl implements SolicitudService {
 	public void cancelarSolicitud(String solicitudUuid, Contexto contexto) {
 		
 		Long idSolicitud = solicitudDao.obtenerId(solicitudUuid);
-		
+
 		Solicitud currentSolicitud = null;
 		currentSolicitud = solicitudDao.obtener(idSolicitud);
-		
-		//ID_ESTADO_LD
-		ListadoDetalle estado = listadoDetalleService.obtener(Long.parseLong("72"), contexto);		
+		List<OtroRequisito> perfiles = otroRequisitoService
+				.listarOtroRequisito(Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL, idSolicitud);
+
+		// ID_ESTADO_LD
+		ListadoDetalle estado = listadoDetalleService.obtener(Long.parseLong("72"), contexto);
 		currentSolicitud.setEstado(estado);
-		
-		//ID_ESTADO_REVISION_LD
-		ListadoDetalle estadoRevision = listadoDetalleService.obtener(Long.parseLong("77"), contexto);		
+
+		// ID_ESTADO_REVISION_LD
+		ListadoDetalle estadoRevision = listadoDetalleService.obtener(Long.parseLong("77"), contexto);
 		currentSolicitud.setEstadoRevision(estadoRevision);
-		
-		//FL_ACTIVO
+
+		// FL_ACTIVO
 		currentSolicitud.setFlagActivo(Long.parseLong("0"));
-		
-		//US_ACTUALIZACION
+
+		// NULL DE PERFILES
+		for (OtroRequisito perfil : perfiles) {
+			perfil.setPerfil(null);
+		}
+		currentSolicitud.setPerfiles(perfiles);
+
+		// US_ACTUALIZACION
 		currentSolicitud.setUsuActualizacion("user");
-		
-		//FE_ACTUALIZACION
+
+		// FE_ACTUALIZACION
 		currentSolicitud.setFecActualizacion(new Date());
-		
-		//IP_ACTUALIZACION
+
+		// IP_ACTUALIZACION
 		currentSolicitud.setIpActualizacion(contexto.getIp());
-		
+
 		solicitudDao.save(currentSolicitud);
 	}
+
+	@Override
+	public List<Long> obtenerSubsectoresXUsuarioSolicitud(String uuid, Long idUsuario) {
+		return solicitudDao.obtenerSubsectoresXUsuarioSolicitud(uuid, idUsuario);
+	}
+
 }

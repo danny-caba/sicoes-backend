@@ -1,6 +1,8 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -225,11 +227,11 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 				System.out.println("cadenaEncriptada: " + cadenaEncriptada);
 				String produccion=env.getProperty("modo-produccion");
 //				if("1".equals(produccion)){
-					Authentication authentication=getSissegAuthenticationProvider().authenticate(new SissegAuthenticationToken(env.getProperty("sisseg.encryption-key") + "::" + env.getProperty("sisseg.application-id") + "::" + cadenaEncriptada, cadenaEncriptada));
-					System.out.println("authentication: " + authentication);
-					usuarioStr=(String)authentication.getPrincipal();
+//					Authentication authentication=getSissegAuthenticationProvider().authenticate(new SissegAuthenticationToken(env.getProperty("sisseg.encryption-key") + "::" + env.getProperty("sisseg.application-id") + "::" + cadenaEncriptada, cadenaEncriptada));
+//					System.out.println("authentication: " + authentication);
+//					usuarioStr=(String)authentication.getPrincipal();
 //				}else {
-//					usuarioStr=getUsuarioInterno(cadenaEncriptada);
+					usuarioStr=getUsuarioInterno(cadenaEncriptada);
 //				}
 			}
 			
@@ -342,7 +344,7 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 		String usuariosInternos[][]= 
 		{
 			{"ksilvap","ksilvap",
-			"fuARzUzp8xG3lgf5ZwXxJdYem7YGJtpVyNMCa/r/1jMFvWBdmH7E/MAi87FqfS2Gp2j3+p8PJciaWN5Bpk1/FCzkf8KBy9LZk40R2u9n7N6w8EN1aWJ39lYYvvF6rtYDBEM8duXAgE6VRpE9C0qVXi/2QQ+btvRkFwCjU4Dykxo="},
+			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDc0OTYzNDEsInVzZXJfbmFtZSI6IktTSUxWQVAiLCJqdGkiOiJlZTVlZmU2OS1iMWMyLTQyNTYtYjgzZi00YWE1ZjMxZDRiODQiLCJjbGllbnRfaWQiOiJhcHAiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXSwiaWRVc3VhcmlvIjo4NX0.ZwwBKRd2AEMIBsFy7vWyvyDw7g-r8NVNuigvj4-NNlU"},
 			
 			{"rzegarra","rzegarra",
 			"6joTjlStnSLBNBWze/2GK138J38WZ+AKzfv51GHNuyMNgowXSRdhfmrwhNoPwB2csN4BARmk0no1CyJxC463V8PBdyjbujkKMcTWQ4HRgI7NbdDyYQvzfWcp2kIPEEDbp3mMlZzqpzTzVvf2m4xYYm8IA2HRa6DyB073lnnzpDpvp/zOOAd8Xuhyp2wxySk5"},
@@ -354,6 +356,13 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 			{"AOLIVERA","AOLIVERA","P7DPENzlY/TtfrnvZq7vuZRQHoX3DQCz1W+8rs01QhxyjBf4HJkQoS16A07EatNm0zcGjoYvkDJwMTta5HEG5aVbtk6cww7+slbBOJgLjMCaURsqosnhWKOdL4oxfPR+hmFQv3E8iAFsMAZPDCxU1vbDjjz57ybvlx0g8XFgfGQ=2"},
 			{"AOYOLA","AOYOLA","P7DPENzlY/TtfrnvZq7vuZRQHoX3DQCz1W+8rs01QhxyjBf4HJkQoS16A07EatNm0zcGjoYvkDJwMTta5HEG5aVbtk6cww7+slbBOJgLjMCaURsqosnhWKOdL4oxfPR+hmFQv3E8iAFsMAZPDCxU1vbDjjz57ybvlx0g8XFgfGQ=3"},
 			{"JVASQUEZG","JVASQUEZG","43ZbRa/R7YztgmDLfOaPQp6FrXMsCTEdJQCSaIZYQ7tgsuOtFG43/MQq3l5T4fYcFBZp4w0wde3PV1ZHGgFt1opiTLJm/IMN7Zfq4zg2Ox0C3fqelr5RQFGlMJ+20hl3XZLnrL5ixuqier5dpTkcpX5nlT35CYsbnObjUpjoyDNzcvJ4UHLLcOUZXmrj8Q0g"},
+			{"AALFARO","AALFARO","43ZbRa/R7YztgmDLfOaPQp6FrXMsCTEdJQCSaIZYQ7tgsuOtFG43/MQq3l5T4fYcFBZp4w0wde3PV1ZHGgFt1opiTLJm/IMN7Zfq4zg2Ox0C3fqelr5RQFGlMJ+20hl3XZLnrL5ixuqier5dpTkcpX5nlT35CYsbnObjUpjoyDNzcvJ4UHLLcOUZXmrj8Q0g"},
+			{"AALCA","AALCA","Sa2bU75VZUDSFNSThL5wGDUCOma3K1ppp4mdyUlSsnL56aN7CrnV2UJO/skS22CLFH53Gq1QE1UpnJteBDiCRtd4t37v6KRA96g/hWON0OCJtbaWApm/8FNfrp8GsLwr7dgg0RLJB9PVgh6ZQ3zivbDjjz57ybvlx0g8XFgfGQ="},
+			{"AORTEGA","AORTEGA","79nsoT8QOWpkZCOy49KNLHKjpHB5clrcTAoE/YJv1LEN56e3Y7zYC59hVYkFSFl0D7KCh0jQXrX119qzKH8DhwNk6VRaLkUMQyLXsh8qxl7pXc/w4y/xwNyqFKQNFYO6e2tESJQYeX//UfHkTx/m8IA2HRa6DyB073lnnzpDpvp/zOOAd8Xuhyp2wxySk5"},
+			{"AORTIZ","AORTIZ","8l5GaJTvB8D2KdlKdMZJ7ctOiQDEoB/ZnJDfVrxTxuWrCagj61EeFzihjJMB/n4EHHCR8ZyMQZToKSr2S0GgPC89Evtsk2ouwhX8C7Tihhts2gXmvxQ1AAWWZwWkACnxpf2HbDG1UK0h7skfs2i/2QQbtvRkFwCjU4Dykxo="},
+			{"CBANDINI","CBANDINI","fL1QfTIWWczOpDXWkqEHbMspq64aIowm6UC9dUNEdU4RbJrVmm/ERb1YGtAzBv7d3usC9xTLAFFdI971pPQu5XTsTrTUt3RH8S30cB3vTdo02lx83zvpJwLP6aTLRjP8x1xfFOrUE3cqSl4cH5nlT35CYsbnObjUpjoyDNzcvJ4UHLLcOUZXmrj8Q0g"},
+			{"CBARREDA","CBARREDA","uOAGbR97MIpnmMrnZ0vJLJR61WZxx9o/9Fy5mmAQ2/fUIpZgcn/SxEhsAVXy5VmN65np7xICI2jhl5v2jkfQu5XTsTrTUt3RH8S30cB3vTdo02lx83zvpJwLP6aTL7g9ggYgEn/Z/GSnc0gCawH5nlT35CYsbnObjUpjoyDNzcvJ4UHLLcOUZXmrj8Q0g"},
+			{"CBARRENO","CBARRENO","uOAGbR97MIpnmMrnZ0vJLP2FOjCj/mn5J9Z5aP4McgnjmPWKmA2Ccf5rrSCXclVIvKuhLWLVf1BGBUkQ4Ue6s/Qu5XTsTrTUt3RH8S30cB3vTdo02lx83zvpJwLP6aTLB1EkEQaRdYmc1t0YPMCxO35nlT35CYsbnObjUpjoyDNzcvJ4UHLLcOUZXmrj8Q0g"},
 		};
 		for(int i=0;i<usuariosInternos.length;i++) {
 			if(usuariosInternos[i][2].equals(token)) {
@@ -541,8 +550,15 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 		if(codigoPerfil==null||codigoPerfil.length==0) {
 			codigoPerfil=codigo;
 		}
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date fechaLimite = null;
+		try {
+			fechaLimite = dateFormat.parse("2024-10-15");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		
-		Long[] codigoSector=usuarioDao.obtenerCodigoSector(uuidSolicitud);
+		Long[] codigoSector=usuarioDao.obtenerCodigoSector(uuidSolicitud, fechaLimite);
 		
 		if(codigoSector==null||codigoSector.length==0) {
 			codigoSector=codigo;

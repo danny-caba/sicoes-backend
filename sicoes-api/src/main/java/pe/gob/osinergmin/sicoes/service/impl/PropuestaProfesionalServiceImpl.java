@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
 import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.repository.PropuestaDao;
 import pe.gob.osinergmin.sicoes.repository.PropuestaProfesionalDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.ProcesoEtapaService;
@@ -57,6 +59,9 @@ public class PropuestaProfesionalServiceImpl implements PropuestaProfesionalServ
 	
 	@Autowired
 	private PropuestaService propuestaService;
+	
+	@Autowired
+	private PropuestaDao propuestaDao;
 	
 	@Autowired
 	private SupervisoraService supervisoraService;
@@ -99,12 +104,21 @@ public class PropuestaProfesionalServiceImpl implements PropuestaProfesionalServ
 		Propuesta propuesta = propuestaService.obtener(propuestaProfesional.getPropuesta().getPropuestaUuid(), contexto);
 		
 		Supervisora supervisora = supervisoraService.obtener(propuestaProfesional.getSupervisora().getIdSupervisora(),contexto);
-		
+		Propuesta propuestaBD = propuestaDao.obtener(propuesta.getPropuestaUuid());
+	    Long idProcesoItem = propuestaBD.getProcesoItem().getIdProcesoItem();  // Declarar e inicializar idProcesoItem
 		List<SupervisoraMovimiento> movimientos = supervisoraMovimientoService.listarXProfesional(supervisora.getIdSupervisora(),propuestaProfesional.getSubsector().getIdListadoDetalle());
+		List<SupervisoraMovimiento> movimientosItem = supervisoraMovimientoService.listarXProfesionalXItem(supervisora.getIdSupervisora(),propuestaProfesional.getSubsector().getIdListadoDetalle());
 
-		if(movimientos.size()>0 && Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO.equals(movimientos.get(0).getEstado().getCodigo()) ) {
-			throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROF_BLOQUEADO);
-		}
+		//if(movimientos.size()>0 && Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO.equals(movimientos.get(0).getEstado().getCodigo()) ) {
+			//throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROF_BLOQUEADO);
+		//}
+
+		if (movimientosItem.size() > 0 
+			    && Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO.equals(movimientosItem.get(0).getEstado().getCodigo()) 
+			    && !movimientosItem.get(0).getPropuestaProfesional().getPropuesta().getProcesoItem().getIdProcesoItem().equals(idProcesoItem)) {
+				
+			    throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROF_BLOQUEADO);
+			}
 		
 		
 //		List<SupervisoraPerfil> listPerfSuper = supervisoraPerfilService.buscar(supervisora.getIdSupervisora(), contexto);
@@ -233,9 +247,9 @@ public class PropuestaProfesionalServiceImpl implements PropuestaProfesionalServ
 		
 		List<SupervisoraMovimiento> movimientos = supervisoraMovimientoService.listarXProfesional(supervisora.getIdSupervisora(),propuestaProfesional.getSubsector().getIdListadoDetalle());
 
-		if(movimientos.size()>0 && Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO.equals(movimientos.get(0).getEstado().getCodigo()) ) {
-			throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROF_BLOQUEADO);
-		}
+		//if(movimientos.size()>0 && Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO.equals(movimientos.get(0).getEstado().getCodigo()) ) {
+			//throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROF_BLOQUEADO);
+		//}
 		List<SupervisoraPerfil> perfiles = supervisoraPerfilService.buscar(supervisora.getIdSupervisora(), propuestaProfesionalBD.getSector().getIdListadoDetalle(), propuestaProfesionalBD.getSubsector().getIdListadoDetalle());
 
 		for(SupervisoraPerfil perfil:perfiles) {
@@ -348,7 +362,12 @@ public class PropuestaProfesionalServiceImpl implements PropuestaProfesionalServ
 	public List<PropuestaProfesional> listar(String propuestaUuid, Contexto contexto) {
 		return propuestaProfesionalDao.listarXpropuesta(propuestaUuid);
 	}
-	
+
+	@Override
+	public List<PropuestaProfesional> listarPorId(Long id, Contexto contexto) {
+		return propuestaProfesionalDao.findAllById(Collections.singleton(id));
+	}
+
 	@Override
 	public List<PropuestaProfesional> listarAceptados(String propuestaUuid, Contexto contexto) {
 		return propuestaProfesionalDao.listarAceptados(propuestaUuid);

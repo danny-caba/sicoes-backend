@@ -234,6 +234,11 @@ public class SupervisoraServiceImpl implements SupervisoraService{
 		return supervisoraDao.obtenerXCodigo(codigoCliente);
 	}
 
+	@Override
+	public Supervisora obtenerPorCodigoUsuario(Long codigoUsuario, Contexto contexto) {
+		return supervisoraDao.obtenerPorCodigoUsuario(codigoUsuario);
+	}
+
 	@Transactional(rollbackFor = Exception.class)
 	public void cancelar(Supervisora supervisora) {
 		supervisora.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUPERVISORA.CODIGO, Constantes.LISTADO.ESTADO_SUPERVISORA.CANCELADO));

@@ -146,6 +146,15 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	@Query(value="select a from Archivo a "
 			+ "left join fetch a.tipoArchivo ta "
 			+ "left join fetch a.estado e "
+			+ "where ta.codigo=:codigo " 
+			+ "and :idProceso = a.idProceso ",
+			countQuery = "select count(a) from Archivo a where a.tipoArchivo.codigo=:codigo "
+					+ "and :idProceso = a.idProceso ")		
+	public Page<Archivo> buscarArchivoProceso(String codigo,Long idProceso, Pageable pageable);
+	
+	@Query(value="select a from Archivo a "
+			+ "left join fetch a.tipoArchivo ta "
+			+ "left join fetch a.estado e "
 			+ " where ta.codigo=:codigo and a.idSolicitud=:idSolicitud ")
 	public Archivo obtenerTipoArchivo(Long idSolicitud, String codigo);
 
@@ -218,5 +227,21 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	@Modifying
 	@Query(value="update Archivo set flagSiged=flagSiged+:estado where idArchivo=:idArchivo  ")
 	public void actualizarEstado(Long idArchivo,Long estado);
+
+	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+ "left join fetch a.tipoArchivo ta "
+			+ "where a.idProceso = :idProceso "
+			+ "and ta.idListadoDetalle = :idListadoDetalle ")
+	public Archivo obtenerArchivoXlsPorProceso(Long idProceso, Long idListadoDetalle);
+
+	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+ "where a.idSeccionRequisito = :idPerfContrato ")
+	public List<Archivo> buscarPorPerfContrato(Long idPerfContrato);
+
+	@Query("select a from Archivo a "
+			+ "where a.idSeccionRequisito IN :requisitosIds ")
+	public List<Archivo> obtenerArchivosPorRequisitos(List<Long> requisitosIds);
 
 }

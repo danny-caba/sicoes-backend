@@ -961,7 +961,7 @@ public class AsignacionServiceImpl implements AsignacionService{
 			List<PerfilAprobador> perfilAprobadorSaliente = new ArrayList<PerfilAprobador>();
 			perfilAprobadorSaliente = perfilAprobadorDao.obtenerPerfilAprobadorPorIdAprobadorG2(usuarioSaliente.getIdUsuario());
 			
-			if (perfilAprobadorSaliente != null && perfilAprobadorSaliente.get(0).getPerfil().getIdListadoDetalle() != null) {
+			if (perfilAprobadorSaliente != null) {
 				
 				PerfilDivision perfilDivision = perfilAprobador.obtenerPerfilDivisionPorIdPerfil(perfilAprobadorSaliente.get(0).getPerfil().getIdListadoDetalle());
 				
@@ -1173,5 +1173,31 @@ public class AsignacionServiceImpl implements AsignacionService{
 		acceso.setPasswordUsuario(user.getContrasenia());
 		
 		return acceso;
+	}
+
+	@Override
+	public Asignacion validarAprobador(Asignacion asignacion, Contexto contexto) {
+		//Validar que algun aprobador de grupo este en asignado
+
+		if(asignacion.getSolicitud()==null&&asignacion.getSolicitud().getSolicitudUuid()==null) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_SOLICITUD_NO_ENVIADO);
+		}
+		Long idSolicitud = solicitudService.obtenerId(asignacion.getSolicitud().getSolicitudUuid());
+
+		ListadoDetalle tipoAprobador = listadoDetalleService.obtener(asignacion.getTipo().getIdListadoDetalle(), contexto);
+		ListadoDetalle grupoAprobador = listadoDetalleService.obtener(asignacion.getGrupo().getIdListadoDetalle(), contexto);
+		List<Asignacion> asignados = asignacionDao.obtenerAsignados(idSolicitud, tipoAprobador.getIdListadoDetalle(), grupoAprobador.getIdListadoDetalle());
+
+		if (asignados.isEmpty() || asignados == null) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ASIGNACION_FUERA_PROCESO);
+		} else {
+			boolean existeAsignado = asignados.stream()
+					.anyMatch(a -> a.getEvaluacion() != null &&
+							Constantes.LISTADO.RESULTADO_APROBACION.ASIGNADO.equals(a.getEvaluacion().getCodigo()));
+			if (existeAsignado) {
+				asignacion.setEvaluacion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_APROBACION.CODIGO, Constantes.LISTADO.RESULTADO_APROBACION.ASIGNADO));
+			}
+		}
+		return asignacion;
 	}
 }

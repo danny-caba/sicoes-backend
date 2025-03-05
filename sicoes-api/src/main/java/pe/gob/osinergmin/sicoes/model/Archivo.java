@@ -55,7 +55,10 @@ public class Archivo extends BaseModel implements Serializable {
 	private Long idNotificacionSolicitud;
 	
 	@Column(name = "ID_NOTIFICACION")	
-	private Long idNotificacion;	
+	private Long idNotificacion;
+	
+	@Column(name = "ID_PROCESO")	
+	private Long idProceso;
 	
 	@Column(name = "ID_ASIGNACION")	
 	private Long idAsignacion;
@@ -103,7 +106,9 @@ public class Archivo extends BaseModel implements Serializable {
 	
 	@Column(name="FL_SIGED")	
 	private Long flagSiged;
-	
+
+	@Column(name = "ID_DET_SOLI_PERF_CONT")
+	private Long idSeccionRequisito;
 	
 	@Transient
 	private MultipartFile file;
@@ -354,4 +359,19 @@ public class Archivo extends BaseModel implements Serializable {
 		this.flagSiged = flagSiged;
 	}
 
+	public Long getIdProceso() {
+		return idProceso;
+	}
+
+	public void setIdProceso(Long idProceso) {
+		this.idProceso = idProceso;
+	}
+
+	public Long getIdSeccionRequisito() {
+		return idSeccionRequisito;
+	}
+
+	public void setIdSeccionRequisito(Long idSeccionRequisito) {
+		this.idSeccionRequisito = idSeccionRequisito;
+	}
 }

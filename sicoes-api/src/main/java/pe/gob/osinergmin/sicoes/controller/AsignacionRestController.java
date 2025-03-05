@@ -63,7 +63,8 @@ public class AsignacionRestController extends BaseRestController{
 	@PostMapping("/aprobadores")
 	public Asignacion registrarAprobador(@RequestBody Asignacion asignacion) {
 		logger.info("registrarAprobador {} ",asignacion);
-		 return asignacionService.guardarAprobador(asignacion,getContexto());
+		asignacion = asignacionService.validarAprobador(asignacion, getContexto());
+		return asignacionService.guardarAprobador(asignacion,getContexto());
 	}
 	
 	@PutMapping("/aprobadores/{id}")

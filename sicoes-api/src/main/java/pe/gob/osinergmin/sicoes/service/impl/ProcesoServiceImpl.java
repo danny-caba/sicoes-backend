@@ -18,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.Paces;
 import pe.gob.osinergmin.sicoes.model.Proceso;
+import pe.gob.osinergmin.sicoes.model.ProcesoDocumento;
 import pe.gob.osinergmin.sicoes.model.ProcesoEtapa;
 import pe.gob.osinergmin.sicoes.model.ProcesoItem;
 import pe.gob.osinergmin.sicoes.model.ProcesoItemPerfil;
@@ -26,9 +28,11 @@ import pe.gob.osinergmin.sicoes.model.ProcesoMiembro;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.repository.PacesDao;
 import pe.gob.osinergmin.sicoes.repository.ProcesoDao;
 import pe.gob.osinergmin.sicoes.repository.ProcesoItemDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.ProcesoDocumentoService;
 import pe.gob.osinergmin.sicoes.service.ProcesoEtapaService;
 import pe.gob.osinergmin.sicoes.service.ProcesoItemPerfilService;
 import pe.gob.osinergmin.sicoes.service.ProcesoItemService;
@@ -58,6 +62,9 @@ public class ProcesoServiceImpl implements ProcesoService {
 
 	@Autowired
 	private ProcesoItemService procesoItemService;
+	
+	@Autowired
+	private ProcesoDocumentoService procesoDocumentoService;
 
 	@Autowired
 	private ProcesoMiembroService procesoMiembroService;
@@ -80,6 +87,9 @@ public class ProcesoServiceImpl implements ProcesoService {
 	@Autowired
 	MessageSource messageSource;
 
+	@Autowired
+	private PacesDao pacesDao;
+	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Proceso guardar(Proceso proceso, Contexto contexto) {
@@ -129,6 +139,18 @@ public class ProcesoServiceImpl implements ProcesoService {
 			}
 			procesoBD.setUsuario(contexto.getUsuario());
 			procesoBD.setUsuarioCreador(contexto.getUsuario());
+					
+			AuditoriaUtil.setAuditoriaRegistro(procesoBD,contexto);
+			procesoBD.setIdProceso( procesoDao.save(procesoBD).getIdProceso());
+			
+			if(pacesDao.findById(proceso.getIdPace()).isPresent())				
+			{
+				Paces opcionBD=pacesDao.findById(proceso.getIdPace()).get();				
+				opcionBD.setIdProceso(procesoBD.getIdProceso());												
+				AuditoriaUtil.setAuditoriaActualizacion(opcionBD, contexto);
+				pacesDao.save(opcionBD);											
+			}
+			
 		} else {
 			procesoBD = procesoDao.obtener(proceso.getProcesoUuid());
 			ListadoDetalle estadoProceso = listadoDetalleService.obtener(proceso.getEstado().getIdListadoDetalle(),
@@ -158,9 +180,12 @@ public class ProcesoServiceImpl implements ProcesoService {
 					procesoBD.setEstado(estadoProceso);
 				}
 			}
+			AuditoriaUtil.setAuditoriaRegistro(procesoBD,contexto);
+			procesoBD.setIdProceso( procesoDao.save(procesoBD).getIdProceso());
 		}
-		AuditoriaUtil.setAuditoriaRegistro(procesoBD,contexto);
-		procesoDao.save(procesoBD);
+		/*AuditoriaUtil.setAuditoriaRegistro(procesoBD,contexto);
+		procesoBD.setIdProceso( procesoDao.save(procesoBD).getIdProceso());*/
+												
 		return procesoBD;
 	}
 
@@ -232,7 +257,8 @@ public class ProcesoServiceImpl implements ProcesoService {
 		// FIXME: EL PRESIDENTE Y PRIMER MIEMBRO TIENE QUE SER CONFIGURABLES
 
 		if (!((presidente.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
-				|| (primerMiembro.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno())))) {
+				|| (primerMiembro.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
+				|| (miembro3.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno())))) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.NO_ERES_M_PRESIDENTE);
 		}
 
@@ -256,11 +282,12 @@ public class ProcesoServiceImpl implements ProcesoService {
 	@Override
 	public Proceso obtener(String uuid, Contexto contexto) {
 		Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
-		Proceso proceso = procesoDao.obtener(uuid);
-		ProcesoEtapa procesoEtapa = procesoEtapaService.obtener(proceso.getIdProceso(), contexto);
-		Page<ProcesoItem> listProcesoItem = procesoItemService.listarItems(proceso.getProcesoUuid(), pageable,
-				contexto);
-
+	    Proceso proceso = procesoDao.obtener(uuid);
+	    List<ProcesoEtapa> procesoEtapas = procesoEtapaService.obtenerProcesosEtapa(proceso.getIdProceso(), contexto);
+		//ProcesoEtapa procesoEtapa = procesoEtapaService.obtener(proceso.getIdProceso(), contexto);
+	    Page<ProcesoItem> listProcesoItem = procesoItemService.listarItems(proceso.getProcesoUuid(), pageable, contexto);
+	    Page<ProcesoDocumento> listProcesoDocumento = procesoDocumentoService.listarDocumentos(proceso.getIdProceso(), pageable, contexto);
+	    
 		ProcesoMiembro presidente = procesoMiembroService.obtenerXtipo(uuid,
 				Constantes.LISTADO.CARGO_MIEMBRO.C_PRESIDENTE, contexto);
 		ProcesoMiembro primerMiembro = procesoMiembroService.obtenerXtipo(uuid,
@@ -268,15 +295,19 @@ public class ProcesoServiceImpl implements ProcesoService {
 		ProcesoMiembro miembro3 = procesoMiembroService.obtenerXtipo(uuid, Constantes.LISTADO.CARGO_MIEMBRO.C_MIEMBRO,
 				contexto);
 		if ((presidente != null) && (primerMiembro != null) && (miembro3 != null)) {
-			proceso.setMiembros(true);
-		} else {
-			proceso.setMiembros(false);
-		}
-		proceso.setDatosGenerales(true);
-		proceso.setEtapa(procesoEtapa != null);
-		proceso.setItems(listProcesoItem != null && !listProcesoItem.isEmpty());
-		return proceso;
+	        proceso.setMiembros(true);
+	    } else {
+	        proceso.setMiembros(false);
+	    }
+
+	    proceso.setDatosGenerales(true);
+	    proceso.setEtapa(procesoEtapas != null && !procesoEtapas.isEmpty());
+	    //proceso.setEtapa(procesoEtapa != null);
+	    proceso.setItems(listProcesoItem != null && !listProcesoItem.isEmpty());
+	    proceso.setInformacion(listProcesoDocumento != null && !listProcesoDocumento.isEmpty());
+	    return proceso;
 	}
+	
 
 	@Override
 	public void eliminar(Long idProceso, Contexto contexto) {
@@ -298,7 +329,8 @@ public class ProcesoServiceImpl implements ProcesoService {
 			// FIXME: EL PRESIDENTE Y PRIMER MIEMBRO TIENE QUE SER CONFIGURABLES
 			if (procesoMiembro != null && (Constantes.LISTADO.CARGO_MIEMBRO.C_PRESIDENTE
 					.equals(procesoMiembro.getCargo().getCodigo())
-					|| Constantes.LISTADO.CARGO_MIEMBRO.C_PRIMER.equals(procesoMiembro.getCargo().getCodigo()))) {
+					|| Constantes.LISTADO.CARGO_MIEMBRO.C_PRIMER.equals(procesoMiembro.getCargo().getCodigo())
+					|| Constantes.LISTADO.CARGO_MIEMBRO.C_MIEMBRO.equals(procesoMiembro.getCargo().getCodigo()))) {
 				proceso.setEditar(true);
 			} else {
 				proceso.setEditar(false);
@@ -415,6 +447,41 @@ public class ProcesoServiceImpl implements ProcesoService {
 			
 		return validaciones;
 	}
+
+
+	@Override
+	public Page<Proceso> listarProcesosSeleccion(Long idEstado, String nombreArea, String nombreProceso,
+			Pageable pageable, Contexto contexto) {
+		return this.procesoDao.buscar(idEstado, nombreArea, nombreProceso, pageable);
+	}
+
+
+	@Override
+	public Proceso obtenerPublico(String uuid, Contexto contexto) {
+		Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
+	    Proceso proceso = procesoDao.obtener(uuid);
+	    List<ProcesoEtapa> procesoEtapas = procesoEtapaService.obtenerProcesosEtapa(proceso.getIdProceso(), contexto);
+	    Page<ProcesoItem> listProcesoItem = procesoItemService.listarItems(proceso.getProcesoUuid(), pageable, contexto);
+
+
+//		ProcesoMiembro presidente = procesoMiembroService.obtenerXtipo(uuid,
+//				Constantes.LISTADO.CARGO_MIEMBRO.C_PRESIDENTE, contexto);
+//		ProcesoMiembro primerMiembro = procesoMiembroService.obtenerXtipo(uuid,
+//				Constantes.LISTADO.CARGO_MIEMBRO.C_PRIMER, contexto);
+//		ProcesoMiembro miembro3 = procesoMiembroService.obtenerXtipo(uuid, Constantes.LISTADO.CARGO_MIEMBRO.C_MIEMBRO,
+//				contexto);
+//		if ((presidente != null) && (primerMiembro != null) && (miembro3 != null)) {
+//	        proceso.setMiembros(true);
+//	    } else {
+	        proceso.setMiembros(false);
+//	    }
+
+	    proceso.setDatosGenerales(true);
+	    proceso.setEtapa(procesoEtapas != null && !procesoEtapas.isEmpty());
+	    proceso.setItems(listProcesoItem != null && !listProcesoItem.isEmpty());
+	    return proceso;
+	}
+
 
 
 }

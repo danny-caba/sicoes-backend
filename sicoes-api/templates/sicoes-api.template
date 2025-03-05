@@ -42,6 +42,13 @@ siged.ws.path.obtener.id.archvivo=${siged_ws_path_obtener_id_archvivo}
 siged.ws.path.firma.digital=${siged_ws_path_firma_digital}
 sisseg.ws.url=${sisseg_ws_url}
 gsm.ws.url=${gsm_ws_url}
+siged.ws.cliente.osinergmin.tipo.documento=${tipo_documento}
+siged.ws.cliente.osinergmin.ubigeo=${ubigeo_osinergmin}
+siged.ws.cliente.osinergmin.numero.documento=${numero_documento_osinergmin}
+crear.expediente.parametros.tipo.documento.crear.anexo=${tipo_documento_anexo}
+
+#recaptcha
+recaptcha.key.secret=${recaptcha_key_secret}
 
 # Variables con valores fijos
 
@@ -146,3 +153,15 @@ osce.bus.server.usuario=UserBusGeneric
 osce.bus.server.password=weblogic1
 osce.ws.path.sancion.vigente=/SRV_AP0404-58_OSCE/osce/obtenerSancionVigente/v1.1 
 osce.ws.path.sancion.vigente.PN=${sancion_vigente_pn}
+
+osce.ws.path.sancion.vigente.PN=${sancion_vigente_pn}
+
+siged.titulo.absolucion=Absolucion de Consultas y Bases Integradas
+siged.ws.path.buscar.cliente=/siged-rest-old/remote/cliente/find
+crear.expediente.parametros.crea.expediente.no=N
+
+#recaptcha
+recaptcha.ws.url=https://www.google.com/recaptcha/api/siteverify
+recaptcha.score=0.1
+
+

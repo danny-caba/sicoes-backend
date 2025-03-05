@@ -17,6 +17,9 @@ import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
+import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
+import gob.osinergmin.siged.rest.util.ClienteInvoker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -67,6 +70,8 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 	private String SIGED_PATH_LISTAR_USUARIOS;
 	@Value("${siged.ws.path.obtener.usuario}")
 	private String SIGED_PATH_OBTENER_USUARIO;
+	@Value("${siged.ws.path.buscar.cliente}")
+	private String SIGED_PATH_BUSCAR_CLIENTE;
 	
 	
 	@Override
@@ -262,6 +267,15 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
             throw ex;
 		}
 		
+	}
+
+	@Override
+	public ClienteConsultaOutRO buscarCliente(Integer tipoIdentificacion, String nroIdentificacion) {
+		ClienteInRO clienteInRO = new ClienteInRO();
+		clienteInRO.setCodigoTipoIdentificacion(tipoIdentificacion);
+		clienteInRO.setNroIdentificacion(nroIdentificacion);
+		String url= SIGED_WS_URL + SIGED_PATH_BUSCAR_CLIENTE;
+		return ClienteInvoker.find(url, clienteInRO);
 	}
 	
 }

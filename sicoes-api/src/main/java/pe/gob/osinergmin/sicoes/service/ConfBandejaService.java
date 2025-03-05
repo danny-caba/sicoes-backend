@@ -16,7 +16,7 @@ public interface ConfBandejaService extends BaseService<ConfiguracionBandeja, Lo
 
 	public ConfiguracionBandeja obtener(Long idConfBandeja,Contexto contexto);
 	public void actualizarEstadoConfigBandeja(ConfiguracionBandeja configuracionBandeja,Contexto contexto);
-	public ConfiguracionBandeja registrarConfiguracionBandeja(ConfiguracionBandeja configuracionBandeja,Contexto contexto);
+	List<Map<String, List<ConfiguracionBandeja>>> registrarConfiguracionBandeja(ConfiguracionBandeja configuracionBandeja,Contexto contexto);
 	public ConfiguracionBandeja actualizarConfiguracionBandeja(ConfiguracionBandeja configuracionBandeja,Contexto contexto);
 	public Map<String, Object> listarConfigBandejaPorIdUsuario(Long idUsuario, Long idPerfil, Long idRol, int offset, int pageSize);
 	public List<ConfiguracionBandeja> listarConfiguracionesReasignadas(Long idUsuario);

@@ -83,7 +83,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
 
-	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Archivo archivo) {			
+	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Archivo archivo) {
 		
 		try {
 			
@@ -115,7 +115,11 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/SOLICITUD/"+idSolicitud;	
 	        }else if(archivo.getIdPropuesta()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PROPUESTA/"+idPropuesta;
-	        }else {
+	        }else if(archivo.getIdProceso()!=null) {
+	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PROCESO/"+idProceso;
+	        }else if(archivo.getIdSeccionRequisito()!=null) {
+	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_REQUISITO/"+idSeccionRequisito;
+			}else {
 	        	logger.info("Sin path enviar idSolicitud o idPropuesta "+path);
 	        }
 	        
@@ -263,7 +267,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + numeroExpediente + "/1";
 		Long idArchivo = 0L;
 		Date fechaCreacion = null;
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		
 		try {			
 			RestTemplate restTemplate = new RestTemplate();

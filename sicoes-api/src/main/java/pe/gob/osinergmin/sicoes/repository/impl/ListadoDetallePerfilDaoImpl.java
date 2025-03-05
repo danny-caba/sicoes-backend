@@ -221,9 +221,21 @@ public class ListadoDetallePerfilDaoImpl implements ListadoDetallePerfilDao{
 						"			SICOES_TR_OTRO_REQUISITO RO								"+
 						"		WHERE														"+
 						"			SO.ID_USUARIO = " + idUsuario						+ " "+
+						"			AND SO.ID_ESTADO_LD = 72								"+
 						//"			AND (SO.ID_ESTADO_LD = 1 OR SO.ID_ESTADO_LD = 2 OR SO.ID_ESTADO_LD = 3)	"+
-						" 			AND ((SO.ID_ESTADO_LD NOT IN (70, 71, 72, 73, 74) AND RO.ID_EVALUACION_LD <> 142)"+ //afc
-						"           AND (SO.ID_ESTADO_LD <> 657 AND RO.ID_EVALUACION_LD NOT IN (141, 142, 143)) )"+
+						"           AND (RO.ID_EVALUACION_LD=141 AND SO.ID_RESUL_ADMIN=141)"+
+						"			AND RO.ID_SOLICITUD = SO.ID_SOLICITUD					"+
+						"			AND RO.ID_PERFIL_LD IS NOT NULL							"+
+						"			AND PE.ID_LISTADO_DETALLE = RO.ID_PERFIL_LD				"+
+						"		)"+
+						"AND NOT EXISTS (													"+
+						"		SELECT 1													"+
+						"		FROM														"+
+						"			SICOES_TR_SOLICITUD SO,									"+
+						"			SICOES_TR_OTRO_REQUISITO RO								"+
+						"		WHERE														"+
+						"			SO.ID_USUARIO = " + idUsuario						+ " "+
+						"			AND SO.ID_ESTADO_LD NOT IN (72, 657, 71)					"+
 						"			AND RO.ID_SOLICITUD = SO.ID_SOLICITUD					"+
 						"			AND RO.ID_PERFIL_LD IS NOT NULL							"+
 						"			AND PE.ID_LISTADO_DETALLE = RO.ID_PERFIL_LD				"+

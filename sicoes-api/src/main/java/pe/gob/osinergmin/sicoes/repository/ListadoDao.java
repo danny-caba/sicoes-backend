@@ -17,9 +17,13 @@ public interface ListadoDao extends JpaRepository<Listado, Long> {
 	
 	@Query("select l from Listado l "			
 			+ "where l.codigo=:codigo")	
-		public Listado obtener(String codigo);
+	public Listado obtener(String codigo);
 	
 	@Query(value="select l from Listado l ",
 			countQuery = "select count(l) from Listado l ")			
-			Page<Listado> buscar(Pageable pageable);
+	Page<Listado> buscar(Pageable pageable);
+
+	@Query("select l from Listado l "
+			+ "where l.codigo=:codigo")
+	Listado obtenerPorCodigo(String codigo);
 }

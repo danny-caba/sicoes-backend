@@ -24,8 +24,18 @@ public interface ProcesoEtapaDao extends JpaRepository<ProcesoEtapa, Long> {
 	@Query("select e from ProcesoEtapa e "	
 			+ "left join fetch e.etapa et "
 			+ "left join fetch e.proceso p "
-		+ "where p.idProceso=:idProceso")	
+		+ "where p.idProceso=:idProceso AND e.etapa = 744")	
 	public ProcesoEtapa obtener(Long idProceso);
+	
+	@Query("select e from ProcesoEtapa e " + 
+		       "left join fetch e.etapa et " +
+		       "left join fetch e.proceso p " +
+		"where p.idProceso = :idProceso")
+	public List<ProcesoEtapa> obtenerProcesosEtapa(Long idProceso);
+	
+	@Query("SELECT pe FROM ProcesoEtapa pe "
+			+ "WHERE pe.proceso.procesoUuid = :procesoUuid")
+	public List<ProcesoEtapa> buscarPorProceso(String procesoUuid);
 	
 	@Query(value="select e from ProcesoEtapa e "
 			+ "left join fetch e.etapa et "
@@ -50,5 +60,18 @@ public interface ProcesoEtapaDao extends JpaRepository<ProcesoEtapa, Long> {
 			+ "left join fetch e.proceso p "
 		+ "where p.procesoUuid=:procesoUuid")	
 	public List<ProcesoEtapa> buscar(String procesoUuid);
+	
+	@Query("select e from ProcesoEtapa e " +
+	           "left join fetch e.etapa et " +
+	           "left join fetch e.proceso p " +
+		"where p.procesoUuid = :procesoUuid " +
+		"and et.idListadoDetalle = :idEtapa")
+	List<ProcesoEtapa> buscarExiste(String procesoUuid, Long idEtapa);
+
+	@Query(value="select e.proceso.idProceso, e.etapa.idListadoDetalle from ProcesoEtapa e " +
+			"where e.etapa.idListadoDetalle = :idListadoDetalle " +
+			"and trunc(e.fechaFin) = trunc(sysdate - 1)")
+	List<Object[]> obtenerProcesosEtapaFormulacionConsulta(Long idListadoDetalle);
 
 }
+ 

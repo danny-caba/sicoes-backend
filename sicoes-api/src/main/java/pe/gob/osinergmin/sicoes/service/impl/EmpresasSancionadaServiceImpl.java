@@ -3,6 +3,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -36,6 +37,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -82,6 +87,7 @@ public class EmpresasSancionadaServiceImpl implements EmpresasSancionadaService 
 //			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EMPRESA_SANCIONADA);
 //		}
 		return resultado;
+//		return "NO";
 	}
 
 	@Override
@@ -127,8 +133,72 @@ public class EmpresasSancionadaServiceImpl implements EmpresasSancionadaService 
         }
 		return resultadoValue;
 	}
-	
-	 private static SOAPMessage createSOAPRequestWithHeader(String codigoRuc) throws Exception {
+
+	@Override
+	public List<String[]> validadSancionV2(String codigoRuc) {
+		List<String[]> resultados = new ArrayList<>();
+
+		String urlBase = PIDO_BUS_SERVER;
+		String urlService = OSCE_SANCION_VIGENTE;
+		try {
+
+			// Crear una conexión SOAP
+			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
+			SOAPConnection soapConnection = soapConnectionFactory.createConnection();
+
+			// URL del servicio SOAP
+			String url = urlBase+urlService;
+			System.out.println("Valor de url: " + url);
+			// Crear la solicitud SOAP con encabezado
+			SOAPMessage soapMessage = createSOAPRequestWithHeader(codigoRuc);
+
+			// Enviar la solicitud SOAP y obtener la respuesta
+			MimeHeaders headers = soapMessage.getMimeHeaders();
+			headers.setHeader("Content-Type", "application/soap+xml");
+
+			SOAPMessage soapResponse = soapConnection.call(soapMessage, url);
+			SOAPBody soapBody = soapResponse.getSOAPBody();
+
+			String namespace = "http://soa.osinergmin.gob.pe/service/osce/proveedoresinhabilitados/obtenerSancionVigente/v1.0";
+
+			// Buscar el elemento <ns2:resultado>
+			NodeList resultadoNodes = soapBody.getElementsByTagNameNS(namespace, "resultado");
+			if (resultadoNodes.getLength() > 0) {
+				Node resultadoNode = resultadoNodes.item(0);
+				String resValue = resultadoNode.getTextContent();
+				String resName = resultadoNode.getNodeName();
+
+				resultados.add(new String[]{resName, resValue});
+
+				if (resultadoNode.getTextContent().equals("1")) {
+					NodeList sancionNodes = soapBody.getElementsByTagNameNS(namespace, "sancion");
+					for (int i = 0; i < sancionNodes.getLength(); i++) {
+						Node sancionNode = sancionNodes.item(i);
+						NodeList subNodes = sancionNode.getChildNodes();
+						for (int j = 0; j < subNodes.getLength(); j++) {
+							Node subNode = subNodes.item(j);
+							if (subNode.getNodeType() == Node.ELEMENT_NODE) {
+								resultados.add(new String[]{subNode.getNodeName(), subNode.getTextContent().trim()});
+							}
+						}
+					}
+				}
+
+//				logger.info("Valor de <ns2:resultado>: " + resultadoNode.getTextContent());
+			} else {
+//				logger.info("Elemento <ns2:resultado> no encontrado.");
+			}
+
+			// Cerrar la conexión
+			soapConnection.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resultados;
+	}
+
+	private static SOAPMessage createSOAPRequestWithHeader(String codigoRuc) throws Exception {
 		 	ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
 
 	        // Formatear la fecha y hora al formato deseado
@@ -235,7 +305,17 @@ public class EmpresasSancionadaServiceImpl implements EmpresasSancionadaService 
 		            
 		            if(status.equalsIgnoreCase("success")) {
 		            	JSONObject result = jsonResponse.getJSONObject("result");
-		            	fechaCeseStr   = result.optString("fechaCese", null);
+		            	String descripcionPuesto = result.optString("descripcionPuesto", null);
+
+		            	if (descripcionPuesto != null && !descripcionPuesto.isEmpty()) {
+		                    if (descripcionPuesto.toUpperCase().contains("PRACTICANTE") || descripcionPuesto.toUpperCase().contains("CONSEJO DIRECTIVO") ) {
+		                        fechaCeseStr = "2"; // Si la descripción contiene 'PRACTICANTE'
+		                    } else {
+		                        fechaCeseStr = result.optString("fechaCese", null); // Extraer fecha de cese si no es practicante
+		                    }
+		                } else {
+		                    fechaCeseStr = result.optString("fechaCese", null); // Extraer fecha de cese si no hay puesto
+		                }
 	
 		            }
 	            }
@@ -323,6 +403,88 @@ public class EmpresasSancionadaServiceImpl implements EmpresasSancionadaService 
 	        }
 	    
 		return valor;
+	}
+
+	@Override
+	public Map<String, String> validadSancionPersonNaturalV2(String documento) {
+		Map<String, String> resultados = new HashMap<>();
+		String valor = "2";
+		String fechaCeseStr = null;
+		String areaOperativa = null;
+		String fechaIngreso = null;
+		String descripcionPuesto = null;
+		try {
+			// Define la URL base y los parámetros
+			String dni = documento.substring(2, 10);
+			String baseUrl = urlSancionVigentePN;
+			String document = dni;
+			String codigoAplicativo = "SICOES";
+			String codigoConsulta = "A50";
+
+			// Construir la URL con parámetros
+			String urlWithParams = String.format(
+					"%s?documento=%s&codigoAplicativo=%s&codigoConsulta=%s",
+					baseUrl,
+					URLEncoder.encode(document, StandardCharsets.UTF_8.toString()),
+					URLEncoder.encode(codigoAplicativo, StandardCharsets.UTF_8.toString()),
+					URLEncoder.encode(codigoConsulta, StandardCharsets.UTF_8.toString())
+			);
+			System.out.println("Valor de urlWithParams: " + urlWithParams);
+			// Crear una URL y abrir una conexión
+			URL url = new URL(urlWithParams);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+
+			// Leer la respuesta
+			int responseCode = con.getResponseCode();
+			System.out.println("Response Code: " + responseCode);
+			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				System.out.println("Error 404: Recurso no encontrado.");
+				// Aquí puedes manejar el caso cuando la respuesta es 404
+				fechaCeseStr = "2"; // O cualquier lógica que desees aplicar en caso de un 404
+			} else if (responseCode == HttpURLConnection.HTTP_OK) {
+				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+				String inputLine;
+				StringBuilder response = new StringBuilder();
+
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				in.close();
+
+
+				// Convertir la respuesta a JSON y extraer el campo `status`
+				JSONObject jsonResponse = new JSONObject(response.toString());
+				String status = jsonResponse.getString("status");
+
+				if(status.equalsIgnoreCase("success")) {
+					JSONObject result = jsonResponse.getJSONObject("result");
+					descripcionPuesto = result.optString("descripcionPuesto", null);
+					areaOperativa = result.optString("areaOperativa", null);
+					fechaIngreso = result.optString("fechaIngreso", null);
+
+					if (descripcionPuesto != null && !descripcionPuesto.isEmpty()) {
+						if (descripcionPuesto.toUpperCase().contains("PRACTICANTE") || descripcionPuesto.toUpperCase().contains("CONSEJO DIRECTIVO") ) {
+							fechaCeseStr = "2"; // Si la descripción contiene 'PRACTICANTE'
+						} else {
+							fechaCeseStr = result.optString("fechaCese", null); // Extraer fecha de cese si no es practicante
+						}
+					} else {
+						fechaCeseStr = result.optString("fechaCese", null); // Extraer fecha de cese si no hay puesto
+					}
+
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		resultados.put("fechaCeseStr", fechaCeseStr);
+		resultados.put("areaOperativa", areaOperativa);
+		resultados.put("fechaIngreso", fechaIngreso);
+		resultados.put("descripcionPuesto", descripcionPuesto);
+
+		return resultados;
 	}
 }
 

@@ -40,11 +40,12 @@ public class Supervisora extends BaseModel implements Serializable {
 	private String numeroExpediente;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_PERSONA_LD")	
+
+	@JoinColumn(name="ID_TIPO_PERSONA_LD")
 	private ListadoDetalle tipoPersona;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_DOCUMENTO_LD")	
+	@JoinColumn(name="ID_TIPO_DOCUMENTO_LD")
 	private ListadoDetalle tipoDocumento;
 	
 	@Column(name="NU_DOCUMENTO")	
@@ -144,6 +145,18 @@ public class Supervisora extends BaseModel implements Serializable {
 	@Transient
 	private SupervisoraMovimiento movimiento;
 	
+	@Transient
+	private List<SupervisoraDictamen> facturacion;
+	
+	
+	public List<SupervisoraDictamen> getFacturacion() {
+		return facturacion;
+	}
+
+	public void setFacturacion(List<SupervisoraDictamen> facturacion) {
+		this.facturacion = facturacion;
+	}
+
 	@Transient
 	private SupervisoraPerfil perfil;
 
@@ -427,5 +440,4 @@ public class Supervisora extends BaseModel implements Serializable {
 		this.suspensionCancelacion = suspensionCancelacion;
 	}
 
-	
 }

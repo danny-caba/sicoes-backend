@@ -8,6 +8,7 @@ import gob.osinergmin.siged.remote.rest.ro.base.BaseOutRO;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
+import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
 import pe.gob.osinergmin.sicoes.model.dto.ResponseUsuarioSigedDTO;
 import pe.gob.osinergmin.sicoes.util.bean.siged.ResponseUserListDto;
 
@@ -19,6 +20,6 @@ public interface SigedApiConsumer {
 	public BaseOutRO archivarExpediente(String numeroExpediente, String observacion);
 	public List<ResponseUserListDto.Usuario> listarUsuariosSiged() throws Exception;
 	public ResponseUsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
-	
+	public ClienteConsultaOutRO buscarCliente(Integer tipoIdentificacion, String nroIdentificacion);
 	
 }

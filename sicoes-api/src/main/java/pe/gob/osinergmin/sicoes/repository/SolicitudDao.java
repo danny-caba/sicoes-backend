@@ -259,7 +259,6 @@ public interface SolicitudDao extends JpaRepository<Solicitud, Long> {
 			Long idEstadoSolicitud, String nroExpediente, String solicitante, Long idEstadoRevision,Long idEstadoEvalTecnica,Long idEstadoEvalAdministrativa, Long idUsuario,
 			String codigoEstadoBorrador, Pageable pageable);
 	
-	
 	@Query(value="select s from Solicitud s "
 			+ "left join fetch s.representante r "
 			+ "left join fetch s.persona p "
@@ -378,5 +377,10 @@ public interface SolicitudDao extends JpaRepository<Solicitud, Long> {
 			+ "and u.idUsuario = :idUsuario and s.flagActivo = 1 "			
 			+ "order by s.fechaPresentacion desc, s.fechaRegistro desc")
 	public List<Solicitud> listarSolicitudesPresentadasPorIdUsuario(Long idUsuario);
+
+	@Query(value = "SELECT DISTINCT stor.ID_SUBSECTOR_LD FROM SICOES_TR_OTRO_REQUISITO stor " + //
+				" INNER JOIN SICOES_TR_SOLICITUD sts ON stor.ID_SOLICITUD = sts.ID_SOLICITUD " + //
+				" WHERE sts.CO_UUID = :uuid AND ID_USUARIO_FIN = :idUsuario ", nativeQuery = true)
+	public List<Long> obtenerSubsectoresXUsuarioSolicitud(String uuid,Long idUsuario);
 
 }

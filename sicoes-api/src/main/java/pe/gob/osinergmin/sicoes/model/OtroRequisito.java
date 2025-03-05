@@ -17,6 +17,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.eclipse.persistence.annotations.Convert;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
@@ -53,6 +55,10 @@ public class OtroRequisito extends BaseModel implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_ACTIVIDAD_LD")	
 	private ListadoDetalle actividad;	
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_ACTIVIDAD_AREAS_LD")	
+	private ListadoDetalle actividadArea;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_SUBCATEGORIA_LD")	
@@ -122,13 +128,31 @@ public class OtroRequisito extends BaseModel implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_REVERSION")
 	private ListadoDetalle estadoReversion;
-	
+
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
 	@Column(name="FE_ACTUALIZACION")
 	private Date fecActualizacion;
 	
+	@Column(name = "MO_FACTURADO_SECTOR")
+	private Double montoFacturadoSector;
+	
+	@Column(name = "REQUISITO_PRINCIPAL")
+    private Integer requisitoPrincipal;  // Valor por defecto en Java
 
+	// Getter y setter manuales para convertir a booleano
+    public boolean isNuevaColumna() {
+        return requisitoPrincipal != null && requisitoPrincipal == 1;
+    }
+
+    public void setNuevaColumna(boolean nuevaColumna) {
+        this.requisitoPrincipal = nuevaColumna ? 1 : 0;
+    }
+    
+    public OtroRequisito() {
+        this.requisitoPrincipal = 1; // true por defecto
+    }
+	
 	@Transient
 	private Archivo archivo;
 	@Transient
@@ -140,6 +164,14 @@ public class OtroRequisito extends BaseModel implements Serializable {
 	@Transient
 	private String evaluadorFinalizador;
 	
+
+	public ListadoDetalle getActividadArea() {
+		return actividadArea;
+	}
+
+	public void setActividadArea(ListadoDetalle actividadArea) {
+		this.actividadArea = actividadArea;
+	}
 
 	public Long getIdOtroRequisito() {
 		return idOtroRequisito;
@@ -356,6 +388,14 @@ public class OtroRequisito extends BaseModel implements Serializable {
 	public void setFechaFinalizador(Date fechaFinalizador) {
 		this.fechaFinalizador = fechaFinalizador;
 	}
+	
+	public Date getFecActualizacion() {
+		return fecActualizacion;
+	}
+
+	public void setFecActualizacion(Date fecActualizacion) {
+		this.fecActualizacion = fecActualizacion;
+	}
 
 	public Date getFechaAsignacion() {
 		return fechaAsignacion;
@@ -373,13 +413,13 @@ public class OtroRequisito extends BaseModel implements Serializable {
 		this.estadoReversion = estadoReversion;
 	}
 
-	public Date getFecActualizacion() {
-		return fecActualizacion;
+	public Double getMontoFacturadoSector() {
+		return montoFacturadoSector;
 	}
 
-	public void setFecActualizacion(Date fecActualizacion) {
-		this.fecActualizacion = fecActualizacion;
+	public void setMontoFacturadoSector(Double montoFacturadoSector) {
+		this.montoFacturadoSector = montoFacturadoSector;
 	}	
 	
-	
+		
 }

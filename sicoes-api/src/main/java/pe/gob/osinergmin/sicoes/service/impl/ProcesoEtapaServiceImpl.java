@@ -71,7 +71,7 @@ public class ProcesoEtapaServiceImpl implements ProcesoEtapaService {
 			if(!Constantes.LISTADO.ESTADO_PROCESO.EN_ELABORACION.equals(proceso.getEstado().getCodigo())) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.AGREGAR_ELABORACION);
 			}
-			List<ProcesoEtapa> etapas =procesoEtapaDao.buscar(etapa.getProceso().getProcesoUuid());
+	        List<ProcesoEtapa> etapas = procesoEtapaDao.buscarExiste(etapa.getProceso().getProcesoUuid(), etapa.getEtapa().getIdListadoDetalle());
 			for(ProcesoEtapa otraEtapa:etapas) {
 				ListadoDetalle etapaBuscada=listadoDetalleService.obtener(otraEtapa.getEtapa().getIdListadoDetalle(), contexto);
 				if(etapaActual.getCodigo().equals(etapaBuscada.getCodigo())) {
@@ -128,8 +128,16 @@ public class ProcesoEtapaServiceImpl implements ProcesoEtapaService {
 					Constantes.LISTADO.ESTADO_PROCESO.CERRADO.equals(proceso.getEstado().getCodigo()))) {
 				etapaBD.setFechaFin(etapa.getFechaFin());
 			}
-			
+			// Obtener todas las etapas del proceso
+		    List<ProcesoEtapa> etapasExistentes = procesoEtapaDao.buscarPorProceso(etapaBD.getProceso().getProcesoUuid());
+		    for (ProcesoEtapa existente : etapasExistentes) {
+		        if (existente.getEtapa().getOrden() < etapaBD.getEtapa().getOrden() && 
+		        	existente.getFechaInicio().compareTo(etapaBD.getFechaInicio()) > 0) {
+		            throw new ValidacionException("La fecha de inicio no puede ser anterior a la fecha de inicio de una etapa anterior");
+		        }
+		    }
 		}
+		
 		AuditoriaUtil.setAuditoriaRegistro(etapaBD,contexto);
 		procesoEtapaDao.save(etapaBD);
 		return etapaBD;
@@ -144,6 +152,11 @@ public class ProcesoEtapaServiceImpl implements ProcesoEtapaService {
 	public ProcesoEtapa obtener(Long id, Contexto contexto) {
 		return procesoEtapaDao.obtener(id);
 	}
+	
+	@Override
+	public List<ProcesoEtapa> obtenerProcesosEtapa(Long idProceso, Contexto contexto) {
+	    return procesoEtapaDao.obtenerProcesosEtapa(idProceso);
+	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -154,7 +167,12 @@ public class ProcesoEtapaServiceImpl implements ProcesoEtapaService {
 
 	@Override
 	public List<ProcesoEtapa> listar(String procesoUuid, Contexto contexto) {
-		return  procesoEtapaDao.buscar(procesoUuid);
+		return procesoEtapaDao.buscar(procesoUuid);
+	}
+
+	@Override
+	public List<Object[]> listarEtapasFormulacionConsultas(Long idListadoDetalle) {
+		return procesoEtapaDao.obtenerProcesosEtapaFormulacionConsulta(idListadoDetalle);
 	}
 
 }

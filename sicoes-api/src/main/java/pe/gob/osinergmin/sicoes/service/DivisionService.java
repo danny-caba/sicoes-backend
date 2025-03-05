@@ -5,7 +5,9 @@ import java.util.List;
 import pe.gob.osinergmin.sicoes.model.Division;
 
 public interface DivisionService extends BaseService<Division, Long> {
-	
-	public List<Division> listarDivisionesPorIdProfesion(Long idProfesion);
 
+	List<Division> listarDivisiones();
+	public List<Division> listarDivisionesPorIdProfesion(Long idProfesion);
+	List<Division> listarDivisionesPorUsuario(Long idUsuario);
+	
 }

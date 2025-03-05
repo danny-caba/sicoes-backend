@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.DictamenEvaluacion;
+import pe.gob.osinergmin.sicoes.model.PropuestaConsorcio;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -117,5 +118,15 @@ public interface SupervisoraDictamenDao extends JpaRepository<SupervisoraDictame
 			String nombres,
 			Date fechaInicio,
 			Date fechaFin);
+	
+	
+	@Query("select d "
+		       + "from SupervisoraDictamen d "
+		       + "join d.supervisora s "
+		       + "join PropuestaConsorcio p on p.supervisora.idSupervisora = s.idSupervisora "
+		       + "where p.propuestaTecnica.idPropuestaTecnica = :idPropuestaTecnica "
+		       + "and d.sector.idListadoDetalle = :idSectorListadoDetalle")
+		List<SupervisoraDictamen> obtenerConsorciosConFacturado(Long idPropuestaTecnica, Long idSectorListadoDetalle);
+
 	
 }

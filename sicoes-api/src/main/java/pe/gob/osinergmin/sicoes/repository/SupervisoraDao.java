@@ -77,6 +77,12 @@ public interface SupervisoraDao extends JpaRepository<Supervisora, Long> {
 			+ "left join fetch s.pais p "
 			+ "where s.codigoCliente=:codigoCliente")
 	public Supervisora obtenerXCodigo(Long codigoCliente);
+
+	@Query("select s from Supervisora s "
+			+ "left join fetch s.tipoDocumento td "
+			+ "left join fetch s.pais p "
+			+ "where s.idSupervisora=:codigoUsuario")
+	public Supervisora obtenerPorCodigoUsuario(Long codigoUsuario);
 	
 	@Query(value="select s from Supervisora s "
 			+ "left join fetch s.tipoDocumento td "

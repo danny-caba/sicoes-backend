@@ -1,6 +1,8 @@
 package pe.gob.osinergmin.sicoes.repository;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,7 +67,39 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "where so.idSolicitud=:idSolicitud and t.codigo=:tipoRequisito ")			
 	public Page<OtroRequisito> listarOtroRequisito(Long idSolicitud,String tipoRequisito,Pageable pageable);
 	
-	@Query("select o from OtroRequisito o "	
+	@Query(value="select o from OtroRequisito o "	
+			+ "left join fetch o.tipo t "
+			+ "left join fetch o.subsector ss "
+			+ "left join fetch o.tipoRequisito tr "
+			+ "left join fetch o.sector s "
+			+ "left join fetch o.subCategoria sc "
+			+ "left join fetch o.unidad u "
+			+ "left join fetch o.perfil p "
+			+ "left join fetch o.evaluacion e "
+			+ "left join fetch o.resultado r "
+			+ "left join fetch o.solicitud so "
+			+ "left join fetch o.finalizado fn "
+			+ "left join fetch o.usuario us "
+			+ "where so.idSolicitud=:idSolicitud and t.codigo=:tipoRequisito and "
+			+ "((o.actividadArea is not null and o.tipo = "+91+" ) "
+			+ "OR (o.tipo  <> "+91+") OR (o.actividad is not null and o.unidad is not null) "
+			+ "OR (o.fecCreacion <= :fechaCreacion)"
+			+ ") order by tr.orden asc, o.fecCreacion desc ",
+	countQuery = "select count(o) from OtroRequisito o "	
+			+ "left join o.tipo t "
+			+ "left join o.subsector ss "
+			+ "left join o.tipoRequisito tr "
+			+ "left join o.sector s "
+			+ "left join o.subCategoria sc "
+			+ "left join o.unidad u "
+			+ "left join o.perfil p "
+			+ "left join o.evaluacion e "
+			+ "left join o.solicitud so "
+			+ "where so.idSolicitud=:idSolicitud and t.codigo=:tipoRequisito and "
+			+ "((o.actividadArea is not null and o.tipo  = "+91+" ) or (o.tipo  <> "+91+") OR (o.actividad is not null and o.unidad is not null))")			
+	public Page<OtroRequisito> listarOtroRequisitoEvaluardor(Long idSolicitud,String tipoRequisito, Date fechaCreacion,Pageable pageable);
+
+	@Query("select o from OtroRequisito o "
 			+ "left join fetch o.tipo t "
 			+ "left join fetch o.tipoRequisito tr "
 			+ "left join fetch o.sector s "
@@ -79,7 +113,8 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join fetch o.solicitud so "
 			+ "left join fetch o.finalizado fn "
 			+ "left join fetch o.usuario us "
-			+ "where so.idSolicitud=:idSolicitud and t.codigo=:tipoRequisito order by tr.orden asc, o.fecCreacion asc ")			
+			+ "where so.idSolicitud = :idSolicitud and t.codigo = :tipoRequisito and (:tipoRequisito != 'PERFIL' or o.actividadArea is not null or o.perfil is not null or FUNCTION('TRUNC', o.fecCreacion) <= FUNCTION('TO_DATE', '16/10/2024', 'DD/MM/YYYY')) "
+			+ "order by tr.orden asc, o.fecCreacion asc")
 	public List<OtroRequisito> listarOtroRequisito(String tipoRequisito,Long idSolicitud);
 	
 	@Query("select o from OtroRequisito o "	
@@ -113,9 +148,43 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join fetch o.solicitud so "
 			+ "left join fetch o.finalizado fn "
 			+ "left join fetch o.usuario us "
+			+ "where so.idSolicitud=:idSolicitud and ss.idListadoDetalle=:idListadoDetalle order by tr.orden asc, o.fecCreacion asc ")			
+	public List<OtroRequisito> listarOtroRequisitoXSubSector(Long idListadoDetalle, Long idSolicitud);
+	
+	@Query("select o from OtroRequisito o "	
+			+ "left join fetch o.tipo t "
+			+ "left join fetch o.tipoRequisito tr "
+			+ "left join fetch o.sector s "
+			+ "left join fetch o.subsector ss "
+			+ "left join fetch o.actividad ac "
+			+ "left join fetch o.subCategoria sc "
+			+ "left join fetch o.unidad u "
+			+ "left join fetch o.perfil p "
+			+ "left join fetch o.evaluacion e "
+			+ "left join fetch o.resultado r "
+			+ "left join fetch o.solicitud so "
+			+ "left join fetch o.finalizado fn "
+			+ "left join fetch o.usuario us "
+			+ "left join fetch o.actividadArea aa "
+			+ "where so.idSolicitud=:idSolicitud and ss.idListadoDetalle=:idListadoDetalle and aa.idListadoDetalle=:idActividadArea order by tr.orden asc, o.fecCreacion asc ")			
+	public List<OtroRequisito> listarOtroRequisitoXSubSectorXArea(Long idListadoDetalle, Long idSolicitud, Long idActividadArea);
+	
+	@Query("select o from OtroRequisito o "	
+			+ "left join fetch o.tipo t "
+			+ "left join fetch o.tipoRequisito tr "
+			+ "left join fetch o.sector s "
+			+ "left join fetch o.subsector ss "
+			+ "left join fetch o.actividad ac "
+			+ "left join fetch o.subCategoria sc "
+			+ "left join fetch o.unidad u "
+			+ "left join fetch o.perfil p "
+			+ "left join fetch o.evaluacion e "
+			+ "left join fetch o.resultado r "
+			+ "left join fetch o.solicitud so "
+			+ "left join fetch o.finalizado fn "
+			+ "left join fetch o.usuario us "
 			+ "where so.idSolicitud=:idSolicitud and t.codigo=:tipoRequisito and o.idOtroRequisitoPadre is not null")		
 	public List<OtroRequisito> listarOtroRequisitoObservado(String tipoRequisito,Long idSolicitud);
-	
 	
 	@Query("select o from OtroRequisito o "	
 			+ "left join fetch o.tipo t "
@@ -132,8 +201,6 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join fetch o.usuario us "
 			+ "where so.idSolicitud=:idSolicitud and t.codigo=:tipoRequisito and (o.flagSiged is null  or o.flagSiged=0)  order by tr.orden asc ")			
 	public List<OtroRequisito> listarOtroRequisitoEstado(String tipoRequisito,Long idSolicitud);
-	
-	
 	
 	@Query("select o from OtroRequisito o "	
 			+ "left join fetch o.tipo t "
@@ -185,7 +252,22 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "and p.idListadoDetalle=:idPerfil "
 			+ "and (:idOtroRequisito is null or o.idOtroRequisito<>:idOtroRequisito)")
 	public Long exiteRequisito(Long idSolicitud, Long idPerfil, Long idOtroRequisito);
-
+	@Query("select o from OtroRequisito o "	
+			+ "left join  o.tipo t "
+			+ "left join  o.tipoRequisito tr "
+			+ "left join  o.sector s "
+			+ "left join  o.subsector ss "
+			+ "left join o.subCategoria sc "
+			+ "left join o.unidad u "
+			+ "left join  o.perfil p "
+			+ "left join  o.evaluacion e "
+			+ "left join  o.solicitud so "
+			+ "left join  o.finalizado fn "
+			+ "left join  o.usuario us "
+			+ "left join o.actividadArea aa "
+			+ "where so.idSolicitud=:idSolicitud "
+			+ "and t.codigo = :tipo ")
+	public List<OtroRequisito> obtenerOtrosRequisitosPerfil(Long idSolicitud, String tipo);
 	
 	@Query("select o from OtroRequisito o "	
 			+ "left join fetch o.tipo t "
@@ -229,6 +311,8 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join fetch o.usuario us "
 			+ "where so.idSolicitud=:idSolicitud "
 			+ "and t.codigo='"+Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL+"' "
+			+ "AND ( (o.fecCreacion > :fechaLimite AND (o.tipoRequisito != '91' OR o.actividadArea IS NOT NULL)) "
+		    + "     OR o.fecCreacion <= :fechaLimite ) "
 			+ "and o.subsector in "
 			+ "(select c.subsector from ConfiguracionBandeja c "
 			+ "left join c.sector s "
@@ -240,71 +324,8 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join c.usuario u "
 			+ "where c.perfil is null "
 			+ "and u.idUsuario=:idUsuario )")			
-	public List<OtroRequisito> listarOtroRequisitoXSolicitudPJ(Long idSolicitud,Long idUsuario);
+	public List<OtroRequisito> listarOtroRequisitoXSolicitudPJ(Long idSolicitud,Long idUsuario, Date fechaLimite);
 	
-	
-	//afc
-	@Query("select o from OtroRequisito o "	
-			+ "left join fetch o.tipo t "
-			+ "left join fetch o.tipoRequisito tr "
-			+ "left join fetch o.sector s "
-			+ "left join fetch o.subsector ss "
-			+ "left join o.subCategoria sc "
-			+ "left join o.unidad u "
-			+ "left join fetch o.perfil p "
-			+ "left join fetch o.evaluacion e "
-			+ "left join fetch o.resultado r "
-			+ "left join fetch o.solicitud so "
-			+ "left join fetch so.division d "
-			+ "left join fetch o.finalizado fn "
-			+ "left join fetch o.usuario us "
-			+ "where so.idSolicitud=:idSolicitud "
-			+ "and t.codigo='"+Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL+"' "
-//			+ "and o.subsector in "
-//			+ "(select c.subsector from ConfiguracionBandeja c "
-//			+ "left join c.sector s "
-//			+ "left join c.subsector ss "
-//			+ "left join c.actividad a "
-//			+ "left join c.unidad u "
-//			+ "left join c.subCategoria sc "
-//			+ "left join c.perfil p "
-//			+ "left join c.usuario u "
-//			+ "where c.perfil is null "
-//			+ "and u.idUsuario=:idUsuario )")	
-			)
-	public List<OtroRequisito> listarOtroRequisitoXSolicitudAdmin(Long idSolicitud);
-	
-	//afc
-	@Query("select o from OtroRequisito o "	
-			+ "left join fetch o.tipo t "
-			+ "left join fetch o.tipoRequisito tr "
-			+ "left join fetch o.sector s "
-			+ "left join fetch o.subsector ss "
-			+ "left join o.subCategoria sc "
-			+ "left join o.unidad u "
-			+ "left join fetch o.perfil p "
-			+ "left join fetch o.evaluacion e "
-			+ "left join fetch o.resultado r "
-			+ "left join fetch o.solicitud so "
-			+ "left join fetch so.division d "
-			+ "left join fetch o.finalizado fn "
-			+ "left join fetch o.usuario us "
-			+ "where so.idSolicitud=:idSolicitud "
-			+ "and t.codigo='"+Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.OTRO_REQUISITO+"' "
-//			+ "and o.subsector in "
-//			+ "(select c.subsector from ConfiguracionBandeja c "
-//			+ "left join c.sector s "
-//			+ "left join c.subsector ss "
-//			+ "left join c.actividad a "
-//			+ "left join c.unidad u "
-//			+ "left join c.subCategoria sc "
-//			+ "left join c.perfil p "
-//			+ "left join c.usuario u "
-//			+ "where c.perfil is null "
-//			+ "and u.idUsuario=:idUsuario )")	
-			)
-	public List<OtroRequisito> listarOtroRequisitoXSolicitudAdminUser(Long idSolicitud);
-	//afc
 	@Query("select o from OtroRequisito o "	
 			+ "left join fetch o.tipo t "
 			+ "left join fetch o.tipoRequisito tr "
@@ -360,7 +381,70 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join c.usuario u "
 			+ "where u.idUsuario=:idUsuario )")		
 	public List<OtroRequisito> listarOtroRequisitoXSolicitudObservadosPJ(Long idSolicitud,Long idUsuario);
-
+	
+	//afc
+	@Query("select o from OtroRequisito o "	
+			+ "left join fetch o.tipo t "
+			+ "left join fetch o.tipoRequisito tr "
+			+ "left join fetch o.sector s "
+			+ "left join fetch o.subsector ss "
+			+ "left join o.subCategoria sc "
+			+ "left join o.unidad u "
+			+ "left join fetch o.perfil p "
+			+ "left join fetch o.evaluacion e "
+			+ "left join fetch o.resultado r "
+			+ "left join fetch o.solicitud so "
+			+ "left join fetch so.division d "
+			+ "left join fetch o.finalizado fn "
+			+ "left join fetch o.usuario us "
+			+ "where so.idSolicitud=:idSolicitud "
+			+ "and t.codigo='"+Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL+"' "
+//			+ "and o.subsector in "
+//			+ "(select c.subsector from ConfiguracionBandeja c "
+//			+ "left join c.sector s "
+//			+ "left join c.subsector ss "
+//			+ "left join c.actividad a "
+//			+ "left join c.unidad u "
+//			+ "left join c.subCategoria sc "
+//			+ "left join c.perfil p "
+//			+ "left join c.usuario u "
+//			+ "where c.perfil is null "
+//			+ "and u.idUsuario=:idUsuario )")	
+			)
+	public List<OtroRequisito> listarOtroRequisitoXSolicitudAdmin(Long idSolicitud);
+	
+	//afc
+	@Query("select o from OtroRequisito o "	
+			+ "left join fetch o.tipo t "
+			+ "left join fetch o.tipoRequisito tr "
+			+ "left join fetch o.sector s "
+			+ "left join fetch o.subsector ss "
+			+ "left join o.subCategoria sc "
+			+ "left join o.unidad u "
+			+ "left join fetch o.perfil p "
+			+ "left join fetch o.evaluacion e "
+			+ "left join fetch o.resultado r "
+			+ "left join fetch o.solicitud so "
+			+ "left join fetch so.division d "
+			+ "left join fetch o.finalizado fn "
+			+ "left join fetch o.usuario us "
+			+ "where so.idSolicitud=:idSolicitud "
+			+ "and t.codigo='"+Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.OTRO_REQUISITO+"' "
+			+ "order by o.idOtroRequisito asc ")
+//			+ "and o.subsector in "
+//			+ "(select c.subsector from ConfiguracionBandeja c "
+//			+ "left join c.sector s "
+//			+ "left join c.subsector ss "
+//			+ "left join c.actividad a "
+//			+ "left join c.unidad u "
+//			+ "left join c.subCategoria sc "
+//			+ "left join c.perfil p "
+//			+ "left join c.usuario u "
+//			+ "where c.perfil is null "
+//			+ "and u.idUsuario=:idUsuario )")	
+//			)
+	public List<OtroRequisito> listarOtroRequisitoXSolicitudAdminUser(Long idSolicitud);
+	//afc7
 	
 	@Query("select o from OtroRequisito o "	
 			+ "left join fetch o.tipo t "
@@ -467,7 +551,7 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "left join fetch o.usuario us "
 			+ "where t.codigo = '" + Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.PERFIL + "' "
 			+ "and (fn.codigo = '" + Constantes.LISTADO.SI_NO.NO + "' or fn.codigo is null) "
-			+ "and o.fechaAsignacion is not null")	
+			+ "and o.fechaAsignacion is not null and o.evaluacion not in ('141', '142', '143') and o.evaluacion is not null")	
 	public List<OtroRequisito> listarPerfilesPendientesDeEvaluacion();
 	
 	@Query("select o from OtroRequisito o "	
@@ -479,5 +563,13 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 			+ "and o.fechaAsignacion is not null "
 			+ "and us.idUsuario=:idUsuario")
 	public List<OtroRequisito> listarPerfilesPendientesDeEvaluacionPorIdUsuario(Long idUsuario);
-
+	
+	@Query("select count(o) from OtroRequisito o "  
+	        + "join o.solicitud so "
+	        + "join o.sector s "
+	        + "where so.idSolicitud = :idSolicitud "
+	        + "and s.idListadoDetalle <> :idSector "
+	        + "and (:tipo = 91)")
+	public Long existeSector(Long idSolicitud, Long idSector, int tipo);
+	
 }

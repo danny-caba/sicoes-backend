@@ -16,6 +16,8 @@ public interface SupervisoraMovimientoService extends BaseService<SupervisoraMov
 	public SupervisoraMovimiento desbloquear(SupervisoraMovimiento supervisoraMovimiento, Contexto contexto);
 
 	public List<SupervisoraMovimiento> listarXProfesional(Long idSupervisora, Long idSubsector);
+	
+	public List<SupervisoraMovimiento> listarXProfesionalXItem(Long idSupervisora, Long idSubsector);
 
 	public SupervisoraMovimiento ultimoMovimientoXProfesional(Long idSupervisora, Long idSubsector, Long idEstado,
 			Contexto contexto);

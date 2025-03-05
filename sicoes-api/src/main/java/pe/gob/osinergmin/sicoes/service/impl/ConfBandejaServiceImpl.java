@@ -1,8 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.impl;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,26 +10,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pe.gob.osinergmin.sicoes.model.Asignacion;
-import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
-import pe.gob.osinergmin.sicoes.model.Division;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Usuario;
-import pe.gob.osinergmin.sicoes.model.UsuarioReasignacion;
-import pe.gob.osinergmin.sicoes.model.UsuarioRol;
-import pe.gob.osinergmin.sicoes.model.UsuarioRolConfiguracion;
-import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
-import pe.gob.osinergmin.sicoes.repository.ConfBandejaDao;
-import pe.gob.osinergmin.sicoes.repository.DivisionDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioEvaluacionDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioReasignacionDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioRolConfiguracionDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
+import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.ConfBandejaService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.ListadoService;
+import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 
 @Service
@@ -63,6 +51,15 @@ public class ConfBandejaServiceImpl implements ConfBandejaService {
 	@Autowired
 	private ListadoDetalleService listadoDetalleService;
 	
+	@Autowired
+	private ListadoService listadoService;
+
+	@Autowired
+	private PerfilDivisionDao perfilDivisionDao;
+
+	@Autowired
+	private UsuarioService usuarioService;
+	
 	@Override
 	public ConfiguracionBandeja obtener(Long idConfBandeja, Contexto contexto) {
 		ConfiguracionBandeja confBandeja = confBandejaDao.obtener(idConfBandeja);
@@ -82,43 +79,112 @@ public class ConfBandejaServiceImpl implements ConfBandejaService {
 
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public ConfiguracionBandeja registrarConfiguracionBandeja(ConfiguracionBandeja configuracionBandeja,Contexto contexto) {
-		
+	public List<Map<String, List<ConfiguracionBandeja>>> registrarConfiguracionBandeja(ConfiguracionBandeja configuracionBandeja,Contexto contexto) {
 
-		List<ConfiguracionBandeja> listaConfBandeja = confBandejaDao.obtenerConfiguracionPorPerfil(configuracionBandeja.getPerfil().getIdListadoDetalle());
-		ConfiguracionBandeja conf = new ConfiguracionBandeja();
-		if (listaConfBandeja!=null && !listaConfBandeja.isEmpty()) {
-			conf = listaConfBandeja.get(0);
+		List<Map<String, List<ConfiguracionBandeja>>> response = new ArrayList<>();
+
+		if (configuracionBandeja.getDivision().getIdDivision() == null && configuracionBandeja.getPerfil().getIdListadoDetalle() == null) {
+			throw new ValidacionException("No se ha seleccionado un perfil o una división");
 		}
-		
-		configuracionBandeja.setSector(new ListadoDetalle());
-		configuracionBandeja.getSector().setIdListadoDetalle(conf.getSector().getIdListadoDetalle());
-		configuracionBandeja.setSubsector(new ListadoDetalle());
-		configuracionBandeja.getSubsector().setIdListadoDetalle(conf.getSubsector().getIdListadoDetalle());
-		configuracionBandeja.setActividad(new ListadoDetalle());
-		configuracionBandeja.getActividad().setIdListadoDetalle(conf.getActividad().getIdListadoDetalle());
-		configuracionBandeja.setUnidad(new ListadoDetalle());
-		configuracionBandeja.getUnidad().setIdListadoDetalle(conf.getUnidad().getIdListadoDetalle());
-		configuracionBandeja.setSubCategoria(new ListadoDetalle());
-		configuracionBandeja.getSubCategoria().setIdListadoDetalle(conf.getSubCategoria().getIdListadoDetalle());
-		configuracionBandeja.setEstadoConfiguracion(Constantes.ESTADO.ACTIVO);
-		configuracionBandeja.setTipoConfiguracion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_CONFIGURACION.CODIGO, Constantes.LISTADO.TIPO_CONFIGURACION.EVALUADORES));//AFC
-		
-		AuditoriaUtil.setAuditoriaRegistro(configuracionBandeja,contexto);
-		
-		ConfiguracionBandeja configuracion = confBandejaDao.save(configuracionBandeja);
-		
-		if (configuracion.getIdUsuarioRolC()!=null) {
-			UsuarioRolConfiguracion usuarioRolConfiguracion = new UsuarioRolConfiguracion();
-			usuarioRolConfiguracion.setIdConfiguracionBandeja(configuracion.getIdConfiguracionBandeja());
-			usuarioRolConfiguracion.setIdUsuarioRol(configuracion.getIdUsuarioRolC());
-			usuarioRolConfiguracion.setEstadoUsuarioRolConfig(Constantes.ESTADO.ACTIVO);
-			AuditoriaUtil.setAuditoriaRegistro(usuarioRolConfiguracion, contexto);
-			usuarioRolConfiguracionDao.save(usuarioRolConfiguracion);
+
+		List<ListadoDetalle> listaPerfiles = new ArrayList<>();
+
+		if (configuracionBandeja.getPerfil().getIdListadoDetalle() == null) {
+			List<PerfilDivision> perfiles = perfilDivisionDao.obtenerPorIdDivision(configuracionBandeja.getDivision().getIdDivision());
+			listaPerfiles = perfiles
+					.stream()
+					.map(PerfilDivision::getPerfil)
+					.collect(Collectors.toList());
+		} else {
+			listaPerfiles.add(configuracionBandeja.getPerfil());
 		}
-		
-		return configuracion;
+
+		Map<Boolean, List<ConfiguracionBandeja>> resultado = listaPerfiles.parallelStream()
+				.map(perfil -> {
+
+					int cantidadPerfilUsuario = confBandejaDao.contarConfiguracionPorPerfilUsuario(perfil.getIdListadoDetalle(), configuracionBandeja.getUsuario().getIdUsuario());
+					logger.info("cantidadPerfilUsuario: " + cantidadPerfilUsuario);
+
+					ConfiguracionBandeja conf = new ConfiguracionBandeja();
+					Map<String, ListadoDetalle> detalles = obtenerJerarquiaListadoDetalle(perfil, contexto);
+					if (detalles == null) {
+						return null;
+					}
+					Usuario usuario = usuarioService.obtener(configuracionBandeja.getUsuario().getIdUsuario());
+
+					conf.setUsuario(usuario);
+					conf.setPerfil(detalles.get("perfil"));
+					conf.setSector(detalles.get("sector"));
+					conf.setSubsector(detalles.get("subsector"));
+					conf.setActividad(detalles.get("actividad"));
+					conf.setUnidad(detalles.get("unidad"));
+					conf.setSubCategoria(detalles.get("subcategoria"));
+					conf.setEstadoConfiguracion(Constantes.ESTADO.ACTIVO);
+					conf.setTipoConfiguracion(
+							listadoDetalleService.obtenerListadoDetalle(
+									Constantes.LISTADO.TIPO_CONFIGURACION.CODIGO,
+									Constantes.LISTADO.TIPO_CONFIGURACION.EVALUADORES
+							)
+					);
+
+					if (cantidadPerfilUsuario > 0) {
+						return conf;
+					}
+
+					AuditoriaUtil.setAuditoriaRegistro(conf, contexto);
+					ConfiguracionBandeja confDB = confBandejaDao.save(conf);
+
+					if (confDB.getIdUsuarioRolC() != null) {
+						UsuarioRolConfiguracion usuarioRolConfiguracion = new UsuarioRolConfiguracion();
+						usuarioRolConfiguracion.setIdConfiguracionBandeja(confDB.getIdConfiguracionBandeja());
+						usuarioRolConfiguracion.setIdUsuarioRol(confDB.getIdUsuarioRolC());
+						usuarioRolConfiguracion.setEstadoUsuarioRolConfig(Constantes.ESTADO.ACTIVO);
+						AuditoriaUtil.setAuditoriaRegistro(usuarioRolConfiguracion, contexto);
+						usuarioRolConfiguracionDao.save(usuarioRolConfiguracion);
+					}
+
+					return confDB;
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.partitioningBy(configuracion -> configuracion.getIdConfiguracionBandeja() != null));
+		List<ConfiguracionBandeja> configuracionesNuevas = resultado.get(true);
+		List<ConfiguracionBandeja> configuracionesExistentes = resultado.get(false);
+
+		response.add(new HashMap<String, List<ConfiguracionBandeja>>() {{
+			put("nuevas", configuracionesNuevas);
+			put("existentes", configuracionesExistentes);
+		}});
+
+		return response;
+
+	}
+
+	private Map<String, ListadoDetalle> obtenerJerarquiaListadoDetalle(ListadoDetalle perfil, Contexto contexto) {
+		Map<String, ListadoDetalle> detalles = new HashMap<>();
+
+		ListadoDetalle perfilDB = listadoDetalleService.obtener(perfil.getIdListadoDetalle(), contexto);
+		Listado listadoPerfil = listadoService.obtenerPorCodigo(Constantes.LISTADO.PERFILES, contexto);
+
+		if (!perfilDB.getIdListado().equals(listadoPerfil.getIdListado())) {
+			return null;
+		}
+
+		ListadoDetalle subcategoria = listadoDetalleService.obtener(perfilDB.getIdListadoSuperior(), contexto);
+		ListadoDetalle unidad = listadoDetalleService.obtener(subcategoria.getIdListadoSuperior(), contexto);
+		ListadoDetalle actividad = listadoDetalleService.obtener(unidad.getIdListadoSuperior(), contexto);
+		ListadoDetalle subsector = listadoDetalleService.obtener(actividad.getIdListadoSuperior(), contexto);
+		ListadoDetalle sector = listadoDetalleService.obtener(subsector.getIdListadoSuperior(), contexto);
+
+		detalles.put("perfil", perfilDB);
+		detalles.put("subcategoria", subcategoria);
+		detalles.put("unidad", unidad);
+		detalles.put("actividad", actividad);
+		detalles.put("subsector", subsector);
+		detalles.put("sector", sector);
+
+		return detalles;
 	}
 	
 	@Override

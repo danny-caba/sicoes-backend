@@ -68,12 +68,37 @@ public interface ProcesoDao extends JpaRepository<Proceso, Long> {
 					+ "order by p.fechaPublicacion desc ")		
 	public Page<Proceso> buscar(Date fechaDesde,Date fechaHasta,Long idEstado,Long idSector,Long idSubSector,String nroProceso,String nombreProceso,String nroExpediente,Long codigoUsuario,Pageable pageable);
 
+	@Query(value="select distinct p from Proceso p "
+			+ "left join fetch p.usuario u "
+			+ "left join fetch p.sector s "
+			+ "left join fetch p.subsector ss "
+			+ "left join fetch p.estado e "
+			+ "left join fetch p.tipoFacturacion tf "
+			+ "where (:nombreArea is null or :nombreArea = '' or p.nombreArea like :nombreArea) "
+			+ "and (:idEstado is null or p.estado.idListadoDetalle = :idEstado) "
+			+ "and (:nombreProceso is null or :nombreProceso = '' or UPPER(p.nombreProceso) like CONCAT('%', UPPER(:nombreProceso), '%')) "
+			+ "and (p.estado.idListadoDetalle <> 722) "
+			+ "order by p.idProceso desc ",
+			countQuery ="select count(distinct p) from Proceso p "
+					+ "left join p.usuario u "
+					+ "left join p.sector s "
+					+ "left join p.subsector ss "
+					+ "left join p.estado e "
+					+ "left join p.tipoFacturacion tf "
+					+ "where (:nombreArea is null or :nombreArea = '' or p.nombreArea like :nombreArea) "
+					+ "and (:idEstado is null or p.estado.idListadoDetalle = :idEstado) "
+					+ "and (:nombreProceso is null or :nombreProceso = '' or UPPER(p.nombreProceso) like CONCAT('%', UPPER(:nombreProceso), '%')) "
+					+ "order by p.idProceso desc ")		
+	public Page<Proceso> buscar(Long idEstado,String nombreArea,String nombreProceso,Pageable pageable);
+
+	
 	@Query("select p from ProcesoEtapa pe "
 			+ "left join pe.proceso p "
 			+ "left join pe.etapa et "
 			+ "left join p.estado e "
 			+ "where et.codigo='"+Constantes.LISTADO.ETAPA_PROCESO.ETAPA_PRESENTADO+"' "
 			+ "and e.codigo='"+Constantes.LISTADO.ESTADO_PROCESO.CONVOCATORIA+"' "
+			+ "and et.orden = 1 "
 			+ "and trunc(pe.fechaInicio)<=trunc(sysdate) and trunc(pe.fechaFin)>=trunc(sysdate) ")
 	public List<Proceso> obtenerProcesoPresentacion();
 	
@@ -84,7 +109,9 @@ public interface ProcesoDao extends JpaRepository<Proceso, Long> {
 			+ "left join pe.proceso p "
 			+ "left join pe.etapa et "
 			+ "left join p.estado e "
-			+ "where e.codigo='"+Constantes.LISTADO.ESTADO_PROCESO.PRESENTACION+"' and trunc(pe.fechaFin)<trunc(sysdate) ")
+			+ "where e.codigo='"+Constantes.LISTADO.ESTADO_PROCESO.PRESENTACION+"' "
+			+ "and et.orden = 1 "
+			+ "and trunc(pe.fechaFin)<trunc(sysdate) ")
 	public List<Proceso> obtenerProcesoAdmision();
 
 	@Query("select p from Proceso p where UPPER(p.nombreProceso)=:nombreProceso")
@@ -92,6 +119,6 @@ public interface ProcesoDao extends JpaRepository<Proceso, Long> {
 
 	@Query("select p from Proceso p where UPPER(p.numeroProceso)=:numeroProceso")
 	public List<Proceso> obtenerProcesosNumero(String numeroProceso);
-
+	
 
 }

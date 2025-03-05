@@ -80,6 +80,8 @@ public class ConfiguracionBandeja extends BaseModel implements Serializable {
 	@Transient
 	private String codigoRol;
 	
+	@Transient
+	private Division division;
 
 	public Long getIdConfiguracionBandeja() {
 		return idConfiguracionBandeja;
@@ -201,6 +203,13 @@ public class ConfiguracionBandeja extends BaseModel implements Serializable {
 		this.codigoRol = codigoRol;
 	}
 
+	public Division getDivision() {
+		return division;
+	}
+
+	public void setDivision(Division division) {
+		this.division = division;
+	}
 
 	@Override
 	public String toString() {

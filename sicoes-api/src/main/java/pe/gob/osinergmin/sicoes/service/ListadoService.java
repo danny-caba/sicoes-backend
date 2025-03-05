@@ -12,4 +12,6 @@ public interface ListadoService extends BaseService<Listado, Long>  {
 	
 	public Page<Listado> buscar(Pageable pageable,Contexto contexto);
 
+	Listado obtenerPorCodigo(String codigo, Contexto contexto);
+
 }

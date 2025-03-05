@@ -75,4 +75,13 @@ public interface ConfBandejaDao extends JpaRepository<ConfiguracionBandeja, Long
 	@Transactional
 	@Query(value="update ConfiguracionBandeja set estadoConfiguracion = :estadoConfiguracion, usuActualizacion = :usuActualizacion, fecActualizacion = sysdate, ipActualizacion = :ipActualizacion where idConfiguracionBandeja=:idConfiguracionBandeja")
 	public void actualizarEstadoConfigBandeja(Long idConfiguracionBandeja, String estadoConfiguracion, String usuActualizacion, String ipActualizacion);
+
+	@Query("select count(c) from ConfiguracionBandeja c "
+			+ "left join c.perfil p "
+			+ "left join c.usuario u "
+		+ "where p.idListadoDetalle = :idPerfil "
+		+ "and u.idUsuario = :idUsuario "
+		+ "and c.estadoConfiguracion = '1' "
+		)
+	int contarConfiguracionPorPerfilUsuario(Long idPerfil, Long idUsuario);
 }

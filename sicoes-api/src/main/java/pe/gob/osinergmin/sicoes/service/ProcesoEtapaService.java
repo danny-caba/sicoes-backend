@@ -19,4 +19,9 @@ public interface ProcesoEtapaService extends BaseService<ProcesoEtapa, Long> {
 	void eliminar(Long id, String uuidProceso, Contexto contexto);
 	
 	List<ProcesoEtapa> listar(String procesoUuid, Contexto contexto);
+	
+	List<ProcesoEtapa> obtenerProcesosEtapa(Long idProceso, Contexto contexto);
+
+	List<Object[]> listarEtapasFormulacionConsultas(Long idListadoDetalle);
+
 }
