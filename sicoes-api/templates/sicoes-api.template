@@ -154,8 +154,6 @@ osce.bus.server.password=weblogic1
 osce.ws.path.sancion.vigente=/SRV_AP0404-58_OSCE/osce/obtenerSancionVigente/v1.1 
 osce.ws.path.sancion.vigente.PN=${sancion_vigente_pn}
 
-osce.ws.path.sancion.vigente.PN=${sancion_vigente_pn}
-
 siged.titulo.absolucion=Absolucion de Consultas y Bases Integradas
 siged.ws.path.buscar.cliente=/siged-rest-old/remote/cliente/find
 crear.expediente.parametros.crea.expediente.no=N
