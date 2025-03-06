@@ -63,7 +63,7 @@ public class ScheduledTasks {
 	@Value("${path.temporal}")
 	private String path;
 	
-//	@Scheduled(fixedRate = 5*1000)
+	@Scheduled(fixedRate = 5*1000)
 	public void reportCurrentTime() throws Exception {
 		logger.info("Inicio el Job");
 //		solicitudService.subirDocumentoTecnicos(getContextoAnonimo());
