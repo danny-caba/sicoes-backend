@@ -1110,8 +1110,17 @@ public class SolicitudServiceImpl implements SolicitudService {
 				|| solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)) {			
 
 			AuditoriaUtil.setAuditoriaRegistro(solicitud,contexto);
+			Representante representanteBD = new Representante();
 			if (solicitud.getRepresentante() != null) {
-				Representante representanteBD = representanteService.guardar(solicitud.getRepresentante(), contexto);
+				//Se busca el Estado para el Nuevo Representante
+				ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
+
+				Representante representanteNuevo = solicitud.getRepresentante();
+				representanteNuevo.setEstado(estadoNuevoRepr);
+				solicitud.setRepresentante(representanteNuevo);
+
+				representanteBD = representanteService.guardar(solicitud.getRepresentante(), contexto);
 				solicitud.setRepresentante(representanteBD);
 			}
 
@@ -1135,6 +1144,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 			solicitud.setFlagActivo(Constantes.FLAG.ACTIVO);
 			AuditoriaUtil.setAuditoriaRegistro(solicitud, contexto);
 			solicitudBD = solicitudDao.save(solicitud);
+
+			//Actualizar el idSolicitud en el Representante
+			if (solicitud.getRepresentante() != null) {
+				representanteBD.setIdSolicitud(solicitudBD.getIdSolicitud());
+				representanteService.guardar(representanteBD, contexto);
+			}
 
 			if (esNuevo) {
 				solicitud.setSolicitudUuid(UUID.randomUUID().toString());
@@ -1189,6 +1204,48 @@ public class SolicitudServiceImpl implements SolicitudService {
 				}
 			}
 		} else {
+			if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
+					&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
+					|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
+				if (solicitud.getRepresentante() != null) {
+					//validar que sea diferente el Representante
+					if(!solicitudBD.getRepresentante().getNumeroDocumento().equals(solicitud.getRepresentante().getNumeroDocumento())) {
+						//Actualizar el Representante actual a Inactivo
+						ListadoDetalle estadoRepr = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+
+						AuditoriaUtil.setAuditoriaRegistro(solicitud, contexto);
+						representanteDao.updateEstadoRepresentanteSolicitud(solicitud.getIdSolicitud(),
+								estadoRepr.getIdListadoDetalle(),
+								solicitud.getUsuActualizacion(),
+								solicitud.getIpActualizacion());
+
+						//Se busca el Estado para el Nuevo Representante
+						ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
+								Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
+
+						Representante representanteNuevo = solicitud.getRepresentante();
+						representanteNuevo.setEstado(estadoNuevoRepr);
+						representanteNuevo.setIdSolicitud(solicitudBD.getIdSolicitud());
+						solicitudBD.setRepresentante(representanteNuevo);
+
+						Representante representanteBD = representanteService.guardar(solicitudBD.getRepresentante(), contexto);
+						solicitudBD.setRepresentante(representanteBD);
+					}
+				}
+				//Agregar campos de Persona
+				Persona personaRequest = solicitud.getPersona();
+
+				Persona persona = solicitudBD.getPersona();
+				persona.setTelefono1(this.validarCampo(personaRequest.getTelefono1()));
+				persona.setTelefono2(this.validarCampo(personaRequest.getTelefono2()));
+				persona.setTelefono3(this.validarCampo(personaRequest.getTelefono3()));
+				persona.setCorreo(this.validarCampo(personaRequest.getCorreo()));
+				solicitudBD.setPersona(persona);
+
+				solicitudBD = solicitudDao.save(solicitudBD);
+			}
+
 			List<OtroRequisito> otroRequisitos = solicitud.getOtrosRequisitos();
 			List<OtroRequisito> otroRequisitosActualizados = new ArrayList<>();
 			if (otroRequisitos != null) {
@@ -1238,6 +1295,10 @@ public class SolicitudServiceImpl implements SolicitudService {
 		}
 
 		return solicitudBD;
+	}
+
+	private String validarCampo(String campo) {
+		return campo.trim().isEmpty() ? null : campo.trim();
 	}
 
 	public ExpedienteInRO crearExpedientePresentacion(Solicitud solicitud, Contexto contexto) {
@@ -1452,9 +1513,11 @@ public class SolicitudServiceImpl implements SolicitudService {
 	@Override
 	public Solicitud obtener(String solicitudUuid, Contexto contexto) {
 		Long idSolicitud = solicitudDao.obtenerId(solicitudUuid);
-		Solicitud solicitud = obtener(idSolicitud, contexto); 
+		Solicitud solicitud = obtener(idSolicitud, contexto);
 		Long idUsuario=contexto.getUsuario().getIdUsuario();
-		
+		// Buscar Historial Representantes
+		List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(idSolicitud, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+		solicitud.setHistorialRepresentante(lista);
 		if (contexto.getUsuario().isRol(Constantes.ROLES.USUARIO_EXTERNO) && solicitud.getUsuario().getIdUsuario().equals(idUsuario)) {
 			return solicitud;
 		}
@@ -1475,14 +1538,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 		}
 		if(contexto.getUsuario().isRol(Constantes.ROLES.APROBADOR_TECNICO)||contexto.getUsuario().isRol(Constantes.ROLES.APROBADOR_ADMINISTRATIVO)) {
-			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));			
+			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
 			Page<Solicitud> page=buscarAprobador(solicitud.getNumeroExpediente(),null,null,null,null,null,pageable, contexto);
 			if(page!=null&&!page.isEmpty()) {
 				return solicitud;
 			}
 		}
-		
-		
 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
 	}
 

@@ -204,6 +204,9 @@ public class Solicitud extends BaseModel implements Serializable {
 	@Transient
 	private List<DictamenEvaluacion> montosFacturados;
 
+	@Transient
+	private List<Representante> historialRepresentante;
+
 	public String getSolicitudUuid() {
 		return solicitudUuid;
 	}
@@ -532,6 +535,14 @@ public class Solicitud extends BaseModel implements Serializable {
 
 	public void setMontosFacturados(List<DictamenEvaluacion> montosFacturados) {
 		this.montosFacturados = montosFacturados;
+	}
+
+	public List<Representante> getHistorialRepresentante() {
+		return historialRepresentante;
+	}
+
+	public void setHistorialRepresentante(List<Representante> historialRepresentante) {
+		this.historialRepresentante = historialRepresentante;
 	}
 
 	public Profesion getProfesion() {

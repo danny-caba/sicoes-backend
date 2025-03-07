@@ -588,6 +588,11 @@ public class Constantes {
 			public static final String INACTIVO = "INACTIVO";
 			public static final String ESTADO_ACTUAL = "ESTADO_ACTUAL";
 		}
+		public static final class ESTADO_REPRESENTANTE {
+			public static final String CODIGO = "ESTADO_REPRESENTANTE";
+			public static final String ACTIVO = "ACTIVO";
+			public static final String INACTIVO = "INACTIVO";
+		}
 
 	}
 	
