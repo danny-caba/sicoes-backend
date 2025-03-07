@@ -76,7 +76,12 @@ definitions:
           - echo "Copiado de properties"                                                                                                                                                                
           - ssh -i $_ID_RSA_PATH root@$_IP_SERVER_ENV mkdir -p $_WLS_DOMAIN_HOME/data/$ARTIFACTS/properties                                                                                             
           - scp -i $_ID_RSA_PATH $_PARSER_HOME/work/$_ENV_TYPE/$_PATHSOURCE/$_PROPERTIE1.properties root@$_IP_SERVER_ENV:$_WLS_DOMAIN_HOME/$_RUTA_PROPERTIES                                     
-          - ssh -i $_ID_RSA_PATH root@$_IP_SERVER_ENV chown -R wls.oinstall $_WLS_DOMAIN_HOME/data                                                                                                     
+          - |
+            if [ "$_ENV_TYPE" = "cert" ]; then
+              ssh -i $_ID_RSA_PATH root@$_IP_SERVER_ENV chown -R wls.wls $_WLS_DOMAIN_HOME/data 
+            else
+              ssh -i $_ID_RSA_PATH root@$_IP_SERVER_ENV chown -R wls.oinstall $_WLS_DOMAIN_HOME/data  
+            fi                                                                 
           - echo "Despliegue de Web Logic"                                                                                                                                                              
           - $_SCRIPTWEBLOGIC/$_WEBLOGICSSHDEPLOY $_ARTIFACTS $_ARTIFACTNAME.war                                                                                                                                
 
