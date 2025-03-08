@@ -26,7 +26,8 @@ public interface RepresentanteDao extends JpaRepository<Representante, Long> {
 
 	@Query(value="select r from Representante r " +
 			"where r.idSolicitud = :idSolicitud " +
-			"and r.estado.codigo = :estado")
+			"and r.estado.codigo = :estado " +
+			"order by r.idRepresentante desc ")
 	List<Representante> obtenerRepresentantesSolicitud(Long idSolicitud, String estado);
 
 	@Modifying

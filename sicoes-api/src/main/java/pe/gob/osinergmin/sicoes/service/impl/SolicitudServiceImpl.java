@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -1204,48 +1205,6 @@ public class SolicitudServiceImpl implements SolicitudService {
 				}
 			}
 		} else {
-			if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
-					&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
-					|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
-				if (solicitud.getRepresentante() != null) {
-					//validar que sea diferente el Representante
-					if(!solicitudBD.getRepresentante().getNumeroDocumento().equals(solicitud.getRepresentante().getNumeroDocumento())) {
-						//Actualizar el Representante actual a Inactivo
-						ListadoDetalle estadoRepr = listadoDetalleService.obtenerListadoDetalle(
-						Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
-
-						AuditoriaUtil.setAuditoriaRegistro(solicitud, contexto);
-						representanteDao.updateEstadoRepresentanteSolicitud(solicitud.getIdSolicitud(),
-								estadoRepr.getIdListadoDetalle(),
-								solicitud.getUsuActualizacion(),
-								solicitud.getIpActualizacion());
-
-						//Se busca el Estado para el Nuevo Representante
-						ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
-								Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
-
-						Representante representanteNuevo = solicitud.getRepresentante();
-						representanteNuevo.setEstado(estadoNuevoRepr);
-						representanteNuevo.setIdSolicitud(solicitudBD.getIdSolicitud());
-						solicitudBD.setRepresentante(representanteNuevo);
-
-						Representante representanteBD = representanteService.guardar(solicitudBD.getRepresentante(), contexto);
-						solicitudBD.setRepresentante(representanteBD);
-					}
-				}
-				//Agregar campos de Persona
-				Persona personaRequest = solicitud.getPersona();
-
-				Persona persona = solicitudBD.getPersona();
-				persona.setTelefono1(this.validarCampo(personaRequest.getTelefono1()));
-				persona.setTelefono2(this.validarCampo(personaRequest.getTelefono2()));
-				persona.setTelefono3(this.validarCampo(personaRequest.getTelefono3()));
-				persona.setCorreo(this.validarCampo(personaRequest.getCorreo()));
-				solicitudBD.setPersona(persona);
-
-				solicitudBD = solicitudDao.save(solicitudBD);
-			}
-
 			List<OtroRequisito> otroRequisitos = solicitud.getOtrosRequisitos();
 			List<OtroRequisito> otroRequisitosActualizados = new ArrayList<>();
 			if (otroRequisitos != null) {
@@ -1295,6 +1254,59 @@ public class SolicitudServiceImpl implements SolicitudService {
 		}
 
 		return solicitudBD;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Solicitud actualizar(Solicitud solicitud, Contexto contexto) {
+		Solicitud solicitudBD = this.obtener(solicitud.getSolicitudUuid(), contexto);
+		if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
+				&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
+				|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
+			if (solicitud.getRepresentante() != null) {
+				//validar que sea diferente el Representante
+				if(!solicitudBD.getRepresentante().getNumeroDocumento().equals(solicitud.getRepresentante().getNumeroDocumento())) {
+					//Actualizar el Representante actual a Inactivo
+					ListadoDetalle estadoRepr = listadoDetalleService.obtenerListadoDetalle(
+							Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+
+					AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
+					representanteDao.updateEstadoRepresentanteSolicitud(solicitudBD.getIdSolicitud(),
+							estadoRepr.getIdListadoDetalle(),
+							solicitudBD.getUsuActualizacion(),
+							solicitudBD.getIpActualizacion());
+
+					//Se busca el Estado para el Nuevo Representante
+					ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
+							Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
+
+					Representante representanteNuevo = solicitud.getRepresentante();
+					representanteNuevo.setEstado(estadoNuevoRepr);
+					representanteNuevo.setIdSolicitud(solicitudBD.getIdSolicitud());
+					AuditoriaUtil.setAuditoriaRegistro(representanteNuevo, contexto);
+					Representante representanteBD = representanteService.guardar(representanteNuevo, contexto);
+
+					solicitudBD.setRepresentante(representanteBD);
+					//Actualizar Representantes
+					List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
+							Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+					solicitudBD.setHistorialRepresentante(lista);
+				}
+			}
+			//Agregar campos de Persona
+			if(Optional.ofNullable(solicitud.getPersona()).isPresent()) {
+				Persona personaRequest = solicitud.getPersona();
+				Persona persona = solicitudBD.getPersona();
+				persona.setTelefono1(this.validarCampo(personaRequest.getTelefono1()));
+				persona.setTelefono2(this.validarCampo(personaRequest.getTelefono2()));
+				persona.setTelefono3(this.validarCampo(personaRequest.getTelefono3()));
+				persona.setCorreo(this.validarCampo(personaRequest.getCorreo()));
+				solicitudBD.setPersona(persona);
+			}
+			AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
+			return solicitudDao.save(solicitudBD);
+		} else {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO);
+		}
 	}
 
 	private String validarCampo(String campo) {
@@ -1543,6 +1555,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			if(page!=null&&!page.isEmpty()) {
 				return solicitud;
 			}
+			return solicitud;
 		}
 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
 	}

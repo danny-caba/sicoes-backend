@@ -77,6 +77,15 @@ public class SolicitudRestController extends BaseRestController{
 		return solicitudService.guardar(solicitud,getContexto());
 		
 	}
+
+	@PutMapping("/actualizar/{solicitudUuid}")
+	@Raml("solicitud.obtener.properties")
+	public Solicitud actualizar(@PathVariable String  solicitudUuid, @RequestBody Solicitud solicitud) {
+		logger.info("actualizar {} {}", solicitudUuid, solicitud);
+		solicitud.setSolicitudUuid(solicitudUuid);
+		return solicitudService.actualizar(solicitud, getContexto());
+
+	}
 	
 	@PutMapping("/{solicitudUuid}/enviar")
 	@Raml("solicitud.obtener.properties")
