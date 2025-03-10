@@ -36,6 +36,7 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public Page<Solicitud> buscarEvaluador(String sFechaDesde,String sSechaHasta,String nroExpediente, Long idTipoSolicitud,
 			Long idEstadoSolicitud, String solicitante, Long idEstadoRevision,Long idEstadoEvalTecnica, Long idEstadoEvalAdministrativa, Pageable pageable,Contexto contexto);
 	public Solicitud guardar(Solicitud solicitud);
+	Solicitud actualizar(Solicitud solicitud, Contexto contexto);
 	public void finalizarRevision(Long idSolicitud,String codigoTipo, Contexto contexto);
 	public void regresarProceso(Solicitud solicitud, String codigo, Contexto contexto);
 	public Solicitud clonarSolicitud(Long idSolicitud, Contexto contexto);

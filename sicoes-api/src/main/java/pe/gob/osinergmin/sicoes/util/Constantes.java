@@ -588,6 +588,11 @@ public class Constantes {
 			public static final String INACTIVO = "INACTIVO";
 			public static final String ESTADO_ACTUAL = "ESTADO_ACTUAL";
 		}
+		public static final class ESTADO_REPRESENTANTE {
+			public static final String CODIGO = "ESTADO_REPRESENTANTE";
+			public static final String ACTIVO = "ACTIVO";
+			public static final String INACTIVO = "INACTIVO";
+		}
 
 	}
 	
@@ -840,6 +845,7 @@ public class Constantes {
 		public static final String ASIGNACION_FUERA_PROCESO = "V01009";
 		public static final String ARCHIVO_ELIMINAR_USUARIO = "V01010";
 		public static final String EVALUACION_FINALIZADO = "V01011";
+		public static final String ESTADO_TIPO_INCORRECTO = "V01012";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

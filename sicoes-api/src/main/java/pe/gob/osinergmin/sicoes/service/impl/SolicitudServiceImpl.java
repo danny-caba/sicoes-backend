@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -1110,8 +1111,17 @@ public class SolicitudServiceImpl implements SolicitudService {
 				|| solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)) {			
 
 			AuditoriaUtil.setAuditoriaRegistro(solicitud,contexto);
+			Representante representanteBD = new Representante();
 			if (solicitud.getRepresentante() != null) {
-				Representante representanteBD = representanteService.guardar(solicitud.getRepresentante(), contexto);
+				//Se busca el Estado para el Nuevo Representante
+				ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
+
+				Representante representanteNuevo = solicitud.getRepresentante();
+				representanteNuevo.setEstado(estadoNuevoRepr);
+				solicitud.setRepresentante(representanteNuevo);
+
+				representanteBD = representanteService.guardar(solicitud.getRepresentante(), contexto);
 				solicitud.setRepresentante(representanteBD);
 			}
 
@@ -1135,6 +1145,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 			solicitud.setFlagActivo(Constantes.FLAG.ACTIVO);
 			AuditoriaUtil.setAuditoriaRegistro(solicitud, contexto);
 			solicitudBD = solicitudDao.save(solicitud);
+
+			//Actualizar el idSolicitud en el Representante
+			if (solicitud.getRepresentante() != null) {
+				representanteBD.setIdSolicitud(solicitudBD.getIdSolicitud());
+				representanteService.guardar(representanteBD, contexto);
+			}
 
 			if (esNuevo) {
 				solicitud.setSolicitudUuid(UUID.randomUUID().toString());
@@ -1238,6 +1254,63 @@ public class SolicitudServiceImpl implements SolicitudService {
 		}
 
 		return solicitudBD;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Solicitud actualizar(Solicitud solicitud, Contexto contexto) {
+		Solicitud solicitudBD = this.obtener(solicitud.getSolicitudUuid(), contexto);
+		if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
+				&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
+				|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
+			if (solicitud.getRepresentante() != null) {
+				//validar que sea diferente el Representante
+				if(!solicitudBD.getRepresentante().getNumeroDocumento().equals(solicitud.getRepresentante().getNumeroDocumento())) {
+					//Actualizar el Representante actual a Inactivo
+					ListadoDetalle estadoRepr = listadoDetalleService.obtenerListadoDetalle(
+							Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+
+					AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
+					representanteDao.updateEstadoRepresentanteSolicitud(solicitudBD.getIdSolicitud(),
+							estadoRepr.getIdListadoDetalle(),
+							solicitudBD.getUsuActualizacion(),
+							solicitudBD.getIpActualizacion());
+
+					//Se busca el Estado para el Nuevo Representante
+					ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
+							Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
+
+					Representante representanteNuevo = solicitud.getRepresentante();
+					representanteNuevo.setEstado(estadoNuevoRepr);
+					representanteNuevo.setIdSolicitud(solicitudBD.getIdSolicitud());
+					AuditoriaUtil.setAuditoriaRegistro(representanteNuevo, contexto);
+					Representante representanteBD = representanteService.guardar(representanteNuevo, contexto);
+
+					solicitudBD.setRepresentante(representanteBD);
+					//Actualizar Representantes
+					List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
+							Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+					solicitudBD.setHistorialRepresentante(lista);
+				}
+			}
+			//Agregar campos de Persona
+			if(Optional.ofNullable(solicitud.getPersona()).isPresent()) {
+				Persona personaRequest = solicitud.getPersona();
+				Persona persona = solicitudBD.getPersona();
+				persona.setTelefono1(this.validarCampo(personaRequest.getTelefono1()));
+				persona.setTelefono2(this.validarCampo(personaRequest.getTelefono2()));
+				persona.setTelefono3(this.validarCampo(personaRequest.getTelefono3()));
+				persona.setCorreo(this.validarCampo(personaRequest.getCorreo()));
+				solicitudBD.setPersona(persona);
+			}
+			AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
+			return solicitudDao.save(solicitudBD);
+		} else {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO);
+		}
+	}
+
+	private String validarCampo(String campo) {
+		return campo.trim().isEmpty() ? null : campo.trim();
 	}
 
 	public ExpedienteInRO crearExpedientePresentacion(Solicitud solicitud, Contexto contexto) {
@@ -1452,9 +1525,11 @@ public class SolicitudServiceImpl implements SolicitudService {
 	@Override
 	public Solicitud obtener(String solicitudUuid, Contexto contexto) {
 		Long idSolicitud = solicitudDao.obtenerId(solicitudUuid);
-		Solicitud solicitud = obtener(idSolicitud, contexto); 
+		Solicitud solicitud = obtener(idSolicitud, contexto);
 		Long idUsuario=contexto.getUsuario().getIdUsuario();
-		
+		// Buscar Historial Representantes
+		List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(idSolicitud, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+		solicitud.setHistorialRepresentante(lista);
 		if (contexto.getUsuario().isRol(Constantes.ROLES.USUARIO_EXTERNO) && solicitud.getUsuario().getIdUsuario().equals(idUsuario)) {
 			return solicitud;
 		}
@@ -1475,14 +1550,13 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 		}
 		if(contexto.getUsuario().isRol(Constantes.ROLES.APROBADOR_TECNICO)||contexto.getUsuario().isRol(Constantes.ROLES.APROBADOR_ADMINISTRATIVO)) {
-			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));			
+			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
 			Page<Solicitud> page=buscarAprobador(solicitud.getNumeroExpediente(),null,null,null,null,null,pageable, contexto);
 			if(page!=null&&!page.isEmpty()) {
 				return solicitud;
 			}
+			return solicitud;
 		}
-		
-		
 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
 	}
 
