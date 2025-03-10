@@ -1262,40 +1262,53 @@ public class SolicitudServiceImpl implements SolicitudService {
 		if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
 				&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
 				|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
-			if (solicitud.getRepresentante() != null) {
-				//validar que sea diferente el Representante
-				if(!solicitudBD.getRepresentante().getNumeroDocumento().equals(solicitud.getRepresentante().getNumeroDocumento())) {
-					//Actualizar el Representante actual a Inactivo
-					ListadoDetalle estadoRepr = listadoDetalleService.obtenerListadoDetalle(
-							Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+			Persona persona = solicitudBD.getPersona();
+			ListadoDetalle tipoPersona = persona.getTipoPersona();
+			if(tipoPersona.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.JURIDICA)
+				|| tipoPersona.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.EXTRANJERO)) {
+				if (solicitud.getRepresentante() != null) {
+					//validar que sea diferente el Representante
+					if(!solicitudBD.getRepresentante().getNumeroDocumento().equals(solicitud.getRepresentante().getNumeroDocumento())) {
+						//Actualizar el Representante actual a Inactivo
+						ListadoDetalle estadoRepr = listadoDetalleService.obtenerListadoDetalle(
+								Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
 
-					AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
-					representanteDao.updateEstadoRepresentanteSolicitud(solicitudBD.getIdSolicitud(),
-							estadoRepr.getIdListadoDetalle(),
-							solicitudBD.getUsuActualizacion(),
-							solicitudBD.getIpActualizacion());
+						AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
+						representanteDao.updateEstadoRepresentanteSolicitud(solicitudBD.getIdSolicitud(),
+								estadoRepr.getIdListadoDetalle(),
+								solicitudBD.getUsuActualizacion(),
+								solicitudBD.getIpActualizacion());
 
-					//Se busca el Estado para el Nuevo Representante
-					ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
-							Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
+						//Se busca el Estado para el Nuevo Representante
+						ListadoDetalle estadoNuevoRepr = listadoDetalleService.obtenerListadoDetalle(
+								Constantes.LISTADO.ESTADO_REPRESENTANTE.CODIGO, Constantes.LISTADO.ESTADO_REPRESENTANTE.ACTIVO);
 
-					Representante representanteNuevo = solicitud.getRepresentante();
-					representanteNuevo.setEstado(estadoNuevoRepr);
-					representanteNuevo.setIdSolicitud(solicitudBD.getIdSolicitud());
-					AuditoriaUtil.setAuditoriaRegistro(representanteNuevo, contexto);
-					Representante representanteBD = representanteService.guardar(representanteNuevo, contexto);
+						Representante representanteNuevo = solicitud.getRepresentante();
+						representanteNuevo.setEstado(estadoNuevoRepr);
+						representanteNuevo.setIdSolicitud(solicitudBD.getIdSolicitud());
+						AuditoriaUtil.setAuditoriaRegistro(representanteNuevo, contexto);
+						Representante representanteBD = representanteService.guardar(representanteNuevo, contexto);
 
-					solicitudBD.setRepresentante(representanteBD);
-					//Actualizar Representantes
-					List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
-							Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
-					solicitudBD.setHistorialRepresentante(lista);
+						solicitudBD.setRepresentante(representanteBD);
+						//Actualizar Representantes
+						List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
+								Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+						solicitudBD.setHistorialRepresentante(lista);
+					}
 				}
+
 			}
 			//Agregar campos de Persona
 			if(Optional.ofNullable(solicitud.getPersona()).isPresent()) {
 				Persona personaRequest = solicitud.getPersona();
-				Persona persona = solicitudBD.getPersona();
+				if(tipoPersona.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL)
+						|| tipoPersona.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_POSTOR)
+						|| tipoPersona.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO)) {
+					persona.setDireccion(this.validarCampo(personaRequest.getDireccion()));
+					persona.setCodigoDepartamento(this.validarCampo(personaRequest.getCodigoDepartamento()));
+					persona.setCodigoProvincia(this.validarCampo(personaRequest.getCodigoProvincia()));
+					persona.setCodigoDistrito(this.validarCampo(personaRequest.getCodigoDistrito()));
+				}
 				persona.setTelefono1(this.validarCampo(personaRequest.getTelefono1()));
 				persona.setTelefono2(this.validarCampo(personaRequest.getTelefono2()));
 				persona.setTelefono3(this.validarCampo(personaRequest.getTelefono3()));
@@ -1555,7 +1568,6 @@ public class SolicitudServiceImpl implements SolicitudService {
 			if(page!=null&&!page.isEmpty()) {
 				return solicitud;
 			}
-			return solicitud;
 		}
 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
 	}
