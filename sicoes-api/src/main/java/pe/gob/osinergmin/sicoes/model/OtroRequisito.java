@@ -140,6 +140,10 @@ public class OtroRequisito extends BaseModel implements Serializable {
 	@Column(name = "REQUISITO_PRINCIPAL")
     private Integer requisitoPrincipal;  // Valor por defecto en Java
 
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_ESTADO_LD")
+	private ListadoDetalle estado;
+
 	// Getter y setter manuales para convertir a booleano
     public boolean isNuevaColumna() {
         return requisitoPrincipal != null && requisitoPrincipal == 1;
@@ -419,7 +423,13 @@ public class OtroRequisito extends BaseModel implements Serializable {
 
 	public void setMontoFacturadoSector(Double montoFacturadoSector) {
 		this.montoFacturadoSector = montoFacturadoSector;
-	}	
-	
-		
+	}
+
+	public ListadoDetalle getEstado() {
+		return estado;
+	}
+
+	public void setEstado(ListadoDetalle estado) {
+		this.estado = estado;
+	}
 }

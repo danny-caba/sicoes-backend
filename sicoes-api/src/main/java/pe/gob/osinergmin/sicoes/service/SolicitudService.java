@@ -37,6 +37,8 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 			Long idEstadoSolicitud, String solicitante, Long idEstadoRevision,Long idEstadoEvalTecnica, Long idEstadoEvalAdministrativa, Pageable pageable,Contexto contexto);
 	public Solicitud guardar(Solicitud solicitud);
 	Solicitud actualizar(Solicitud solicitud, Contexto contexto);
+	Solicitud modificar(String solicitudUuid, Contexto contexto);
+	Solicitud editar(String solicitudUuid, Contexto contexto);
 	public void finalizarRevision(Long idSolicitud,String codigoTipo, Contexto contexto);
 	public void regresarProceso(Solicitud solicitud, String codigo, Contexto contexto);
 	public Solicitud clonarSolicitud(Long idSolicitud, Contexto contexto);
@@ -66,6 +68,4 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public List<Long> obtenerSubsectoresXUsuarioSolicitud(String uuid,Long idUsuario);
 	public Archivo generarInformeAdministrativo(Long idSolicitud, Long idAsignacion, Contexto contexto) throws Exception; //AFC
 	public void subirDocumentoAdministrativos(Archivo informeVT, Contexto contexto); //AFC
-
-
 }

@@ -70,9 +70,9 @@ public class Constantes {
 			public static final String BORRADOR 	= "BORRADOR";		
 			public static final String EN_PROCESO	= "EN_PROCESO";
 			public static final String OBSERVADO	= "OBSERVADO";
-			public static final String CONCLUIDO	= "CONCLUIDO";	
+			public static final String CONCLUIDO	= "CONCLUIDO";
 			public static final String ARCHIVADO	= "ARCHIVADO";
-			
+
 		}
 		
 		public static final class TIPO_SUSPENSION_CANCELACION {
@@ -594,6 +594,15 @@ public class Constantes {
 			public static final String INACTIVO = "INACTIVO";
 		}
 
+		public static final class ESTADO_OTRO_REQUISITO {
+			public static final String CODIGO 		= "ESTADO_OTRO_REQUISITO";
+			public static final String ORIGINAL 	= "ORIGINAL";
+		}
+
+		public static final class ESTADO_DOCUMENTO {
+			public static final String CODIGO 		= "ESTADO_DOCUMENTO";
+			public static final String ORIGINAL 	= "ORIGINAL";
+		}
 	}
 	
 

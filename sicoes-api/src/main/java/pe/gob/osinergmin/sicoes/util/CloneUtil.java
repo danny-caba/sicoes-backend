@@ -27,6 +27,7 @@ public class CloneUtil {
 		representanteNuevo.setNombres(representante.getNombres());
 		representanteNuevo.setApellidoPaterno(representante.getApellidoPaterno());
 		representanteNuevo.setApellidoMaterno(representante.getApellidoMaterno());
+		representanteNuevo.setEstado(representante.getEstado());
 		
 		return representanteNuevo;
 	}

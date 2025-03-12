@@ -125,6 +125,10 @@ public class Documento extends BaseModel implements Serializable {
 	@Column(name = "FL_SIGED")
 	private Long flagSiged;
 
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_ESTADO_LD")
+	private ListadoDetalle estado;
+
 	@Transient
 	private Archivo archivo;
 
@@ -356,7 +360,14 @@ public class Documento extends BaseModel implements Serializable {
 		this.flagSiged = flagSiged;
 	}
 
-	// public Long getFlagUltimo() {
+	public ListadoDetalle getEstado() {
+		return estado;
+	}
+
+	public void setEstado(ListadoDetalle estado) {
+		this.estado = estado;
+	}
+// public Long getFlagUltimo() {
 	// return flagUltimo;
 	// }
 	//

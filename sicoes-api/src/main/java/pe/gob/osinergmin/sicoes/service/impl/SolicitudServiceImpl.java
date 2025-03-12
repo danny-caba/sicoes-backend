@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1290,7 +1291,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 						Representante representanteBD = representanteService.guardar(representanteNuevo, contexto);
 
 						solicitudBD.setRepresentante(representanteBD);
-						//Actualizar Representantes
+						//Obtener Representantes
 						List<Representante> lista = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
 								Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
 						solicitudBD.setHistorialRepresentante(lista);
@@ -1320,6 +1321,76 @@ public class SolicitudServiceImpl implements SolicitudService {
 		} else {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO);
 		}
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public Solicitud modificar(String solicitudUuid, Contexto contexto) {
+		Long idSolicitud = solicitudDao.obtenerId(solicitudUuid);
+		Solicitud solicitudBD = obtener(idSolicitud, contexto);
+		if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
+				&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
+				|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
+			//Clonar Solicitud
+			Solicitud solicitudNueva = this.clonarSolicitud(solicitudBD, contexto);
+
+			//Obtener Asignacion
+			asignacionService.clonarAsignacion(solicitudBD, solicitudNueva, contexto);
+			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
+			solicitudNueva.setAsignados(asignacionService.buscar(solicitudNueva.getIdSolicitud(), null, pageable, contexto).getContent());
+
+			//Actualizar Solicitud con campos faltantes
+			ListadoDetalle estadoPreliminar = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
+			solicitudNueva.setEstado(estadoPreliminar);
+			solicitudNueva.setFlagArchivamiento(solicitudBD.getFlagArchivamiento());
+			solicitudNueva.setFlagRespuesta(solicitudBD.getFlagRespuesta());
+			solicitudNueva.setObservacionAdmnistrativa(solicitudBD.getObservacionAdmnistrativa());
+			solicitudNueva.setObservacionTecnica(solicitudBD.getObservacionTecnica());
+			solicitudDao.save(solicitudNueva);
+
+			//Actualizar estado Otro Requisito
+			ListadoDetalle estadoOtroRequisito = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_OTRO_REQUISITO.CODIGO, Constantes.LISTADO.ESTADO_OTRO_REQUISITO.ORIGINAL);
+			List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudNueva.getIdSolicitud());
+			otrosRequisito = otrosRequisito.stream()
+					.peek(req -> req.setEstado(estadoOtroRequisito))
+					.collect(Collectors.toList());
+			otroRequisitoDao.saveAll(otrosRequisito);
+
+			//Actualizar estado Documento
+			ListadoDetalle estadoDocumento = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_DOCUMENTO.ORIGINAL);
+			List<Documento> documentos = documentoService.buscar(solicitudNueva.getIdSolicitud(), contexto);
+			documentos = documentos.stream()
+					.peek(doc -> doc.setEstado(estadoDocumento))
+					.collect(Collectors.toList());
+			documentoDao.saveAll(documentos);
+
+			//Actualizar idSolicitud en Representantes
+			List<Representante> representantes = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
+				Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
+
+			representantes = representantes.stream()
+					.map(repre -> {
+						Representante representante = CloneUtil.clonarRepresentante(repre, contexto);
+						AuditoriaUtil.setAuditoriaRegistro(representante, contexto);
+						representante.setIdSolicitud(solicitudNueva.getIdSolicitud());
+						return representante;
+					})
+					.collect(Collectors.toList());
+			representanteDao.saveAll(representantes);
+
+			solicitudNueva.setHistorialRepresentante(representantes);
+			return solicitudNueva;
+		}
+		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public Solicitud editar(String solicitudUuid, Contexto contexto) {
+		return null;
 	}
 
 	private String validarCampo(String campo) {
@@ -2838,7 +2909,14 @@ public class SolicitudServiceImpl implements SolicitudService {
 		solicitudNueva.setProfesion(solicitudBD.getProfesion());//afc1
 		AuditoriaUtil.setAuditoriaRegistro(solicitudNueva, contexto);
 		Solicitud sol = solicitudDao.save(solicitudNueva);
-		
+
+		//Actualizar el idSolicitud en el Representante
+		if (sol.getRepresentante() != null) {
+			Representante representante = sol.getRepresentante();
+			representante.setIdSolicitud(sol.getIdSolicitud());
+			representanteService.guardar(representante, contexto);
+		}
+
 		ListadoDetalle estadoPorEvaluar = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR);
 
 		List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudBD.getIdSolicitud());
