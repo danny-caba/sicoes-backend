@@ -92,11 +92,12 @@ public class SolicitudRestController extends BaseRestController{
 		return solicitudService.modificar(solicitudUuid, getContexto());
 	}
 
-	@PutMapping("/editar/{solicitudUuid}")
+	@PutMapping("/actualizar/requisito/{solicitudUuid}")
 	@Raml("solicitud.obtener.properties")
-	public Solicitud editar(@PathVariable String  solicitudUuid) {
-		logger.info("editar {} {}", solicitudUuid);
-		return solicitudService.editar(solicitudUuid, getContexto());
+	public Solicitud actualizarRequisito(@PathVariable String  solicitudUuid, @RequestBody Solicitud solicitud) {
+		logger.info("actualizarRequisito {} {}", solicitudUuid);
+		solicitud.setSolicitudUuid(solicitudUuid);
+		return solicitudService.actualizarRequisito(solicitud, getContexto());
 	}
 	
 	@PutMapping("/{solicitudUuid}/enviar")

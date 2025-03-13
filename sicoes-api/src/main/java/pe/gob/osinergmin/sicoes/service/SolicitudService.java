@@ -38,7 +38,7 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public Solicitud guardar(Solicitud solicitud);
 	Solicitud actualizar(Solicitud solicitud, Contexto contexto);
 	Solicitud modificar(String solicitudUuid, Contexto contexto);
-	Solicitud editar(String solicitudUuid, Contexto contexto);
+	Solicitud actualizarRequisito(Solicitud solicitud, Contexto contexto);
 	public void finalizarRevision(Long idSolicitud,String codigoTipo, Contexto contexto);
 	public void regresarProceso(Solicitud solicitud, String codigo, Contexto contexto);
 	public Solicitud clonarSolicitud(Long idSolicitud, Contexto contexto);

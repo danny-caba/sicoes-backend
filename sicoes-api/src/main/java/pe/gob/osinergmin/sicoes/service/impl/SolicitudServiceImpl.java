@@ -1389,8 +1389,32 @@ public class SolicitudServiceImpl implements SolicitudService {
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public Solicitud editar(String solicitudUuid, Contexto contexto) {
-		return null;
+	public Solicitud actualizarRequisito(Solicitud solicitud, Contexto contexto) {
+		Long idSolicitud = solicitudDao.obtenerId(solicitud.getSolicitudUuid());
+		Solicitud solicitudBD = obtener(idSolicitud, contexto);
+		List<OtroRequisito> otroRequisitos = solicitud.getOtrosRequisitos();
+		if (otroRequisitos != null) {
+			List<OtroRequisito> otroRequisitosBD = otroRequisitoService.listarOtroRequisito(
+					Constantes.LISTADO.TIPO_DOCUMENTO_ACREDITA.OTRO_REQUISITO, solicitudBD.getIdSolicitud());
+			boolean encontrado = false;
+			for (OtroRequisito otroRequisitoBD : otroRequisitosBD) {
+				encontrado = false;
+				for (OtroRequisito otroRequisito : otroRequisitos) {
+					if (otroRequisitoBD.getIdOtroRequisito().equals(otroRequisito.getIdOtroRequisito())) {
+						encontrado = true;
+						break;
+					}
+				}
+				if (!encontrado) {
+					otroRequisitoService.eliminar(otroRequisitoBD.getIdOtroRequisito(), contexto);
+				}
+			}
+			for (OtroRequisito otroRequisito : otroRequisitos) {
+				otroRequisito.setSolicitud(solicitudBD);
+				otroRequisitoService.guardar(otroRequisito, contexto);
+			}
+		}
+		return solicitudBD;
 	}
 
 	private String validarCampo(String campo) {
