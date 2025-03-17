@@ -1350,38 +1350,53 @@ public class SolicitudServiceImpl implements SolicitudService {
 			solicitudDao.save(solicitudNueva);
 
 			//Actualizar estado Otro Requisito
-			ListadoDetalle estadoOtroRequisito = listadoDetalleService.obtenerListadoDetalle(
-					Constantes.LISTADO.ESTADO_OTRO_REQUISITO.CODIGO, Constantes.LISTADO.ESTADO_OTRO_REQUISITO.ORIGINAL);
 			List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudNueva.getIdSolicitud());
-			otrosRequisito = otrosRequisito.stream()
-					.peek(req -> req.setEstado(estadoOtroRequisito))
-					.collect(Collectors.toList());
-			otroRequisitoDao.saveAll(otrosRequisito);
+			if(!otrosRequisito.isEmpty()) {
+				ListadoDetalle estadoOtroRequisito = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.ESTADO_OTRO_REQUISITO.CODIGO, Constantes.LISTADO.ESTADO_OTRO_REQUISITO.ORIGINAL);
+				otrosRequisito = otrosRequisito.stream()
+						.peek(req -> req.setEstado(estadoOtroRequisito))
+						.collect(Collectors.toList());
+				otroRequisitoDao.saveAll(otrosRequisito);
+			}
 
 			//Actualizar estado Documento
-			ListadoDetalle estadoDocumento = listadoDetalleService.obtenerListadoDetalle(
-					Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_DOCUMENTO.ORIGINAL);
 			List<Documento> documentos = documentoService.buscar(solicitudNueva.getIdSolicitud(), contexto);
-			documentos = documentos.stream()
-					.peek(doc -> doc.setEstado(estadoDocumento))
-					.collect(Collectors.toList());
-			documentoDao.saveAll(documentos);
+			if(!documentos.isEmpty()) {
+				ListadoDetalle estadoDocumento = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_DOCUMENTO.ORIGINAL);
+				documentos = documentos.stream()
+						.peek(doc -> doc.setEstado(estadoDocumento))
+						.collect(Collectors.toList());
+				documentoDao.saveAll(documentos);
+			}
+
+			//Actualizar estado Estudios
+			List<Estudio> estudios = estudioService.buscar(solicitudBD.getIdSolicitud(), contexto);
+			if(!estudios.isEmpty()) {
+				ListadoDetalle estadoEstudio = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO, Constantes.LISTADO.ESTADO_ESTUDIO.ORIGINAL);
+				estudios = estudios.stream()
+						.peek(estudio -> estudio.setEstado(estadoEstudio))
+						.collect(Collectors.toList());
+				estudioDao.saveAll(estudios);
+			}
 
 			//Actualizar idSolicitud en Representantes
 			List<Representante> representantes = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
 				Constantes.LISTADO.ESTADO_REPRESENTANTE.INACTIVO);
-
-			representantes = representantes.stream()
-					.map(repre -> {
-						Representante representante = CloneUtil.clonarRepresentante(repre, contexto);
-						AuditoriaUtil.setAuditoriaRegistro(representante, contexto);
-						representante.setIdSolicitud(solicitudNueva.getIdSolicitud());
-						return representante;
-					})
-					.collect(Collectors.toList());
-			representanteDao.saveAll(representantes);
-
-			solicitudNueva.setHistorialRepresentante(representantes);
+			if(!representantes.isEmpty()) {
+				representantes = representantes.stream()
+						.map(repre -> {
+							Representante representante = CloneUtil.clonarRepresentante(repre, contexto);
+							AuditoriaUtil.setAuditoriaRegistro(representante, contexto);
+							representante.setIdSolicitud(solicitudNueva.getIdSolicitud());
+							return representante;
+						})
+						.collect(Collectors.toList());
+				representanteDao.saveAll(representantes);
+				solicitudNueva.setHistorialRepresentante(representantes);
+			}
 			return solicitudNueva;
 		}
 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO);

@@ -133,6 +133,7 @@ public class EstudioServiceImpl implements EstudioService{
 			estudio.setTipoEstudio(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ESTUDIO.CODIGO,estudio.getTipoEstudio().getCodigo()));
 			estudio.setFuente(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.FUENTE_ESTUDIO.CODIGO,Constantes.LISTADO.FUENTE_ESTUDIO.MANUAL));
 			estudio.setEvaluacion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
+			estudio.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO,Constantes.LISTADO.ESTADO_ESTUDIO.ACTUAL));
 			estudioBD=estudio;
 		}else { 
 			estudioBD = estudioDao.obtener(estudio.getIdEstudio());			

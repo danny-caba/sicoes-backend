@@ -349,6 +349,9 @@ public class DocumentoServiceImpl implements DocumentoService {
 			documento.setEvaluacion(
 					listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,
 							Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
+			documento.setEstado(
+					listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO,
+							Constantes.LISTADO.ESTADO_DOCUMENTO.ACTUAL));
 			documentoBD = documento;
 			
 			if(documentoDao.existeDocumento(sol.getIdSolicitud(), documento.getTipoDocumento().getIdListadoDetalle(), 
