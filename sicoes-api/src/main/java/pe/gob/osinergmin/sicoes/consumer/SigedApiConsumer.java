@@ -10,6 +10,7 @@ import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
 import pe.gob.osinergmin.sicoes.model.dto.ResponseUsuarioSigedDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioSigedDTO;
 import pe.gob.osinergmin.sicoes.util.bean.siged.ResponseUserListDto;
 
 public interface SigedApiConsumer {
@@ -19,7 +20,7 @@ public interface SigedApiConsumer {
 	public Date calcularFechaFin(Date fechaInicio, Long diasPlazo,String tipoPlazo);	
 	public BaseOutRO archivarExpediente(String numeroExpediente, String observacion);
 	public List<ResponseUserListDto.Usuario> listarUsuariosSiged() throws Exception;
-	public ResponseUsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
+	public UsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
 	public ClienteConsultaOutRO buscarCliente(Integer tipoIdentificacion, String nroIdentificacion);
 	
 }

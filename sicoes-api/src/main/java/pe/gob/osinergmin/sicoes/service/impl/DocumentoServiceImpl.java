@@ -148,6 +148,7 @@ public class DocumentoServiceImpl implements DocumentoService {
 		PageUtilImpl<Documento> page = new PageUtilImpl<Documento>(documentos.getContent(), documentos.getPageable(),
 				documentos.getTotalElements());
 		page.setTotalMonto(documentoDao.sumarMontoTotal(idSolicitud));
+		page.setTotalMontoEvaluado(documentoDao.sumarMontoTotalEvaluado(idSolicitud));
 		if (page.getTotalMonto() == null) {
 			calcularExperienciaTotal(page, documentoTotal.getContent());
 		}
@@ -700,6 +701,15 @@ public class DocumentoServiceImpl implements DocumentoService {
 		}
 
 		return doc;
+	}
+
+	@Override
+	public Documento actualizarFile(Documento documento, Contexto contexto) {
+		Documento documentoBD = documentoDao.obtener(documento.getIdDocumento());
+		Archivo archivoBD = archivoDao.obtener(documento.getArchivo().getIdArchivo());
+		archivoService.asociarArchivo(documentoBD, archivoBD, contexto);
+		actualizarNombreArchivo(documentoBD.getSolicitud().getIdSolicitud(), contexto);
+		return documento;
 	}
 
 	public void actualizarRequisitos(Long solicitudId, Contexto contexto, ListadoDetalle actividadArea,

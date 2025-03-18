@@ -28,4 +28,6 @@ public interface DocumentoService extends BaseService<Documento, Long> {
 
 	public Documento asignarEvaluadorPerfil(Documento doc, List<Asignacion> asignaciones, Contexto contexto);
 
+	Documento actualizarFile(Documento documento, Contexto contexto);
+
 }

@@ -1,17 +1,14 @@
 package pe.gob.osinergmin.sicoes.consumer.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
@@ -32,8 +29,6 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,11 +38,10 @@ import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import gob.osinergmin.siged.rest.util.ExpedienteInvoker;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
-import pe.gob.osinergmin.sicoes.model.dto.ResponseUsuarioSigedDTO;
-import pe.gob.osinergmin.sicoes.service.impl.SolicitudServiceImpl;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioSigedDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioSigedResponseDTO;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
-import pe.gob.osinergmin.sicoes.util.bean.siged.ResponseGetUserDto;
 import pe.gob.osinergmin.sicoes.util.bean.siged.ResponseUserListDto;
 
 @Repository("sigedApiConsumer")
@@ -223,11 +217,9 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 	}
 	
 	@Override
-	public ResponseUsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
+	public UsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
 		String url=SIGED_WS_URL+SIGED_PATH_OBTENER_USUARIO;
-		
-		ResponseUsuarioSigedDTO usuarioSigedDto =new ResponseUsuarioSigedDTO();
-		ResponseGetUserDto myObject =new ResponseGetUserDto();
+
 		try {			
 			RestTemplate restTemplate = new RestTemplate();
 			LOG.debug("url [{}].", url);
@@ -243,25 +235,16 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 		    HttpEntity<String> request = new HttpEntity<String>(xmlString, headers);
 		    
 		    String result = restTemplate.postForObject(url, request, String.class);
-		    JSONObject soapDatainJsonObject = XML.toJSONObject(result);
-		    
-		    ObjectMapper objectMapper = new ObjectMapper();
-		    
-		    myObject = objectMapper.readValue(soapDatainJsonObject.toString(), ResponseGetUserDto.class);
-		    
-		    if (myObject.getObtenerUsuarioSIGED()==null || myObject.getObtenerUsuarioSIGED().getResultCode()!=1) {
-				return null;
+			JAXBContext jaxbContext = JAXBContext.newInstance(UsuarioSigedResponseDTO.class);
+			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+			UsuarioSigedResponseDTO responseDTO = (UsuarioSigedResponseDTO) unmarshaller.unmarshal(new StringReader(result));
+			UsuarioSigedDTO usuario = null;
+			if (responseDTO.getResultCode() == 1 && responseDTO.getUsuarios() != null) {
+				usuario = responseDTO.getUsuarios().getUsuarioList().get(0);
+			} else {
+				LOG.error("Error al obtener usuario de SIGED");
 			}
-		    
-		    if (myObject.getObtenerUsuarioSIGED().getUsuarios()!=null && myObject.getObtenerUsuarioSIGED().getUsuarios().getUsuario()!=null) {
-		    	usuarioSigedDto.setIdUsuario(myObject.getObtenerUsuarioSIGED().getUsuarios().getUsuario().getIdUsuario());
-		    	usuarioSigedDto.setNombresUsuario(myObject.getObtenerUsuarioSIGED().getUsuarios().getUsuario().getNombresUsuario());
-		    	usuarioSigedDto.setApellidosUsuario(myObject.getObtenerUsuarioSIGED().getUsuarios().getUsuario().getApellidosUsuario());
-		    	usuarioSigedDto.setCorreoUsuario(myObject.getObtenerUsuarioSIGED().getUsuarios().getUsuario().getCorreoUsuario());
-			}
-		    
-		    return usuarioSigedDto;
-
+			return usuario;
 		} catch (Exception ex) {
 			LOG.error("Invoking of web service " + url + " of siged was failed", ex);
             throw ex;

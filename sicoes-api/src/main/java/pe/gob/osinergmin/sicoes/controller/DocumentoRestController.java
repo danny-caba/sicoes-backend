@@ -78,5 +78,13 @@ public class DocumentoRestController extends BaseRestController {
 		return documentoService.evalular(documento,getContexto());
 		
 	}
-	
+
+	@PutMapping("/{id}/file")
+	@Raml("documento.obtener.properties")
+	public Documento actualizarFile(@PathVariable Long  id,@RequestBody Documento documento) {
+		logger.info("actualizarFile {} {}",id,documento);
+		documento.setIdDocumento(id);
+		return documentoService.actualizarFile(documento,getContexto());
+
+	}
 }

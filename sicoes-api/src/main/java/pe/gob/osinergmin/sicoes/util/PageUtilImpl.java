@@ -13,6 +13,7 @@ public class PageUtilImpl<T> extends PageImpl<T>{
 	private Integer dia;
 	private Integer mes;
 	private Integer anio;
+	private Double totalMontoEvaluado;
 
 	public PageUtilImpl(List<T> content) {
 		super(content);
@@ -53,6 +54,14 @@ public class PageUtilImpl<T> extends PageImpl<T>{
 
 	public void setAnio(Integer anio) {
 		this.anio = anio;
+	}
+
+	public Double getTotalMontoEvaluado() {
+		return totalMontoEvaluado;
+	}
+
+	public void setTotalMontoEvaluado(Double totalMontoEvaluado) {
+		this.totalMontoEvaluado = totalMontoEvaluado;
 	}
 
 	
