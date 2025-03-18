@@ -113,7 +113,11 @@ public class Estudio extends BaseModel implements Serializable {
 	
 	@Column(name="FL_SIGED")	
 	private Long flagSiged;
-	
+
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_ESTADO_LD")
+	private ListadoDetalle estado;
+
 	@Transient
 	private List<Archivo> archivos;
 
@@ -300,6 +304,12 @@ public class Estudio extends BaseModel implements Serializable {
 	public void setArchivos(List<Archivo> archivos) {
 		this.archivos = archivos;
 	}
-	
 
+	public ListadoDetalle getEstado() {
+		return estado;
+	}
+
+	public void setEstado(ListadoDetalle estado) {
+		this.estado = estado;
+	}
 }

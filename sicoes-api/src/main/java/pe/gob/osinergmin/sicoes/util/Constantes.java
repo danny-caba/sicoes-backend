@@ -602,6 +602,13 @@ public class Constantes {
 		public static final class ESTADO_DOCUMENTO {
 			public static final String CODIGO 		= "ESTADO_DOCUMENTO";
 			public static final String ORIGINAL 	= "ORIGINAL";
+			public static final String ACTUAL 		= "ACTUAL";
+		}
+
+		public static final class ESTADO_ESTUDIO {
+			public static final String CODIGO 		= "ESTADO_ESTUDIO";
+			public static final String ORIGINAL 	= "ORIGINAL";
+			public static final String ACTUAL 		= "ACTUAL";
 		}
 	}
 	
