@@ -13,6 +13,7 @@ import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,6 +245,22 @@ public class ArchivoServiceImpl implements ArchivoService {
 		boolean nuevo = archivo.getIdArchivo() == null;
 		if(archivo.getSolicitudUuid() != null) {
 			archivo.setIdSolicitud(solicitudService.obtenerId(archivo.getSolicitudUuid()));
+			//Validar Archivo duplicado Para Codigo TA08 (Documento Experiencia)
+			if(archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA)) {
+				List<Archivo> archivosExperiencia = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA,
+						archivo.getSolicitudUuid(), null, null).getContent();
+				boolean existe = archivosExperiencia.stream()
+						.anyMatch(arch -> {
+							try {
+								return IOUtils.contentEquals(archivo.getFile().getInputStream(), arch.getFile().getInputStream());
+							} catch (IOException e) {
+								return false;
+							}
+                        });
+				if(existe) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+				}
+			}
 		}
 		if(archivo.getPropuestaUuid() != null) {
 			archivo.setIdPropuesta(propuestaService.obtener(archivo.getPropuestaUuid(),contexto).getIdPropuesta());

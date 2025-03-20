@@ -862,6 +862,7 @@ public class Constantes {
 		public static final String ARCHIVO_ELIMINAR_USUARIO = "V01010";
 		public static final String EVALUACION_FINALIZADO = "V01011";
 		public static final String ESTADO_TIPO_INCORRECTO = "V01012";
+		public static final String ARCHIVO_DUPLICADO = "V01013";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
