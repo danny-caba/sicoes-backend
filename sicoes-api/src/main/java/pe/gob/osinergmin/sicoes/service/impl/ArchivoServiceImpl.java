@@ -252,8 +252,13 @@ public class ArchivoServiceImpl implements ArchivoService {
 				boolean existe = archivosExperiencia.stream()
 						.anyMatch(arch -> {
 							try {
-								return IOUtils.contentEquals(archivo.getFile().getInputStream(), arch.getFile().getInputStream());
-							} catch (IOException e) {
+								if(Optional.ofNullable(archivo.getFile()).isPresent()
+										&& Optional.ofNullable(arch.getFile()).isPresent()) {
+									return IOUtils.contentEquals(archivo.getFile().getInputStream(), arch.getFile().getInputStream());
+								} else {
+									return false;
+								}
+							} catch (Exception e) {
 								return false;
 							}
                         });
