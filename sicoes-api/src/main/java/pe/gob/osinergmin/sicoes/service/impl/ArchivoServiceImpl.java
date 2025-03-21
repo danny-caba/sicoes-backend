@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -255,9 +256,13 @@ public class ArchivoServiceImpl implements ArchivoService {
 							try {
 								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
 								if(Optional.ofNullable(archivo.getFile()).isPresent()
-										&& Optional.ofNullable(arch.getFile()).isPresent()) {
-									return IOUtils.contentEquals(archivo.getFile().getInputStream(),
-											new ByteArrayInputStream(arch.getContenido()));
+										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+									InputStream nuevoArch = archivo.getFile().getInputStream();
+									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+									nuevoArch.close();
+									oldArch.close();
+									return existeArchivo;
 								} else {
 									return false;
 								}
