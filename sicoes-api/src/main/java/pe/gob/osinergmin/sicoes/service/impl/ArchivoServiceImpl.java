@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -252,9 +253,11 @@ public class ArchivoServiceImpl implements ArchivoService {
 				boolean existe = archivosExperiencia.stream()
 						.anyMatch(arch -> {
 							try {
+								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
 								if(Optional.ofNullable(archivo.getFile()).isPresent()
 										&& Optional.ofNullable(arch.getFile()).isPresent()) {
-									return IOUtils.contentEquals(archivo.getFile().getInputStream(), arch.getFile().getInputStream());
+									return IOUtils.contentEquals(archivo.getFile().getInputStream(),
+											new ByteArrayInputStream(arch.getContenido()));
 								} else {
 									return false;
 								}
