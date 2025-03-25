@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import gob.osinergmin.siged.remote.rest.ro.in.*;
 import gob.osinergmin.siged.remote.rest.ro.in.list.ArchivoListInRO;
@@ -250,7 +251,11 @@ public class ArchivoServiceImpl implements ArchivoService {
 			//Validar Archivo duplicado Para Codigo TA08 (Documento Experiencia)
 			if(archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA)) {
 				List<Archivo> archivosExperiencia = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA,
-						archivo.getSolicitudUuid(), null, null).getContent();
+						archivo.getSolicitudUuid(), null, null)
+						.getContent()
+						.stream()
+						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+						.collect(Collectors.toList());
 				boolean existe = archivosExperiencia.stream()
 						.anyMatch(arch -> {
 							try {
