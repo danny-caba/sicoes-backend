@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -133,7 +134,12 @@ public class EstudioServiceImpl implements EstudioService{
 			estudio.setTipoEstudio(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ESTUDIO.CODIGO,estudio.getTipoEstudio().getCodigo()));
 			estudio.setFuente(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.FUENTE_ESTUDIO.CODIGO,Constantes.LISTADO.FUENTE_ESTUDIO.MANUAL));
 			estudio.setEvaluacion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
-			estudio.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO,Constantes.LISTADO.ESTADO_ESTUDIO.ACTUAL));
+			if(solicitud.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
+					&& (solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
+					|| solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))
+					&& Optional.ofNullable(solicitud.getIdSolicitudPadre()).isPresent()) {
+				estudio.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO,Constantes.LISTADO.ESTADO_ESTUDIO.ACTUAL));
+			}
 			estudioBD=estudio;
 		}else { 
 			estudioBD = estudioDao.obtener(estudio.getIdEstudio());			
