@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -350,9 +351,14 @@ public class DocumentoServiceImpl implements DocumentoService {
 			documento.setEvaluacion(
 					listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,
 							Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
-			documento.setEstado(
-					listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO,
-							Constantes.LISTADO.ESTADO_DOCUMENTO.ACTUAL));
+			if(sol.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
+					&& (sol.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
+					|| sol.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))
+					&& Optional.ofNullable(sol.getIdSolicitudPadre()).isPresent()) {
+				documento.setEstado(
+						listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO,
+								Constantes.LISTADO.ESTADO_DOCUMENTO.ACTUAL));
+			}
 			documentoBD = documento;
 			
 			if(documentoDao.existeDocumento(sol.getIdSolicitud(), documento.getTipoDocumento().getIdListadoDetalle(), 
