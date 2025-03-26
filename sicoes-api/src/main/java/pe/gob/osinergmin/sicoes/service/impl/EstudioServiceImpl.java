@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.consumer.PidoConsumer;
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Estudio;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.EstudioDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
@@ -375,6 +372,14 @@ public class EstudioServiceImpl implements EstudioService{
 				}
 			}
 		}
+	}
+
+	@Override
+	public Estudio actualizarFile(Estudio estudio, Contexto contexto) {
+		Estudio estudioDB = estudioDao.obtener(estudio.getIdEstudio());
+		archivoService.asociarArchivos(estudioDB.getSolicitud().getIdSolicitud(), estudioDB.getIdEstudio(), estudio.getArchivos(),contexto);
+		actualizarNombreArchivo(estudioDB.getSolicitud().getIdSolicitud(), contexto);
+		return estudio;
 	}
 
 }
