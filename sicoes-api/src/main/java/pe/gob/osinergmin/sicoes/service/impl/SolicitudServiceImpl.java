@@ -1339,6 +1339,10 @@ public class SolicitudServiceImpl implements SolicitudService {
 			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
 			solicitudNueva.setAsignados(asignacionService.buscar(solicitudNueva.getIdSolicitud(), null, pageable, contexto).getContent());
 
+			// Obtener estado "Por Asignar"
+			ListadoDetalle estadoRevision = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.POR_ASIGNAR);
+
 			//Actualizar Solicitud con campos faltantes
 			ListadoDetalle estadoPreliminar = listadoDetalleService.obtenerListadoDetalle(
 					Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
@@ -1347,6 +1351,28 @@ public class SolicitudServiceImpl implements SolicitudService {
 			solicitudNueva.setFlagRespuesta(solicitudBD.getFlagRespuesta());
 			solicitudNueva.setObservacionAdmnistrativa(solicitudBD.getObservacionAdmnistrativa());
 			solicitudNueva.setObservacionTecnica(solicitudBD.getObservacionTecnica());
+			solicitudNueva.setNumeroExpediente(null);
+			solicitudNueva.setFechaRegistro(null);
+			solicitudNueva.setFechaPresentacion(null);
+			solicitudNueva.setResultadoAdministrativo(null);
+			solicitudNueva.setEstadoRevision(estadoRevision);
+			solicitudNueva.setEstadoEvaluacionTecnica(null);
+			solicitudNueva.setEstadoEvaluacionAdministrativa(null);
+			solicitudNueva.setNumeroPlazoResp(null);
+			solicitudNueva.setFechaPlazoResp(null);
+			solicitudNueva.setNumeroPlazoAsig(null);
+			solicitudNueva.setFechaPlazoAsig(null);
+			solicitudNueva.setObservacionTecnica(null);
+			solicitudNueva.setObservacionAdmnistrativa(null);
+			solicitudNueva.setCodigoConsentimiento(null);
+			solicitudNueva.setNumeroPlazoSub(null);
+			solicitudNueva.setNumeroPlazoSub(null);
+			solicitudNueva.setFechaPlazoTecnico(null);
+			solicitudNueva.setFechaPlazoTecnico(null);
+			solicitudNueva.setObservacionNoCalifica(null);
+			solicitudNueva.setFechaArchivamiento(null);
+			solicitudNueva.setFlagArchivamiento(null);
+			solicitudNueva.setFlagRespuesta(null);
 			solicitudDao.save(solicitudNueva);
 
 			//Actualizar estado Otro Requisito
@@ -1372,7 +1398,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 
 			//Actualizar estado Estudios
-			List<Estudio> estudios = estudioService.buscar(solicitudBD.getIdSolicitud(), contexto);
+			List<Estudio> estudios = estudioService.buscar(solicitudNueva.getIdSolicitud(), contexto);
 			if(!estudios.isEmpty()) {
 				ListadoDetalle estadoEstudio = listadoDetalleService.obtenerListadoDetalle(
 						Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO, Constantes.LISTADO.ESTADO_ESTUDIO.ORIGINAL);
