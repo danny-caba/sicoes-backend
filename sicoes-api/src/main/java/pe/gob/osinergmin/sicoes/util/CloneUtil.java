@@ -149,6 +149,8 @@ public class CloneUtil {
 		documentoNuevo.setMontoTipoCambio(documento.getMontoTipoCambio());
 		documentoNuevo.setMontoContratoSol(documento.getMontoContratoSol());
 		documentoNuevo.setFlagSiged(documento.getFlagSiged());
+		documentoNuevo.setSubSectorDoc(documento.getSubSectorDoc());
+		documentoNuevo.setActividadArea(documento.getActividadArea());
 		if(Constantes.LISTADO.RESULTADO_EVALUACION.OBSERVADO.equals(documento.getEvaluacion().getCodigo())) {
 			documentoNuevo.setIdDocumentoPadre(documento.getIdDocumento());
 		}
