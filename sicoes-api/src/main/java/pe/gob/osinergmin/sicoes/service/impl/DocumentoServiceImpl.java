@@ -715,6 +715,10 @@ public class DocumentoServiceImpl implements DocumentoService {
 	@Override
 	public Documento actualizarFile(Documento documento, Contexto contexto) {
 		Documento documentoBD = documentoDao.obtener(documento.getIdDocumento());
+		if(documentoBD.getFlagVigente().equals("1")) {
+			documentoBD.setFlagVigente(documento.getFlagVigente());
+			documentoBD.setFechaFin(documento.getFechaFin());
+		}
 		Archivo archivoBD = archivoDao.obtener(documento.getArchivo().getIdArchivo());
 		archivoService.asociarArchivo(documentoBD, archivoBD, contexto);
 		actualizarNombreArchivo(documentoBD.getSolicitud().getIdSolicitud(), contexto);

@@ -103,6 +103,7 @@ public class CloneUtil {
 		otroRequisitoNuevo.setSector(otroRequisito.getSector());
 		otroRequisitoNuevo.setSubsector(otroRequisito.getSubsector());
 		otroRequisitoNuevo.setActividad(otroRequisito.getActividad());
+		otroRequisitoNuevo.setActividadArea(otroRequisito.getActividadArea());
 		otroRequisitoNuevo.setUnidad(otroRequisito.getUnidad());
 		otroRequisitoNuevo.setSubCategoria(otroRequisito.getSubCategoria());
 		otroRequisitoNuevo.setPerfil(otroRequisito.getPerfil());

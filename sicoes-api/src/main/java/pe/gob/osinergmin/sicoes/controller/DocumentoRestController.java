@@ -79,7 +79,7 @@ public class DocumentoRestController extends BaseRestController {
 		
 	}
 
-	@PutMapping("/{id}/file")
+	@PutMapping("/{id}/modificar")
 	@Raml("documento.obtener.properties")
 	public Documento actualizarFile(@PathVariable Long  id,@RequestBody Documento documento) {
 		logger.info("actualizarFile {} {}",id,documento);
