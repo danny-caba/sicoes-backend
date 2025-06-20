@@ -36,4 +36,8 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajePresentacionPropuesta(Propuesta propuesta, int numeroDocTec, int numeroDocEco, Contexto contexto);
 	public void enviarMensajeAsignacionEvaluacion03(Asignacion asignacionBD,Contexto contexto);
 	public void enviarMensajeEvaluacionPendiente(String asunto, String correo, String tipo, String table, Contexto contexto);
+	public void enviarMensajeAsignacionEvaluacion04(Long idOtroRequisito, Contexto contexto);
+	public void enviarMensajeSolicitudRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
+	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
+
 }

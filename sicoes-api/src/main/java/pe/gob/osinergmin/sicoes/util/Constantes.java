@@ -579,6 +579,10 @@ public class Constantes {
 			public static final String ESTADO_PACE_CANCELADO= "PACE_CAN";
 
 		}
+		public static final class VALORES {
+			public static final String CODIGO = "ADJUDICACION_SIMPLIFICADA";
+			public static final String MONTO_SOLES = "MONTO_SOLES";
+		}
 
 		public static final String PERFILES = "PERFILES";
 
@@ -587,6 +591,35 @@ public class Constantes {
 			public static final String ACTIVO = "ACTIVO";
 			public static final String INACTIVO = "INACTIVO";
 			public static final String ESTADO_ACTUAL = "ESTADO_ACTUAL";
+		}
+
+		public static final class ESTADO_REPRESENTANTE {
+			public static final String CODIGO = "ESTADO_REPRESENTANTE";
+			public static final String ACTIVO = "ACTIVO";
+			public static final String INACTIVO = "INACTIVO";
+		}
+
+		public static final class ESTADO_OTRO_REQUISITO {
+			public static final String CODIGO 		= "ESTADO_OTRO_REQUISITO";
+			public static final String ORIGINAL 	= "ORIGINAL";
+		}
+
+		public static final class ESTADO_DOCUMENTO {
+			public static final String CODIGO 		= "ESTADO_DOCUMENTO";
+			public static final String ORIGINAL 	= "ORIGINAL";
+			public static final String ACTUAL 		= "ACTUAL";
+		}
+
+		public static final class ESTADO_ESTUDIO {
+			public static final String CODIGO 		= "ESTADO_ESTUDIO";
+			public static final String ORIGINAL 	= "ORIGINAL";
+			public static final String ACTUAL 		= "ACTUAL";
+		}
+
+		public static final class ORIGEN_REGISTRO {
+			public static final String CODIGO			= "ORIGEN_REGISTRO";
+			public static final String NORMAL			= "NORMAL";
+			public static final String MODIFICACION		= "MODIFICACION";
 		}
 
 	}
@@ -836,10 +869,16 @@ public class Constantes {
 		public static final String CONSULTA_NO_ENVIADA = "V01005";
 		public static final String NO_EXISTE_ETAPA = "V01006";
 		public static final String FUERA_FECHA_CONSULTA = "V01007";
-
+		public static final String PRESENTACION_FUERA_FECHA = "V01008";
 		public static final String ASIGNACION_FUERA_PROCESO = "V01009";
 		public static final String ARCHIVO_ELIMINAR_USUARIO = "V01010";
 		public static final String EVALUACION_FINALIZADO = "V01011";
+		public static final String ARCHIVO_NOMBRE_DUPLICADO = "V01012";
+		public static final String SOLICITUD_PERFECCIONAMIENTO_SIN_FECHA = "V01013";
+		public static final String ESTADO_TIPO_INCORRECTO = "V01014";
+		public static final String ARCHIVO_DUPLICADO = "V01015";
+		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
+		public static final String DJ_AUSENTE = "V01017";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

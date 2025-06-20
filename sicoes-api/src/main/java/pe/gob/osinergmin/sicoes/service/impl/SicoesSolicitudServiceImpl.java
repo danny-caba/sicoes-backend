@@ -113,6 +113,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		SicoesSolicitud resSolicitud = null;
 		ListadoDetalle plazoPresentar = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.PLAZOS.CODIGO, Constantes.LISTADO.PLAZOS.PRESENTAR_PERFECCIONAMIENTO);
 		Date fechaInscripcion = calcularFechaFin(new Date(), Long.parseLong(plazoPresentar.getValor()));
+		ListadoDetalle valorAdjudicacionSimplificada = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.VALORES.CODIGO, Constantes.LISTADO.VALORES.MONTO_SOLES);
 
 		SicoesSolicitud solicitud = new SicoesSolicitud();
 		solicitud.setPropuesta(propuesta);
@@ -122,13 +123,14 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.PRELIMINAR);
 		solicitud.setFechaPlazoInscripcion(fechaInscripcion);
 		solicitud.setEstado(Constantes.ESTADO.ACTIVO);
+		solicitud.setValorAdjSimplificada(valorAdjudicacionSimplificada.getValor());
 
 		AuditoriaUtil.setAuditoriaRegistro(solicitud, contexto);
 		try {
 			resSolicitud = sicoesSolicitudDao.save(solicitud);
 			if (resSolicitud != null) {
-				Iterable<SicoesTdSolPerConSec> secciones = sicoesTdSolPerConSecService.guardarSicoes(resSolicitud, contexto);
-				List<SicoesTdSoliPersProp> profesionales = sicoesTdSolPersPropService.registrarProfesionales(resSolicitud, contexto);
+				List<SicoesTdSolPerConSec> secciones = sicoesTdSolPerConSecService.guardarSicoes(resSolicitud, contexto);
+				List<SicoesTdSoliPersProp> profesionales = sicoesTdSolPersPropService.registrarProfesionales(resSolicitud, secciones, contexto);
 				sicoesSolicitudSeccionService.registrarSolicitudSeccion(secciones, profesionales, contexto);
 			} else {
 				throw new IllegalStateException("La solicitud no pudo ser guardada.");
@@ -143,7 +145,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 	@Override
 	public Page<SicoesSolicitud> listarSolicitudesPresentacion(String estado, String nroConcurso, Long item, String convocatoria, String tipoSolicitud, Pageable pageable, Contexto contexto) {
 		logger.info("listarSolicitudesObservadas");
-		Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCNoProfesional(contexto.getUsuario().getCodigoRuc());
+		Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
 		return sicoesSolicitudDao.obtenerxTipoEstadoProceso(estado, nroConcurso, item, convocatoria, tipoSolicitud, supervisora.getIdSupervisora(), pageable);
 	}
 
@@ -271,6 +273,9 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 			}
 			solicitudJasper.setNumeroExpediente(numeroExpedienteJasper);
 			Supervisora supervisoraJasper = initializeAndUnproxy(solicitud.getSupervisora());
+			if (supervisoraJasper.getNombreRazonSocial() == null) {
+				supervisoraJasper.setNombreRazonSocial(supervisoraJasper.getNombres()+ " " + supervisoraJasper.getApellidoPaterno() + " " + supervisoraJasper.getApellidoMaterno());
+			}
 			solicitudJasper.setSupervisora(supervisoraJasper);
 
 			List<SicoesTdSolPerConSec> seccionesJasper = seccionesService.obtenerSeccionesXSolicitud(solicitud.getIdSolicitud());
@@ -366,6 +371,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 			solicitudJasper.setSeccionMonto(resultadosMonto);
 			expedienteInRO = crearExpedientePresentacion(solicitud, null, contexto);
 			Archivo formato_23 = generarReporteEvaluacion(solicitudJasper, contexto);
+
 			List<File> archivosAlfresco = new ArrayList<>();
 			File file = null;
 
@@ -458,7 +464,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 
 	@Override
 	public boolean validarRemype(String numeroDocumento, Contexto contexto) {
-		Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCNoProfesional(numeroDocumento);
+		Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(numeroDocumento);
 		Integer cantidad = sicoesSolicitudDao.buscarRegistroRemype(supervisora.getIdSupervisora());
 
 		if (cantidad > 0) {
@@ -510,6 +516,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		List<SicoesSolicitud> lstSolicitud = sicoesSolicitudDao.listarSolicitudesPorInscripcion();
 		for (SicoesSolicitud solicitud: lstSolicitud) {
 			solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.ARCHIVADO);
+			solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.ARCHIVADO);
 			AuditoriaUtil.setAuditoriaActualizacion(solicitud, contexto);
 			sicoesSolicitudDao.save(solicitud);
 		}
@@ -522,6 +529,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		List<SicoesSolicitud> lstSolicitud = sicoesSolicitudDao.listarSolicitudesPorSubsanacion();
 		for (SicoesSolicitud solicitud: lstSolicitud) {
 			solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.ARCHIVADO);
+			solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.ARCHIVADO);
 			AuditoriaUtil.setAuditoriaActualizacion(solicitud, contexto);
 			sicoesSolicitudDao.save(solicitud);
 		}
@@ -533,6 +541,11 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		SicoesSolicitud solicitud = sicoesSolicitudDao.findById(idSolicitud).orElse(null);
 
 		if (solicitud != null) {
+
+			if (solicitud.getTipoSolicitud().equals(Constantes.TIPO_SOLICITUD_PERF_CONTRATO.SUBSANACION)
+				&& solicitud.getFechaPlazoSubsanacion() == null) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_PERFECCIONAMIENTO_SIN_FECHA);
+			}
 
 			Date fechaActual = new Date();
 			Date fechaLimite = solicitud.getTipoSolicitud().equals(Constantes.TIPO_SOLICITUD_PERF_CONTRATO.INSCRIPCION) ? solicitud.getFechaPlazoInscripcion() : solicitud.getFechaPlazoSubsanacion();
@@ -548,7 +561,7 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public String actualizarSolicitud(List<SicoesSolicitudSeccion> listaSolicitudSeccion, SicoesSolicitud solicitud, Contexto contexto) {
+	public String actualizarSolicitud(List<SicoesSolicitudSeccion> listaSolicitudSeccion, SicoesSolicitud solicitud, Contexto contexto) throws Exception {
 		if (solicitud.getEstadoProcesoSolicitud().equals(Constantes.ESTADO_PROCESO_PERF_CONTRATO.PRELIMINAR)) {
 			solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.EN_PROCESO);
 			solicitud.setFechaHoraPresentacion(new Date());
@@ -559,34 +572,23 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		List<Archivo> archivosRegistrados = obtenerArchivosRegistrados(listaSolicitudSeccion, solicitud, contexto);
 		List<File> archivosAlfresco = null;
 
-		try {
+		archivosAlfresco = archivoService.obtenerArchivoContenidoPerfCont(archivosRegistrados, solicitud, contexto);
+		expediente = enviarArchivos(archivosAlfresco, solicitud, contexto);
 
-			archivosAlfresco = archivoService.obtenerArchivoContenidoPerfCont(archivosRegistrados, solicitud, contexto);
-			expediente = enviarArchivos(archivosAlfresco, solicitud, contexto);
-
-			if (expediente == null) {
-				throw new ValidacionException("No se pudo generar el expediente en SIGED");
-			}
-
-			solicitud.setNumeroExpediente(expediente);
-			AuditoriaUtil.setAuditoriaActualizacion(solicitud, contexto);
-			SicoesSolicitud solicitudDB = sicoesSolicitudDao.save(solicitud);
-
-			if (solicitudDB == null) {
-				throw new ValidacionException("No se pudo actualizar la solicitud con id " + solicitud.getIdSolicitud());
-			}
-
-			List<SicoesSolicitudSeccion> listaSolicitudSeccionDB = sicoesSolicitudSeccionService.actualizarSolicitudDetalle(listaSolicitudSeccion, contexto);
-
-			if (listaSolicitudSeccionDB == null || listaSolicitudSeccionDB.isEmpty()) {
-				throw new ValidacionException("No se pudo actualizar los detalles de la solicitud con id " + solicitud.getIdSolicitud());
-			}
-
-		} catch (Exception e) {
-			logger.error("Error al guardar archivos en Alfresco", e.getMessage(), e);
-			throw new ValidacionException("Error al guardar archivos en Alfresco");
+		if (expediente == null) {
+			throw new ValidacionException("No se pudo enviar los archivos a Alfresco");
 		}
 
+		solicitud.setNumeroExpediente(expediente);
+		AuditoriaUtil.setAuditoriaActualizacion(solicitud, contexto);
+		SicoesSolicitud solicitudDB = sicoesSolicitudDao.save(solicitud);
+
+		if (solicitudDB == null) {
+			throw new ValidacionException("No se pudo actualizar la solicitud con id " + solicitud.getIdSolicitud());
+		}
+
+		sicoesSolicitudSeccionService.actualizarSolicitudDetalle(listaSolicitudSeccion, contexto);
+		sicoesSolicitudSeccionService.actualizarProcesoRevisionPersonal(solicitudDB, contexto);
 
 		return expediente;
 	}
@@ -701,6 +703,9 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 
 		// Cargar supervisora
 		Supervisora supervisora = initializeAndUnproxy(solicitudDB.getSupervisora());
+		if (supervisora.getNombreRazonSocial() == null) {
+			supervisora.setNombreRazonSocial(supervisora.getNombres()+ " " + supervisora.getApellidoPaterno() + " " + supervisora.getApellidoMaterno());
+		}
 		ListadoDetalle pais = initializeAndUnproxy(supervisora.getPais());
 		ListadoDetalle tipoDocumento = initializeAndUnproxy(supervisora.getTipoDocumento());
 		supervisora.setPais(pais);
@@ -871,73 +876,62 @@ public class SicoesSolicitudServiceImpl implements SicoesSolicitudService  {
 		}
 	}
 
-	private String enviarArchivos(List<File> archivosAlfresco, SicoesSolicitud solicitud, Contexto contexto) {
+	private String enviarArchivos(List<File> archivosAlfresco, SicoesSolicitud solicitud, Contexto contexto) throws Exception {
 		ExpedienteInRO expedienteInRO = null;
-		try {
-			String codExpediente = null;
-			if (solicitud.getIdSolicitudPadre() != null) {
-				SicoesSolicitud solicitudPadre = sicoesSolicitudDao.findById(solicitud.getIdSolicitudPadre()).orElse(null);
-				codExpediente = solicitudPadre.getNumeroExpediente();
-			}
-			expedienteInRO = crearExpedientePresentacion(solicitud, codExpediente, contexto);
-			ExpedienteOutRO expedienteOutRO = null;
-			DocumentoOutRO documentoSubsanacionOutRO = null;
-			if (codExpediente != null) {
-				documentoSubsanacionOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
-			} else {
-				expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
-			}
-
-			if (codExpediente != null) {
-				if (1 != documentoSubsanacionOutRO.getResultCode()) {
-					throw new ValidacionException("Error al guardar archivos en SIGED");
-				}
-			} else {
-				if (1 != expedienteOutRO.getResultCode()) {
-					throw new ValidacionException("Error al guardar archivos en SIGED");
-				}
-			}
-
-			codExpediente = codExpediente != null ? codExpediente : expedienteOutRO.getCodigoExpediente();
-
-			if (false) {
-				throw new ValidacionException("Error al guardar archivos en SIGED");
-			} else {
-				expedienteInRO = crearExpedientePresentacion(solicitud, codExpediente, contexto);
-				Archivo formato_22 = null;
-
-				formato_22 = generarReportePresentacion(solicitud, codExpediente, contexto);
-
-				archivosAlfresco = new ArrayList<>();
-				File file = null;
-
-				try {
-					File dir = new File(pathTemporal + File.separator+"temporales" + File.separator + solicitud.getIdSolicitud());
-					if (!dir.exists()) {
-						dir.mkdirs();
-					}
-					file = new File(
-							pathTemporal + File.separator + "temporales" + File.separator + solicitud.getIdSolicitud() + File.separator + formato_22.getNombre());
-					FileUtils.writeByteArrayToFile(file, formato_22.getContenido());
-					formato_22.setContenido(Files.readAllBytes(file.toPath()));
-				} catch (Exception e) {
-					logger.error(e.getMessage(), e);
-					throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, codExpediente);
-				}
-
-				archivosAlfresco.add(file);
-				DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
-				if (documentoOutRO.getResultCode() != 1) {
-					throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_AGREGAR_DOCUMENTOS,
-							codExpediente);
-				}
-			}
-			return codExpediente;
-		} catch (Exception e) {
-			logger.error("Error al guardar archivo en Alfresco", e.getMessage(), e);
-			throw new ValidacionException("Error al guardar archivo en Alfresco");
+		String codExpediente = null;
+		if (solicitud.getIdSolicitudPadre() != null) {
+			SicoesSolicitud solicitudPadre = sicoesSolicitudDao.findById(solicitud.getIdSolicitudPadre()).orElse(null);
+			codExpediente = solicitudPadre.getNumeroExpediente();
+		}
+		expedienteInRO = crearExpedientePresentacion(solicitud, codExpediente, contexto);
+		ExpedienteOutRO expedienteOutRO = null;
+		DocumentoOutRO documentoSubsanacionOutRO = null;
+		if (codExpediente != null) {
+			documentoSubsanacionOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+		} else {
+			expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
 		}
 
+		if (codExpediente != null) {
+			if (1 != documentoSubsanacionOutRO.getResultCode()) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NOMBRE_DUPLICADO);
+			}
+		} else {
+			if (1 != expedienteOutRO.getResultCode()) {
+				throw new ValidacionException(expedienteOutRO.getMessage());
+			}
+		}
+
+		codExpediente = codExpediente != null ? codExpediente : expedienteOutRO.getCodigoExpediente();
+
+		if (false) {
+			throw new ValidacionException("Error al guardar archivos en SIGED");
+		} else {
+			expedienteInRO = crearExpedientePresentacion(solicitud, codExpediente, contexto);
+			Archivo formato_22 = null;
+
+			formato_22 = generarReportePresentacion(solicitud, codExpediente, contexto);
+
+			archivosAlfresco = new ArrayList<>();
+			File file = null;
+
+			File dir = new File(pathTemporal + File.separator+"temporales" + File.separator + solicitud.getIdSolicitud());
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
+			file = new File(
+					pathTemporal + File.separator + "temporales" + File.separator + solicitud.getIdSolicitud() + File.separator + formato_22.getNombre());
+			FileUtils.writeByteArrayToFile(file, formato_22.getContenido());
+			formato_22.setContenido(Files.readAllBytes(file.toPath()));
+
+			archivosAlfresco.add(file);
+			DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+			if (documentoOutRO.getResultCode() != 1) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_AGREGAR_DOCUMENTOS,
+						codExpediente);
+			}
+		}
+		return codExpediente;
 	}
 
 	private ExpedienteInRO crearExpedientePresentacion(SicoesSolicitud solicitud, String codExpediente, Contexto contexto) {

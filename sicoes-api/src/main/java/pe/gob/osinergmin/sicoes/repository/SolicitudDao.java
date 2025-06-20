@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 
 @Repository
@@ -84,6 +85,12 @@ public interface SolicitudDao extends JpaRepository<Solicitud, Long> {
 	@Query("select s.idSolicitud from Solicitud s "			
 			+ "where s.solicitudUuid=:solicitudUuid")
 	public Long obtenerId(String solicitudUuid);
+	
+	@Query("SELECT p FROM PerfilAprobador p " +
+		       "WHERE p.perfil.idListadoDetalle IN (" +
+		       " SELECT d.actividadArea.idListadoDetalle FROM Documento d WHERE d.solicitud.idSolicitud = :idSolicitud" +
+		       ")")
+	public List<PerfilAprobador> buscarAprobadoresPorSolicitud(Long idSolicitud);
 	
 
 	@Query(value="select distinct s from Solicitud s "

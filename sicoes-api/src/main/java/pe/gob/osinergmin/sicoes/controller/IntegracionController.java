@@ -65,7 +65,7 @@ public class IntegracionController extends BaseRestController{
 
 			return pidoConsumer.obtenerContribuyente(ruc);
 		} catch (Exception e) {
-			logger.error("Error en el servicio de recaptcha: {}", e.getMessage());
+			logger.error("Error en el servicio de recaptcha: {}", e.getMessage(), e);
 			throw new Exception("Error en el servicio de recaptcha");
 		}
 	}

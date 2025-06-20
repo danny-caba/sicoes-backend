@@ -44,6 +44,7 @@ import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.AsignacionService;
 import pe.gob.osinergmin.sicoes.service.DictamenEvaluacionService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.OtroRequisitoService;
 import pe.gob.osinergmin.sicoes.service.SolicitudService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -96,6 +97,9 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 
 	@Autowired
 	DocumentoDao documentoDao;
+	
+	@Autowired
+	private NotificacionService notificacionService; 
 
 	@Override
 	public OtroRequisito obtener(Long idOtroRequisito, Contexto contexto) {
@@ -195,6 +199,8 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 			boolean isJuridica = Constantes.LISTADO.TIPO_PERSONA.JURIDICA.equals(tipoPersona.getCodigo());
 			boolean isPerNatPostor = Constantes.LISTADO.TIPO_PERSONA.PN_POSTOR.equals(tipoPersona.getCodigo());
 			boolean isExtrajero = Constantes.LISTADO.TIPO_PERSONA.EXTRANJERO.equals(tipoPersona.getCodigo());
+			boolean isPerNatPropuesto= Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO.equals(tipoPersona.getCodigo());
+			
 			if (isJuridica || isPerNatPostor || isExtrajero) {
 
 				if (otroRequisito.getSector() != null) {
@@ -214,6 +220,14 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 					    throw new ValidacionException(Constantes.CODIGO_MENSAJE.EXISTE_SECTOR_SUBSECTOR);
 					}
 				}
+			} else if (isPerNatPropuesto) {
+				if (otroRequisito.getSector() != null) {
+					int tipo = 91;
+					Long count = otroRequisitoDao.existeSector(solicitudBD.getIdSolicitud(), otroRequisito.getSector().getIdListadoDetalle(), tipo);
+					if (count > 0) {
+					    throw new ValidacionException(Constantes.CODIGO_MENSAJE.EXISTE_SECTOR_SUBSECTOR);
+					}
+				}
 			}
 
 		} else {
@@ -221,6 +235,7 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 			boolean isJuridica = Constantes.LISTADO.TIPO_PERSONA.JURIDICA.equals(tipoPersona.getCodigo());
 			boolean isPerNatPostor = Constantes.LISTADO.TIPO_PERSONA.PN_POSTOR.equals(tipoPersona.getCodigo());
 			boolean isExtrajero = Constantes.LISTADO.TIPO_PERSONA.EXTRANJERO.equals(tipoPersona.getCodigo());
+			boolean isPerNatPropuesto= Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO.equals(tipoPersona.getCodigo());
 			if (isJuridica || isPerNatPostor || isExtrajero) {
 				
 				if (otroRequisito.getSector() != null) {
@@ -239,6 +254,14 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 						throw new ValidacionException(Constantes.CODIGO_MENSAJE.SECTOR_YA_EXISTE);
 					}
 					
+					int tipo = 91;
+					Long count = otroRequisitoDao.existeSector(solicitudBD.getIdSolicitud(), otroRequisito.getSector().getIdListadoDetalle(), tipo);
+					if (count > 0) {
+					    throw new ValidacionException(Constantes.CODIGO_MENSAJE.EXISTE_SECTOR_SUBSECTOR);
+					}
+				}
+			} else if (isPerNatPropuesto) {
+				if (otroRequisito.getSector() != null) {
 					int tipo = 91;
 					Long count = otroRequisitoDao.existeSector(solicitudBD.getIdSolicitud(), otroRequisito.getSector().getIdListadoDetalle(), tipo);
 					if (count > 0) {
@@ -826,6 +849,12 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 		otroRequisitoBD.setEvaluacion(otroRequisito.getEvaluacion());
 		AuditoriaUtil.setAuditoriaRegistro(otroRequisitoBD, contexto);
 		otroRequisitoDao.save(otroRequisitoBD);
+		if (otroRequisitoBD.getEstadoReversion().getCodigo().equals(Constantes.LISTADO.ESTADO_REVERSION.REV_SOLICITADO)) {
+			notificacionService.enviarMensajeSolicitudRevertirEvaluacion(otroRequisito.getIdOtroRequisito(), contexto);
+		}else if (otroRequisitoBD.getEstadoReversion().getCodigo().equals(Constantes.LISTADO.ESTADO_REVERSION.REV_APROBADO)) {
+			notificacionService.enviarMensajeAprobacionRevertirEvaluacion(otroRequisito.getIdOtroRequisito(), contexto);
+		}
+		
 
 		return otroRequisitoBD;
 	}

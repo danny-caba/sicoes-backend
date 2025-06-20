@@ -4,9 +4,12 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -23,6 +26,10 @@ public class Division extends BaseModel implements Serializable {
 	
 	@Column(name="DE_DIVISION")	
 	private String deDivision;
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_USUARIO_LD")
+	private Usuario usuario;
 
 	public Long getIdDivision() {
 		return idDivision;
@@ -39,5 +46,15 @@ public class Division extends BaseModel implements Serializable {
 	public void setDeDivision(String deDivision) {
 		this.deDivision = deDivision;
 	}
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
+	
+	
 
 }

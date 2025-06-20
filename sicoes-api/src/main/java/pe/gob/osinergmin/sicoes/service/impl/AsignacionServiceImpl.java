@@ -44,6 +44,7 @@ import pe.gob.osinergmin.sicoes.repository.AsignacionPerfilDivisionDao;
 import pe.gob.osinergmin.sicoes.repository.EvaluacionPendienteDao;
 import pe.gob.osinergmin.sicoes.repository.HistorialAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.HistorialVacacionesDao;
+import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilDivisionDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
@@ -129,6 +130,9 @@ public class AsignacionServiceImpl implements AsignacionService{
 	
 	@Autowired
 	private SissegApiConsumer sissegApiConsumer;
+	
+	@Autowired
+	private OtroRequisitoDao otroRequisitoDao;
 	
 	@Override
 	public Asignacion obtener(Long idEstudio, Contexto contexto) {
@@ -375,6 +379,168 @@ public class AsignacionServiceImpl implements AsignacionService{
 		return asignacionBD;
 	}
 	
+	public Asignacion rechazarPerfil(Asignacion asignacion) {
+		return asignacionDao.save(asignacion);
+	}
+	//RECHAZO
+	public void crearHistorialAsignacion(Long idAsignacionOriginal, String accion, String observacion, Contexto contexto) {
+        Asignacion asignacionOriginal = asignacionDao.obtener(idAsignacionOriginal);
+        
+        if (asignacionOriginal == null) {
+            throw new ValidacionException("Asignación original no encontrada");
+        }
+
+        // Crear copia para historial
+        Asignacion historico = new Asignacion();
+        
+        // Copiar propiedades básicas
+        historico.setSolicitud(asignacionOriginal.getSolicitud());
+        historico.setTipo(asignacionOriginal.getTipo());
+        historico.setUsuario(asignacionOriginal.getUsuario());
+        historico.setGrupo(asignacionOriginal.getGrupo());
+        historico.setFechaPlazoResp(asignacionOriginal.getFechaPlazoResp());
+        historico.setNumeroPlazoResp(asignacionOriginal.getNumeroPlazoResp());
+        historico.setFechaRegistro(new Date());
+
+        // Configurar datos específicos del historial
+        historico.setEvaluacion(null);
+        historico.setObservacion(null);
+        historico.setFechaAprobacion(null);
+        historico.setFlagActivo(1L);
+        
+        // Auditoría
+        AuditoriaUtil.setAuditoriaRegistro(historico, contexto);
+        
+        // Guardar registro histórico
+        asignacionDao.save(historico);
+    }
+	
+	//RECHAZO
+	@Transactional(rollbackFor = Exception.class)
+	public void rechazarPerfil(Long idAsignacionRechazo, Long idOtroRequisito, String observacion, Contexto contexto) {
+	    try {
+	        Asignacion asignacionRechazo = asignacionDao.obtener(idAsignacionRechazo);
+	        if (asignacionRechazo == null) {
+	            logger.error("Asignación no encontrada con ID: {}", idAsignacionRechazo);
+	            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ASIGNACION_NO_CORRESPONDE);
+	        }
+	        if (!asignacionRechazo.getUsuario().getIdUsuario().equals(contexto.getUsuario().getIdUsuario())) {
+	            logger.error("El usuario {} no tiene permisos sobre la asignación {}",
+	                    contexto.getUsuario().getIdUsuario(), idAsignacionRechazo);
+	            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ASIGNACION_NO_CORRESPONDE);
+	        }
+	
+	        Long idGrupoRechazo = asignacionRechazo.getGrupo().getIdListadoDetalle();
+	        Long idSolicitud = asignacionRechazo.getSolicitud().getIdSolicitud();
+	
+	        // Lógica para insertar nuevos registros G1 si el que rechaza es G2
+	        if (idGrupoRechazo.equals(543L)) {
+	            // Obtener todos los registros G1 APROBADOS para la misma solicitud
+	            List<Asignacion> asignacionesG1Aprobadas = asignacionDao
+	                    .obtenerAsignacionesPorGrupoYSolicitud(544L, 542L, idSolicitud, 560L);
+	
+	            // Insertar nuevos registros para cada G1 aprobado
+	            for (Asignacion asignacionG1Original : asignacionesG1Aprobadas) {
+	                Asignacion nuevaAsignacionG1 = new Asignacion();
+	                nuevaAsignacionG1.setSolicitud(asignacionG1Original.getSolicitud());
+	                nuevaAsignacionG1.setTipo(asignacionG1Original.getTipo());
+	                nuevaAsignacionG1.setUsuario(asignacionG1Original.getUsuario());
+	                nuevaAsignacionG1.setGrupo(listadoDetalleService.obtener(542L, contexto));
+	                nuevaAsignacionG1.setFechaPlazoResp(asignacionG1Original.getFechaPlazoResp());
+	                nuevaAsignacionG1.setNumeroPlazoResp(asignacionG1Original.getNumeroPlazoResp());
+	                nuevaAsignacionG1.setFechaRegistro(new Date());
+	                nuevaAsignacionG1.setEvaluacion(null); // Establecer estado inicial
+	                nuevaAsignacionG1.setObservacion(null);
+	                nuevaAsignacionG1.setFechaAprobacion(null);
+	                nuevaAsignacionG1.setFlagActivo(1L);
+	                AuditoriaUtil.setAuditoriaRegistro(nuevaAsignacionG1, contexto);
+	                asignacionDao.save(nuevaAsignacionG1);
+	            }
+	        }
+	
+	        // Lógica principal de rechazo del perfil (la que ya tenías)
+	        OtroRequisito perfil = otroRequisitoDao.obtenerPorIdYSolicitud(
+	                idOtroRequisito,
+	                asignacionRechazo.getSolicitud().getIdSolicitud());
+	
+	        if (perfil == null) {
+	            logger.error("Perfil no encontrado con ID: {} para solicitud {}",
+	                    idOtroRequisito, asignacionRechazo.getSolicitud().getIdSolicitud());
+	            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ASIGNACION_NO_CORRESPONDE);
+	        }
+	
+	        if (perfil.getEvaluacion() != null &&
+	                Constantes.LISTADO.RESULTADO_APROBACION.RECHAZADO.equals(perfil.getEvaluacion().getCodigo())) {
+	            logger.error("El perfil {} ya está en estado RECHAZADO", idOtroRequisito);
+	            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ASIGNACION_NO_CORRESPONDE);
+	        }
+	
+	        ListadoDetalle estadoEvaluacion = listadoDetalleService.obtenerListadoDetalle(
+	                Constantes.LISTADO.RESULTADO_EVALUACION_TEC_ADM.CODIGO,
+	                Constantes.LISTADO.RESULTADO_EVALUACION_TEC_ADM.ASIGNADO);
+	        asignacionRechazo.getSolicitud().setEstadoEvaluacionTecnica(estadoEvaluacion);
+	
+	        ListadoDetalle estadoPorEvaluar = listadoDetalleService.obtenerListadoDetalle(
+	                Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,
+	                Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR);
+	        perfil.setEvaluacion(estadoPorEvaluar);
+	
+	        perfil.setFinalizado(null);
+	        perfil.setFechaFinalizador(new Date());
+	        AuditoriaUtil.setAuditoriaRegistro(perfil, contexto);
+	
+	        asignacionRechazo.setObservacion(observacion);
+	
+	        ListadoDetalle estadoRechazado = listadoDetalleService.obtenerListadoDetalle(
+	                Constantes.LISTADO.RESULTADO_APROBACION.CODIGO,
+	                Constantes.LISTADO.RESULTADO_APROBACION.RECHAZADO);
+	        asignacionRechazo.setEvaluacion(estadoRechazado);
+	
+	        Asignacion asignacionBD = asignacionDao.obtener(asignacionRechazo.getIdAsignacion());
+	        List<Asignacion> asignaciones = asignacionDao.obtenerAsignaciones(
+	                asignacionBD.getSolicitud().getIdSolicitud(),
+	                asignacionBD.getTipo().getIdListadoDetalle());
+	
+	        ListadoDetalle estadoAsignado = listadoDetalleService.obtenerListadoDetalle(
+	                Constantes.LISTADO.RESULTADO_APROBACION.CODIGO,
+	                Constantes.LISTADO.RESULTADO_APROBACION.ASIGNADO);
+	
+	        int contadorActualizaciones = 0;
+	        for (Asignacion asignacionAux : asignaciones) {
+	            if (asignacionAux.getEvaluacion() != null && estadoAsignado != null) {
+	                if (estadoAsignado.getIdListadoDetalle().equals(asignacionAux.getEvaluacion().getIdListadoDetalle())) {
+	                    asignacionAux.setEvaluacion(null);
+	                    contadorActualizaciones++;
+	                }
+	            }
+	            asignacionDao.save(asignacionAux);
+	            logger.debug("Asignación ID {} guardada", asignacionAux.getIdAsignacion());
+	        }
+	
+	        logger.info("Total de asignaciones actualizadas: {}", contadorActualizaciones);
+	        asignacionRechazo.setFechaAprobacion(new Date());
+	
+	        otroRequisitoDao.save(perfil);
+	        asignacionDao.save(asignacionRechazo);
+	        
+	        notificacionService.enviarMensajeAsignacionEvaluacion04(idOtroRequisito, contexto);
+	
+	        logger.info("Rechazo de perfil completado exitosamente");
+	
+	    } catch (ValidacionException e) {
+	        logger.error("Error de validación al rechazar perfil: {}", e.getMessage());
+	        throw e;
+	    } catch (Exception e) {
+	        logger.error("Error inesperado al rechazar perfil", e);
+	        throw new ValidacionException("Error interno al procesar el rechazo del perfil");
+	    }
+	}
+	
+	@Override
+    public List<Integer> obtenerIdsPerfilesAsignadosAprobador(Long idAprobador) {
+        return perfilAprobadorDao.obtenerIdsPerfilesAsignadosAprobador(idAprobador);
+    }
+	
 	public void generarArchivoSubirAlfresco(Asignacion asignacionBD,Contexto contexto) {
 			Archivo informeVT=null;
 			try {
@@ -421,19 +587,25 @@ public class AsignacionServiceImpl implements AsignacionService{
 		for(Asignacion asignacion:asignaciones) {
 			if(asignacion.getGrupo().getOrden()==numeroOrden) {
 				ListadoDetalle evaluacion=listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_APROBACION.CODIGO, Constantes.LISTADO.RESULTADO_APROBACION.ASIGNADO);
-				asignacion.setEvaluacion(evaluacion);
-				AuditoriaUtil.setAuditoriaRegistro(asignacion,contexto);
-				asignacionDao.save(asignacion);
-				asignado=true;
-				notificacionService.enviarMensajeAsignacionAprobacion14(asignacion, contexto);
+				ListadoDetalle evaluacionActual = asignacion.getEvaluacion();
+				if(evaluacionActual == null ) {
+				    asignacion.setEvaluacion(evaluacion);
+					AuditoriaUtil.setAuditoriaRegistro(asignacion,contexto);
+					asignacionDao.save(asignacion);
+					asignado=true;
+					notificacionService.enviarMensajeAsignacionAprobacion14(asignacion, contexto);
+				}
 			}
 			if (asignacion.getGrupo().getOrden()==1L && asignaciong1.size()>=2 && !asignacion.getEvaluacion().getCodigo().equals(Constantes.LISTADO.RESULTADO_APROBACION.ASIGNADO)){
 				ListadoDetalle evaluacion=listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_APROBACION.CODIGO, Constantes.LISTADO.RESULTADO_APROBACION.APROBADO);
-				asignacion.setEvaluacion(evaluacion);
-				AuditoriaUtil.setAuditoriaRegistro(asignacion,contexto);
-				asignacionDao.save(asignacion);
-				//asignado=true;
-				//notificacionService.enviarMensajeAsignacionAprobacion14(asignacion, contexto);
+				if(asignacion.getEvaluacion().getIdListadoDetalle() != 561 ) {
+					asignacion.setEvaluacion(evaluacion);
+					AuditoriaUtil.setAuditoriaRegistro(asignacion,contexto);
+					asignacionDao.save(asignacion);
+					//asignado=true;
+					//notificacionService.enviarMensajeAsignacionAprobacion14(asignacion, contexto);
+				}
+
 			}
 		}
 		/* --- 04-01-2024 --- INI ---\*/

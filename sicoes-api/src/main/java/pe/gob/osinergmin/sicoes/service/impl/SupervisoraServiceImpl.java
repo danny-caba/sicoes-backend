@@ -27,11 +27,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
-import pe.gob.osinergmin.sicoes.model.SupervisoraRepresentante;
-import pe.gob.osinergmin.sicoes.model.SuspensionCancelacion;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.SupervisoraDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraPerfilService;
@@ -279,6 +275,11 @@ public class SupervisoraServiceImpl implements SupervisoraService{
 	@Override
 	public Supervisora obtenerSupervisoraXRUC(String codigoRuc) {
 		return supervisoraDao.obtenerSupervisoraXRUC(codigoRuc);
+	}
+
+	@Override
+	public Supervisora obtenerSupervisoraPorRucPostorOrJuridica(String codigoRuc) {
+		return supervisoraDao.obtenerSupervisoraPorRucPostorOrJuridica(codigoRuc);
 	}
 	
 	@Override

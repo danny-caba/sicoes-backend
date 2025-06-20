@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.consumer.PidoConsumer;
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Estudio;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.EstudioDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
@@ -32,6 +30,8 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.ValidacionUtil;
 import pe.gob.osinergmin.sicoes.util.bean.GradoTituloRO;
 import pe.gob.osinergmin.sicoes.util.bean.SuneduOutRO;
+
+import javax.persistence.EntityNotFoundException;
 
 
 @Service
@@ -133,8 +133,13 @@ public class EstudioServiceImpl implements EstudioService{
 			estudio.setTipoEstudio(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_ESTUDIO.CODIGO,estudio.getTipoEstudio().getCodigo()));
 			estudio.setFuente(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.FUENTE_ESTUDIO.CODIGO,Constantes.LISTADO.FUENTE_ESTUDIO.MANUAL));
 			estudio.setEvaluacion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
+			if(solicitud.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
+					&& (solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.MODIFICACION))
+					&& Optional.ofNullable(solicitud.getIdSolicitudPadre()).isPresent()) {
+				estudio.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO,Constantes.LISTADO.ESTADO_ESTUDIO.ACTUAL));
+			}
 			estudioBD=estudio;
-		}else { 
+		}else {
 			estudioBD = estudioDao.obtener(estudio.getIdEstudio());			
 				if(Constantes.LISTADO.FUENTE_ESTUDIO.MANUAL.equals(estudioBD.getFuente().getCodigo())){
 					estudioBD.setTipo(estudio.getTipo());
@@ -374,6 +379,39 @@ public class EstudioServiceImpl implements EstudioService{
 				}
 			}
 		}
+	}
+
+	@Override
+	@Transactional
+	public Estudio modificarEstudio(Estudio estudio, Contexto contexto) {
+
+		if (estudio == null || estudio.getIdEstudio() == null) {
+			throw new IllegalArgumentException("Estudio o ID no puede ser nulo");
+		}
+
+		Estudio estudioDB = estudioDao.obtener(estudio.getIdEstudio());
+		if (estudioDB == null) {
+			throw new EntityNotFoundException("No existe estudio con ID: " + estudio.getIdEstudio());
+		}
+
+		if (estudioDB.getSolicitud() == null || estudioDB.getSolicitud().getIdSolicitud() == null) {
+			throw new IllegalStateException("El estudio no tiene una solicitud asociada válida");
+		}
+
+		if (estudio.getArchivos() == null) {
+			throw new IllegalArgumentException("La lista de archivos no puede ser nula");
+		}
+
+		archivoService.asociarArchivos(
+				estudioDB.getSolicitud().getIdSolicitud(),
+				estudioDB.getIdEstudio(),
+				estudio.getArchivos(),
+				contexto
+		);
+
+		actualizarNombreArchivo(estudioDB.getSolicitud().getIdSolicitud(), contexto);
+
+		return estudioDB;
 	}
 
 }

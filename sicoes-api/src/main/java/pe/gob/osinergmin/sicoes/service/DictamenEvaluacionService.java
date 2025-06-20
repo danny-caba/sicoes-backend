@@ -28,4 +28,6 @@ public interface DictamenEvaluacionService extends BaseService<DictamenEvaluacio
 
 	public DictamenEvaluacion obtenerXCodigoSector(Long idSolicitud, String sectorEnergetico, Contexto contexto);
 
+	Double sumarMontoEvaluado(Long idSolicitud, Contexto contexto);
+
 }

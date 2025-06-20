@@ -44,8 +44,6 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 	@Autowired
 	private SicoesTdSolPersPropService sicoesTdSolPersPropService;
 
-	@Autowired
-	private SicoesSolicitudSeccionService sicoesSolicitudSeccionService;
 
 	@Autowired
 	private ArchivoService archivoService;
@@ -56,11 +54,21 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 	@Autowired
 	private UsuarioService usuarioService;
 
+	@Autowired
+	private PropuestaService propuestaService;
+
+	@Autowired
+	private PropuestaTecnicaService propuestaTecnicaService;
+
+	@Autowired
+	private ListadoDetalleService listadoDetalleService;
+
+	@Autowired
+	private SicoesSolicitudService sicoesSolicitudService;
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public SicoesSolicitudSeccion guardar(SicoesSolicitudSeccion solicitud, Contexto contexto) {
-//		AuditoriaUtil.setAuditoriaRegistro(solicitud,contexto);
-//		solicitud.setEstado("1");//activo
 		return sicoesSolicitudSeccionDao.save(solicitud);
 	}
 
@@ -163,7 +171,7 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 				solicitudSeccion.setEstado(Constantes.ESTADO.ACTIVO);
 				solicitudSeccion.setDeRequisito(requisito.getDeSeccionRequisito());
 				AuditoriaUtil.setAuditoriaRegistro(solicitudSeccion, contexto);
-				sicoesSolicitudSeccionService.guardar(solicitudSeccion, contexto);
+				guardar(solicitudSeccion, contexto);
 			} else {
 				for (SicoesTdSoliPersProp sicoesTdSoliPersProp : profesionales) {
 					SicoesSolicitudSeccion solicitudSeccion = new SicoesSolicitudSeccion();
@@ -175,22 +183,40 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 					solicitudSeccion.setEstado(Constantes.ESTADO.ACTIVO);
 					solicitudSeccion.setDeRequisito(requisito.getDeSeccionRequisito());
 					AuditoriaUtil.setAuditoriaRegistro(solicitudSeccion, contexto);
-					sicoesSolicitudSeccionService.guardar(solicitudSeccion, contexto);
+					guardar(solicitudSeccion, contexto);
 				}
 			}
 		}
 	}
 
 	@Override
-	public Page<SicoesSolicitudSeccion> obtenerRequisitosPorSeccion(Long idSeccion, Long tipoContrato, Pageable pageable, Contexto contexto) {
+	public Page<SicoesSolicitudSeccion> obtenerRequisitosPorSeccion(Long idSeccion, Long tipoContrato, boolean evaluador, Long idPropuesta, Pageable pageable, Contexto contexto) {
 		Page<SicoesSolicitudSeccion> listaRequisitos = sicoesSolicitudSeccionDao.obtenerRequisitosPorSeccion(idSeccion, tipoContrato, pageable);
-		for (SicoesSolicitudSeccion requisito : listaRequisitos) {
+		List<SicoesSolicitudSeccion> listaRequisitosFiltrado = listaRequisitos.getContent();
+
+		if (!evaluador) {
+			Propuesta propuesta = propuestaService.obtener(idPropuesta, contexto);
+			PropuestaTecnica propuestaTecnica = propuestaTecnicaService.obtener(propuesta.getPropuestaTecnica().getIdPropuestaTecnica(), contexto);
+			ListadoDetalle esConsorcio = listadoDetalleService.obtener(propuestaTecnica.getConsorcio().getIdListadoDetalle(), contexto);
+
+			if(!esConsorcio.getCodigo().equals("SI")) {
+				listaRequisitosFiltrado = listaRequisitosFiltrado.stream().filter(requisito -> !requisito.getRequisito().getFlagConformaConsorcio().equals("1")).collect(Collectors.toList());
+			}
+
+			boolean esRemype = sicoesSolicitudService.validarRemype(contexto.getUsuario().getNumeroDocumento(), contexto);
+			if (!esRemype) {
+				listaRequisitosFiltrado = listaRequisitosFiltrado.stream().filter(requisito -> !requisito.getRequisito().getFlagRemype().equals("1")).collect(Collectors.toList());
+			}
+		}
+
+		Page<SicoesSolicitudSeccion> listaRequisitosFinal = new PageImpl<>(listaRequisitosFiltrado, listaRequisitos.getPageable(), listaRequisitosFiltrado.size());
+		for (SicoesSolicitudSeccion requisito : listaRequisitosFinal) {
 			List<Archivo> list = archivoService.buscarPorPerfContrato(requisito.getIdSolicitudSeccion(), contexto);
 			if (list != null && !list.isEmpty()) {
 				requisito.setArchivo(list.get(0));
 			}
 		}
-		return listaRequisitos;
+		return listaRequisitosFinal;
 	}
 
 	@Override
@@ -320,7 +346,7 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 	@Transactional(rollbackFor = Exception.class)
 	public List<SicoesSolicitudSeccion> actualizarSolicitudDetalle(List<SicoesSolicitudSeccion> listaSolicitudSeccion, Contexto contexto) {
 
-		List<SicoesSolicitudSeccion> listaSolicitudSeccionFinal = new ArrayList<>(); // Lista mutable
+		List<SicoesSolicitudSeccion> listaSolicitudSeccionFinal = new ArrayList<>();
 
 		listaSolicitudSeccion.forEach(solicitudSeccion -> {
 			Optional<SicoesSolicitudSeccion> solicitudSeccionOpt = sicoesSolicitudSeccionDao.findById(solicitudSeccion.getIdSolicitudSeccion());
@@ -384,11 +410,11 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 
 		try {
 
-			List<SicoesSolicitudSeccion> lstRequisitos = sicoesSolicitudSeccionService.obtenerRequisitosPorPersonalSub(persProp.getIdSoliPersProp());
+			List<SicoesSolicitudSeccion> lstRequisitos = obtenerRequisitosPorPersonalSub(persProp.getIdSoliPersProp());
 			for (SicoesSolicitudSeccion requisito : lstRequisitos) {
 				requisito.setFlagRequisito("0");
 				AuditoriaUtil.setAuditoriaActualizacion(requisito, contexto);
-				sicoesSolicitudSeccionService.guardar(requisito, contexto);
+				guardar(requisito, contexto);
 			}
 
 			if (lstArchivos != null && !lstArchivos.isEmpty()) {
@@ -424,6 +450,23 @@ public class SicoesSolicitudSeccionServiceImpl implements SicoesSolicitudSeccion
 	@Override
 	public List<SicoesSolicitudSeccion> obtenerRequisitosPorPersonalActivo(Long idSoliPersProp) {
 		return sicoesSolicitudSeccionDao.obtenerRequisitosPorPersonalActivo(idSoliPersProp);
+	}
+
+	@Override
+	public void actualizarProcesoRevisionPersonal(SicoesSolicitud solicitud, Contexto contexto) {
+		List<SicoesTdSolPerConSec> seccionesConPersonal = sicoesTdSolPerConSecDao.obtenerSeccionesXSolicitud(solicitud.getIdSolicitud());
+		for (SicoesTdSolPerConSec seccion : seccionesConPersonal) {
+			if (seccion.getFlConPersonal().equals(Constantes.FLAG_PERSONAL_PERF_CONTRATO.SI)) {
+				List<SicoesSolicitudSeccion> requisitos = sicoesSolicitudSeccionDao.obtenerRequisitosPorSeccionConPersonal(seccion.getIdSolPerConSec());
+				for (SicoesSolicitudSeccion requisito : requisitos) {
+					if (!requisito.getProcRevision().equals("1")) {
+						requisito.setProcRevision("0");
+						AuditoriaUtil.setAuditoriaActualizacion(requisito, contexto);
+						sicoesSolicitudSeccionDao.save(requisito);
+					}
+				}
+			}
+		}
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import pe.gob.osinergmin.sicoes.model.Documento;
 import pe.gob.osinergmin.sicoes.model.Estudio;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.service.EstudioService;
@@ -96,5 +97,15 @@ public class EstudioRestController extends BaseRestController {
 		return estudioService.evalular(estudio,getContexto());
 		
 	}
-	
+
+	@PutMapping("/{tipo}/{id}/modificar")
+	@Raml("estudio.obtener.properties")
+	public Estudio modificarEstudio(@PathVariable String tipo, @PathVariable Long  id, @RequestBody Estudio estudio) {
+		logger.info("modificarEstudio {} {}",id,estudio);
+		estudio.setIdEstudio(id);
+		logger.info("TIPO================ {} {}",tipo);
+		return estudioService.modificarEstudio(estudio, getContexto());
+
+	}
+
 }

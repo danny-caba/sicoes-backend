@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.HistorialVacaciones;
+import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.dto.DetalleVacacionesDTO;
 import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
@@ -27,7 +28,7 @@ public interface AsignacionService extends BaseService<Asignacion, Long> {
 	public boolean modificarAprobador(Asignacion asignacion, Contexto contexto);
 
 	public Asignacion guardar(Asignacion asignacion);
-	
+		
 	public boolean actualizarAsignados(Long idSolicitud,String codigoTipoAprobador, Long numeroOrden,Contexto contexto) ;
 
 	public Page<Asignacion> buscarAprobaciones(String solicitudUuid, Pageable pageable, Contexto contexto);
@@ -77,5 +78,11 @@ public interface AsignacionService extends BaseService<Asignacion, Long> {
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital(String token, String usuario) throws Exception;
 
 	Asignacion validarAprobador(Asignacion asignacion, Contexto contexto);
+
+	public void rechazarPerfil(Long idAsignacion, Long idOtroRequisito, String observacion, Contexto contexto);
+
+	public void crearHistorialAsignacion(Long idAsignacion, String string, String observacion, Contexto contexto);
+
+	public List<Integer> obtenerIdsPerfilesAsignadosAprobador(Long idAprobador);
 
 }

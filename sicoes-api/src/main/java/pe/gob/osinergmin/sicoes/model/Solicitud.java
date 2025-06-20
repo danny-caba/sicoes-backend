@@ -179,6 +179,10 @@ public class Solicitud extends BaseModel implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_DIVISION")
 	private Division division;
+
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_ORIGEN_REGISTRO_LD")
+	private ListadoDetalle origenRegistro;
 	
 	@Transient
 	private List<OtroRequisito> otrosRequisitos;
@@ -203,6 +207,9 @@ public class Solicitud extends BaseModel implements Serializable {
 	
 	@Transient
 	private List<DictamenEvaluacion> montosFacturados;
+
+	@Transient
+	private List<Representante> historialRepresentante;
 
 	public String getSolicitudUuid() {
 		return solicitudUuid;
@@ -534,6 +541,14 @@ public class Solicitud extends BaseModel implements Serializable {
 		this.montosFacturados = montosFacturados;
 	}
 
+	public List<Representante> getHistorialRepresentante() {
+		return historialRepresentante;
+	}
+
+	public void setHistorialRepresentante(List<Representante> historialRepresentante) {
+		this.historialRepresentante = historialRepresentante;
+	}
+
 	public Profesion getProfesion() {
 		return profesion;
 	}
@@ -548,6 +563,36 @@ public class Solicitud extends BaseModel implements Serializable {
 
 	public void setDivision(Division division) {
 		this.division = division;
+	}
+
+	public ListadoDetalle getOrigenRegistro() {
+		return origenRegistro;
+	}
+	
+	public void setOrigenRegistro(ListadoDetalle origenRegistro) {
+		this.origenRegistro = origenRegistro;
+	}
+
+	public void resetCamposModificables() {
+		this.setNumeroExpediente(null);
+		this.setFechaRegistro(null);
+		this.setFechaPresentacion(null);
+		this.setResultadoAdministrativo(null);
+		this.setEstadoEvaluacionTecnica(null);
+		this.setEstadoEvaluacionAdministrativa(null);
+		this.setNumeroPlazoResp(null);
+		this.setFechaPlazoResp(null);
+		this.setNumeroPlazoAsig(null);
+		this.setFechaPlazoAsig(null);
+		this.setObservacionTecnica(null);
+		this.setObservacionAdmnistrativa(null);
+		this.setCodigoConsentimiento(null);
+		this.setNumeroPlazoSub(null);
+		this.setFechaPlazoTecnico(null);
+		this.setObservacionNoCalifica(null);
+		this.setFechaArchivamiento(null);
+		this.setFlagArchivamiento(null);
+		this.setFlagRespuesta(null);
 	}
 	
 }

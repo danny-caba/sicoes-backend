@@ -46,6 +46,13 @@ public class Representante extends BaseModel implements Serializable {
 	@Column(name="AP_MATERNO")	
 	private String apellidoMaterno;
 
+	@Column(name="ID_SOLICITUD")
+	private Long idSolicitud;
+
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_ESTADO_LD")
+	private ListadoDetalle estado;
+
 	public Long getIdRepresentante() {
 		return idRepresentante;
 	}
@@ -101,5 +108,20 @@ public class Representante extends BaseModel implements Serializable {
 	public String getNombreRepresentante() {
 		return nombres+" "+apellidoPaterno+" "+apellidoMaterno;
 	}
-	
+
+	public ListadoDetalle getEstado() {
+		return estado;
+	}
+
+	public void setEstado(ListadoDetalle estado) {
+		this.estado = estado;
+	}
+
+	public Long getIdSolicitud() {
+		return idSolicitud;
+	}
+
+	public void setIdSolicitud(Long idSolicitud) {
+		this.idSolicitud = idSolicitud;
+	}
 }

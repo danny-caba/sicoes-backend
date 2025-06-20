@@ -317,4 +317,18 @@ public class PacesServiceImpl implements PacesService {
 		
 	}
 
+	@Transactional(rollbackFor = Exception.class)
+	public Boolean actualizarAprobador(Long idPace,Long idAprobadorG2,Long idAprobadorG3,Contexto context)
+	{							
+				if(usuarioDao.findById(idAprobadorG2).isPresent() &&  usuarioDao.findById(idAprobadorG3).isPresent())				
+				{
+					Paces opcionBD=pacesDao.findById(idPace).get();													
+					opcionBD.setIdAprobadorg2(idAprobadorG2);
+					opcionBD.setIdAprobadorg3(idAprobadorG3);
+					AuditoriaUtil.setAuditoriaActualizacion(opcionBD, context);
+					pacesDao.save(opcionBD);					
+					return true;				
+				}
+				return false;										
+	}
 }

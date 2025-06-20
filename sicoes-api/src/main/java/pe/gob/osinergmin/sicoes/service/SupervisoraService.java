@@ -51,6 +51,8 @@ public interface SupervisoraService extends BaseService<Supervisora, Long>  {
 
 	public Supervisora obtenerSupervisoraXRUCVigente(String codigoRuc);
 
+	public Supervisora obtenerSupervisoraPorRucPostorOrJuridica(String codigoRuc);
+
 	public List<Supervisora> obtenerSupervisoraPNProfesional(String codigoRuc);
 
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc);

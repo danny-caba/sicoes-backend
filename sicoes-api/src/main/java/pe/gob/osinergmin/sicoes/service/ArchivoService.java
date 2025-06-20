@@ -52,4 +52,8 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	Archivo guardarArchivoSubsanacionContrato(Archivo archivo, Contexto contexto);
 	List<Archivo> obtenerArchivosPorRequisitos(List<Long> requisitosIds, Contexto contexto);
 	void eliminarArchivoCodigo(String codigo, Contexto contexto);
+	List<File> obtenerArchivoDj(Long idOtroRequisito, String procedimiento, Contexto contexto);
+	List<File> obtenerArchivoModificacion(Long idOtroRequisito, Contexto contexto);
+	List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto);
+
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 
 @Repository
@@ -28,4 +29,8 @@ public interface NotificacionDao extends JpaRepository<Notificacion, Long> {
 			+ "left join fetch n.estado e "
 			+ "where e.codigo=:codigoEstado")
 	List<Notificacion> listarNotificacion(String codigoEstado);
+
+	@Query("select n from Notificacion n "
+			+ "where n.estado = :estado")
+	List<Notificacion> listarNotificacionV2(ListadoDetalle estado);
 }

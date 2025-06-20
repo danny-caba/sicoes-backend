@@ -89,6 +89,11 @@ public class DictamenEvaluacionServiceImpl implements DictamenEvaluacionService 
 	}
 
 	@Override
+	public Double sumarMontoEvaluado(Long idSolicitud, Contexto contexto) {
+		return dictamenEvaluacionDao.sumarMontoEvaluado(idSolicitud);
+	}
+
+	@Override
 	public void eliminarXSector(OtroRequisito requisito, Contexto contexto) {
 		dictamenEvaluacionDao.eliminarXSector(requisito.getSolicitud().getIdSolicitud(),requisito.getSector().getIdListadoDetalle());
 	}

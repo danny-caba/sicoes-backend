@@ -1,6 +1,9 @@
 package pe.gob.osinergmin.sicoes.controller;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,16 +15,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.service.AsignacionService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.SolicitudService;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.Raml;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 @RestController
 @RequestMapping("/api/asignaciones")
@@ -87,6 +95,82 @@ public class AsignacionRestController extends BaseRestController{
 		asignacion.setIdAsignacion(id);
 		return asignacionService.guardar(asignacion,getContexto());
 	}
+
+	//RECHAZO
+	@PutMapping("/{idAsignacion}/rechazar-perfil")
+	public ResponseEntity<Map<String, Object>> rechazarPerfil(
+	    @PathVariable Long idAsignacion,
+	    @RequestBody Map<String, Object> request
+	) {
+	    try {
+	        Long idOtroRequisito = Long.parseLong(request.get("idOtroRequisito").toString());
+	        String observacion = (String) request.get("observacion");
+	        
+	        //asignacionService.crearHistorialAsignacion(idAsignacion, "RECHAZO", observacion, getContexto());
+	        asignacionService.rechazarPerfil(idAsignacion, idOtroRequisito, observacion, getContexto());
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("success", true);
+	        response.put("message", "Perfil rechazado exitosamente");
+	        return ResponseEntity.ok(response);
+	        
+	    } catch (ValidacionException e) {
+	        Map<String, Object> errorResponse = new HashMap<>();
+	        errorResponse.put("success", false);
+	        errorResponse.put("error", e.getMessage());
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	    } catch (Exception e) {
+	        Map<String, Object> errorResponse = new HashMap<>();
+	        errorResponse.put("success", false);
+	        errorResponse.put("error", "Error interno al rechazar el perfil");
+	        logger.error("[{}] Error inesperado: {}", e.getMessage(), e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse); 
+	    }
+	}
+	
+	//RECHAZO
+	@PostMapping("/historial")
+	public ResponseEntity<Map<String, Object>> crearHistorialAsignacionEndpoint(
+	        @RequestBody Map<String, Object> request
+	) {
+	    try {
+	        Long idAsignacion = Long.parseLong(request.get("idAsignacion").toString());
+	        String accion = (String) request.get("accion");
+	        String observacion = (String) request.get("observacion");
+
+	        asignacionService.crearHistorialAsignacion(idAsignacion, accion, observacion, getContexto());
+
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("success", true);
+	        response.put("message", "Historial de asignación creado exitosamente");
+	        return ResponseEntity.ok(response);
+
+	    } catch (ValidacionException e) {
+	        Map<String, Object> errorResponse = new HashMap<>();
+	        errorResponse.put("success", false);
+	        errorResponse.put("error", e.getMessage());
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	    } catch (Exception e) {
+	        Map<String, Object> errorResponse = new HashMap<>();
+	        errorResponse.put("success", false);
+	        errorResponse.put("error", "Error interno al crear el historial de asignación");
+	        logger.error("[{}] Error inesperado al crear historial: {}", e.getMessage(), e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+	    }
+	}
+	
+	@GetMapping("/aprobador/{idAprobador}/perfiles-asignados")
+    public ResponseEntity<List<Integer>> obtenerPerfilesAsignadosAprobador(
+            @PathVariable Long idAprobador
+    ) {
+        try {
+            List<Integer> idsPerfiles = asignacionService.obtenerIdsPerfilesAsignadosAprobador(idAprobador);
+            return ResponseEntity.ok(idsPerfiles);
+        } catch (Exception e) {
+            logger.error("[{}] Error al obtener los IDs de perfiles del aprobador {}: {}", e.getMessage(), idAprobador, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
 	@GetMapping("/aprobaciones")
 	@Raml("asignacion.listar.properties")

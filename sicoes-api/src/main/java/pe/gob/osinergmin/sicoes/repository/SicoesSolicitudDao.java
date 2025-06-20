@@ -97,7 +97,7 @@ public interface SicoesSolicitudDao extends JpaRepository<SicoesSolicitud, Long>
 			+ "where s.estadoProcesoSolicitud='"+Constantes.ESTADO_PROCESO_PERF_CONTRATO.PRELIMINAR+"' "
 			+ "and s.tipoSolicitud='"+Constantes.TIPO_SOLICITUD_PERF_CONTRATO.INSCRIPCION+"' "
 			+ "and s.fechaHoraPresentacion is null "
-			+ "and trunc(s.fechaPlazoInscripcion) = trunc(sysdate - 1) "
+			+ "and trunc(s.fechaPlazoInscripcion) < trunc(sysdate) "
 			+ "and s.estado='1'")
 	List<SicoesSolicitud>listarSolicitudesPorInscripcion();
 
@@ -105,7 +105,7 @@ public interface SicoesSolicitudDao extends JpaRepository<SicoesSolicitud, Long>
 			+ "where s.estadoProcesoSolicitud='"+Constantes.ESTADO_PROCESO_PERF_CONTRATO.PRELIMINAR+"' "
 			+ "and s.tipoSolicitud='"+Constantes.TIPO_SOLICITUD_PERF_CONTRATO.SUBSANACION+"' "
 			+ "and s.fechaHoraPresentacion is null "
-			+ "and trunc(s.fechaPlazoSubsanacion) = trunc(sysdate - 1) "
+			+ "and trunc(s.fechaPlazoSubsanacion) < trunc(sysdate) "
 			+ "and s.estado='1'")
 	List<SicoesSolicitud>listarSolicitudesPorSubsanacion();
 

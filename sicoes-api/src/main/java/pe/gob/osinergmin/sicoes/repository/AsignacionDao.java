@@ -292,6 +292,23 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "and td.idListadoDetalle = :idTipo "
 			+ "and g.idListadoDetalle = :idGrupo ")
 	List<Asignacion> obtenerAsignados(Long idSolicitud, Long idTipo, Long idGrupo);
+
+	@Query("select a from Asignacion a "
+			+ "left join fetch a.solicitud s "
+			+ "left join fetch a.tipo td "
+			+ "left join fetch a.grupo g "
+			+ "left join fetch a.usuario u "
+			+ "left join fetch a.evaluacion e  "
+			+ "where s.idSolicitud = :idSolicitud "
+			+ "and a.flagActivo = 1 "
+			+ "and td.idListadoDetalle = :idTipo "
+            + "and g.idListadoDetalle = :idGrupo "
+			+ "and e.idListadoDetalle = :idAprobado")
+	public List<Asignacion> obtenerAsignacionesPorGrupoYSolicitud(Long idTipo, Long idGrupo, Long idSolicitud, Long idAprobado);
+
+
+
+
 	
 }
 

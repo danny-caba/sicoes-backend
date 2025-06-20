@@ -11,7 +11,8 @@ public class ValidacionUtil {
 			return;
 
 		if(!(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR.equals(solicitudBD.getEstado().getCodigo())||
-			Constantes.LISTADO.ESTADO_SOLICITUD.OBSERVADO.equals(solicitudBD.getEstado().getCodigo()))) {
+			Constantes.LISTADO.ESTADO_SOLICITUD.OBSERVADO.equals(solicitudBD.getEstado().getCodigo()) ||
+			Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO.equals(solicitudBD.getEstado().getCodigo()))) {
 			if(contexto.getUsuario().isRol(Constantes.ROLES.USUARIO_EXTERNO)) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.P_NO_PUEDE_EDITAR_SOLICITUD);
 			}

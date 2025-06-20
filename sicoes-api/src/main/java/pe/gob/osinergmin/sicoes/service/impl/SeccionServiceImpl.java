@@ -49,48 +49,51 @@ public class SeccionServiceImpl  implements SeccionService{
 
 	@Override
 	public Seccion actualizar(Seccion seccion, Contexto contexto) {
-		
-		
 		Optional<Seccion> seccionOpt = seccionDao.findById(seccion.getIdSeccion());
 		Seccion seccionFinal=seccionOpt.orElseThrow(() -> new RuntimeException("Seccion no encontrado"));
 
 		seccionFinal.setEsSeccion(seccion.getEsSeccion());
-		 if (seccion.getDeSeccion() != null) {
-			 seccionFinal.setDeSeccion(seccion.getDeSeccion());
-          }
-		 if (seccion.getCoSeccion() != null) {
-			 seccionFinal.setCoSeccion(seccion.getCoSeccion());
-          }
-		 if (seccion.getFlReqPersonal() != null) {
-			 seccionFinal.setFlReqPersonal(seccion.getFlReqPersonal());
-          }
+		if (seccion.getDeSeccion() != null) {
+			seccionFinal.setDeSeccion(seccion.getDeSeccion());
+		}
+
+		if (seccion.getCoSeccion() != null) {
+			seccionFinal.setCoSeccion(seccion.getCoSeccion());
+		}
+
+		if (seccion.getFlReqPersonal() != null) {
+			seccionFinal.setFlReqPersonal(seccion.getFlReqPersonal());
+		}
+
+		if (seccion.getFlVisibleSeccion() != null) {
+			seccionFinal.setFlVisibleSeccion(seccion.getFlVisibleSeccion());
+		}
 
 		AuditoriaUtil.setAuditoriaActualizacion(seccionFinal, contexto);
-		return seccionDao.save(seccionFinal) ;
-		 
-		   
+		return seccionDao.save(seccionFinal);
 	}
+
 	@Override
 	public Map<String, Object> obtenerSinPaginacion ()  {
-		
-		
-		   
-	        	 Pageable pageable = Pageable.unpaged();	
-	    	 
-	        	  Map<String, Object> response = new HashMap<>();
-	    		 Page<Map<String, Object>> rpta  =seccionDao.getListaSeccion(pageable) ;
-	             response.put("lista", rpta.getContent());
-	             response.put("elementos", rpta.getTotalElements());
-	             response.put("paginas", rpta.getTotalPages());
+		Pageable pageable = Pageable.unpaged();
+		Map<String, Object> response = new HashMap<>();
+		Page<Map<String, Object>> rpta  =seccionDao.getListaSeccion(pageable) ;
+		response.put("lista", rpta.getContent());
+		response.put("elementos", rpta.getTotalElements());
+		response.put("paginas", rpta.getTotalPages());
 	             
-	           return response;
-	         
-		  
+	    return response;
 	}
 
 	@Override
 	public Page<Seccion> listarSecciones(Pageable pageable, Contexto contexto) {
 		return seccionDao.buscar(pageable);
+	}
+
+	@Override
+	public Seccion obtenerSeccionPorId(Long idSeccion) {
+		return seccionDao.findById(idSeccion)
+				.orElseThrow(() -> new RuntimeException("Seccion no encontrado"));
 	}
 
 	@Override

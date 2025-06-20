@@ -121,6 +121,7 @@ public class AOPRest {
 	    			PageUtilImpl<? extends Object> aux0=(PageUtilImpl<? extends Object>)page;
 	    			PageUtilImpl<? extends Object> aux= new PageUtilImpl(list,page.getPageable(),page.getTotalElements());
 	    			aux.setTotalMonto(aux0.getTotalMonto());
+					aux.setTotalMontoEvaluado(aux0.getTotalMontoEvaluado());
 	    			aux.setAnio(aux0.getAnio());
 	    			aux.setMes(aux0.getMes());
 	    			aux.setDia(aux0.getDia());

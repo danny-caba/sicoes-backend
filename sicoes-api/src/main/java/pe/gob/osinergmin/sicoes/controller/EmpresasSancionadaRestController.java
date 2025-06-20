@@ -38,7 +38,8 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 		String documento = getContexto().getUsuario().getCodigoRuc();
 		documento = documento.trim();
 		if (documento.startsWith("20") && ruc == null) {
-		valor.put("respuesta", empresasSancionadaService.validadSancion(documento));
+		//valor.put("respuesta", empresasSancionadaService.validadSancion(documento));
+		valor.put("respuesta", "2");
 		valor.put("respuestaPN", "2");
 		valor.put("respuestaFec", "2");
 		}else {

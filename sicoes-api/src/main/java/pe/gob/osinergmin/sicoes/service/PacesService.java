@@ -19,5 +19,5 @@ public interface PacesService extends BaseService<Paces, Long> {
 	public Boolean aprobarPaceDivision(Long idPaces,String observacion,Contexto context);	
 	public Boolean cancelarPaceGerencia(Long idPaces,String observacion,Contexto context);
 	public Boolean aprobarEnviarPaceGerencia(Long idPaces,String observacion,Contexto context);
-	
+	public Boolean actualizarAprobador(Long idPace,Long idAprobadorG2,Long idAprobadorG3,Contexto context);
 }

@@ -11,6 +11,7 @@ import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface SolicitudService extends BaseService<Solicitud, Long>{
@@ -36,6 +37,9 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public Page<Solicitud> buscarEvaluador(String sFechaDesde,String sSechaHasta,String nroExpediente, Long idTipoSolicitud,
 			Long idEstadoSolicitud, String solicitante, Long idEstadoRevision,Long idEstadoEvalTecnica, Long idEstadoEvalAdministrativa, Pageable pageable,Contexto contexto);
 	public Solicitud guardar(Solicitud solicitud);
+	Solicitud actualizar(Solicitud solicitud, Contexto contexto);
+	Solicitud modificar(String solicitudUuid, Contexto contexto);
+	Solicitud actualizarRequisito(Solicitud solicitud, Contexto contexto);
 	public void finalizarRevision(Long idSolicitud,String codigoTipo, Contexto contexto);
 	public void regresarProceso(Solicitud solicitud, String codigo, Contexto contexto);
 	public Solicitud clonarSolicitud(Long idSolicitud, Contexto contexto);
@@ -65,6 +69,6 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public List<Long> obtenerSubsectoresXUsuarioSolicitud(String uuid,Long idUsuario);
 	public Archivo generarInformeAdministrativo(Long idSolicitud, Long idAsignacion, Contexto contexto) throws Exception; //AFC
 	public void subirDocumentoAdministrativos(Archivo informeVT, Contexto contexto); //AFC
-
-
+	boolean validarCambios(Solicitud solicitud, Contexto contexto);
+	public List<PerfilAprobador> buscarAprobadoresPorSolicitud(Long idSolicitud);
 }

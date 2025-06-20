@@ -18,6 +18,7 @@ import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
 import pe.gob.osinergmin.sicoes.model.SicoesSolicitudSeccion;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.service.*;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Raml;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
@@ -59,7 +60,7 @@ public class SicoesSolicitudesRestController extends BaseRestController {
 			@RequestParam(required = false) String tipoSolicitud,
 			Pageable pageable
 	) {
-		logger.info("listarItemsExterno");
+			logger.info("listarSolicitudesPerfContExterno");
 		return sicoesSolicitudService.listarSolicitudesPresentacion(estado, nroConcurso, item, convocatoria, tipoSolicitud, pageable, getContexto());
 	}
 
@@ -85,34 +86,28 @@ public class SicoesSolicitudesRestController extends BaseRestController {
 
 	@PutMapping("/solicitudes/{idSolicitud}/{tipoContratoSeleccionado}/registrar")
 //	@Raml("sicoesSolicitud.obtener.properties")
-	public String registrarPerfeccionamiento(@RequestBody List<SicoesSolicitudSeccion> listaSolicitudSeccion, @PathVariable Long idSolicitud, @PathVariable Long tipoContratoSeleccionado) {
+	public String registrarPerfeccionamiento(@RequestBody List<SicoesSolicitudSeccion> listaSolicitudSeccion, @PathVariable Long idSolicitud, @PathVariable Long tipoContratoSeleccionado) throws Exception {
 		logger.info("registrarPerfeccionamiento {} {}", idSolicitud);
 
 		boolean estaEnFecha = sicoesSolicitudService.validarFechaPresentacionSubsanacion(idSolicitud, getContexto());
 
 		if (!estaEnFecha) {
-			throw new ValidacionException("No se puede registrar la solicitud, la fecha de presentación/subsanación ha vencido.");
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.PRESENTACION_FUERA_FECHA);
 		}
 
-		try {
+		SicoesSolicitud solicitud = sicoesSolicitudService.obtener(idSolicitud, getContexto());
+		ListadoDetalle tipoContratacion = listadoDetalleService.obtener(tipoContratoSeleccionado, getContexto());
 
-			SicoesSolicitud solicitud = sicoesSolicitudService.obtener(idSolicitud, getContexto());
-			ListadoDetalle tipoContratacion = listadoDetalleService.obtener(tipoContratoSeleccionado, getContexto());
-
-			if (solicitud == null) {
-				throw new ValidacionException("No se encontró la solicitud con id " + idSolicitud);
-			}
-
-			if (tipoContratacion == null) {
-				throw new ValidacionException("No se encontró el tipo de contrato con id " + tipoContratoSeleccionado);
-			}
-
-			solicitud.setTipoContratacion(tipoContratacion);
-			return sicoesSolicitudService.actualizarSolicitud(listaSolicitudSeccion, solicitud, getContexto());
-
-		} catch (ValidacionException e) {
-			throw e;
+		if (solicitud == null) {
+			throw new ValidacionException("No se encontró la solicitud con id " + idSolicitud);
 		}
+
+		if (tipoContratacion == null) {
+			throw new ValidacionException("No se encontró el tipo de contrato con id " + tipoContratoSeleccionado);
+		}
+
+		solicitud.setTipoContratacion(tipoContratacion);
+		return sicoesSolicitudService.actualizarSolicitud(listaSolicitudSeccion, solicitud, getContexto());
 	}
 
 	@PutMapping("/solicitudes/{idSolicitud}/finalizar")
@@ -153,13 +148,13 @@ public class SicoesSolicitudesRestController extends BaseRestController {
 			@RequestBody Map<String, Object> datos) {
 		logger.info("enviarCorreoSancionPN {}");
 
-		Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUC(ruc);
+		Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(ruc);
 
 		if (supervisora == null) {
 			throw new ValidacionException("No se encontró la supervisora");
 		}
 
-		sicoesSolicitudService.	enviarCorreoSancionPN(datos, supervisora, getContexto());
+		sicoesSolicitudService.enviarCorreoSancionPN(datos, supervisora, getContexto());
 
 		return true;
 	}

@@ -27,6 +27,7 @@ public class CloneUtil {
 		representanteNuevo.setNombres(representante.getNombres());
 		representanteNuevo.setApellidoPaterno(representante.getApellidoPaterno());
 		representanteNuevo.setApellidoMaterno(representante.getApellidoMaterno());
+		representanteNuevo.setEstado(representante.getEstado());
 		
 		return representanteNuevo;
 	}
@@ -102,6 +103,7 @@ public class CloneUtil {
 		otroRequisitoNuevo.setSector(otroRequisito.getSector());
 		otroRequisitoNuevo.setSubsector(otroRequisito.getSubsector());
 		otroRequisitoNuevo.setActividad(otroRequisito.getActividad());
+		otroRequisitoNuevo.setActividadArea(otroRequisito.getActividadArea());
 		otroRequisitoNuevo.setUnidad(otroRequisito.getUnidad());
 		otroRequisitoNuevo.setSubCategoria(otroRequisito.getSubCategoria());
 		otroRequisitoNuevo.setPerfil(otroRequisito.getPerfil());
@@ -148,6 +150,8 @@ public class CloneUtil {
 		documentoNuevo.setMontoTipoCambio(documento.getMontoTipoCambio());
 		documentoNuevo.setMontoContratoSol(documento.getMontoContratoSol());
 		documentoNuevo.setFlagSiged(documento.getFlagSiged());
+		documentoNuevo.setSubSectorDoc(documento.getSubSectorDoc());
+		documentoNuevo.setActividadArea(documento.getActividadArea());
 		if(Constantes.LISTADO.RESULTADO_EVALUACION.OBSERVADO.equals(documento.getEvaluacion().getCodigo())) {
 			documentoNuevo.setIdDocumentoPadre(documento.getIdDocumento());
 		}

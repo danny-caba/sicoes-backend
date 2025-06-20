@@ -18,6 +18,7 @@ import net.bytebuddy.implementation.bytecode.Throw;
 import pe.gob.osinergmin.sicoes.model.Paces;
 import pe.gob.osinergmin.sicoes.model.ProcesoConsulta;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.dto.PacesAprobadorDTO;
 import pe.gob.osinergmin.sicoes.model.dto.PacesObservarDivisionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.PacesUpdateDTO;
 import pe.gob.osinergmin.sicoes.service.PacesService;
@@ -144,4 +145,16 @@ public class PacesRestController extends BaseRestController {
 	public void eliminar(@PathVariable Long  id){		
 		pacesService.eliminar(id,getContexto());
 	}
+	
+	@PutMapping("/actualizarAprobadores")	
+	public PacesAprobadorDTO actualizarAprobadores(@RequestBody PacesAprobadorDTO request) {
+		
+		logger.info("guardarObservacion {} {}");		
+        Boolean result = pacesService.actualizarAprobador(request.getIdPace(), request.getIdAprobadorG2(), request.getIdAprobadorG3() , getContexto());
+  
+        request.setResultado(result);
+        logger.info("result"+result);
+        return request;        
+		
+	}	
 }

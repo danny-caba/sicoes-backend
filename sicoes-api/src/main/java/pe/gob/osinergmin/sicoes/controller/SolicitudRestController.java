@@ -75,7 +75,29 @@ public class SolicitudRestController extends BaseRestController{
 		logger.info("modificar {} {}",solicitudUuid,solicitud);
 		solicitud.setSolicitudUuid(solicitudUuid);
 		return solicitudService.guardar(solicitud,getContexto());
-		
+	}
+
+	@PutMapping("/actualizar/{solicitudUuid}")
+	@Raml("solicitud.obtener.properties")
+	public Solicitud actualizar(@PathVariable String  solicitudUuid, @RequestBody Solicitud solicitud) {
+		logger.info("actualizar {} {}", solicitudUuid, solicitud);
+		solicitud.setSolicitudUuid(solicitudUuid);
+		return solicitudService.actualizar(solicitud, getContexto());
+	}
+
+	@PutMapping("/modificar/{solicitudUuid}")
+	@Raml("solicitud.obtener.properties")
+	public Solicitud modificar(@PathVariable String  solicitudUuid) {
+		logger.info("modificar {} {}", solicitudUuid);
+		return solicitudService.modificar(solicitudUuid, getContexto());
+	}
+
+	@PutMapping("/actualizar/requisito/{solicitudUuid}")
+	@Raml("solicitud.obtener.properties")
+	public Solicitud actualizarRequisito(@PathVariable String  solicitudUuid, @RequestBody Solicitud solicitud) {
+		logger.info("actualizarRequisito {} {}", solicitudUuid);
+		solicitud.setSolicitudUuid(solicitudUuid);
+		return solicitudService.actualizarRequisito(solicitud, getContexto());
 	}
 	
 	@PutMapping("/{solicitudUuid}/enviar")
@@ -84,11 +106,23 @@ public class SolicitudRestController extends BaseRestController{
 		logger.info("modificar {} {}",solicitudUuid,solicitud);
 		try {
 			solicitud.setSolicitudUuid(solicitudUuid);
-			if(solicitud.getIdSolicitudPadre()==null) {
+
+			// Validar si la solicitud proviene de una modificacion
+			if (solicitud.getOrigenRegistro() != null && Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION.equals(solicitud.getOrigenRegistro().getCodigo())) {
+				boolean existenCambios = solicitudService.validarCambios(solicitud, getContexto());
+				if (!existenCambios) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_SIN_CAMBIOS);
+				}
+			}
+
+			if (solicitud.getOrigenRegistro() != null && Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION.equals(solicitud.getOrigenRegistro().getCodigo())) {
+				bitacoraService.registrarModificacionSolicitud(solicitud, getContexto());
+			} else if (solicitud.getIdSolicitudPadre()==null) {
 				bitacoraService.registrarSolicitudInscripcion(solicitud, getContexto());
-			}else {
+			} else {
 				bitacoraService.subsanacionSolicitud(solicitud, getContexto());
-			}			
+			}
+
 			solicitudService.guardar(solicitud,getContexto());
 			Solicitud solicitudBD= solicitudService.enviar(solicitud,getContexto());
 			if(solicitudBD.getIdSolicitudPadre()==null) {

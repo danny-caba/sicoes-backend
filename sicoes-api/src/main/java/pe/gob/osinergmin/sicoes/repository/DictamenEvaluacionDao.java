@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.DictamenEvaluacion;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 
 @Repository
@@ -63,5 +64,10 @@ public interface DictamenEvaluacionDao extends JpaRepository<DictamenEvaluacion,
 	@Modifying	
 	@Query("delete from DictamenEvaluacion d where d.solicitud.idSolicitud =:idSolicitud and d.sector.codigo=:codigoSector ")
 	public void eliminarXCodigoSector(String codigoSector, Long idSolicitud);
+
+	@Query(value="select sum(d.montoFacturado) from DictamenEvaluacion d "
+			+ "left join  d.solicitud s "
+			+ "where s.idSolicitud = :idSolicitud ")
+	Double sumarMontoEvaluado(Long idSolicitud);
 
 }

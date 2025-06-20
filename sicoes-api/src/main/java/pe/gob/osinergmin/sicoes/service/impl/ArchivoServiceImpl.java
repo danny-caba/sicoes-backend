@@ -1,10 +1,13 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import gob.osinergmin.siged.remote.rest.ro.in.*;
 import gob.osinergmin.siged.remote.rest.ro.in.list.ArchivoListInRO;
@@ -13,6 +16,7 @@ import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +93,8 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 	@Value("${siged.ws.cliente.osinergmin.numero.documento}")
 	private String numeroDocumentoOsinergmin;
+    @Autowired
+    private OtroRequisitoService otroRequisitoService;
 
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
@@ -244,6 +250,37 @@ public class ArchivoServiceImpl implements ArchivoService {
 		boolean nuevo = archivo.getIdArchivo() == null;
 		if(archivo.getSolicitudUuid() != null) {
 			archivo.setIdSolicitud(solicitudService.obtenerId(archivo.getSolicitudUuid()));
+			//Validar Archivo duplicado Para Codigo TA08 (Documento Experiencia)
+			if(archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA)) {
+				List<Archivo> archivosExperiencia = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA,
+						archivo.getSolicitudUuid(), null, null)
+						.getContent()
+						.stream()
+						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+						.collect(Collectors.toList());
+				boolean existe = archivosExperiencia.stream()
+						.anyMatch(arch -> {
+							try {
+								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
+								if(Optional.ofNullable(archivo.getFile()).isPresent()
+										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+									InputStream nuevoArch = archivo.getFile().getInputStream();
+									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+									nuevoArch.close();
+									oldArch.close();
+									return existeArchivo;
+								} else {
+									return false;
+								}
+							} catch (Exception e) {
+								return false;
+							}
+                        });
+				if(existe) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+				}
+			}
 		}
 		if(archivo.getPropuestaUuid() != null) {
 			archivo.setIdPropuesta(propuestaService.obtener(archivo.getPropuestaUuid(),contexto).getIdPropuesta());
@@ -457,24 +494,47 @@ public class ArchivoServiceImpl implements ArchivoService {
 		List<Archivo> archivos = buscarPresentacion( idSolicitud, tipoArchivo,  contexto);
 
 		List<File> files = new ArrayList<>();
-		File dir = new File(path + idSolicitud);
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
+		// Crear directorio temporal si no existe
+        String dirPath = path + File.separator + "temporales" + File.separator + idSolicitud;
+        File dir = new File(dirPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        // Verificar si hay archivos _v2
+        boolean tieneV2 = archivos.stream()
+                                .anyMatch(a -> a.getNombre() != null && 
+                                            a.getNombre().matches(".*_v2\\.pdf$"));
+                                          
 		for (Archivo archivo : archivos) {
-			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
-			try {
-				String ruta=path + File.separator +"temporales"+ File.separator + idSolicitud + File.separator + archivo.getNombre();
-				logger.info(ruta);
-				File file = new File(ruta);
-				FileUtils.writeByteArrayToFile(file, contenido);
-				files.add(file);
-				logger.info(file.getName());
-			} catch (IOException e) {
-				logger.error(e.getMessage(), e);
-				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
-			}
-		}
+            // Si hay _v2, solo procesamos los _v2. Si no hay _v2, procesamos todos
+            if (!tieneV2 || (tieneV2 && archivo.getNombre() != null && 
+                            archivo.getNombre().matches(".*_v2\\.pdf$"))) {
+                
+                try {
+                    byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+                    if (contenido == null || contenido.length == 0) {
+                        logger.warn("Archivo {} sin contenido", archivo.getNombre());
+                        continue;
+                    }
+
+                    String rutaCompleta = dirPath + File.separator + archivo.getNombre();
+                    File file = new File(rutaCompleta);
+                    
+                    FileUtils.writeByteArrayToFile(file, contenido);
+                    files.add(file);
+                    logger.info("Archivo descargado: {}", file.getAbsolutePath());
+                    
+                } catch (IOException e) {
+                    logger.error("Error al descargar/guardar archivo {}: {}", 
+                            archivo.getNombre(), e.getMessage(), e);
+                    throw new ValidacionException(
+                        Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+                }
+            } else {
+                logger.debug("Archivo {} omitido por regla de versiones", archivo.getNombre());
+            }
+        }
 		return files;
 	}
 
@@ -756,18 +816,51 @@ public class ArchivoServiceImpl implements ArchivoService {
 		if (archivo == null) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
 		}
-		try {
-			Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
+//		try {
+//			Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
 
-			if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
-				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-			}
-		} catch (NumberFormatException e) {
-			logger.error(e.getMessage(), e);
-			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-		}
+//			if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
+//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+//			}
+//		} catch (NumberFormatException e) {
+//			logger.error(e.getMessage(), e);
+//			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+//		}
 		archivoDao.deleteById(archivo.getIdArchivo());
 
+	}
+
+	@Override
+	public List<File> obtenerArchivoDj(Long idOtroRequisito, String procedimiento, Contexto contexto) {
+		List<Archivo> ArchivoDj = archivoDao.obtenerArchivoDjAsociado(idOtroRequisito);
+		List<Archivo> archivos = new ArrayList<>();
+
+		if (!ArchivoDj.isEmpty()) {
+			archivos.addAll(ArchivoDj);
+		}
+
+		List<File> files = new ArrayList<>();
+		File dir = new File(path + idOtroRequisito);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		for (Archivo archivo : archivos) {
+			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+			String millis = Long.toString(System.currentTimeMillis());
+			archivo.setNombre(millis + "_" + procedimiento	+ "_" + archivo.getNombre());
+			try {
+				String ruta=path + File.separator +"temporales"+ File.separator + idOtroRequisito + File.separator + archivo.getNombre();
+				logger.info(ruta);
+				File file = new File(ruta);
+				FileUtils.writeByteArrayToFile(file, contenido);
+				files.add(file);
+				logger.info(file.getName());
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			}
+		}
+		return files;
 	}
 
 	public void cargarAbsolucion(Long idProceso, Archivo archivo, Contexto contexto) {
@@ -875,4 +968,57 @@ public class ArchivoServiceImpl implements ArchivoService {
 		return null;
 	}
 
+	@Override
+	public List<File> obtenerArchivoModificacion(Long idSolicitud, Contexto contexto) {
+		List<Archivo> archivos = buscarArchivosPendientes( idSolicitud,  contexto);
+
+		List<File> files = new ArrayList<>();
+		File dir = new File(path + idSolicitud);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		for (Archivo archivo : archivos) {
+			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+			try {
+				String ruta=path + File.separator +"temporales"+ File.separator + idSolicitud + File.separator + archivo.getNombre();
+				logger.info(ruta);
+				File file = new File(ruta);
+				FileUtils.writeByteArrayToFile(file, contenido);
+				files.add(file);
+				logger.info(file.getName());
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			}
+		}
+		return files;
+	}
+
+	@Override
+	public List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto) {
+		List<Archivo> archivo1 = archivoDao.obtenerArchivoDocumentoPendiente(idSolicitud);
+		List<Archivo> archivo2 = archivoDao.obtenerArchivoEstudioPendiente(idSolicitud);
+		List<OtroRequisito> otroRequisitoList = otroRequisitoService.listarOtroRequisito(idSolicitud);
+		OtroRequisito dj = null;
+		dj = otroRequisitoList.stream().filter(or -> or.getTipoRequisito().getCodigo().equals(Constantes.LISTADO.OTROS_DOCUMENTOS_PN.DJ))
+				.findFirst().orElse(null);
+		List<Archivo> archivo3 = buscar(null, null, dj.getIdOtroRequisito(), contexto);
+		if (archivo3 == null) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.DJ_AUSENTE);
+		}
+		String procedimiento = "Modificacion";
+		String millis = Long.toString(System.currentTimeMillis());
+		archivo3.forEach(a -> a.setNombre(millis + "_" + procedimiento + "_" + a.getNombre()));
+		List<Archivo> archivos = new ArrayList<>();
+		if (!archivo1.isEmpty()) {
+			archivos.addAll(archivo1);
+		}
+		if (!archivo2.isEmpty()) {
+			archivos.addAll(archivo2);
+		}
+		if (!archivo3.isEmpty()) {
+			archivos.addAll(archivo3);
+		}
+		return archivos;
+	}
 }

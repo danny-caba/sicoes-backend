@@ -113,7 +113,7 @@ public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropServic
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public List<SicoesTdSoliPersProp> registrarProfesionales(SicoesSolicitud resSolicitud, Contexto contexto) {
+	public List<SicoesTdSoliPersProp> registrarProfesionales(SicoesSolicitud resSolicitud, List<SicoesTdSolPerConSec> secciones, Contexto contexto) {
 		List<SicoesTdSoliPersProp> response = new ArrayList<>();
 		List<PropuestaProfesional> invitaciones = propuestaProfesionalService.listar(resSolicitud.getPropuesta().getPropuestaUuid(), contexto);
 
@@ -121,7 +121,7 @@ public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropServic
 				.filter(propuestaProfesional -> propuestaProfesional.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_INVITACION.ACEPTADO))
 				.collect(Collectors.toList());
 
-		List<SicoesTdSolPerConSec> lstSicoesTdSolPerConSec = sicoesTdSolPerConSecService.obtenerSeccionPorPersonal();
+		List<SicoesTdSolPerConSec> lstSicoesTdSolPerConSec = secciones.stream().filter(seccion -> seccion.getFlConPersonal().equals(Constantes.FLAG_PERSONAL_PERF_CONTRATO.SI)).collect(Collectors.toList());
 
 		for (SicoesTdSolPerConSec sicoesTdSolPerConSec: lstSicoesTdSolPerConSec) {
 			for (PropuestaProfesional propuestaProfesional : propuestaProfesionales) {

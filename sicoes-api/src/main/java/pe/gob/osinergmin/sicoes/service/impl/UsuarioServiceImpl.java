@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,8 +39,6 @@ import gob.osinergmin.sisseg.servicio.cliente.security.SissegAuthenticationProvi
 import gob.osinergmin.sisseg.servicio.cliente.security.SissegAuthenticationToken;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
-import pe.gob.osinergmin.sicoes.model.BaseModel;
-import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Opcion;
@@ -53,9 +50,8 @@ import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.UsuarioRolConfiguracion;
 import pe.gob.osinergmin.sicoes.model.dto.PerfilDTO;
 import pe.gob.osinergmin.sicoes.model.dto.ReasignacionDTO;
-import pe.gob.osinergmin.sicoes.model.dto.ResponseUsuarioSigedDTO;
 import pe.gob.osinergmin.sicoes.model.dto.UsernameDTO;
-import pe.gob.osinergmin.sicoes.model.dto.UsuarioDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioDetalleSigedDTO;
 import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.RolDao;
@@ -574,7 +570,7 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 	}
 	
 	@Override
-	public ResponseUsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
+	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
 		return sigedApiConsumer.obtenerUsuarioSiged(idUsuario);
 	}
 	
