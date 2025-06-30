@@ -1,26 +1,26 @@
 package pe.gob.osinergmin.sicoes.mapper;
 
 import org.springframework.stereotype.Component;
-import pe.gob.osinergmin.sicoes.model.Invitacion;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.dto.InvitacionDTO;
 
 @Component
 public class InvitacionMapper {
 
-    public InvitacionDTO toDTO(Invitacion entity) {
+    public InvitacionDTO toDTO(RequerimientoInvitacion entity) {
         if (entity == null) return null;
 
         InvitacionDTO dto = new InvitacionDTO();
-        dto.setIdReqInvitacion(entity.getIdReqInvitacion());
+        dto.setIdReqInvitacion(entity.getIdRequerimientoInvitacion());
         dto.setRequerimiento(entity.getRequerimiento());
         dto.setEstado(entity.getEstado());
         dto.setSupervisora(entity.getSupervisora());
-        dto.setFeInvitacion(entity.getFeInvitacion()); // cuidado: en entidad es "feInivitacion"
-        dto.setFeCaducidad(entity.getFeCaducidad());
-        dto.setFeAceptacion(entity.getFeAceptacion());
-        dto.setFeRechazo(entity.getFeRechazo());
-        dto.setCaSaldoContrato(entity.getCaSaldoContrato());
-        dto.setFlActivo(entity.getFlActivo());
+        dto.setFeInvitacion(entity.getFechaInvitacion()); // cuidado: en entidad es "feInivitacion"
+        dto.setFeCaducidad(entity.getFechaCaducidad());
+        dto.setFeAceptacion(entity.getFechaAceptacion());
+        dto.setFeRechazo(entity.getFechaRechazo());
+        dto.setCaSaldoContrato(entity.getSaldoContrato());
+        dto.setFlActivo(entity.getFlagActivo());
         dto.setUsCreacion(entity.getUsuCreacion());
         dto.setIpCreacion(entity.getIpCreacion());
         dto.setFeCreacion(entity.getFecCreacion());
@@ -30,20 +30,20 @@ public class InvitacionMapper {
         return dto;
     }
 
-    public Invitacion toEntity(InvitacionDTO dto) {
+    public RequerimientoInvitacion toEntity(InvitacionDTO dto) {
         if (dto == null) return null;
 
-        Invitacion entity = new Invitacion();
-        entity.setIdReqInvitacion(dto.getIdReqInvitacion());
+        RequerimientoInvitacion entity = new RequerimientoInvitacion();
+        entity.setIdRequerimientoInvitacion(dto.getIdReqInvitacion());
         entity.setRequerimiento(dto.getRequerimiento());
         entity.setEstado(dto.getEstado());
         entity.setSupervisora(dto.getSupervisora());
-        entity.setFeInvitacion(dto.getFeInvitacion()); // mismo cuidado aquí
-        entity.setFeCaducidad(dto.getFeCaducidad());
-        entity.setFeAceptacion(dto.getFeAceptacion());
-        entity.setFeRechazo(dto.getFeRechazo());
-        entity.setCaSaldoContrato(dto.getCaSaldoContrato());
-        entity.setFlActivo(dto.getFlActivo());
+        entity.setFechaInvitacion(dto.getFeInvitacion()); // mismo cuidado aquí
+        entity.setFechaCaducidad(dto.getFeCaducidad());
+        entity.setFechaAceptacion(dto.getFeAceptacion());
+        entity.setFechaRechazo(dto.getFeRechazo());
+        entity.setSaldoContrato(dto.getCaSaldoContrato());
+        entity.setFlagActivo(dto.getFlActivo());
         entity.setUsuCreacion(dto.getUsCreacion());
         entity.setIpCreacion(dto.getIpCreacion());
         entity.setFecCreacion(dto.getFeCreacion());

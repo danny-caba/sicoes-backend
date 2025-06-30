@@ -26,9 +26,9 @@ public class InvitacionServiceImpl implements InvitacionService {
     @Override
     public InvitacionDTO guardar(InvitacionDTO invitacionDTO, Contexto contexto) {
         try {
-            Invitacion entidad = invitacionMapper.toEntity(invitacionDTO);
+            RequerimientoInvitacion entidad = invitacionMapper.toEntity(invitacionDTO);
             AuditoriaUtil.setAuditoriaRegistro(entidad, contexto);
-            Invitacion guardado = invitacionDao.save(entidad);
+            RequerimientoInvitacion guardado = invitacionDao.save(entidad);
             return invitacionMapper.toDTO(guardado);
         } catch (Exception ex) {
             logger.error("Error al guardar la invitación. Contexto: {}, DTO: {}", contexto, invitacionDTO, ex);

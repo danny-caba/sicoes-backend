@@ -56,6 +56,11 @@ public class Requerimiento extends BaseModel implements Serializable {
     @Column(name = "DE_OBSERVACION")
     private String deObservacion;
 
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @Column(name = "FE_REGISTRO")
+    private Date fechaPlazoCargaDoc;
+
     @Column(name = "NU_SIAF")
     private String nuSiaf;
 
@@ -66,5 +71,5 @@ public class Requerimiento extends BaseModel implements Serializable {
     private String ipActualizacion;
 
     @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
-    private List<Invitacion> reqInvitaciones;
+    private List<RequerimientoInvitacion> reqInvitaciones;
 }

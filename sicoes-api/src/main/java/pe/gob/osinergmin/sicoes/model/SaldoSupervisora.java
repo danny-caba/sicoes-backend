@@ -4,16 +4,21 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.io.Serializable;
 
 @Data
 @Entity
 @Table(name = "SICOES_TM_SALDO_SUPERVISORA")
-public class SaldoSupervisora {
+
+public class SaldoSupervisora extends BaseModel implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_SALDO_SUPERVISORA")
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_SALDO_SUPERVISORA", sequenceName = "SICOES_SEQ_SALDO_SUPERVISORA", allocationSize = 1)
     @Column(name = "ID_SALDO_SUPERVISORA")
     private Long idSaldoSupervisora;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_SUPERVISORA")
     private Supervisora supervisora;
@@ -40,4 +45,5 @@ public class SaldoSupervisora {
     @Column(name = "FE_ACTUALIZACION")
     @Temporal(TemporalType.TIMESTAMP)
     private Date feActualizacion;
+
 }

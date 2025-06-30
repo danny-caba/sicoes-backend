@@ -28,9 +28,9 @@ public class InformeServiceImpl implements InformeService {
     @Override
     public InformeDTO guardar(InformeDTO informeDTO, Contexto contexto) {
         try {
-            Informe entidad = informeMapper.toEntity(informeDTO);
+            RequerimientoInforme entidad = informeMapper.toEntity(informeDTO);
             AuditoriaUtil.setAuditoriaRegistro(entidad, contexto);
-            Informe guardado = informeDao.save(entidad);
+            RequerimientoInforme guardado = informeDao.save(entidad);
             return informeMapper.toDTO(guardado);
         } catch (Exception ex) {
             logger.error("Error al guardar el informe. Contexto: {}, DTO: {}", contexto, informeDTO, ex);

@@ -126,8 +126,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Override
     public Optional<RequerimientoDTO> obtenerPorId(Long id) {
-        return requerimientoDao.buscarPorId(id)
-                .map(requerimientoMapper::toDTO); // convierte la entidad a DTO si existe
+        return requerimientoDao.buscarPorId(id).map(requerimientoMapper::toDTO);
     }
 
 }
