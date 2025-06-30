@@ -2,15 +2,15 @@ package pe.gob.osinergmin.sicoes.mapper;
 
 import org.springframework.stereotype.Component;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInforme;
-import pe.gob.osinergmin.sicoes.model.dto.InformeDTO;
+import pe.gob.osinergmin.sicoes.model.dto.RequerimientoInformeDTO;
 
 @Component
-public class InformeMapper {
+public class RequerimientoInformeMapper {
 
-    public InformeDTO toDTO(RequerimientoInforme entity) {
+    public RequerimientoInformeDTO toDTO(RequerimientoInforme entity) {
         if (entity == null) return null;
 
-        InformeDTO dto = new InformeDTO();
+        RequerimientoInformeDTO dto = new RequerimientoInformeDTO();
         dto.setIdReqInforme(entity.getIdRequerimientoInforme());
         dto.setRequerimiento(entity.getRequerimiento());
         dto.setUsCreacion(entity.getUsuCreacion());
@@ -23,7 +23,7 @@ public class InformeMapper {
         return dto;
     }
 
-    public RequerimientoInforme toEntity(InformeDTO dto) {
+    public RequerimientoInforme toEntity(RequerimientoInformeDTO dto) {
         if (dto == null) return null;
 
         RequerimientoInforme entity = new RequerimientoInforme();

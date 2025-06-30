@@ -12,11 +12,7 @@ public interface RequerimientoService {
 
     RequerimientoDTO guardar(RequerimientoDTO requerimientoDTO, Contexto contexto);
 
-    Page<RequerimientoDTO> listar(
-            FiltroRequerimientoDTO filtroRequerimientoDTO,
-            Pageable pageable,
-            Contexto contexto
-    );
+    Page<RequerimientoDTO> listar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
 
     RequerimientoDTO archivar(Long id, String observacion, Contexto contexto);
 

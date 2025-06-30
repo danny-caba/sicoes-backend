@@ -1,17 +1,22 @@
 package pe.gob.osinergmin.sicoes.model.dto;
 
-import pe.gob.osinergmin.sicoes.model.Supervisora;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
 
 import java.util.Date;
 
-public class SaldoSupervisoraDTO {
+public class RequerimientoInformeDTO {
+    public Long getIdReqInforme() {
+        return idReqInforme;
+    }
 
-    private Long idSaldoSupervisora;
+    public void setIdReqInforme(Long idReqInforme) {
+        this.idReqInforme = idReqInforme;
+    }
 
-    private Supervisora supervisora;
+    private Long idReqInforme;
 
-    private Long cantidad;
+    private Requerimiento requerimiento;
 
     private String usCreacion;
     private String ipCreacion;
@@ -25,36 +30,8 @@ public class SaldoSupervisoraDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date feActualizacion;
 
-    public Long getIdSaldoSupervisora() {
-        return idSaldoSupervisora;
-    }
-
-    public void setIdSaldoSupervisora(Long idSaldoSupervisora) {
-        this.idSaldoSupervisora = idSaldoSupervisora;
-    }
-
-    public Supervisora getSupervisora() {
-        return supervisora;
-    }
-
-    public void setSupervisora(Supervisora supervisora) {
-        this.supervisora = supervisora;
-    }
-
-    public Long getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(Long cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public String getIpCreacion() {
-        return ipCreacion;
-    }
-
-    public void setIpCreacion(String ipCreacion) {
-        this.ipCreacion = ipCreacion;
+    public Requerimiento getRequerimiento() {
+        return requerimiento;
     }
 
     public String getUsCreacion() {
@@ -63,6 +40,14 @@ public class SaldoSupervisoraDTO {
 
     public void setUsCreacion(String usCreacion) {
         this.usCreacion = usCreacion;
+    }
+
+    public String getIpCreacion() {
+        return ipCreacion;
+    }
+
+    public void setIpCreacion(String ipCreacion) {
+        this.ipCreacion = ipCreacion;
     }
 
     public Date getFeCreacion() {
@@ -79,6 +64,10 @@ public class SaldoSupervisoraDTO {
 
     public void setUsActualizacion(String usActualizacion) {
         this.usActualizacion = usActualizacion;
+    }
+
+    public void setRequerimiento(Requerimiento requerimiento) {
+        this.requerimiento = requerimiento;
     }
 
     public String getIpActualizacion() {

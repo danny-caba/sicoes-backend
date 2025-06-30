@@ -2,15 +2,15 @@ package pe.gob.osinergmin.sicoes.mapper;
 
 import org.springframework.stereotype.Component;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
-import pe.gob.osinergmin.sicoes.model.dto.InvitacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.RequerimientoInvitacionDTO;
 
 @Component
-public class InvitacionMapper {
+public class RequerimientoInvitacionMapper {
 
-    public InvitacionDTO toDTO(RequerimientoInvitacion entity) {
+    public RequerimientoInvitacionDTO toDTO(RequerimientoInvitacion entity) {
         if (entity == null) return null;
 
-        InvitacionDTO dto = new InvitacionDTO();
+        RequerimientoInvitacionDTO dto = new RequerimientoInvitacionDTO();
         dto.setIdReqInvitacion(entity.getIdRequerimientoInvitacion());
         dto.setRequerimiento(entity.getRequerimiento());
         dto.setEstado(entity.getEstado());
@@ -30,7 +30,7 @@ public class InvitacionMapper {
         return dto;
     }
 
-    public RequerimientoInvitacion toEntity(InvitacionDTO dto) {
+    public RequerimientoInvitacion toEntity(RequerimientoInvitacionDTO dto) {
         if (dto == null) return null;
 
         RequerimientoInvitacion entity = new RequerimientoInvitacion();

@@ -13,13 +13,13 @@ public class SaldoSupervisoraMapper {
         dto.setSupervisora(entity.getSupervisora());
         dto.setCantidad(entity.getCantidad());
 
-        dto.setUsCreacion(entity.getUsCreacion());
+        dto.setUsCreacion(entity.getUsuCreacion());
         dto.setIpCreacion(entity.getIpCreacion());
-        dto.setFeCreacion(entity.getFeCreacion());
+        dto.setFeCreacion(entity.getFecCreacion());
 
-        dto.setUsActualizacion(entity.getUsActualizacion());
+        dto.setUsActualizacion(entity.getUsuActualizacion());
         dto.setIpActualizacion(entity.getIpActualizacion());
-        dto.setFeActualizacion(entity.getFeActualizacion());
+        dto.setFeActualizacion(entity.getFecActualizacion());
 
         return dto;
     }
@@ -30,13 +30,13 @@ public class SaldoSupervisoraMapper {
         entity.setSupervisora(dto.getSupervisora());
         entity.setCantidad(dto.getCantidad());
 
-        entity.setUsCreacion(dto.getUsCreacion());
+        entity.setUsuCreacion(dto.getUsCreacion());
         entity.setIpCreacion(dto.getIpCreacion());
-        entity.setFeCreacion(dto.getFeCreacion());
+        entity.setFecCreacion(dto.getFeCreacion());
 
-        entity.setUsActualizacion(dto.getUsActualizacion());
+        entity.setUsuActualizacion(dto.getUsActualizacion());
         entity.setIpActualizacion(dto.getIpActualizacion());
-        entity.setFeActualizacion(dto.getFeActualizacion());
+        entity.setFecActualizacion(dto.getFeActualizacion());
 
         return entity;
     }

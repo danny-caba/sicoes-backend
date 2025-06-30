@@ -116,7 +116,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
             throw new IllegalStateException("Estado ARCHIVADO no configurado en ListadoDetalle");
         }
         entidad.setEstado(estadoArchivado);
-        entidad.setDeObservacion(observacion);
+        entidad.setObservacion(observacion);
         entidad.setIpActualizacion(contexto.getIp());
         entidad.setUsuActualizacion(contexto.getUsuario().getUsuario());
         entidad.setFecActualizacion(new Date());

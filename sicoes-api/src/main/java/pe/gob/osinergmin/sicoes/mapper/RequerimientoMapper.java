@@ -10,15 +10,15 @@ public class RequerimientoMapper {
     public RequerimientoDTO toDTO(Requerimiento r) {
         RequerimientoDTO dto = new RequerimientoDTO();
         dto.setIdRequerimiento(r.getIdRequerimiento());
-        dto.setNuExpediente(r.getNuExpediente());
+        dto.setNuExpediente(r.getNumeroExpediente());
 
         dto.setEstado(r.getEstado());
         dto.setPerfil(r.getPerfil());
         dto.setDivision(r.getDivision());
 
-        dto.setFeRegistro(r.getFeRegistro());
-        dto.setFePlazoCargaDoc(r.getFePlazoCargaDoc());
-        dto.setDeObservacion(r.getDeObservacion());
+        dto.setFeRegistro(r.getFechaRegistro());
+        dto.setFePlazoCargaDoc(r.getFechaPlazoCargaDoc());
+        dto.setDeObservacion(r.getObservacion());
         dto.setNuSiaf(r.getNuSiaf());
         dto.setUsCreacion(r.getUsuCreacion());
         dto.setFeCreacion(r.getFecCreacion());
@@ -31,15 +31,15 @@ public class RequerimientoMapper {
     public Requerimiento toEntity(RequerimientoDTO dto) {
         Requerimiento r = new Requerimiento();
         r.setIdRequerimiento(dto.getIdRequerimiento());
-        r.setNuExpediente(dto.getNuExpediente());
+        r.setNumeroExpediente(dto.getNuExpediente());
 
         r.setEstado(dto.getEstado());
         r.setPerfil(dto.getPerfil());
         r.setDivision(dto.getDivision());
 
-        r.setFeRegistro(dto.getFeRegistro());
-        r.setFePlazoCargaDoc(dto.getFePlazoCargaDoc());
-        r.setDeObservacion(dto.getDeObservacion());
+        r.setFechaRegistro(dto.getFeRegistro());
+        r.setFechaPlazoCargaDoc(dto.getFePlazoCargaDoc());
+        r.setObservacion(dto.getDeObservacion());
         r.setNuSiaf(dto.getNuSiaf());
         r.setUsuCreacion(dto.getUsCreacion());
         r.setFecCreacion(dto.getFeCreacion());
