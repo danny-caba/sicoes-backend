@@ -622,6 +622,42 @@ public class Constantes {
 			public static final String MODIFICACION		= "MODIFICACION";
 		}
 
+		public static final class ESTADO_REQUERIMIENTO {
+			public static final String CODIGO 						= "ESTADO_REQUERIMIENTO";
+			public static final String PRELIMINAR 					= "PRELIMINAR";
+			public static final String EN_APROBACION 				= "EN_APROBACION";
+			public static final String EN_PROCESO 					= "EN_PROCESO";
+			public static final String CONCLUIDO 					= "EN_PROCESO";
+			public static final String ARCHIVADO 					= "CONCLUIDO";
+		}
+
+		public static final class ESTADO_REQ_INVITACION {
+			public static final String CODIGO 						= "ESTADO_REQ_INVITACION";
+			public static final String ACEPTADO 					= "ACEPTADO";
+			public static final String RECHAZADO 					= "RECHAZADO";
+			public static final String CANCELADO 					= "CANCELADO";
+			public static final String ELIMINADO 					= "ELIMINADO";
+		}
+
+		public static final class ESTADO_TIPO_APROBACION {
+			public static final String CODIGO 						= "ESTADO_TIPO_APROBACION";
+			public static final String APROBAR 						= "APROBAR";
+			public static final String FIRMAR 						= "FIRMAR";
+		}
+
+		public static final class ESTADO_GRUPO_APROBACION {
+			public static final String CODIGO 						= "ESTADO_GRUPO_APROBACION";
+			public static final String JEFE_UNIDAD 					= "JEFE_UNIDAD";
+			public static final String GERENTE 						= "GERENTE";
+			public static final String GPPM 						= "GPPM";
+			public static final String GSE		 					= "GSE";
+		}
+
+		public static final class ESTADO_APROBACION {
+			public static final String CODIGO 						= "ESTADO_APROBACION";
+			public static final String ASIGNADO 					= "ACEPTADO";
+			public static final String APROBADO 					= "RECHAZADO";
+		}
 	}
 	
 
@@ -879,6 +915,7 @@ public class Constantes {
 		public static final String ARCHIVO_DUPLICADO = "V01015";
 		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
 		public static final String DJ_AUSENTE = "V01017";
+		public static final String REQUERIMIENTO_EN_PROCESO = "V01018";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

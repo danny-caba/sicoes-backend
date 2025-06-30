@@ -25,8 +25,8 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQ_CONTRATO")
     @SequenceGenerator(name="GEN_SICOES_SEQ_REQ_CONTRATO", sequenceName = "SICOES_SEQ_REQ_CONTRATO", allocationSize = 1)
-    @Column(name = "ID_REQUERIMIENTO")
-    private Long idRequerimiento;
+    @Column(name = "ID_REQ_CONTRATO")
+    private Long idRequerimientoContrato;
 
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="ID_REQUERIMIENTO")
@@ -54,12 +54,12 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
     @Column(name="FE_FIN")
     private Date fechaFin;
 
-    public Long getIdRequerimiento() {
-        return idRequerimiento;
+    public Long getIdRequerimientoContrato() {
+        return idRequerimientoContrato;
     }
 
-    public void setIdRequerimiento(Long idRequerimiento) {
-        this.idRequerimiento = idRequerimiento;
+    public void setIdRequerimientoContrato(Long idRequerimientoContrato) {
+        this.idRequerimientoContrato = idRequerimientoContrato;
     }
 
     public Requerimiento getRequerimiento() {

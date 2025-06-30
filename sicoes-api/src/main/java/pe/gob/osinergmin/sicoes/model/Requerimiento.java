@@ -50,7 +50,7 @@ public class Requerimiento extends BaseModel implements Serializable {
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name="FE_REGISTRO")
+    @Column(name="FE_PLAZO_CARGA_DOC")
     private Date fechaPlazoCargaDoc;
 
     @Column(name = "DE_OBSERVACION")
