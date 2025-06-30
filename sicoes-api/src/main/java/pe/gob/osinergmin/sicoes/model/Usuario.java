@@ -1,7 +1,5 @@
 package pe.gob.osinergmin.sicoes.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +19,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
 @Entity
 @Table(name = "SICOES_TM_USUARIO")
 public class Usuario extends BaseModel  implements Serializable{

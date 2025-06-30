@@ -1,49 +1,56 @@
 package pe.gob.osinergmin.sicoes.model;
 
-import lombok.Data;
-
-import javax.persistence.*;
-import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import java.io.Serializable;
 
-@Data
 @Entity
-@Table(name = "SICOES_TM_SALDO_SUPERVISORA")
-
+@Table(name="SICOES_TM_SALDO_SUPERVISORA")
 public class SaldoSupervisora extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_SALDO_SUPERVISORA")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_SALDO_SUPERVISORA", sequenceName = "SICOES_SEQ_SALDO_SUPERVISORA", allocationSize = 1)
+    @SequenceGenerator(name="GEN_SICOES_SEQ_SALDO_SUPERVISORA", sequenceName = "SICOES_SEQ_SALDO_SUPERVISORA", allocationSize = 1)
     @Column(name = "ID_SALDO_SUPERVISORA")
     private Long idSaldoSupervisora;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_SUPERVISORA")
+
+    @ManyToOne(fetch= FetchType.LAZY)
+    @JoinColumn(name="ID_SUPERVISORA")
     private Supervisora supervisora;
 
     @Column(name = "CA_CANTIDAD")
     private Long cantidad;
 
-    @Column(name = "US_CREACION")
-    private String usCreacion;
+    public Long getIdSaldoSupervisora() {
+        return idSaldoSupervisora;
+    }
 
-    @Column(name = "IP_CREACION")
-    private String ipCreacion;
+    public void setIdSaldoSupervisora(Long idSaldoSupervisora) {
+        this.idSaldoSupervisora = idSaldoSupervisora;
+    }
 
-    @Column(name = "FE_CREACION")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date feCreacion;
+    public Supervisora getSupervisora() {
+        return supervisora;
+    }
 
-    @Column(name = "US_ACTUALIZACION")
-    private String usActualizacion;
+    public void setSupervisora(Supervisora supervisora) {
+        this.supervisora = supervisora;
+    }
 
-    @Column(name = "IP_ACTUALIZACION")
-    private String ipActualizacion;
+    public Long getCantidad() {
+        return cantidad;
+    }
 
-    @Column(name = "FE_ACTUALIZACION")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date feActualizacion;
-
+    public void setCantidad(Long cantidad) {
+        this.cantidad = cantidad;
+    }
 }

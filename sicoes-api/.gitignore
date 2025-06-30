@@ -33,6 +33,3 @@ build/
 .vscode/
 /.metadata/
 /bin/
-
-# SmartTomcat (local Tomcat config)
-.smarttomcat/
