@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -20,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
  * The persistent class for the listado database table.
  * 
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name="SICOES_TR_PERSONA")
 public class Persona extends BaseModel implements Serializable {

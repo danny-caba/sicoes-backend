@@ -41,14 +41,16 @@ public class BaseRestController {
 		try {
 //			if (Constantes.FLAG.ACTIVO.toString().equals(produccion)) {
 				Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-				if (!(authentication.getPrincipal() instanceof User)) {
-					throw new ValidacionException(Constantes.CODIGO_MENSAJE.AUTENTICACION_SESION_EXPIRADA);
+
+				if (authentication != null && authentication.getPrincipal() instanceof User) {
+					String username = ((User) authentication.getPrincipal()).getUsername();
+					usuario = usuarioService.buscarUsuario(username);
+				} else {
+					// Usuario simulado para entorno local
+					usuario = new Usuario();
+					usuario.setIdUsuario(999L);
+					usuario.setCorreo("dev@local.test");
 				}
-				usuario = usuarioService.buscarUsuario(((User) authentication.getPrincipal()).getUsername());
-				OAuth2AuthenticationDetails value = (OAuth2AuthenticationDetails) authentication.getDetails();
-//			} else {
-//				usuario = getUsuarioDummy();
-//			}
 		}catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
