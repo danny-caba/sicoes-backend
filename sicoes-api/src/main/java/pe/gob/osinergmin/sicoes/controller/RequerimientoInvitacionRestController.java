@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoInvitacionDTO;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -22,13 +22,13 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
 
     @PostMapping
     @Raml("invitacion.guardar.properties")
-    public RequerimientoInvitacionDTO guardarInvitacion(@RequestBody RequerimientoInvitacionDTO requerimientoInvitacionDTO) {
+    public RequerimientoInvitacion guardarInvitacion(@RequestBody RequerimientoInvitacion requerimientoInvitacionDTO) {
         return invitacionService.guardar(requerimientoInvitacionDTO, getContexto());
     }
 
     @DeleteMapping("/{uid}/eliminar")
     @Raml("invitacion.eliminar.properties")
-    public RequerimientoInvitacionDTO eliminarInvitacion(@PathVariable("uid") Long id) {
+    public RequerimientoInvitacion eliminarInvitacion(@PathVariable("uid") Long id) {
         return invitacionService.eliminar(id, getContexto());
     }
 

@@ -1,11 +1,11 @@
 package pe.gob.osinergmin.sicoes.service;
 
-import pe.gob.osinergmin.sicoes.model.dto.SaldoSupervisoraDTO;
+import pe.gob.osinergmin.sicoes.model.SaldoSupervisora;
 
 import java.util.Optional;
 
 public interface SaldoSupervisoraService {
 
-    Optional<SaldoSupervisoraDTO> obtenerPorId(Long id);
+    Optional<SaldoSupervisora> obtenerPorId(Long id);
 
 }

@@ -42,7 +42,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name="FE_INIVITACION")
+    @Column(name="FE_INVITACION")
     private Date fechaInvitacion;
 
     @Temporal(TemporalType.DATE)
@@ -145,4 +145,5 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     public void setFlagActivo(String flagActivo) {
         this.flagActivo = flagActivo;
     }
+
 }

@@ -10,8 +10,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.server.ResponseStatusException;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.Raml;
@@ -30,19 +30,19 @@ public class RequerimientoRestController extends BaseRestController {
 
     @PostMapping
     @Raml("requerimiento.guardar.properties")
-    public RequerimientoDTO guardarRequerimiento(@RequestBody RequerimientoDTO requerimientoDTO) {
-        return requerimientoService.guardar(requerimientoDTO, getContexto());
+    public Requerimiento guardarRequerimiento(@RequestBody Requerimiento requerimiento) {
+        return requerimientoService.guardar(requerimiento, getContexto());
     }
 
     @GetMapping
     @Raml("requerimiento.listar.properties")
-    public Page<RequerimientoDTO> listarRequerimientos(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable, Contexto contexto) {
+    public Page<Requerimiento> listarRequerimientos(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable, Contexto contexto) {
         return requerimientoService.listar(filtros, pageable, contexto);
     }
 
     @PatchMapping("/{uid}/archivar")
     @Raml("requerimiento.archivar.properties")
-    public RequerimientoDTO archivarRequerimiento(@PathVariable("uid") Long id, @RequestBody Map<String, String> body) {
+    public Requerimiento archivarRequerimiento(@PathVariable("uid") Long id, @RequestBody Map<String, String> body) {
         String observacion = body.get("observacion");
         if (observacion == null || observacion.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Observación es obligatoria");
@@ -52,7 +52,7 @@ public class RequerimientoRestController extends BaseRestController {
 
     @GetMapping("/{uid}")
     @Raml("requerimiento.obtener.properties")
-    public RequerimientoDTO obtenerRequerimiento(@PathVariable("uid") Long id) {
+    public Requerimiento obtenerRequerimiento(@PathVariable("uid") Long id) {
         return requerimientoService.obtenerPorId(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parámetros inválidos"));
     }
 

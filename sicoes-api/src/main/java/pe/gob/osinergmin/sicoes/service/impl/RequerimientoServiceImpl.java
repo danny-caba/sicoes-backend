@@ -7,10 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import pe.gob.osinergmin.sicoes.mapper.RequerimientoMapper;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoDTO;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
@@ -34,55 +32,30 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     @Autowired
     private ListadoDetalleDao listadoDetalleDao;
 
-    @Autowired
-    private RequerimientoMapper requerimientoMapper;
-
-    public RequerimientoDTO guardar(RequerimientoDTO requerimientoDTO, Contexto contexto) {
-        try {
-            Requerimiento entidad = requerimientoMapper.toEntity(requerimientoDTO);
-            AuditoriaUtil.setAuditoriaRegistro(entidad, contexto);
-            Requerimiento guardado = requerimientoDao.save(entidad);
-            return requerimientoMapper.toDTO(guardado);
-        } catch (Exception ex) {
-            logger.error("Error al guardar el requerimiento. Contexto: {}, DTO: {}", contexto, requerimientoDTO, ex);
-            throw new RuntimeException("Error al guardar el requerimiento", ex);
-        }
+    @Override
+    public Requerimiento guardar(Requerimiento requerimiento, Contexto contexto) {
+        AuditoriaUtil.setAuditoriaRegistro(requerimiento, contexto);
+        return requerimientoDao.save(requerimiento);
     }
 
     @Override
     @Transactional
-    public Page<RequerimientoDTO> listar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contexto) {
-        Date fechaInicio = filtroRequerimientoDTO.getFechaInicio();
-        Date fechaFin = filtroRequerimientoDTO.getFechaFin();
-
+    public Page<Requerimiento> listar(FiltroRequerimientoDTO filtro, Pageable pageable, Contexto contexto) {
+        Date fechaInicio = filtro.getFechaInicio();
+        Date fechaFin = filtro.getFechaFin();
         if (fechaInicio != null && fechaInicio.after(new Date())) {
             throw new ValidacionException("E002002");
         }
         if (fechaInicio != null && fechaFin != null && fechaFin.before(fechaInicio)) {
             throw new ValidacionException("E002001");
         }
-        if (fechaInicio != null) {
-            fechaInicio = DateUtil.getInitDay(fechaInicio);
-        }
-        if (fechaFin != null) {
-            fechaFin = DateUtil.getEndDay(fechaFin);
-        }
-        Division division = filtroRequerimientoDTO.getDivision() != null
-                ? crearDivision(filtroRequerimientoDTO.getDivision())
-                : null;
-        ListadoDetalle perfil = filtroRequerimientoDTO.getPerfil() != null
-                ? crearListadoDetalle(filtroRequerimientoDTO.getPerfil())
-                : null;
-        Supervisora supervisora = filtroRequerimientoDTO.getSupervisora() != null
-                ? crearSupervisora(filtroRequerimientoDTO.getSupervisora())
-                : null;
-        ListadoDetalle estadoAprobacion = filtroRequerimientoDTO.getEstadoAprobacion() != null
-                ? crearListadoDetalle(filtroRequerimientoDTO.getEstadoAprobacion())
-                : null;
-        Page<Requerimiento> pagina = requerimientoDao.listarRequerimientos(
-                division, perfil, fechaInicio, fechaFin, supervisora, estadoAprobacion, pageable
-        );
-        return pagina.map(requerimientoMapper::toDTO);
+        if (fechaInicio != null) fechaInicio = DateUtil.getInitDay(fechaInicio);
+        if (fechaFin != null) fechaFin = DateUtil.getEndDay(fechaFin);
+        Division division = filtro.getDivision() != null ? crearDivision(filtro.getDivision()) : null;
+        ListadoDetalle perfil = filtro.getPerfil() != null ? crearListadoDetalle(filtro.getPerfil()) : null;
+        Supervisora supervisora = filtro.getSupervisora() != null ? crearSupervisora(filtro.getSupervisora()) : null;
+        ListadoDetalle estadoAprobacion = filtro.getEstadoAprobacion() != null ? crearListadoDetalle(filtro.getEstadoAprobacion()) : null;
+        return requerimientoDao.listarRequerimientos(division, perfil, fechaInicio, fechaFin, supervisora, estadoAprobacion, pageable);
     }
 
     private Division crearDivision(Long id) {
@@ -105,28 +78,23 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Override
     @Transactional
-    public RequerimientoDTO archivar(Long id, String observacion, Contexto contexto) {
-        Optional<Requerimiento> optional = requerimientoDao.findById(id);
-        if (!optional.isPresent()) {
-            throw new RuntimeException("Requerimiento no encontrado");
-        }
-        Requerimiento entidad = optional.get();
+    public Requerimiento archivar(Long id, String observacion, Contexto contexto) {
+        Requerimiento entidad = requerimientoDao.findById(id).orElseThrow(() -> new RuntimeException("Requerimiento no encontrado"));
         ListadoDetalle estadoArchivado = listadoDetalleDao.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "ARCHIVADO");
         if (estadoArchivado == null) {
             throw new IllegalStateException("Estado ARCHIVADO no configurado en ListadoDetalle");
         }
         entidad.setEstado(estadoArchivado);
-        entidad.setObservacion(observacion);
+        entidad.setDeObservacion(observacion);
         entidad.setIpActualizacion(contexto.getIp());
         entidad.setUsuActualizacion(contexto.getUsuario().getUsuario());
         entidad.setFecActualizacion(new Date());
-        Requerimiento actualizado = requerimientoDao.save(entidad);
-        return requerimientoMapper.toDTO(actualizado);
+        return requerimientoDao.save(entidad);
     }
 
     @Override
-    public Optional<RequerimientoDTO> obtenerPorId(Long id) {
-        return requerimientoDao.buscarPorId(id).map(requerimientoMapper::toDTO);
+    public Optional<Requerimiento> obtenerPorId(Long id) {
+        return requerimientoDao.buscarPorId(id);
     }
 
 }

@@ -2,20 +2,20 @@ package pe.gob.osinergmin.sicoes.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.Optional;
 
 public interface RequerimientoService {
 
-    RequerimientoDTO guardar(RequerimientoDTO requerimientoDTO, Contexto contexto);
+    Requerimiento guardar(Requerimiento requerimiento, Contexto contexto);
 
-    Page<RequerimientoDTO> listar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
+    Page<Requerimiento> listar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
 
-    RequerimientoDTO archivar(Long id, String observacion, Contexto contexto);
+    Requerimiento archivar(Long id, String observacion, Contexto contexto);
 
-    Optional<RequerimientoDTO> obtenerPorId(Long id);
+    Optional<Requerimiento> obtenerPorId(Long id);
 
 }

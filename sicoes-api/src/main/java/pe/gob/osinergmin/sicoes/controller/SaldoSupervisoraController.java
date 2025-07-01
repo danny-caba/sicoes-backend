@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.server.ResponseStatusException;
-import pe.gob.osinergmin.sicoes.model.dto.SaldoSupervisoraDTO;
+import pe.gob.osinergmin.sicoes.model.SaldoSupervisora;
 import pe.gob.osinergmin.sicoes.service.SaldoSupervisoraService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -24,7 +24,7 @@ public class SaldoSupervisoraController extends BaseRestController {
 
     @GetMapping("/{uid}")
     @Raml("saldoSupervisora.obtener.properties")
-    public SaldoSupervisoraDTO obtenerSaldoSupervisora(@PathVariable("uid") Long id) {
+    public SaldoSupervisora obtenerSaldoSupervisora(@PathVariable("uid") Long id) {
         return saldoSupervisoraService.obtenerPorId(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parámetros inválidos"));
     }
 

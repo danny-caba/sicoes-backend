@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoInformeDTO;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInforme;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInformeService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -22,7 +22,7 @@ public class RequerimientoInformeRestController extends BaseRestController {
 
     @PostMapping
     @Raml("informe.guardar.properties")
-    public RequerimientoInformeDTO guardarInforme(@RequestBody RequerimientoInformeDTO requerimientoInformeDTO) {
+    public RequerimientoInforme guardarInforme(@RequestBody RequerimientoInforme requerimientoInformeDTO) {
         return informeService.guardar(requerimientoInformeDTO, getContexto());
     }
 
