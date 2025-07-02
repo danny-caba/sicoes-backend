@@ -10,57 +10,62 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name="SICOES_TC_REQUERIMIENTO")
+@Table(name = "SICOES_TC_REQUERIMIENTO")
 public class Requerimiento extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQUERIMIENTO")
-    @SequenceGenerator(name="GEN_SICOES_SEQ_REQUERIMIENTO", sequenceName = "SICOES_SEQ_REQUERIMIENTO", allocationSize = 1)
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQUERIMIENTO", sequenceName = "SICOES_SEQ_REQUERIMIENTO", allocationSize = 1)
     @Column(name = "ID_REQUERIMIENTO")
     private Long idRequerimiento;
 
     @Column(name = "CO_UUID")
     private String requerimientoUuid;
 
-    @Column(name="NU_EXPEDIENTE")
-    private String numeroExpediente;
+    @Column(name = "NU_EXPEDIENTE")
+    private String nuExpediente;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ID_ESTADO_LD")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ESTADO_LD")
     private ListadoDetalle estado;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name="FE_REGISTRO")
-    private Date fechaRegistro;
+    @Column(name = "FE_REGISTRO")
+    private Date feRegistro;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="ID_DIVISION")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_DIVISION")
     private Division division;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="ID_PERFIL_LD")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PERFIL_LD")
     private ListadoDetalle perfil;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name="FE_PLAZO_CARGA_DOC")
-    private Date fechaPlazoCargaDoc;
+    @Column(name = "FE_PLAZO_CARGA_DOC")
+    private Date fePlazoCargaDoc;
 
     @Column(name = "DE_OBSERVACION")
-    private String observacion;
+    private String deObservacion;
 
     @Column(name = "NU_SIAF")
     private String nuSiaf;
+
+    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
+    private List<RequerimientoInvitacion> reqInvitaciones;
 
     public Long getIdRequerimiento() {
         return idRequerimiento;
@@ -78,12 +83,12 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.requerimientoUuid = requerimientoUuid;
     }
 
-    public String getNumeroExpediente() {
-        return numeroExpediente;
+    public String getNuExpediente() {
+        return nuExpediente;
     }
 
-    public void setNumeroExpediente(String numeroExpediente) {
-        this.numeroExpediente = numeroExpediente;
+    public void setNuExpediente(String nuExpediente) {
+        this.nuExpediente = nuExpediente;
     }
 
     public ListadoDetalle getEstado() {
@@ -94,12 +99,12 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.estado = estado;
     }
 
-    public Date getFechaRegistro() {
-        return fechaRegistro;
+    public Date getFeRegistro() {
+        return feRegistro;
     }
 
-    public void setFechaRegistro(Date fechaRegistro) {
-        this.fechaRegistro = fechaRegistro;
+    public void setFeRegistro(Date feRegistro) {
+        this.feRegistro = feRegistro;
     }
 
     public Division getDivision() {
@@ -118,20 +123,20 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.perfil = perfil;
     }
 
-    public Date getFechaPlazoCargaDoc() {
-        return fechaPlazoCargaDoc;
+    public Date getFePlazoCargaDoc() {
+        return fePlazoCargaDoc;
     }
 
-    public void setFechaPlazoCargaDoc(Date fechaPlazoCargaDoc) {
-        this.fechaPlazoCargaDoc = fechaPlazoCargaDoc;
+    public void setFePlazoCargaDoc(Date fePlazoCargaDoc) {
+        this.fePlazoCargaDoc = fePlazoCargaDoc;
     }
 
-    public String getObservacion() {
-        return observacion;
+    public String getDeObservacion() {
+        return deObservacion;
     }
 
-    public void setObservacion(String observacion) {
-        this.observacion = observacion;
+    public void setDeObservacion(String deObservacion) {
+        this.deObservacion = deObservacion;
     }
 
     public String getNuSiaf() {
@@ -141,4 +146,13 @@ public class Requerimiento extends BaseModel implements Serializable {
     public void setNuSiaf(String nuSiaf) {
         this.nuSiaf = nuSiaf;
     }
+
+    public List<RequerimientoInvitacion> getReqInvitaciones() {
+        return reqInvitaciones;
+    }
+
+    public void setReqInvitaciones(List<RequerimientoInvitacion> reqInvitaciones) {
+        this.reqInvitaciones = reqInvitaciones;
+    }
+
 }

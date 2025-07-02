@@ -156,4 +156,5 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     public void setFlagActivo(String flagActivo) {
         this.flagActivo = flagActivo;
     }
+
 }

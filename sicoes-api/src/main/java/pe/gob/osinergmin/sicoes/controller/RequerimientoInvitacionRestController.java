@@ -3,9 +3,12 @@ package pe.gob.osinergmin.sicoes.controller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,13 +24,26 @@ import pe.gob.osinergmin.sicoes.util.Raml;
 import java.util.List;
 
 @RestController
-@RequestMapping("/invitaciones")
-public class RequerimientoInvitacionRestController extends BaseRestController{
+@RequestMapping("/api/invitaciones")
+@Validated
+public class RequerimientoInvitacionRestController extends BaseRestController {
 
-    private Logger logger = LogManager.getLogger(RequerimientoInvitacionRestController.class);
+    private static final Logger logger = LogManager.getLogger(RequerimientoInvitacionRestController.class);
 
     @Autowired
-    private RequerimientoInvitacionService requerimientoInvitacionService;
+    private RequerimientoInvitacionService invitacionService;
+
+    @PostMapping
+    @Raml("invitacion.guardar.properties")
+    public RequerimientoInvitacion guardarInvitacion(@RequestBody RequerimientoInvitacion requerimientoInvitacionDTO) {
+        return invitacionService.guardar(requerimientoInvitacionDTO, getContexto());
+    }
+
+    @DeleteMapping("/{uid}/eliminar")
+    @Raml("invitacion.eliminar.properties")
+    public RequerimientoInvitacion eliminarInvitacion(@PathVariable("uid") Long id) {
+        return invitacionService.eliminar_2(id, getContexto());
+    }
 
     @GetMapping
     @Raml("requerimientoInvitacion.obtener.properties")
@@ -36,7 +52,7 @@ public class RequerimientoInvitacionRestController extends BaseRestController{
             @RequestParam(required=false) String fechaInicioInvitacion,
             @RequestParam(required=false) String fechaFinInvitacion,
             Pageable pageable) {
-        return requerimientoInvitacionService.obtener(idEstado, fechaInicioInvitacion,
+        return invitacionService.obtener(idEstado, fechaInicioInvitacion,
                 fechaFinInvitacion, getContexto(), pageable);
     }
 
@@ -44,6 +60,6 @@ public class RequerimientoInvitacionRestController extends BaseRestController{
     public Requerimiento evaluarInvitacion(
             @PathVariable Long  id,
             @RequestBody ListadoDetalleDTO estado) {
-        return requerimientoInvitacionService.evaluar(id, estado, getContexto());
+        return invitacionService.evaluar(id, estado, getContexto());
     }
 }

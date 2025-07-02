@@ -7,9 +7,15 @@ import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
-public interface RequerimientoInvitacionService  extends BaseService<RequerimientoInvitacion, Long>{
+public interface RequerimientoInvitacionService extends BaseService<RequerimientoInvitacion, Long>{
+
+    RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacionDTO, Contexto contexto);
+
+    RequerimientoInvitacion eliminar_2(Long id, Contexto contexto);
+
     Page<RequerimientoInvitacion> obtener(Long idEstado, String fechaInicioInvitacion,
                                           String fechaFinInvitacion, Contexto contexto, Pageable pageable);
 
     Requerimiento evaluar(Long  id, ListadoDetalleDTO estado, Contexto contexto);
+
 }

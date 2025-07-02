@@ -18,8 +18,8 @@ import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoInvitacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
-import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraService;
+import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -27,11 +27,13 @@ import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitacionService {
 
-    Logger logger = LogManager.getLogger(RequerimientoInvitacionServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(RequerimientoInvitacionServiceImpl.class);
+
     @Autowired
     private SupervisoraService supervisoraService;
     @Autowired
@@ -46,13 +48,36 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     private RequerimientoAprobacionDao aprobacionDao;
 
     @Override
-    public RequerimientoInvitacion guardar(RequerimientoInvitacion model, Contexto contexto) {
+    public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+        try {
+            // Validación rápida para evitar el error ORA-01400
+            if (requerimientoInvitacion.getFlagActivo() == null) {
+                requerimientoInvitacion.setFlagActivo("1"); // o el valor por defecto definido
+            }
+
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
+            return invitacionDao.save(requerimientoInvitacion);
+        } catch (Exception ex) {
+            logger.error("Error al guardar la invitación. Contexto: {}, Entidad: {}", contexto, requerimientoInvitacion, ex);
+            throw new RuntimeException("Error al guardar la invitación", ex);
+        }
+    }
+
+    @Override
+    public RequerimientoInvitacion obtener(Long id, Contexto contexto) {
         return null;
     }
 
     @Override
-    public RequerimientoInvitacion obtener(Long supervisoraId, Contexto contexto) {
-        return null;
+    public RequerimientoInvitacion eliminar_2(Long id, Contexto contexto) {
+        Optional<RequerimientoInvitacion> optional = invitacionDao.findById(id);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("RequerimientoInvitacion no encontrado con ID: " + id);
+        }
+        RequerimientoInvitacion entidad = optional.get();
+        entidad.setFlagActivo("0");
+        AuditoriaUtil.setAuditoriaActualizacion(entidad, contexto);
+        return invitacionDao.save(entidad);
     }
 
     @Override
@@ -132,7 +157,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     }
 
     @Override
-    public void eliminar(Long aLong, Contexto contexto) {
+    public void eliminar(Long id, Contexto contexto) {
 
     }
 }
