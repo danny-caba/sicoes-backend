@@ -1,5 +1,8 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,12 +10,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.Division;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
+import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
@@ -30,7 +37,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     private RequerimientoDao requerimientoDao;
 
     @Autowired
-    private ListadoDetalleDao listadoDetalleDao;
+    private ListadoDetalleService listadoDetalleService;
 
     @Override
     public Requerimiento guardar(Requerimiento requerimiento, Contexto contexto) {
@@ -39,15 +46,25 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
+    public Requerimiento obtener(Long aLong, Contexto contexto) {
+        return null;
+    }
+
+    @Override
+    public void eliminar(Long aLong, Contexto contexto) {
+
+    }
+
+    @Override
     @Transactional
     public Page<Requerimiento> listar(FiltroRequerimientoDTO filtro, Pageable pageable, Contexto contexto) {
         Date fechaInicio = filtro.getFechaInicio();
         Date fechaFin = filtro.getFechaFin();
         if (fechaInicio != null && fechaInicio.after(new Date())) {
-            throw new ValidacionException("E002002");
+            throw new ValidacionException(ERROR_FECHA_INICIO_ANTES_HOY);
         }
         if (fechaInicio != null && fechaFin != null && fechaFin.before(fechaInicio)) {
-            throw new ValidacionException("E002001");
+            throw new ValidacionException(ERROR_FECHA_FIN_ANTES_INICIO);
         }
         if (fechaInicio != null) fechaInicio = DateUtil.getInitDay(fechaInicio);
         if (fechaFin != null) fechaFin = DateUtil.getEndDay(fechaFin);
@@ -79,22 +96,22 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     @Override
     @Transactional
     public Requerimiento archivar(Long id, String observacion, Contexto contexto) {
-        Requerimiento entidad = requerimientoDao.findById(id).orElseThrow(() -> new RuntimeException("Requerimiento no encontrado"));
-        ListadoDetalle estadoArchivado = listadoDetalleDao.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "ARCHIVADO");
+        Requerimiento requerimiento = requerimientoDao.findById(id)
+                .orElseThrow(() -> new RuntimeException("Requerimiento no encontrado"));
+        ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.ARCHIVADO);
         if (estadoArchivado == null) {
             throw new IllegalStateException("Estado ARCHIVADO no configurado en ListadoDetalle");
         }
-        entidad.setEstado(estadoArchivado);
-        entidad.setDeObservacion(observacion);
-        entidad.setIpActualizacion(contexto.getIp());
-        entidad.setUsuActualizacion(contexto.getUsuario().getUsuario());
-        entidad.setFecActualizacion(new Date());
-        return requerimientoDao.save(entidad);
+        requerimiento.setEstado(estadoArchivado);
+        requerimiento.setDeObservacion(observacion);
+        AuditoriaUtil.setAuditoriaRegistro(requerimiento, contexto);
+        return requerimientoDao.save(requerimiento);
     }
 
     @Override
     public Optional<Requerimiento> obtenerPorId(Long id) {
-        return requerimientoDao.buscarPorId(id);
+        return requerimientoDao.obtener(id);
     }
 
 }

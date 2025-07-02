@@ -47,12 +47,6 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
                                              Pageable pageable);
 
     @Query("SELECT r FROM Requerimiento r WHERE r.id = :id")
-    Optional<Requerimiento> buscarPorId(@Param("id") Long id);
+    Optional<Requerimiento> obtener(@Param("id") Long id);
 
-    @Query(value="select r from Requerimiento r "
-            + "left join fetch s.estado e "
-            + "left join fetch s.division d "
-            + "left join fetch s.perfil p "
-            + "where r.idRequerimiento = :idRequerimiento ")
-    Requerimiento obtener(Long idRequerimiento);
 }

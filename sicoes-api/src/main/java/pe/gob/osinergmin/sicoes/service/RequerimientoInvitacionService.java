@@ -7,7 +7,7 @@ import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
-public interface RequerimientoInvitacionService extends BaseService<RequerimientoInvitacion, Long>{
+public interface RequerimientoInvitacionService extends BaseService<RequerimientoInvitacion, Long> {
 
     RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacionDTO, Contexto contexto);
 

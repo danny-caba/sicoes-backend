@@ -8,7 +8,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.Optional;
 
-public interface RequerimientoService {
+public interface RequerimientoService  extends BaseService<Requerimiento, Long> {
 
     Requerimiento guardar(Requerimiento requerimiento, Contexto contexto);
 

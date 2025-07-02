@@ -1,5 +1,8 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +55,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         try {
             // Validación rápida para evitar el error ORA-01400
             if (requerimientoInvitacion.getFlagActivo() == null) {
-                requerimientoInvitacion.setFlagActivo("1"); // o el valor por defecto definido
+                requerimientoInvitacion.setFlagActivo(Constantes.ESTADO.ACTIVO); // o el valor por defecto definido
             }
 
             AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
@@ -75,7 +78,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             throw new RuntimeException("RequerimientoInvitacion no encontrado con ID: " + id);
         }
         RequerimientoInvitacion entidad = optional.get();
-        entidad.setFlagActivo("0");
+        entidad.setFlagActivo(Constantes.ESTADO.INACTIVO);
         AuditoriaUtil.setAuditoriaActualizacion(entidad, contexto);
         return invitacionDao.save(entidad);
     }
@@ -85,9 +88,14 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                                                  String fechaFinInvitacion, Contexto contexto, Pageable pageable) {
         Date fechaInicio = DateUtil.getInitDay(fechaInicioInvitacion);
         Date fechaFin = DateUtil.getEndDay(fechaFinInvitacion);
+        if (fechaInicio != null && fechaInicio.after(new Date())) {
+            throw new ValidacionException(ERROR_FECHA_INICIO_ANTES_HOY);
+        }
+        if (fechaInicio != null && fechaFin != null && fechaFin.before(fechaInicio)) {
+            throw new ValidacionException(ERROR_FECHA_FIN_ANTES_INICIO);
+        }
         Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
         Long idSupervisora = supervisora.getIdSupervisora();
-        //TODO: formatear saldo en tiempo y fecha de cancelacion (fecha invi +3 dias)
         return invitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);
     }
 
@@ -103,8 +111,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         boolean esAprobacion = false;
         ListadoDetalle estadoInvitacion = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, estado.getCodigo());
-        Requerimiento requerimiento = requerimientoDao.obtener(invitacion.getRequerimiento().getIdRequerimiento());
-
+        Requerimiento requerimiento = requerimientoDao.obtener(invitacion.getRequerimiento().getIdRequerimiento())
+                .orElseThrow(() -> new RuntimeException("Requerimiento no encontrado con ID: " + id));
         if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
@@ -133,20 +141,20 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             aprobacion.setUsuario(contexto.getUsuario());
             aprobacion.setEstado(estadoAprobacion);
             AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
-            aprobacion = aprobacionDao.save(aprobacion);
+            aprobacionDao.save(aprobacion);
 
             //Flag notificacion aceptado
             esAprobacion = true;
 
             //Notificacion Asignacion Requerimiento
-            notificacionService.enviarMensajeAsignacionRequerimiento(requerimiento, contexto);
+            //notificacionService.enviarMensajeAsignacionRequerimiento(requerimiento, contexto);
 
         } else if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.RECHAZADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaRechazo(new Date());
             AuditoriaUtil.setAuditoriaRegistro(invitacion, contexto);
-            invitacion = invitacionDao.save(invitacion);
+            invitacionDao.save(invitacion);
         }
 
         //select req para el response

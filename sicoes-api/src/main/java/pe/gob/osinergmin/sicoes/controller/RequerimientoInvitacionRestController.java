@@ -21,8 +21,6 @@ import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/invitaciones")
 @Validated
@@ -57,6 +55,7 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
     }
 
     @PatchMapping("/{id}/evaluar")
+    @Raml("requerimiento.obtener.properties")
     public Requerimiento evaluarInvitacion(
             @PathVariable Long  id,
             @RequestBody ListadoDetalleDTO estado) {

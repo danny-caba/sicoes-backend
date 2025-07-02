@@ -671,7 +671,9 @@ public class Constantes {
 		public static final String MENSAJE_VALIDACION_CORREO = "E001006";
 		
 		public static final String ERROR_EN_SERVICIO = "E001007";
-		
+
+		public static final String ERROR_FECHA_FIN_ANTES_INICIO = "E002001";
+		public static final String ERROR_FECHA_INICIO_ANTES_HOY = "E002002";
 		
 		public static final String AUTENTICACION_METODO_NO_SOPORTADO = "V00501";
 		public static final String AUTENTICACION_SIN_CREDENCIALES = "V00502";
