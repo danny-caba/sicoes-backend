@@ -32,6 +32,8 @@ import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.Proceso;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
@@ -1036,5 +1038,49 @@ public class NotificacionServiceImpl implements NotificacionService{
         }
 		
 		logger.info("enviarMensajeEvaluacionPendiente fin");
-	}	
+	}
+
+	@Override
+	public void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean esAprobacion, Contexto contexto) {
+		String asunto, fecha;
+		Date valorFecha;
+		if(esAprobacion) {
+			asunto = "ACEPTACIÓN";
+			fecha = "fechaAceptacion";
+			valorFecha = invitacion.getFechaAceptacion();
+		} else {
+			asunto = "RECHAZO";
+			fecha = "fechaCancelacion";
+			valorFecha = invitacion.getFechaRechazo();
+		}
+		Notificacion notificacion = new Notificacion();
+		String correos = invitacion.getSupervisora().getCorreo()
+								.concat(";")
+								.concat("correo coordinador");
+		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setAsunto(asunto + " DE INVITACIÓN SUPERVISOR PERSONA NATURAL");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", invitacion.getSupervisora().getNombreRazonSocial());
+		ctx.setVariable("division", invitacion.getRequerimiento().getDivision().getDeDivision());
+		ctx.setVariable("fechaInvitacion", invitacion.getFechaInvitacion());
+		ctx.setVariable(fecha, valorFecha);
+		String htmlContent = templateEngine.process("26-aprobacion-invitacion.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+
+	}
+
+	@Override
+	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+
+	}
+
 }

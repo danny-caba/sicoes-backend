@@ -89,5 +89,4 @@ public interface ListadoDetalleDao extends JpaRepository<ListadoDetalle, Long> {
 			+ "where d.idDivision = :idDivision")
 	List<ListadoDetalle> listarPerfilesDetallePorDivision(Long idDivision);
 
-	
 }

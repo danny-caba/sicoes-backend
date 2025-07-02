@@ -7,6 +7,8 @@ import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
@@ -39,5 +41,7 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajeAsignacionEvaluacion04(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeSolicitudRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
-
+	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean estado, Contexto contexto);
+	void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto);
+	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto);
 }
