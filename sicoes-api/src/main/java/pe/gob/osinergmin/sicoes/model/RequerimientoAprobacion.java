@@ -49,7 +49,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private ListadoDetalle estado;
 
     @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="FL_FIRMADO_LD")
+    @JoinColumn(name="FL_FIRMADO")
     private ListadoDetalle flagFirmado;
 
     @Column(name = "DE_OBSERVACION")

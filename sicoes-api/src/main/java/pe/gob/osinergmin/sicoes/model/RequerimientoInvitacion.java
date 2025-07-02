@@ -28,6 +28,9 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQ_INVITACION")
     private Long idRequerimientoInvitacion;
 
+    @Column(name = "CO_UUID")
+    private String requerimientoInvitacionUuid;
+
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="ID_REQUERIMIENTO")
     private Requerimiento requerimiento;
@@ -72,6 +75,14 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     public void setIdRequerimientoInvitacion(Long idRequerimientoInvitacion) {
         this.idRequerimientoInvitacion = idRequerimientoInvitacion;
+    }
+
+    public String getRequerimientoInvitacionUuid() {
+        return requerimientoInvitacionUuid;
+    }
+
+    public void setRequerimientoInvitacionUuid(String requerimientoInvitacionUuid) {
+        this.requerimientoInvitacionUuid = requerimientoInvitacionUuid;
     }
 
     public Requerimiento getRequerimiento() {

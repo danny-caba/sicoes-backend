@@ -28,6 +28,9 @@ public class Requerimiento extends BaseModel implements Serializable {
     @Column(name = "ID_REQUERIMIENTO")
     private Long idRequerimiento;
 
+    @Column(name = "CO_UUID")
+    private String requerimientoUuid;
+
     @Column(name="NU_EXPEDIENTE")
     private String numeroExpediente;
 
@@ -65,6 +68,14 @@ public class Requerimiento extends BaseModel implements Serializable {
 
     public void setIdRequerimiento(Long idRequerimiento) {
         this.idRequerimiento = idRequerimiento;
+    }
+
+    public String getRequerimientoUuid() {
+        return requerimientoUuid;
+    }
+
+    public void setRequerimientoUuid(String requerimientoUuid) {
+        this.requerimientoUuid = requerimientoUuid;
     }
 
     public String getNumeroExpediente() {
