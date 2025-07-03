@@ -3,6 +3,8 @@ package pe.gob.osinergmin.sicoes.controller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,11 @@ import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/invitaciones")
 @Validated
@@ -29,36 +36,39 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
     private static final Logger logger = LogManager.getLogger(RequerimientoInvitacionRestController.class);
 
     @Autowired
-    private RequerimientoInvitacionService invitacionService;
+    private RequerimientoInvitacionService requerimientoInvitacionService;
 
     @PostMapping
     @Raml("invitacion.guardar.properties")
-    public RequerimientoInvitacion guardarInvitacion(@RequestBody RequerimientoInvitacion requerimientoInvitacionDTO) {
-        return invitacionService.guardar(requerimientoInvitacionDTO, getContexto());
+    public RequerimientoInvitacion guardarRequerimientoInvitacion(@RequestBody RequerimientoInvitacion requerimientoInvitacion) {
+        return requerimientoInvitacionService.guardar(requerimientoInvitacion, getContexto());
     }
 
     @DeleteMapping("/{uid}/eliminar")
-    @Raml("invitacion.eliminar.properties")
-    public RequerimientoInvitacion eliminarInvitacion(@PathVariable("uid") Long id) {
-        return invitacionService.eliminar_2(id, getContexto());
+    @Raml("requerimientoInvitacion.eliminar.properties")
+    public Map<String, Object> eliminarRequerimientoInvitacion(@PathVariable("uid") Long id) {
+        logger.info("Eliminando invitación con ID: {}", id);
+        requerimientoInvitacionService.eliminar(id, getContexto());
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", 200);
+        response.put("mensaje", "Registro eliminado");
+        return response;
     }
+
 
     @GetMapping
     @Raml("requerimientoInvitacion.obtener.properties")
     public Page<RequerimientoInvitacion> obtener(
-            @RequestParam(required=false) Long idEstado,
-            @RequestParam(required=false) String fechaInicioInvitacion,
-            @RequestParam(required=false) String fechaFinInvitacion,
+            @RequestParam(required = false) Long idEstado,
+            @RequestParam(required = false) String fechaInicioInvitacion,
+            @RequestParam(required = false) String fechaFinInvitacion,
             Pageable pageable) {
-        return invitacionService.obtener(idEstado, fechaInicioInvitacion,
-                fechaFinInvitacion, getContexto(), pageable);
+        return requerimientoInvitacionService.obtener(idEstado, fechaInicioInvitacion, fechaFinInvitacion, getContexto(), pageable);
     }
 
     @PatchMapping("/{id}/evaluar")
     @Raml("requerimiento.obtener.properties")
-    public Requerimiento evaluarInvitacion(
-            @PathVariable Long  id,
-            @RequestBody ListadoDetalleDTO estado) {
-        return invitacionService.evaluar(id, estado, getContexto());
+    public Requerimiento evaluarRequerimientoInvitacion(@PathVariable Long id, @RequestBody ListadoDetalleDTO estado) {
+        return requerimientoInvitacionService.evaluar(id, estado, getContexto());
     }
 }
