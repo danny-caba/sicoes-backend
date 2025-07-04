@@ -628,7 +628,8 @@ public class Constantes {
 			public static final String EN_APROBACION 				= "EN_APROBACION";
 			public static final String EN_PROCESO 					= "EN_PROCESO";
 			public static final String CONCLUIDO 					= "EN_PROCESO";
-			public static final String ARCHIVADO 					= "CONCLUIDO";
+			public static final String ARCHIVADO 					= "ARCHIVADO";
+			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
 
 		public static final class ESTADO_REQ_INVITACION {
@@ -655,8 +656,9 @@ public class Constantes {
 
 		public static final class ESTADO_APROBACION {
 			public static final String CODIGO 						= "ESTADO_APROBACION";
-			public static final String ASIGNADO 					= "ACEPTADO";
-			public static final String APROBADO 					= "RECHAZADO";
+			public static final String ASIGNADO 					= "ASIGNADO";
+			public static final String APROBADO 					= "APROBADO";
+			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
 	}
 	
@@ -918,6 +920,8 @@ public class Constantes {
 		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
 		public static final String DJ_AUSENTE = "V01017";
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01018";
+		public static final String SIAF_NO_ENVIADO = "V01019";
+		public static final String REQUERIMIENTO_NO_ENCONTRADO = "V01020";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
