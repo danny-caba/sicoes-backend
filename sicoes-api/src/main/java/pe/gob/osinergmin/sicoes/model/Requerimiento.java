@@ -148,16 +148,6 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.reqInvitaciones = reqInvitaciones;
     }
 
-    @JsonProperty("invitacionActiva")
-    @Transient
-    public RequerimientoInvitacion getInvitacionActiva() {
-        if (reqInvitaciones == null) return null;
-        return reqInvitaciones.stream()
-                .filter(inv -> "1".equals(inv.getFlagActivo()))
-                .findFirst()
-                .orElse(null);
-    }
-
     public Usuario getUsuarioCreador() {
         return usuarioCreador;
     }

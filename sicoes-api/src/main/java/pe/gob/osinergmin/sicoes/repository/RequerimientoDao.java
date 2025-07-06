@@ -20,8 +20,7 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
             "LEFT JOIN FETCH r.perfil " +
             "LEFT JOIN FETCH r.estado " +
             "LEFT JOIN FETCH r.reqInvitaciones i " +
-            "WHERE (i IS NULL OR i.flagActivo = '1') " +
-            "AND (:division IS NULL OR r.division = :division) " +
+            "WHERE (:division IS NULL OR r.division = :division) " +
             "AND (:perfil IS NULL OR r.perfil = :perfil) " +
             "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
@@ -30,8 +29,7 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
             "ORDER BY r.nuExpediente ASC",
             countQuery = "SELECT COUNT(DISTINCT r) FROM Requerimiento r " +
                     "LEFT JOIN r.reqInvitaciones i " +
-                    "WHERE (i IS NULL OR i.flagActivo = '1') " +
-                    "AND (:division IS NULL OR r.division = :division) " +
+                    "WHERE (:division IS NULL OR r.division = :division) " +
                     "AND (:perfil IS NULL OR r.perfil = :perfil) " +
                     "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +

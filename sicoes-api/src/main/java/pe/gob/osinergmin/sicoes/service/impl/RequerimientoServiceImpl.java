@@ -108,71 +108,33 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 requerimiento,
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
         );
-
-        // Lista de archivos que se enviarán a Alfresco/SIGED
         List<File> archivosAlfresco = new ArrayList<>();
-
-        // Genera el archivo (Jasper PDF) para este requerimiento
         Archivo archivo = archivoRequerimiento(requerimiento, contexto);
-
-        // Guarda el archivo generado (en la tabla ARCHIVO, por ejemplo)
         archivoService.guardarXRequerimiento(archivo, contexto);
-
-        // Convierte el archivo `Archivo` en un `File` físico en disco para adjuntarlo a SIGED
         File file = fileRequerimiento(archivo, requerimiento.getIdRequerimiento());
-
-        // Agrega el archivo físico a la lista que se enviará a SIGED
         archivosAlfresco.add(file);
-
-        // Llama al API de SIGED para crear el expediente con los archivos adjuntos
         ExpedienteOutRO expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
-
-        // Guarda en el requerimiento el número de expediente devuelto por SIGED
         requerimiento.setNuExpediente(String.valueOf(expedienteOutRO));
-
-        // Devuelve el requerimiento ya persistido y vinculado con expediente
+        requerimiento = requerimientoDao.save(requerimiento);
         return requerimiento;
     }
 
     private ExpedienteInRO crearExpediente(Requerimiento requerimiento, Integer codigoTipoDocumento) {
-        // Crea una nueva instancia del expediente a enviar a SIGED
         ExpedienteInRO expediente = new ExpedienteInRO();
-
-        // Crea una nueva instancia del documento que irá dentro del expediente
         DocumentoInRO documento = new DocumentoInRO();
-
-        // Establece el código del proceso según lo configurado en el properties
         expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
-
-        // Asocia el documento creado al expediente
         expediente.setDocumento(documento);
-
-        // Si el requerimiento ya tiene un número de expediente (en caso de reenvío), se reutiliza
         if (requerimiento.getNuExpediente() != null) {
             expediente.setNroExpediente(requerimiento.getNuExpediente());
         }
-
-        // Define el asunto del documento, con un texto configurado (ej. "Solicitud de Requerimiento...")
         documento.setAsunto(SOLICITUD_REQUERIMIENTO_CONTRATO_PN);
-
-        // Establece la sigla del proyecto que invoca el servicio SIGED (se usa en auditoría SIGED)
         documento.setAppNameInvokes(SIGLA_PROYECTO);
-
-        // Establece el tipo de documento (ej: solicitud, informe, etc.) recibido como parámetro
         documento.setCodTipoDocumento(codigoTipoDocumento);
-
-        // Número de folios del documento, usualmente 1 para PDFs generados automáticamente
         documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
-
-        // ID del usuario que crea el expediente (configurado en properties)
         documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
-
-        // Si el tipo de documento corresponde a un informe con firma, se asigna el firmante configurado
         if (Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.respuesta.solicitud.pn")) == codigoTipoDocumento) {
             documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
         }
-
-        // Devuelve el expediente completamente armado
         return expediente;
     }
 
