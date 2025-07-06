@@ -10,33 +10,32 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import pe.gob.osinergmin.sicoes.model.Division;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Requerimiento;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
+import pe.gob.osinergmin.sicoes.model.*;
 
 @Repository
 public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
 
-    @Query(value = "SELECT r FROM Requerimiento r " +
+    @Query(value = "SELECT DISTINCT r FROM Requerimiento r " +
             "LEFT JOIN FETCH r.division " +
             "LEFT JOIN FETCH r.perfil " +
             "LEFT JOIN FETCH r.estado " +
-            "LEFT JOIN r.reqInvitaciones i " +
-            "WHERE (:division IS NULL OR r.division = :division) " +
+            "LEFT JOIN FETCH r.reqInvitaciones i " +
+            "WHERE (i IS NULL OR i.flagActivo = '1') " +
+            "AND (:division IS NULL OR r.division = :division) " +
             "AND (:perfil IS NULL OR r.perfil = :perfil) " +
             "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
             "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion) " +
             "ORDER BY r.nuExpediente ASC",
-            countQuery = "SELECT COUNT(r) FROM Requerimiento r " +
+            countQuery = "SELECT COUNT(DISTINCT r) FROM Requerimiento r " +
                     "LEFT JOIN r.reqInvitaciones i " +
-                    "WHERE (:division IS NULL OR r.division = :division) " +
+                    "WHERE (i IS NULL OR i.flagActivo = '1') " +
+                    "AND (:division IS NULL OR r.division = :division) " +
                     "AND (:perfil IS NULL OR r.perfil = :perfil) " +
                     "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
-                    "AND (:fechaInicio IS NULL or r.feRegistro>=:fechaInicio) " +
-                    "AND (:fechaFin IS NULL or r.feRegistro<=:fechaFin) " +
+                    "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
                     "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion)")
     Page<Requerimiento> listarRequerimientos(@Param("division") Division division,
                                              @Param("perfil") ListadoDetalle perfil,
@@ -48,5 +47,11 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
 
     @Query("SELECT r FROM Requerimiento r WHERE r.id = :id")
     Optional<Requerimiento> obtener(@Param("id") Long id);
+
+    @Query("select r from Requerimiento r where r.idRequerimiento=:idRequerimiento")
+    public Requerimiento obtenerRequerimiento(Long idRequerimiento);
+
+    @Query("select r.idRequerimiento from Requerimiento r where r.requerimientoUuid=:requerimientoUuid")
+    public Long obtenerId(String requerimientoUuid);
 
 }

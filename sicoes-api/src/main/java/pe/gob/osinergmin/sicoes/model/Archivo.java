@@ -109,6 +109,9 @@ public class Archivo extends BaseModel implements Serializable {
 
 	@Column(name = "ID_DET_SOLI_PERF_CONT")
 	private Long idSeccionRequisito;
+
+	@Column(name="ID_REQUERIMIENTO")
+	private Long idRequerimiento;
 	
 	@Transient
 	private MultipartFile file;
@@ -121,6 +124,9 @@ public class Archivo extends BaseModel implements Serializable {
 	
 	@Transient
 	private String propuestaUuid;
+
+	@Transient
+	private String requerimientoUuid;
 
 	public Long getIdArchivo() {
 		return idArchivo;
@@ -373,5 +379,21 @@ public class Archivo extends BaseModel implements Serializable {
 
 	public void setIdSeccionRequisito(Long idSeccionRequisito) {
 		this.idSeccionRequisito = idSeccionRequisito;
+	}
+
+	public Long getIdRequerimiento() {
+		return idRequerimiento;
+	}
+
+	public void setIdRequerimiento(Long idRequerimiento) {
+		this.idRequerimiento = idRequerimiento;
+	}
+
+	public String getRequerimientoUuid() {
+		return requerimientoUuid;
+	}
+
+	public void setRequerimientoUuid(String requerimientoUuid) {
+		this.requerimientoUuid = requerimientoUuid;
 	}
 }

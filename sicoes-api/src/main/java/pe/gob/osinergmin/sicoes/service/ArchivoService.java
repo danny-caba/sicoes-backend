@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface ArchivoService extends BaseService<Archivo, Long> {
@@ -55,5 +56,7 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	List<File> obtenerArchivoDj(Long idOtroRequisito, String procedimiento, Contexto contexto);
 	List<File> obtenerArchivoModificacion(Long idOtroRequisito, Contexto contexto);
 	List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto);
+	List<Archivo> buscarXRequerimiento(Long idSolicitud, Contexto contexto);
+	Archivo guardarXRequerimiento(Archivo archivo, Contexto contexto);
 
 }

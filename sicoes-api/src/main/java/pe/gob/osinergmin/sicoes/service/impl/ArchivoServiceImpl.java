@@ -96,6 +96,9 @@ public class ArchivoServiceImpl implements ArchivoService {
     @Autowired
     private OtroRequisitoService otroRequisitoService;
 
+	@Autowired
+	private RequerimientoService requerimientoService;
+
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
 		return archivoDao.obtener(idArchivo);
@@ -1020,5 +1023,148 @@ public class ArchivoServiceImpl implements ArchivoService {
 			archivos.addAll(archivo3);
 		}
 		return archivos;
+	}
+
+	@Override
+	public List<Archivo> buscarXRequerimiento(Long idSolicitud, Contexto contexto) {
+		return archivoDao.buscarXRequerimiento(idSolicitud,Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarXRequerimiento(Archivo archivo, Contexto contexto) {
+		boolean nuevo = archivo.getIdArchivo() == null;
+		if(archivo.getRequerimientoUuid() != null) {
+			archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
+			if(archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA)) {
+				List<Archivo> archivosExperiencia = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA,
+								archivo.getSolicitudUuid(), null, null)
+						.getContent()
+						.stream()
+						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+						.collect(Collectors.toList());
+				boolean existe = archivosExperiencia.stream()
+						.anyMatch(arch -> {
+							try {
+								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
+								if(Optional.ofNullable(archivo.getFile()).isPresent()
+										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+									InputStream nuevoArch = archivo.getFile().getInputStream();
+									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+									nuevoArch.close();
+									oldArch.close();
+									return existeArchivo;
+								} else {
+									return false;
+								}
+							} catch (Exception e) {
+								return false;
+							}
+						});
+				if(existe) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+				}
+			}
+		}
+		if (nuevo) {
+			return registrarRequerimiento(archivo, contexto);
+		} else {
+			return modificarRequerimiento(archivo, contexto);
+		}
+	}
+
+	private Archivo registrarRequerimiento(Archivo archivo, Contexto contexto) {
+		Archivo archivoBD;
+		int tamanioByte;
+		Double tamanioMB;
+		try {
+			if(archivo.getFile()!=null) {
+				tamanioByte=archivo.getFile().getBytes().length;
+			}else {
+				tamanioByte=archivo.getContenido().length;
+			}
+			tamanioMB=tamanioByte/(1024.0*1024.0);
+			logger.info("tamanio bytes : "+tamanioByte);
+			logger.info("tamanio : "+tamanioMB);
+		} catch (IOException e) {
+			logger.info(e.getMessage(),e);
+		}
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+		if (archivo.getCodigo() == null) {
+			archivo.setCodigo(UUID.randomUUID().toString());
+		}
+		if (archivo.getFile() != null) {
+			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
+			archivo.setTipo(archivo.getFile().getContentType());
+			PdfReader reader;
+			try {
+				if ("application/pdf".equals(archivo.getFile().getContentType())) {
+					reader = new PdfReader(archivo.getFile().getBytes());
+					int count = reader.getNumberOfPages();
+					archivo.setNroFolio(count * 1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				} else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(archivo.getFile().getContentType()) ||
+						"application/vnd.ms-excel".equals(archivo.getFile().getContentType())) {
+					archivo.setNroFolio(1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				}
+			} catch (Exception e) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+			}
+
+		}
+		if(archivo.getDescripcion()==null||"".equals(archivo.getDescripcion())) {
+			archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.CARGADO));
+		}else {
+			archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		}
+		archivoBD = archivoDao.save(archivo);
+		if (archivo.getFile() != null || archivo.getContenido() != null) {
+			String nombre = sigedOldConsumer.subirArchivosAlfrescoRequerimiento(archivoBD.getIdRequerimiento(), archivo);
+			archivo.setNombreAlFresco(nombre);
+			archivoBD = archivoDao.save(archivo);
+		}
+		return archivoBD;
+	}
+
+	private Archivo modificarRequerimiento(Archivo archivo, Contexto contexto) {
+		Archivo archivoBD = null;
+		archivoBD = archivoDao.obtener(archivo.getIdArchivo());
+		AuditoriaUtil.setAuditoriaRegistro(archivoBD, contexto);
+		archivoBD.setDescripcion(archivo.getDescripcion());
+		archivoBD.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		if (archivo.getFile() != null) {
+			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
+			archivoBD.setNombreReal(archivo.getNombreReal());
+			archivoBD.setTipo(archivo.getFile().getContentType());
+			if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
+				SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+				String hora = sdf2.format(new Date());
+				String nombre = reemplazarCaracteres(archivo.getNombreReal());
+				nombre=nombre.replace(".pdf", "");
+				archivoBD.setNombreReal(nombre+"-"+hora+".pdf");
+			}
+			PdfReader reader;
+			try {
+				reader = new PdfReader(archivo.getFile().getBytes());
+				int count = reader.getNumberOfPages();
+				archivoBD.setNroFolio(count * 1L);
+				archivoBD.setPeso(archivo.getFile().getSize());
+				if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
+					SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+					String hora = sdf2.format(new Date());
+					String nombre = reemplazarCaracteres(archivo.getNombreReal());
+					nombre=nombre.replace(".pdf", "");
+					archivo.setNombreReal(nombre+"-"+hora+".pdf");
+				}
+				String nombre = sigedOldConsumer.subirArchivosAlfrescoRequerimiento(archivoBD.getIdRequerimiento(),archivo);
+				archivoBD.setNombreAlFresco(nombre);
+			} catch (Exception e) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+			}
+
+		}
+		archivoDao.save(archivoBD);
+		return archivoBD;
 	}
 }

@@ -18,4 +18,6 @@ public interface RequerimientoService  extends BaseService<Requerimiento, Long> 
 
     Optional<Requerimiento> obtenerPorId(Long id);
 
+    Long obtenerId(String requerimientoUuid);
+
 }
