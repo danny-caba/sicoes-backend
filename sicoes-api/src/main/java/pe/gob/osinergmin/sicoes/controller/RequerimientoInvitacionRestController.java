@@ -54,11 +54,11 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
                 fechaFinInvitacion, getContexto(), pageable);
     }
 
-    @PatchMapping("/{id}/evaluar")
+    @PatchMapping("/{uuid}/evaluar")
     @Raml("requerimiento.obtener.properties")
     public Requerimiento evaluarInvitacion(
-            @PathVariable Long  id,
+            @PathVariable String  uuid,
             @RequestBody ListadoDetalleDTO estado) {
-        return invitacionService.evaluar(id, estado, getContexto());
+        return invitacionService.evaluar(uuid, estado, getContexto());
     }
 }

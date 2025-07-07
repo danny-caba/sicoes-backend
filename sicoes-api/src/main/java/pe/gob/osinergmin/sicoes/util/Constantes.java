@@ -19,6 +19,7 @@ public class Constantes {
 		public static final Long ACTIVO = 1L;
 		public static final Long INACTIVO = 0L;
 	}
+
 	public static final class UBIGEO{
 		public static final String PROVINCIA1="01";
 		public static final String DISTRITO1="01";
@@ -30,6 +31,10 @@ public class Constantes {
 		public static final String INACTIVO = "0";
 	}
 
+	public static final class FLAG_FIRMADO {
+		public static final String FIRMADO = "S";
+		public static final String NO_FIRMADO = "N";
+	}
 	/*public static final class PERFIL {
 		public static final Long USUARIO_EXTERNO 		= 500L;
 		public static final Long USUARIO_COORDINADOR 	= 501L;
@@ -922,6 +927,9 @@ public class Constantes {
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01018";
 		public static final String SIAF_NO_ENVIADO = "V01019";
 		public static final String REQUERIMIENTO_NO_ENCONTRADO = "V01020";
+		public static final String ESTADO_APROBACION_NO_ENVIADO = "V01021";
+		public static final String APROBACION_NO_ENCONTRADA = "V01022";
+		public static final String INVITACION_NO_ENCONTRADA = "V01023";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
