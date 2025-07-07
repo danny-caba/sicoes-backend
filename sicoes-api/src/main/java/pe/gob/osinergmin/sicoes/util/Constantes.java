@@ -752,6 +752,7 @@ public class Constantes {
 		public static final String SOLICITUD_EN_TRAMITE 		= "V00437";
 		public static final String SOLICITUD_AFILIAR_SNE		= "V00438";
 		public static final String SOLICITUD_AGREGAR_DOCUMENTOS	= "V00439";
+		public static final String REQUERIMIENTO_GUARDAR_FORMATO_04 = "V00440";
 		
 		public static final String ID_SOLICITUD_NO_ENVIADO		= "V00600";
 		public static final String P_SECTOR_NO_ENVIADO			= "V00601";
@@ -807,7 +808,6 @@ public class Constantes {
 		public static final String ESTUDIO_SIN_ARCHIVO			= "V00646";
 		public static final String GRUPOS_NO_EXISTE				= "V00647";
 		public static final String EVALUE_TODO_REQUISITOS		= "V00648";
-		public static final String FINALICE_TODO_REQUISITOS		= "V00656";
 		public static final String INGRESE_APROBADORES_TECNICOS = "V00649";
 		public static final String RESPONDA_EVALUACIONES_OBSERVADA	= "V00650";
 		public static final String P_NO_PUEDE_EDITAR_SOLICITUD  = "V00651";	
@@ -815,6 +815,9 @@ public class Constantes {
 		public static final String ERROR_EMPRESA_SANCIONADA 	= "V00653";
 		public static final String MONTO_FACTURADO_MAYOR 		= "V00654";
 		public static final String ACCESO_NO_AUTORIZADO 		= "V00655";
+		public static final String FINALICE_TODO_REQUISITOS		= "V00656";
+		public static final String ID_REQUERIMIENTO_NO_ENVIADO  = "V00657";
+
 		
 		
 		public static final String  SUSPENSION_CANCELACION_FECHA_INICIO_MAYOR= "V00700";

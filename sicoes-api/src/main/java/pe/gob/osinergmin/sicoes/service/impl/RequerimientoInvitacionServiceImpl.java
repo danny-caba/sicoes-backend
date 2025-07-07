@@ -33,7 +33,6 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitacionService {
@@ -47,7 +46,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Autowired
     private NotificacionService notificacionService;
     @Autowired
-    private RequerimientoInvitacionDao invitacionDao;
+    private RequerimientoInvitacionDao requerimientoInvitacionDao;
     @Autowired
     private RequerimientoDao requerimientoDao;
     @Autowired
@@ -56,13 +55,12 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Override
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
         try {
-            // Validación rápida para evitar el error ORA-01400
             if (requerimientoInvitacion.getFlagActivo() == null) {
                 requerimientoInvitacion.setFlagActivo(Constantes.ESTADO.ACTIVO); // o el valor por defecto definido
             }
 
             AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
-            return invitacionDao.save(requerimientoInvitacion);
+            return requerimientoInvitacionDao.save(requerimientoInvitacion);
         } catch (Exception ex) {
             logger.error("Error al guardar la invitación. Contexto: {}, Entidad: {}", contexto, requerimientoInvitacion, ex);
             throw new RuntimeException("Error al guardar la invitación", ex);
@@ -75,21 +73,25 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     }
 
     @Override
-    public RequerimientoInvitacion eliminar_2(Long id, Contexto contexto) {
-        Optional<RequerimientoInvitacion> optional = invitacionDao.findById(id);
+    public void eliminar(Long id, Contexto contexto) {
+        logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", id, contexto.getUsuario());
+        Optional<RequerimientoInvitacion> optional = requerimientoInvitacionDao.findById(id);
         if (!optional.isPresent()) {
             throw new RuntimeException("RequerimientoInvitacion no encontrado con ID: " + id);
         }
+        ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_INVITACION.ELIMINADO);
+        if (estadoEliminado == null) {
+            throw new IllegalStateException("Estado ELIMINADO no configurado en ListadoDetalle");
+        }
         RequerimientoInvitacion entidad = optional.get();
-        entidad.setFlagActivo(Constantes.ESTADO.INACTIVO);
+        entidad.setEstado(estadoEliminado);
         AuditoriaUtil.setAuditoriaActualizacion(entidad, contexto);
-        return invitacionDao.save(entidad);
+        requerimientoInvitacionDao.save(entidad);
     }
 
     @Override
     public Page<RequerimientoInvitacion> obtener(Long idEstado, String fechaInicioInvitacion,
                                                  String fechaFinInvitacion, Contexto contexto, Pageable pageable) {
-        System.out.println("uuid: " + UUID.randomUUID().toString());
         Date fechaInicio = DateUtil.getInitDay(fechaInicioInvitacion);
         Date fechaFin = DateUtil.getEndDay(fechaFinInvitacion);
         if (fechaInicio != null && fechaInicio.after(new Date())) {
@@ -100,13 +102,13 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
         Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
         Long idSupervisora = supervisora.getIdSupervisora();
-        return invitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);
+        return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Requerimiento evaluar(String  uuid, ListadoDetalleDTO estado, Contexto contexto) {
-        RequerimientoInvitacion invitacion = invitacionDao.obtenerPorUuid(uuid)
+        RequerimientoInvitacion invitacion = requerimientoInvitacionDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(INVITACION_NO_ENCONTRADA));
         if(!invitacion.getRequerimiento().getEstado().getCodigo()
                 .equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
@@ -122,7 +124,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaAceptacion(new Date());
             AuditoriaUtil.setAuditoriaRegistro(invitacion, contexto);
-            invitacion = invitacionDao.save(invitacion);
+            invitacion = requerimientoInvitacionDao.save(invitacion);
 
             //update estado a En Aprobacion al Requerimiento
             ListadoDetalle estadoRequerimiento = listadoDetalleService.obtenerListadoDetalle(
@@ -159,7 +161,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaRechazo(new Date());
             AuditoriaUtil.setAuditoriaRegistro(invitacion, contexto);
-            invitacionDao.save(invitacion);
+            requerimientoInvitacionDao.save(invitacion);
         }
 
         //Enviar notificacion
@@ -167,8 +169,4 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         return requerimiento;
     }
 
-    @Override
-    public void eliminar(Long id, Contexto contexto) {
-
-    }
 }

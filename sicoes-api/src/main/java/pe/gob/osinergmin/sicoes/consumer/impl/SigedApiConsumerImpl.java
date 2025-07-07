@@ -69,7 +69,7 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 	
 	
 	@Override
-	public ExpedienteOutRO crearExpediente(ExpedienteInRO expediente, List<File> archivos) throws Exception {
+	public ExpedienteOutRO crearExpediente(ExpedienteInRO expediente, List<File> archivos) {
 		return ExpedienteInvoker.create(SIGED_WS_URL+SIGED_PATH_CREAR_EXPEDIENTE, expediente, archivos);
 	}
 	

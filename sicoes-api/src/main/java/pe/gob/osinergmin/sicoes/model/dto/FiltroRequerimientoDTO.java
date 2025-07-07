@@ -5,13 +5,19 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 public class FiltroRequerimientoDTO {
+
     private Long division;
+
     private Long perfil;
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaInicio;
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaFin;
+
     private Long supervisora;
+
     private Long estadoAprobacion;
 
     public Long getDivision() {

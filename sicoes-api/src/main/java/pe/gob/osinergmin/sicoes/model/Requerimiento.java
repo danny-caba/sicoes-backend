@@ -1,20 +1,10 @@
 package pe.gob.osinergmin.sicoes.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +31,7 @@ public class Requerimiento extends BaseModel implements Serializable {
     private ListadoDetalle estado;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name = "FE_REGISTRO")
     private Date feRegistro;
 
@@ -64,8 +54,11 @@ public class Requerimiento extends BaseModel implements Serializable {
     @Column(name = "NU_SIAF")
     private String nuSiaf;
 
-    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequerimientoInvitacion> reqInvitaciones;
+
+    @Transient
+    private Usuario usuarioCreador;
 
     public Long getIdRequerimiento() {
         return idRequerimiento;
@@ -153,6 +146,14 @@ public class Requerimiento extends BaseModel implements Serializable {
 
     public void setReqInvitaciones(List<RequerimientoInvitacion> reqInvitaciones) {
         this.reqInvitaciones = reqInvitaciones;
+    }
+
+    public Usuario getUsuarioCreador() {
+        return usuarioCreador;
+    }
+
+    public void setUsuarioCreador(Usuario usuarioCreador) {
+        this.usuarioCreador = usuarioCreador;
     }
 
 }

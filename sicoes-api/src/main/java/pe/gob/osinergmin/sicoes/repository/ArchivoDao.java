@@ -248,4 +248,9 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 		+ "where a.idOtroRequisito = :idOtroRequisito ")
 	List<Archivo> obtenerArchivoDjAsociado(Long idOtroRequisito);
 
+	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+ "where a.idRequerimiento=:idRequerimiento and a.estado.codigo=:codigoEstadoArchivo")
+	public List<Archivo> buscarXRequerimiento(Long idRequerimiento,String codigoEstadoArchivo);
+
 }

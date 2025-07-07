@@ -20,4 +20,6 @@ public interface SigedOldConsumer {
 	public Long obtenerIdArchivos(String numeroExpediente, String nombreUsuario) throws Exception;
 	
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital();
+
+	public String subirArchivosAlfrescoRequerimiento(Long idRequerimiento,Archivo archivo);
 }
