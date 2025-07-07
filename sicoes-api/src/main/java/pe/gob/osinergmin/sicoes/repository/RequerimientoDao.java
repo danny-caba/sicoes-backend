@@ -49,9 +49,6 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
     @Query("SELECT r FROM Requerimiento r WHERE r.id = :id")
     Optional<Requerimiento> obtener(@Param("id") Long id);
 
-    @Query("select r from Requerimiento r where r.idRequerimiento=:idRequerimiento")
-    Requerimiento obtenerRequerimiento(Long idRequerimiento);
-
     @Query("select r.idRequerimiento from Requerimiento r where r.requerimientoUuid=:requerimientoUuid")
     Long obtenerId(String requerimientoUuid);
 

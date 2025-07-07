@@ -11,7 +11,10 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.SIAF_NO_EN
 import gob.osinergmin.siged.remote.rest.ro.in.DocumentoInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
-import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -23,10 +26,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
+import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
@@ -37,6 +43,7 @@ import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
+import pe.gob.osinergmin.sicoes.util.ArchivoUtil;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -44,11 +51,19 @@ import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.transaction.Transactional;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RequerimientoServiceImpl implements RequerimientoService {

@@ -18,7 +18,7 @@ public interface RepresentanteDao extends JpaRepository<Representante, Long> {
 	
 	@Query("select r from Representante r "
 			+ "where r.idRepresentante=:idRepresentante")
-	public Representante obtener(Long idRepresentante);
+	Representante obtener(Long idRepresentante);
 
 	@Query(value="select r from Representante r ",
 			countQuery = "select count(r) from Representante r ")			
