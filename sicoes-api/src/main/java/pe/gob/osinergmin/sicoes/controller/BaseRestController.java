@@ -38,6 +38,7 @@ public class BaseRestController {
 		
 		Usuario usuario = null;
 //		String produccion = env.getProperty("produccion");
+		//usuario = usuarioService.buscarUsuario("BADANIYA");//TODO:BORRAR!!!!!
 		try {
 //			if (Constantes.FLAG.ACTIVO.toString().equals(produccion)) {
 				Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

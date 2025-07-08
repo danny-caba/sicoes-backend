@@ -31,6 +31,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 		http.authorizeRequests().antMatchers("/**.html").permitAll().antMatchers("/**.jsp").permitAll()
 				.antMatchers("/api/oauth/**").permitAll().antMatchers(HttpMethod.GET, "/api/supervisora-perfiles")
 				.permitAll().antMatchers(HttpMethod.GET, "/api/supervisora-perfiles/**").permitAll()
+				.antMatchers("/**").permitAll() //Luego eliminar
 				.antMatchers(HttpMethod.GET, "/api/formato-publico/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/api/listado-publico").permitAll()
 				.antMatchers(HttpMethod.GET, "/api/listado-publico/**").permitAll()
