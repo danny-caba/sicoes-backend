@@ -196,7 +196,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(), archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null , archivo);
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -233,7 +233,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -776,6 +776,24 @@ public class ArchivoServiceImpl implements ArchivoService {
 			return modificar(archivo, contexto);
 		}
 	}
+	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto) {
+		boolean nuevo = archivo.getIdArchivo() == null;
+		if(archivo.getSolicitudUuid() != null) {
+			archivo.setIdSolicitud(solicitudService.obtenerId(archivo.getSolicitudUuid()));
+		}
+		if(archivo.getPropuestaUuid() != null) {
+			archivo.setIdPropuesta(propuestaService.obtener(archivo.getPropuestaUuid(),contexto).getIdPropuesta());
+		}
+		if (nuevo) {
+			cargarAbsolucionExcel(idProceso, archivo, contexto);
+			return registrar(archivo, contexto);
+		} else {
+			return modificar(archivo, contexto);
+		}
+	}
 
 	@Override
 	public Archivo obtenerArchivoXlsPorProceso(Long idProceso) {
@@ -816,16 +834,16 @@ public class ArchivoServiceImpl implements ArchivoService {
 		if (archivo == null) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
 		}
-//		try {
-//			Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
+		// try {
+		// 	Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
 
-//			if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
-//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-//			}
-//		} catch (NumberFormatException e) {
-//			logger.error(e.getMessage(), e);
-//			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-//		}
+		// 	if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
+		// 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+		// 	}
+		// } catch (NumberFormatException e) {
+		// 	logger.error(e.getMessage(), e);
+		// 	throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+		// }
 		archivoDao.deleteById(archivo.getIdArchivo());
 
 	}
@@ -901,6 +919,62 @@ public class ArchivoServiceImpl implements ArchivoService {
 		}
 
 		return file;
+	}
+	
+	public void cargarAbsolucionExcel(Long idProceso, Archivo archivo, Contexto contexto) {
+	    Proceso procesoDB = procesoService.obtener(idProceso, contexto);
+	    ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(procesoDB);
+	    
+	    File fichero = null;
+		try {
+			fichero = convertirMultipartFileAFileExcel(archivo);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    boolean existiaAntes = fichero.exists(); 
+
+	    List<File> archivosAlfresco = Collections.singletonList(fichero);
+
+	    DocumentoOutRO doc = null;
+	    if (existiaAntes) {
+	        try {
+				doc = sigedApiConsumer.agregarDocumentoVersionar(expedienteInRO, archivosAlfresco);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    } else {
+	        try {
+				doc = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    }
+	    
+	    if (doc.getResultCode() != 1) {
+	        throw new ValidacionException(
+	            Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO,
+	            doc.getMessage()
+	        );
+	    }
+	}
+
+	public File convertirMultipartFileAFileExcel(Archivo archivo) throws IOException {
+	    MultipartFile mf = archivo.getFile();
+	    File file = new File(mf.getOriginalFilename());
+
+	    boolean existiaAntes = file.exists();
+
+	    try (FileOutputStream fos = new FileOutputStream(file)) {
+	        fos.write(mf.getBytes());
+	    } catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	    if (existiaAntes) {
+	        logger.info("El archivo ya existía y se va a versionar: " + file.getName());
+	    }
+
+	    return file;
 	}
 
 	public ExpedienteInRO crearExpedienteAgregarDocumentos(Proceso proceso) {
@@ -1021,4 +1095,220 @@ public class ArchivoServiceImpl implements ArchivoService {
 		}
 		return archivos;
 	}
+	
+	@Transactional
+	public Archivo guardarArchivoContrato(Long idContrato, String tipoRequisito, MultipartFile file, Contexto contexto) {
+		if (file == null || file.isEmpty()) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENVIADO);
+		}
+
+		String originalFileName = reemplazarCaracteres(file.getOriginalFilename());
+		String uniqueCode = UUID.randomUUID().toString(); // co_archivo
+		
+		Archivo archivo = new Archivo();
+		archivo.setIdContrato(idContrato);
+		archivo.setFile(file);
+
+		ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+		archivo.setEstado(estadoLd);
+
+		archivo.setNombre(tipoRequisito);
+		archivo.setNombreReal(originalFileName);
+		archivo.setCodigo(uniqueCode);
+		archivo.setTipo(file.getContentType());
+		archivo.setPeso(file.getSize());
+
+		try {
+			if ("application/pdf".equals(file.getContentType())) {
+				PdfReader reader = new PdfReader(file.getBytes());
+				int count = reader.getNumberOfPages();
+				archivo.setNroFolio(count * 1L);
+			} else {
+				archivo.setNroFolio(1L);
+			}
+		} catch (Exception e) {
+			logger.error("Error al leer el archivo para obtener el número de folios: " + e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+		}
+
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+
+		Archivo archivoGuardadoBD = archivoDao.save(archivo);
+
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, archivo);
+		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
+		
+		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
+
+		logger.info("Archivo registrado en DB con ID: " + archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);
+		
+		Archivo dto = new Archivo();
+		dto.setIdArchivo(archivoGuardadoBD.getIdArchivo());
+		dto.setIdContrato(archivoGuardadoBD.getIdContrato());
+		dto.setNombre(archivoGuardadoBD.getNombre());
+		dto.setNombreReal(archivoGuardadoBD.getNombreReal());
+		dto.setNombreAlFresco(archivoGuardadoBD.getNombreAlFresco());
+		dto.setCodigo(archivoGuardadoBD.getCodigo());
+		dto.setTipo(archivoGuardadoBD.getTipo());
+		dto.setPeso(archivoGuardadoBD.getPeso());
+		
+		if (archivoGuardadoBD instanceof BaseModel) {
+            BaseModel baseModel = (BaseModel) archivoGuardadoBD;
+            dto.setFecCreacion(baseModel.getFecCreacion());
+            dto.setIpCreacion(baseModel.getIpCreacion());
+        }
+		
+		if (archivoGuardadoBD.getEstado() != null) {
+			ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+			dto.setEstado(estado);
+		}
+		
+		return dto;
+	}
+
+	@Transactional(readOnly = true)
+	public List<Archivo> obtenerArchivosPorContrato(Long idContrato) { // Changed return type to List<ArchivoDTO>
+		List<Archivo> archivos = archivoDao.findByIdContrato(idContrato);
+		Long correlativo = 1L, version = 1L;
+		return archivos.stream()
+					   .map(archivo -> {
+						   Archivo dto = new Archivo();
+						   dto.setIdArchivo(archivo.getIdArchivo());
+						   dto.setIdContrato(archivo.getIdContrato());
+						   dto.setNombre(archivo.getNombre()); 
+						   dto.setNombreReal(archivo.getNombreReal()); 
+						   dto.setNombreAlFresco(archivo.getNombreAlFresco());
+						   dto.setCodigo(archivo.getCodigo());
+						   dto.setTipo(archivo.getTipo());
+						   dto.setPeso(archivo.getPeso());
+						   dto.setCorrelativo(correlativo);
+						   dto.setVersion(version);
+						   if (archivo instanceof BaseModel) {
+							   BaseModel baseModel = (BaseModel) archivo;
+							   dto.setFecCreacion(baseModel.getFecCreacion());
+							   dto.setIpCreacion(baseModel.getIpCreacion());
+						   }
+						   if (archivo.getEstado() != null) {
+							   ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+								dto.setEstado(estado);
+						   }
+						   return dto;
+					   })
+					   .collect(Collectors.toList());
+	}
+
+	@Transactional
+	public void eliminarArchivo(Long idArchivo) {
+		Optional<Archivo> archivoOptional = archivoDao.findById(idArchivo); // Asumiendo findById
+		if (archivoOptional.isPresent()) {
+			Archivo archivo = archivoOptional.get();
+			archivoDao.deleteById(idArchivo);
+			logger.info("Archivo con ID " + idArchivo + " eliminado de la DB.");
+		} else {
+			logger.warn("Intento de eliminar archivo con ID " + idArchivo + " que no existe.");
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
+		}
+	}
+
+	@Transactional
+	public Archivo guardarArchivoPerfContrato(Long idSoliPerfCont, String tipoRequisito, MultipartFile file, Contexto contexto) {
+		if (file == null || file.isEmpty()) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENVIADO);
+		}
+
+		String originalFileName = reemplazarCaracteres(file.getOriginalFilename());
+		String uniqueCode = UUID.randomUUID().toString();
+		
+		Archivo archivo = new Archivo();
+		archivo.setIdSoliPerfCont(idSoliPerfCont);
+		archivo.setFile(file);
+
+		ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+		archivo.setEstado(estadoLd);
+
+		archivo.setNombre(tipoRequisito);
+		archivo.setNombreReal(originalFileName);
+		archivo.setCodigo(uniqueCode);
+		archivo.setTipo(file.getContentType());
+		archivo.setPeso(file.getSize());
+
+		try {
+			if ("application/pdf".equals(file.getContentType())) {
+				PdfReader reader = new PdfReader(file.getBytes());
+				int count = reader.getNumberOfPages();
+				archivo.setNroFolio(count * 1L);
+			} else {
+				archivo.setNroFolio(1L);
+			}
+		} catch (Exception e) {
+			logger.error("Error al leer el archivo para obtener el número de folios: " + e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+		}
+
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+
+		Archivo archivoGuardadoBD = archivoDao.save(archivo);
+
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
+		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
+		
+		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
+
+		logger.info("Archivo registrado en DB con ID: " + archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);
+		
+		Archivo dto = new Archivo();
+		dto.setIdArchivo(archivoGuardadoBD.getIdArchivo());
+		dto.setIdSoliPerfCont(archivoGuardadoBD.getIdSoliPerfCont());
+		dto.setNombre(archivoGuardadoBD.getNombre());
+		dto.setNombreReal(archivoGuardadoBD.getNombreReal());
+		dto.setNombreAlFresco(archivoGuardadoBD.getNombreAlFresco());
+		dto.setCodigo(archivoGuardadoBD.getCodigo());
+		dto.setTipo(archivoGuardadoBD.getTipo());
+		dto.setPeso(archivoGuardadoBD.getPeso());
+		
+		if (archivoGuardadoBD instanceof BaseModel) {
+            BaseModel baseModel = (BaseModel) archivoGuardadoBD;
+            dto.setFecCreacion(baseModel.getFecCreacion());
+            dto.setIpCreacion(baseModel.getIpCreacion());
+        }
+		
+		if (archivoGuardadoBD.getEstado() != null) {
+			ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+			dto.setEstado(estado);
+		}
+		
+		return dto;
+	}
+
+	@Transactional(readOnly = true)
+	public List<Archivo> obtenerArchivosPorPerfContrato(Long idSoliPerfCont) { // Changed return type to List<ArchivoDTO>
+		List<Archivo> archivos = archivoDao.findByIdSoliPerfCont(idSoliPerfCont);
+		Long correlativo = 1L, version = 1L;
+		return archivos.stream()
+					   .map(archivo -> {
+						   Archivo dto = new Archivo();
+						   dto.setIdArchivo(archivo.getIdArchivo());
+						   dto.setIdSoliPerfCont(archivo.getIdSoliPerfCont());
+						   dto.setNombre(archivo.getNombre()); 
+						   dto.setNombreReal(archivo.getNombreReal()); 
+						   dto.setNombreAlFresco(archivo.getNombreAlFresco());
+						   dto.setCodigo(archivo.getCodigo());
+						   dto.setTipo(archivo.getTipo());
+						   dto.setPeso(archivo.getPeso());
+						   dto.setCorrelativo(correlativo);
+						   dto.setVersion(version);
+						   if (archivo instanceof BaseModel) {
+							   BaseModel baseModel = (BaseModel) archivo;
+							   dto.setFecCreacion(baseModel.getFecCreacion());
+							   dto.setIpCreacion(baseModel.getIpCreacion());
+						   }
+						   if (archivo.getEstado() != null) {
+							   ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+								dto.setEstado(estado);
+						   }
+						   return dto;
+					   })
+					   .collect(Collectors.toList());
+	}
+
 }

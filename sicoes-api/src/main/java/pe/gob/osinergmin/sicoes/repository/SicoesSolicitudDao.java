@@ -2,10 +2,13 @@ package pe.gob.osinergmin.sicoes.repository;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -108,5 +111,11 @@ public interface SicoesSolicitudDao extends JpaRepository<SicoesSolicitud, Long>
 			+ "and trunc(s.fechaPlazoSubsanacion) < trunc(sysdate) "
 			+ "and s.estado='1'")
 	List<SicoesSolicitud>listarSolicitudesPorSubsanacion();
+	
+	@Modifying
+    @Transactional
+    @Query(value = "UPDATE SICOES_TC_SOLI_PERF_CONT SET id_doc_inicio = 1 WHERE id_soli_perf_cont IN " +
+                   "(SELECT c.id_soli_perf_cont FROM SICOES_TD_CONTRATO c WHERE id_contrato = :idContrato)", nativeQuery = true)
+    int actualizarIdDocInicioPorContrato(Long idContrato);
 
 }

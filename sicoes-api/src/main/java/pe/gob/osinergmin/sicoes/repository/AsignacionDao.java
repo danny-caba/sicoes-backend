@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.Asignacion;
+import pe.gob.osinergmin.sicoes.model.dto.HistorialContratoDto;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 
 @Repository
@@ -307,8 +308,34 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 	public List<Asignacion> obtenerAsignacionesPorGrupoYSolicitud(Long idTipo, Long idGrupo, Long idSolicitud, Long idAprobado);
 
 
-
-
+	@Query("select a from Asignacion a where a.contrato = :contratoId AND a.tipo.idListadoDetalle = :tipoLdId")
+	    Asignacion findByContratoAndTipo(Long contratoId, Long tipoLdId);
 	
+   /* @Query("SELECT a " +
+            "FROM Asignacion a " +
+            " JOIN FETCH a.tipo td   " +
+            " JOIN FETCH a.usuario u  " +
+            " JOIN FETCH a.evaluacion ev " +
+            "WHERE a.contrato = :contratoId " +
+            "  AND a.flagActivo = 1 " +
+            "ORDER BY a.fechaRegistro")
+     public List<Asignacion> findHistorialByContratao(Long contratoId);
+    */
+
+
+	@Query(value = "SELECT " 
+			+ "ld.NO_LISTADO_DETALLE  AS tipoLado, " 
+			+ "a.FE_CREACION          AS fechaCreacion, "
+			+ "u.no_usuario           AS usuario, " 
+			+ "a.FE_APROBACION        AS fechaAprobacion, "
+			+ "lde.NO_LISTADO_DETALLE AS tipoEvaluacion, " 
+			+ "a.DE_OBSERVACION       AS observacion "
+			+ "FROM sicoes_tr_asignacion a "
+			+ " INNER JOIN sicoes_tm_listado_detalle ld  ON a.ID_TIPO_LD      = ld.ID_LISTADO_DETALLE "
+			+ " INNER JOIN sicoes_tm_usuario          u   ON a.ID_USUARIO      = u.ID_USUARIO "
+			+ " INNER JOIN sicoes_tm_listado_detalle lde ON a.ID_EVALUACION_LD = lde.ID_LISTADO_DETALLE "
+			+ "WHERE a.id_contrato_ld = :contratoId " 
+			+ "AND a.FL_ACTIVO      = 1", nativeQuery = true)
+	public List<Object[]> findHistorialByContrato(Long contratoId);
 }
 

@@ -446,7 +446,9 @@ public class PropuestaProfesionalServiceImpl implements PropuestaProfesionalServ
 	public List<PropuestaProfesional> listarNoAceptados(String propuestaUuid, Contexto contexto) {
 		return propuestaProfesionalDao.listarInvitados(propuestaUuid);
 	}  
-
 	
+	public List<Object[]> obtenerPersonalPropuesto(Long idSoliPerfCont) {
+	    return propuestaProfesionalDao.findPersonalPropuesto(idSoliPerfCont);
+	}
 
 }
