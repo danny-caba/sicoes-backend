@@ -375,11 +375,11 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         ListadoDetalle estadoAprobacionRequest = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_APROBACION.CODIGO, aprobacion.getEstado().getCodigo());
         //validar si es GPPM o GSE
-        if(aprobacion.getRol().equalsIgnoreCase(Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GPPM)) {
+        if(aprobacion.getRol().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GPPM)) {
             esGppm = true;
             //Buscar Aprobacion GPPM
             ListadoDetalle grupoGppm = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_GRUPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GPPM);
+                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GPPM);
             RequerimientoAprobacion aprobacionGppm = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
                             grupoGppm.getIdListadoDetalle(), Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
                     .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
@@ -389,9 +389,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 esAprobado = true;
                 //Registrar Asignado GSE
                 ListadoDetalle tipoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.ESTADO_TIPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_TIPO_APROBACION.APROBAR);
+                        Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.APROBAR);
                 ListadoDetalle grupoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.ESTADO_GRUPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GSE);
+                        Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
                 ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
 
@@ -434,10 +434,10 @@ public class RequerimientoServiceImpl implements RequerimientoService {
             aprobacionGppm.setEstado(estadoAprobacionRequest);
             AuditoriaUtil.setAuditoriaRegistro(aprobacionGppm, contexto);
             aprobacionDao.save(aprobacionGppm);
-        } else if(aprobacion.getRol().equalsIgnoreCase(Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GSE)) {
+        } else if(aprobacion.getRol().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GSE)) {
             //Buscar Aprobacion GSE
             ListadoDetalle grupoGse = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_GRUPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GSE);
+                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
             RequerimientoAprobacion aprobacionGse = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
                             grupoGse.getIdListadoDetalle(), Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
                     .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
@@ -479,7 +479,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 notificacionService.enviarMensajeRequerimientoPorAprobar(requerimientoBD, contexto);
             } else {
                 //Enviar q GPPM rechazo
-                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GPPM, contexto);
+                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, Constantes.LISTADO.GRUPO_APROBACION.GPPM, contexto);
             }
         } else {
             if(esAprobado) {
@@ -487,7 +487,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 notificacionService.enviarMensajeCargarDocumentosRequerimiento(requerimientoBD, contexto);
             } else {
                 //Enviar q GSE rechazo
-                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GSE, contexto);
+                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, Constantes.LISTADO.GRUPO_APROBACION.GSE, contexto);
             }
         }
         return requerimientoBD;

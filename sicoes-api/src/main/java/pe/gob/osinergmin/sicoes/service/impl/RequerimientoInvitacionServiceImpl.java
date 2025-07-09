@@ -135,9 +135,9 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
             //insert en req aprobacion
             ListadoDetalle tipoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_TIPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_TIPO_APROBACION.APROBAR);
+                    Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.APROBAR);
             ListadoDetalle grupoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_GRUPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GPPM);
+                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GPPM);
             ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
             RequerimientoAprobacion aprobacion = new RequerimientoAprobacion();

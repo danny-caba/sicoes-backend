@@ -35,6 +35,7 @@ public class Constantes {
 		public static final String FIRMADO = "S";
 		public static final String NO_FIRMADO = "N";
 	}
+
 	/*public static final class PERFIL {
 		public static final Long USUARIO_EXTERNO 		= 500L;
 		public static final Long USUARIO_COORDINADOR 	= 501L;
@@ -645,14 +646,14 @@ public class Constantes {
 			public static final String ELIMINADO 					= "ELIMINADO";
 		}
 
-		public static final class ESTADO_TIPO_APROBACION {
-			public static final String CODIGO 						= "ESTADO_TIPO_APROBACION";
+		public static final class TIPO_APROBACION {
+			public static final String CODIGO 						= "TIPO_APROBACION";
 			public static final String APROBAR 						= "APROBAR";
 			public static final String FIRMAR 						= "FIRMAR";
 		}
 
-		public static final class ESTADO_GRUPO_APROBACION {
-			public static final String CODIGO 						= "ESTADO_GRUPO_APROBACION";
+		public static final class GRUPO_APROBACION {
+			public static final String CODIGO 						= "GRUPO_APROBACION";
 			public static final String JEFE_UNIDAD 					= "JEFE_UNIDAD";
 			public static final String GERENTE 						= "GERENTE";
 			public static final String GPPM 						= "GPPM";
@@ -664,6 +665,22 @@ public class Constantes {
 			public static final String ASIGNADO 					= "ASIGNADO";
 			public static final String APROBADO 					= "APROBADO";
 			public static final String DESAPROBADO 					= "DESAPROBADO";
+		}
+
+		public static final class ESTADO_FIRMA {
+			public static final String CODIGO = "ESTADO_FIRMADO";
+			public static final String PENDIENTE = "PENDIENTE";
+			public static final String FIRMADO = "FIRMADO";
+		}
+
+		public static final class TIPO_ROL_APROBACION {
+			public static final String CODIGO 						= "TIPO_ROL_APROBACION";
+			public static final String APROBADOR_TECNICO 			= "APROBADOR_TECNICO";
+		}
+
+		public static final class GRUPO_ROL_APROBACION {
+			public static final String CODIGO 						= "GRUPO_ROL_APROBACION";
+			public static final String GRUPO_1 						= "GRUPO_1";
 		}
 	}
 	
