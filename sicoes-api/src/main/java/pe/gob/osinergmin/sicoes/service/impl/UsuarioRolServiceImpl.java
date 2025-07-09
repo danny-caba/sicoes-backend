@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.UsuarioRolConfiguracion;
@@ -84,6 +85,11 @@ public class UsuarioRolServiceImpl extends BaseService implements UsuarioRolServ
 	public void actualizarEstadoUsuarioRolConf(UsuarioRolConfiguracion usuarioRolConfiguracion,Contexto contexto) {
 		AuditoriaUtil.setAuditoriaActualizacion(usuarioRolConfiguracion, contexto);
 		usuarioRolConfiguracionDao.actualizarEstadoUsuarioRolConf(usuarioRolConfiguracion.getIdUsuarioRolConfig(), usuarioRolConfiguracion.getEstadoUsuarioRolConfig(), usuarioRolConfiguracion.getUsuActualizacion(), usuarioRolConfiguracion.getIpActualizacion());
+	}
+
+	@Override
+	public List<UsuarioRol> obtenerUsuarioRolPorRol(Rol rol) {
+		return usuarioRolDao.findUsuarioRolsByRol(rol);
 	}
 
 }

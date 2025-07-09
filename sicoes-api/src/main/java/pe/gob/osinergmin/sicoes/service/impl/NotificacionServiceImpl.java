@@ -1083,4 +1083,45 @@ public class NotificacionServiceImpl implements NotificacionService{
 
 	}
 
+	@Override
+	public void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario aprobadorG2, Requerimiento requerimiento, Contexto contexto) {
+			Notificacion notificacion = new Notificacion();
+			String correos = aprobadorG2.getCorreo();
+			notificacion.setCorreo(correos);
+			notificacion.setAsunto("NOTIFICACIÓN PARA FIRMAR ARCHIVAMIENTO DE REQUERIMIENTO");
+			final Context ctx = new Context();
+			ctx.setVariable("nombre_rol_gerente", aprobadorG2.getNombreUsuario());
+			ctx.setVariable("expediente", requerimiento.getNuExpediente());
+			String htmlContent = templateEngine.process("27-solicitud-firma-archivamiento-requerimiento.html", ctx);
+			notificacion.setMensaje(htmlContent);
+			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+			ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+							Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+							Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+			notificacion.setEstado(estadoPendiente);
+			notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarRequerimientoInvitacion(Usuario usuarioSupervisorPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+			Notificacion notificacion = new Notificacion();
+			String correos = usuarioSupervisorPN.getCorreo();
+			notificacion.setCorreo(correos);
+			notificacion.setAsunto("INVITACIÓN PERSONA NATURAL S4");
+			final Context ctx = new Context();
+			ctx.setVariable("nombre_supervisor_pn", usuarioSupervisorPN.getNombreUsuario());
+			ctx.setVariable("division", requerimientoInvitacion.getRequerimiento().getDivision().getDeDivision());
+			ctx.setVariable("fechaInvitacion", requerimientoInvitacion.getFechaInvitacion());
+			ctx.setVariable("fechaCancelacion", requerimientoInvitacion.getFechaCaducidad());
+			String htmlContent = templateEngine.process("28-invitacion-requerimiento.html", ctx);
+			notificacion.setMensaje(htmlContent);
+			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+			ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+							Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+							Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+			notificacion.setEstado(estadoPendiente);
+			notificacionDao.save(notificacion);
+	}
+
+
 }

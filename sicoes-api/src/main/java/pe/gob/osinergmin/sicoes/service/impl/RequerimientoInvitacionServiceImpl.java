@@ -15,6 +15,7 @@ import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
@@ -23,12 +24,15 @@ import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
+import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -39,30 +43,59 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     @Autowired
     private SupervisoraService supervisoraService;
+
     @Autowired
     private ListadoDetalleService listadoDetalleService;
+
     @Autowired
     private NotificacionService notificacionService;
+
     @Autowired
     private RequerimientoInvitacionDao requerimientoInvitacionDao;
+
     @Autowired
     private RequerimientoDao requerimientoDao;
+
     @Autowired
     private RequerimientoAprobacionDao aprobacionDao;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     @Override
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
-        try {
-            if (requerimientoInvitacion.getFlagActivo() == null) {
-                requerimientoInvitacion.setFlagActivo(Constantes.ESTADO.ACTIVO); // o el valor por defecto definido
-            }
-
-            AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
-            return requerimientoInvitacionDao.save(requerimientoInvitacion);
-        } catch (Exception ex) {
-            logger.error("Error al guardar la invitación. Contexto: {}, Entidad: {}", contexto, requerimientoInvitacion, ex);
-            throw new RuntimeException("Error al guardar la invitación", ex);
+        ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_INVITACION.ARCHIVADO
+        );
+        if (estadoArchivado == null) {
+            throw new ValidacionException("Estado ARCHIVADO no configurado en ListadoDetalle");
         }
+        if (estadoArchivado.getCodigo().equals(requerimientoInvitacion.getEstado().getCodigo())) {
+            throw new ValidacionException("No se puede archivar una invitación en estado ARCHIVADO");
+        }
+        ListadoDetalle estadoInvitado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_INVITACION.INVITADO
+        );
+        if (estadoInvitado == null) {
+            throw new ValidacionException("Estado INVITADO no configurado en ListadoDetalle");
+        }
+        requerimientoInvitacion.setEstado(estadoInvitado);
+        Date fechaInvitacion = new Date();
+        requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
+        LocalDate fechaCaducidadLocal = fechaInvitacion.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .plusDays(3);
+        Date fechaCaducidad = Date.from(fechaCaducidadLocal
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant());
+        requerimientoInvitacion.setFechaCaducidad(fechaCaducidad);
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
+        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getRequerimiento().getSupervisora().getIdSupervisora());
+        notificacionService.enviarRequerimientoInvitacion(usuarioSupervisorPN, requerimientoInvitacion, contexto);
+        return requerimientoInvitacionDao.save(requerimientoInvitacion);
     }
 
     @Override
@@ -106,10 +139,10 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Requerimiento evaluar(Long  id, ListadoDetalleDTO estado, Contexto contexto) {
+    public Requerimiento evaluar(Long id, ListadoDetalleDTO estado, Contexto contexto) {
 
         RequerimientoInvitacion invitacion = requerimientoInvitacionDao.obtener(id);
-        if(!invitacion.getRequerimiento().getEstado().getCodigo()
+        if (!invitacion.getRequerimiento().getEstado().getCodigo()
                 .equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_EN_PROCESO);
         }
@@ -118,7 +151,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                 Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, estado.getCodigo());
         Requerimiento requerimiento = requerimientoDao.obtener(invitacion.getRequerimiento().getIdRequerimiento())
                 .orElseThrow(() -> new RuntimeException("Requerimiento no encontrado con ID: " + id));
-        if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
+        if (estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaAceptacion(new Date());
@@ -154,7 +187,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             //Notificacion Asignacion Requerimiento
             //notificacionService.enviarMensajeAsignacionRequerimiento(requerimiento, contexto);
 
-        } else if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.RECHAZADO)) {
+        } else if (estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.RECHAZADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaRechazo(new Date());

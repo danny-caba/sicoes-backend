@@ -8,16 +8,18 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.Optional;
 
-public interface RequerimientoService  extends BaseService<Requerimiento, Long> {
+public interface RequerimientoService extends BaseService<Requerimiento, Long> {
 
     Requerimiento guardar(Requerimiento requerimiento, Contexto contexto);
 
     Page<Requerimiento> listar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
 
-    Requerimiento archivar(Long id, String observacion, Contexto contexto);
+    Requerimiento archivar(Requerimiento requerimiento, Contexto contexto);
 
     Optional<Requerimiento> obtenerPorId(Long id);
 
     Long obtenerId(String requerimientoUuid);
+
+    Requerimiento obtenerPorUuid(String requerimientoUuid);
 
 }

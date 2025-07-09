@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ import pe.gob.osinergmin.sicoes.model.*;
 public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
 
     @Query(value = "SELECT DISTINCT r FROM Requerimiento r " +
-            "LEFT JOIN FETCH r.division " +
+            "LEFT JOIN FETCH r.division d " +
             "LEFT JOIN FETCH r.perfil " +
             "LEFT JOIN FETCH r.estado " +
             "LEFT JOIN FETCH r.reqInvitaciones i " +
@@ -26,24 +27,28 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
             "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion) " +
+            "AND d.idDivision IN :divisionIds " +
             "ORDER BY r.nuExpediente ASC",
             countQuery = "SELECT COUNT(DISTINCT r) FROM Requerimiento r " +
                     "LEFT JOIN r.reqInvitaciones i " +
+                    "LEFT JOIN r.division d " +
                     "WHERE (:division IS NULL OR r.division = :division) " +
                     "AND (:perfil IS NULL OR r.perfil = :perfil) " +
                     "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
                     "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
-                    "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion)")
+                    "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion) " +
+                    "AND d.idDivision IN :divisionIds")
     Page<Requerimiento> listarRequerimientos(@Param("division") Division division,
                                              @Param("perfil") ListadoDetalle perfil,
                                              @Param("fechaInicio") Date fechaInicio,
                                              @Param("fechaFin") Date fechaFin,
                                              @Param("supervisora") Supervisora supervisora,
                                              @Param("estadoAprobacion") ListadoDetalle estadoAprobacion,
+                                             @Param("divisionIds") List<Long> divisionIds,
                                              Pageable pageable);
 
-    @Query("SELECT r FROM Requerimiento r WHERE r.id = :id")
+    @Query("SELECT r FROM Requerimiento r WHERE r.idRequerimiento = :id")
     Optional<Requerimiento> obtener(@Param("id") Long id);
 
     @Query("select r from Requerimiento r where r.idRequerimiento=:idRequerimiento")
@@ -52,4 +57,5 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
     @Query("select r.idRequerimiento from Requerimiento r where r.requerimientoUuid=:requerimientoUuid")
     public Long obtenerId(String requerimientoUuid);
 
+    Requerimiento findByRequerimientoUuid(String requerimientoUuid);
 }

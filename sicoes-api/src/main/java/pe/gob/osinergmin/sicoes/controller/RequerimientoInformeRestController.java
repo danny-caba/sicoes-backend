@@ -18,12 +18,12 @@ public class RequerimientoInformeRestController extends BaseRestController {
     private static final Logger logger = LogManager.getLogger(RequerimientoInformeRestController.class);
 
     @Autowired
-    private RequerimientoInformeService informeService;
+    private RequerimientoInformeService requerimientoInformeService;
 
     @PostMapping
     @Raml("informe.guardar.properties")
     public RequerimientoInforme guardarInforme(@RequestBody RequerimientoInforme requerimientoInformeDTO) {
-        return informeService.guardar(requerimientoInformeDTO, getContexto());
+        return requerimientoInformeService.guardar(requerimientoInformeDTO, getContexto());
     }
 
 }

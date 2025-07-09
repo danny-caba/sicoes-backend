@@ -13,10 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
-import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.Raml;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/requerimientos")
@@ -36,18 +33,16 @@ public class RequerimientoRestController extends BaseRestController {
 
     @GetMapping
     @Raml("requerimiento.listar.properties")
-    public Page<Requerimiento> listarRequerimientos(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable, Contexto contexto) {
-        return requerimientoService.listar(filtros, pageable, contexto);
+    public Page<Requerimiento> listarRequerimientos(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable) {
+        return requerimientoService.listar(filtros, pageable, getContexto());
     }
 
     @PatchMapping("/{uid}/archivar")
     @Raml("requerimiento.archivar.properties")
-    public Requerimiento archivarRequerimiento(@PathVariable("uid") Long id, @RequestBody Map<String, String> body) {
-        String observacion = body.get("observacion");
-        if (observacion == null || observacion.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Observación es obligatoria");
-        }
-        return requerimientoService.archivar(id, observacion, getContexto());
+    public Requerimiento archivarRequerimiento(@PathVariable("uid") String requerimientoUuid, @RequestBody Requerimiento requerimiento) {
+        Requerimiento requerimientoDB = requerimientoService.obtenerPorUuid(requerimientoUuid);
+        requerimientoDB.setDeObservacion(requerimiento.getDeObservacion());
+        return requerimientoService.archivar(requerimientoDB, getContexto());
     }
 
     @GetMapping("/{uid}")
