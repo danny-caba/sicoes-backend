@@ -753,7 +753,7 @@ public class Constantes {
 		public static final String SOLICITUD_AFILIAR_SNE		= "V00438";
 		public static final String SOLICITUD_AGREGAR_DOCUMENTOS	= "V00439";
 		public static final String REQUERIMIENTO_GUARDAR_FORMATO_04 = "V00440";
-		
+
 		public static final String ID_SOLICITUD_NO_ENVIADO		= "V00600";
 		public static final String P_SECTOR_NO_ENVIADO			= "V00601";
 		public static final String P_SUBSECTOR_NO_ENVIADO		= "V00602";
@@ -818,7 +818,7 @@ public class Constantes {
 		public static final String FINALICE_TODO_REQUISITOS		= "V00656";
 		public static final String ID_REQUERIMIENTO_NO_ENVIADO  = "V00657";
 
-		
+
 		
 		public static final String  SUSPENSION_CANCELACION_FECHA_INICIO_MAYOR= "V00700";
 		public static final String SUSPENSION_CANCELACION_TIENE_SUSPENSION_CANCELACION_PENDIENTE = "V00701";
@@ -927,12 +927,13 @@ public class Constantes {
 		public static final String ARCHIVO_DUPLICADO = "V01015";
 		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
 		public static final String DJ_AUSENTE = "V01017";
-		public static final String REQUERIMIENTO_EN_PROCESO = "V01018";
+		public static final String FECHA_FINAL_CONTRATO = "V01018";
 		public static final String SIAF_NO_ENVIADO = "V01019";
 		public static final String REQUERIMIENTO_NO_ENCONTRADO = "V01020";
 		public static final String ESTADO_APROBACION_NO_ENVIADO = "V01021";
 		public static final String APROBACION_NO_ENCONTRADA = "V01022";
 		public static final String INVITACION_NO_ENCONTRADA = "V01023";
+		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

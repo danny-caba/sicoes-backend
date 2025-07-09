@@ -1,7 +1,10 @@
 package pe.gob.osinergmin.sicoes.controller;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -147,5 +150,18 @@ public class PropuestaProfesionalesRestController extends BaseRestController{
 	    response.setHeader("Content-Disposition", "attachment; filename=Reporte_Profesionales.xlsx");
 	    IOUtils.copy(is, response.getOutputStream());
 	}
+	
+	@GetMapping("/solicitud/{idSoliPerfCont}/personal-propuesto")
+	public List<Map<String, Object>> getPersonalPropuesto(@PathVariable Long idSoliPerfCont) {
+	    List<Object[]> list = propuestaProfesionalService.obtenerPersonalPropuesto(idSoliPerfCont);
+	    return list.stream().map(pp -> {
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("numeroDocumento", (String) pp[0]);
+	        map.put("nombreCompleto", (String) pp[1]);
+	        map.put("perfil", (String) pp[2]);
+	        return map;
+	    }).collect(Collectors.toList());
+	}
+
 
 }

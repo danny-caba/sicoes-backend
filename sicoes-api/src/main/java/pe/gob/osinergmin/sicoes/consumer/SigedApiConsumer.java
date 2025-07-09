@@ -21,5 +21,6 @@ public interface SigedApiConsumer {
 	public List<ResponseUserListDto.Usuario> listarUsuariosSiged() throws Exception;
 	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
 	public ClienteConsultaOutRO buscarCliente(Integer tipoIdentificacion, String nroIdentificacion);
+	public DocumentoOutRO agregarDocumentoVersionar(ExpedienteInRO expediente, List<File> archivos) throws Exception;
 	
 }

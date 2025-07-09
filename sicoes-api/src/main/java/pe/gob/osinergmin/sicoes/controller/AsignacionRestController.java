@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import pe.gob.osinergmin.sicoes.model.Asignacion;
+import pe.gob.osinergmin.sicoes.model.dto.HistorialContratoDto;
 import pe.gob.osinergmin.sicoes.service.AsignacionService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.SolicitudService;
@@ -192,5 +193,13 @@ public class AsignacionRestController extends BaseRestController{
 		
 		logger.info("obtenerParametrosfirmaDigital");
 		return asignacionService.obtenerParametrosfirmaDigital(usuario, getContexto().getUsuario().getUsuario());
+	}
+	
+	@GetMapping("/historial/{idContrato}")
+	public ResponseEntity<List<Map<String,Object>>> getHistorialContrato(
+	    @PathVariable Long idContrato) {
+	  return ResponseEntity.ok(
+	    asignacionService.obtenerHistorialPorContrato(idContrato)
+	  );
 	}
 }

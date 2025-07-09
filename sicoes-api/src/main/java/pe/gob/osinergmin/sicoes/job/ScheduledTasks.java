@@ -137,6 +137,8 @@ public class ScheduledTasks {
 		ListadoDetalle etapaFormulacion = listadoDetalleService.obtenerListadoDetalleOrden(Constantes.LISTADO.ETAPA_PROCESO.CODIGO,
 				Constantes.LISTADO.ETAPA_PROCESO.ETAPA_FORMULACION_ORDEN);
 		List<Object[]> lstEtapaProceso = procesoEtapaService.listarEtapasFormulacionConsultas(etapaFormulacion.getIdListadoDetalle());
+		logger.info("Se encontraron {} procesos en etapa de formulación", lstEtapaProceso.size());
+
 		for(Object[] etapaProceso : lstEtapaProceso) {
 			try {
 				Long idProceso = Long.parseLong(etapaProceso[0].toString());

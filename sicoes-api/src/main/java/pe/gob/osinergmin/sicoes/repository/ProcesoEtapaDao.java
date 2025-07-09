@@ -69,7 +69,8 @@ public interface ProcesoEtapaDao extends JpaRepository<ProcesoEtapa, Long> {
 	List<ProcesoEtapa> buscarExiste(String procesoUuid, Long idEtapa);
 
 	@Query(value="select e.proceso.idProceso, e.etapa.idListadoDetalle from ProcesoEtapa e " +
-			"where e.etapa.idListadoDetalle = :idListadoDetalle " +
+			"join e.proceso p " +
+			"where e.etapa.idListadoDetalle = :idListadoDetalle and p.estado.idListadoDetalle <> 722" +
 			"and trunc(e.fechaFin) = trunc(sysdate - 1)")
 	List<Object[]> obtenerProcesosEtapaFormulacionConsulta(Long idListadoDetalle);
 

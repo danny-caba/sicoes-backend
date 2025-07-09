@@ -9,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
+import pe.gob.osinergmin.sicoes.model.Contrato;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.ReqInicioServicio;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -71,4 +73,7 @@ public interface SolicitudService extends BaseService<Solicitud, Long>{
 	public void subirDocumentoAdministrativos(Archivo informeVT, Contexto contexto); //AFC
 	boolean validarCambios(Solicitud solicitud, Contexto contexto);
 	public List<PerfilAprobador> buscarAprobadoresPorSolicitud(Long idSolicitud);
+	public Page<Contrato> buscarAprobadorContratos(String nroExpediente, String contratista, String idTipoContrato,
+			String idTipoAprobacio,Pageable pageable, Contexto contexto);
+	public void guardarLote(List<ReqInicioServicio> registros);
 }

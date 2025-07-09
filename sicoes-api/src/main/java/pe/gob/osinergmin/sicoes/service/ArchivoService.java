@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface ArchivoService extends BaseService<Archivo, Long> {
@@ -56,7 +56,13 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	List<File> obtenerArchivoDj(Long idOtroRequisito, String procedimiento, Contexto contexto);
 	List<File> obtenerArchivoModificacion(Long idOtroRequisito, Contexto contexto);
 	List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto);
-	List<Archivo> buscarXRequerimiento(Long idSolicitud, Contexto contexto);
+	public Archivo guardarArchivoContrato(Long idProceso, String tipoRequisito, MultipartFile file, Contexto contexto);
+	public List<Archivo> obtenerArchivosPorContrato(Long idProceso);
+	public void eliminarArchivo(Long idArchivo);
+	public Archivo guardarArchivoPerfContrato(Long idSoliPerfCont, String tipoRequisito, MultipartFile file, Contexto contexto);
+	public List<Archivo> obtenerArchivosPorPerfContrato(Long idSoliPerfCont);
+	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto);
+    List<Archivo> buscarXRequerimiento(Long idSolicitud, Contexto contexto);
 	Archivo guardarXRequerimiento(Archivo archivo, Contexto contexto);
 
 }
