@@ -22,4 +22,6 @@ public interface RequerimientoService extends BaseService<Requerimiento, Long> {
     Long obtenerId(String requerimientoUuid);
 
     Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto);
+
+    Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
 }

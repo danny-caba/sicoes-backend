@@ -146,7 +146,6 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             aprobacion.setGrupo(grupoAprobacion);
             aprobacion.setUsuario(contexto.getUsuario());
             aprobacion.setEstado(estadoAprobacion);
-            aprobacion.setFlagFirmado(Constantes.FLAG_FIRMADO.NO_FIRMADO);
             AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
             aprobacionDao.save(aprobacion);
 

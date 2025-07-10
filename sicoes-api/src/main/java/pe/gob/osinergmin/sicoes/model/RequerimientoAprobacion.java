@@ -49,8 +49,9 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @JoinColumn(name="ID_ESTADO_LD")
     private ListadoDetalle estado;
 
-    @Column(name="FL_FIRMADO")
-    private String flagFirmado;
+    @ManyToOne(fetch= FetchType.LAZY)
+    @JoinColumn(name="ID_FIRMADO_LD")
+    private ListadoDetalle firmado;
 
     @Column(name = "DE_OBSERVACION")
     private String observacion;
@@ -127,12 +128,12 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.estado = estado;
     }
 
-    public String getFlagFirmado() {
-        return flagFirmado;
+    public ListadoDetalle getFirmado() {
+        return firmado;
     }
 
-    public void setFlagFirmado(String flagFirmado) {
-        this.flagFirmado = flagFirmado;
+    public void setFirmado(ListadoDetalle firmado) {
+        this.firmado = firmado;
     }
 
     public String getObservacion() {

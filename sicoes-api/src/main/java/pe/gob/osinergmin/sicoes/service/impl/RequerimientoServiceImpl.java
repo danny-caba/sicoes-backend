@@ -36,6 +36,7 @@ import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
+import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
@@ -75,6 +76,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     private RequerimientoDao requerimientoDao;
     @Autowired
     private RequerimientoAprobacionDao aprobacionDao;
+    @Autowired
+    private ArchivoDao archivoDao;
     @Autowired
     @SuppressWarnings("unused")
     private ListadoDetalleService listadoDetalleService;
@@ -401,7 +404,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 aprobacionGse.setGrupo(grupoAprobacion);
                 aprobacionGse.setUsuario(contexto.getUsuario());
                 aprobacionGse.setEstado(estadoAprobacion);
-                aprobacionGse.setFlagFirmado(Constantes.FLAG_FIRMADO.NO_FIRMADO);
                 AuditoriaUtil.setAuditoriaRegistro(aprobacionGse, contexto);
                 aprobacionDao.save(aprobacionGse);
 
@@ -491,6 +493,33 @@ public class RequerimientoServiceImpl implements RequerimientoService {
             }
         }
         return requerimientoBD;
+    }
+
+    @Override
+    public Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos) {
+        return this.listar(filtroRequerimientoDTO, pageable, contextos)
+                .map(req -> {
+                    req.setArchivos(new ArrayList<Archivo>());
+                    Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(req.getIdRequerimiento(),
+                            Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO);
+                    req.getArchivos().add(informe);
+                    req.getReqAprobaciones()
+                            .forEach(aprob -> {
+                                if(aprob.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
+                                    req.setTipoAprobacion(aprob.getTipo().getNombre());
+                                }
+                                if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD)) {
+                                    req.setEstadoFirmaJefeUnidad(aprob.getEstado().getNombre());
+                                } else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GERENTE)) {
+                                    req.setEstadoFirmaGerente(aprob.getEstado().getNombre());
+                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GPPM)) {
+                                    req.setEstadoAprobacionGPPM(aprob.getEstado().getNombre());
+                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GSE)) {
+                                    req.setEstadoAprobacionGSE(aprob.getEstado().getNombre());
+                                }
+                            });
+                    return req;
+                });
     }
 
 }

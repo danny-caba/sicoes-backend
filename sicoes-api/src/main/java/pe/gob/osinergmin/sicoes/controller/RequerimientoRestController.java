@@ -62,4 +62,10 @@ public class RequerimientoRestController extends BaseRestController {
     public Requerimiento aprobar(@PathVariable("uuid") String uuid, @RequestBody RequerimientoAprobacionDTO aprobacion) {
         return requerimientoService.aprobar(uuid, aprobacion, getContexto());
     }
+
+    @GetMapping("/aprobar")
+    @Raml("requerimiento.aprobar.properties")
+    public Page<Requerimiento> listarRequerimientosPorAprobar(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable, Contexto contexto) {
+        return requerimientoService.listarPorAprobar(filtros, pageable, contexto);
+    }
 }

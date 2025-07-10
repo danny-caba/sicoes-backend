@@ -167,6 +167,9 @@ public class Constantes {
 			public static final String PERFECCIONAMIENTO_CONTRATO = "ARCHIVO_PERFECCIONAMIENTO";
 
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
+			public static final String ARCHIVO_REQUERIMIENTO = "TA26";
+			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
+			public static final String INFORME_REQUERIMIENTO = "TA28";
 
 		}
 		
@@ -667,7 +670,7 @@ public class Constantes {
 			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
 
-		public static final class ESTADO_FIRMA {
+		public static final class ESTADO_FIRMADO {
 			public static final String CODIGO = "ESTADO_FIRMADO";
 			public static final String PENDIENTE = "PENDIENTE";
 			public static final String FIRMADO = "FIRMADO";

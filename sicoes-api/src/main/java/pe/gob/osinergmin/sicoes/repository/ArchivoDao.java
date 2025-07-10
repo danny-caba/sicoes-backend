@@ -158,6 +158,12 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+ " where ta.codigo=:codigo and a.idSolicitud=:idSolicitud ")
 	public Archivo obtenerTipoArchivo(Long idSolicitud, String codigo);
 
+	@Query(value="select a from Archivo a "
+			+ "left join fetch a.tipoArchivo ta "
+			+ "left join fetch a.estado e "
+			+ " where ta.codigo = :codigo and a.idRequerimiento = :idRequerimiento ")
+	Archivo obtenerTipoArchivoRequerimiento(Long idRequerimiento, String codigo);
+
 	@Modifying
 	@Query(value="delete from Archivo a where a.idEstudio=:idEstudio")			
 	public void eliminarIdEstudio(Long idEstudio);
