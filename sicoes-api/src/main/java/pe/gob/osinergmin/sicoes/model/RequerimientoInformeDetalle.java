@@ -27,34 +27,34 @@ public class RequerimientoInformeDetalle extends BaseModel implements Serializab
     @JoinColumn(name="ID_REQ_INFORME")
     private RequerimientoInforme requerimientoInforme;
 
-    @Column(name = "DE_OBJETIVO")
+    @Column(name = "DE_OBJETIVO", length = 5000)
     private String objectivo;
 
-    @Column(name = "DE_PERFIL_REQUERIDO")
+    @Column(name = "DE_PERFIL_REQUERIDO", length = 5000)
     private String perfilRequerido;
 
-    @Column(name = "DE_PLAZO_EJECUCION")
+    @Column(name = "DE_PLAZO_EJECUCION", length = 5000)
     private String plazoEjecucion;
 
-    @Column(name = "DE_COSTO_SERVICIO")
+    @Column(name = "DE_COSTO_SERVICIO", length = 5000)
     private String costoServicio;
 
-    @Column(name = "DE_TERMINO_SERVICIO")
+    @Column(name = "DE_TERMINO_SERVICIO", length = 5000)
     private String terminoServicio;
 
-    @Column(name = "DE_ENTREGABLES")
+    @Column(name = "DE_ENTREGABLES", length = 5000)
     private String entregables;
 
-    @Column(name = "DE_PENALIDADES")
+    @Column(name = "DE_PENALIDADES", length = 5000)
     private String penalidades;
 
-    @Column(name = "DE_TIPO_SEGURO")
+    @Column(name = "DE_TIPO_SEGURO", length = 5000)
     private String tipoSeguro;
 
-    @Column(name = "DE_DISPONIBILIDAD_PRES")
-    private String disponibilidadPresencial;
+    @Column(name = "DE_DISPONIBILIDAD_PRES", length = 5000)
+    private String disponibilidadPresupuestal;
 
-    @Column(name = "DE_DECLARACION_JURADA")
+    @Column(name = "DE_DECLARACION_JURADA", length = 5000)
     private String DeclaracionJurada;
 
     public Long getIdRequerimientoInformeDetalle() {
@@ -137,12 +137,12 @@ public class RequerimientoInformeDetalle extends BaseModel implements Serializab
         this.tipoSeguro = tipoSeguro;
     }
 
-    public String getDisponibilidadPresencial() {
-        return disponibilidadPresencial;
+    public String getDisponibilidadPresupuestal() {
+        return disponibilidadPresupuestal;
     }
 
-    public void setDisponibilidadPresencial(String disponibilidadPresencial) {
-        this.disponibilidadPresencial = disponibilidadPresencial;
+    public void setDisponibilidadPresupuestal(String disponibilidadPresupuestal) {
+        this.disponibilidadPresupuestal = disponibilidadPresupuestal;
     }
 
     public String getDeclaracionJurada() {

@@ -21,6 +21,7 @@ import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoInformeDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoInformeDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInformeService;
@@ -56,6 +57,9 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
     private RequerimientoInformeDao requerimientoInformeDao;
 
     @Autowired
+    private RequerimientoInformeDetalleDao requerimientoInformeDetalleDao;
+
+    @Autowired
     private RequerimientoDao requerimientoDao;
 
     @Autowired
@@ -64,26 +68,11 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
     @Autowired
     private Environment env;
 
-    @Value("${informe.requerimiento}")
-    private String INFORME_REQUERIMIENTO;
-
-    @Value("${siged.old.proyecto}")
-    private String SIGLA_PROYECTO;
-
-    @Value("${siged.ws.cliente.osinergmin.numero.documento}")
-    private String OSI_DOCUMENTO;
-
     @Autowired
     private ArchivoService archivoService;
 
     @Autowired
     private SigedApiConsumer sigedApiConsumer;
-
-    @Value("${path.temporal}")
-    private String pathTemporal;
-
-    @Value("${path.jasper}")
-    private String pathJasper;
 
     @Autowired
     private ArchivoUtil archivoUtil;
@@ -97,15 +86,33 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
     @Autowired
     private PerfilAprobadorDao perfilAprobadorDao;
 
+    @Value("${path.temporal}")
+    private String pathTemporal;
+
+    @Value("${path.jasper}")
+    private String pathJasper;
+
+    @Value("${informe.requerimiento}")
+    private String INFORME_REQUERIMIENTO;
+
+    @Value("${siged.old.proyecto}")
+    private String SIGLA_PROYECTO;
+
+    @Value("${siged.ws.cliente.osinergmin.numero.documento}")
+    private String OSI_DOCUMENTO;
+
     @Override
-    public RequerimientoInforme guardar(RequerimientoInforme requerimientoInforme, Contexto contexto) {
+    public RequerimientoInformeDetalle guardar(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
         try {
-            AuditoriaUtil.setAuditoriaRegistro(requerimientoInforme, contexto);
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoInformeDetalle, contexto);
             ListadoDetalle estadoEnAprobacion = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
                     Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_APROBACION
-                );
-            Requerimiento requerimiento = requerimientoInforme.getRequerimiento();
+            );
+            if (estadoEnAprobacion == null) {
+                throw new ValidacionException("Estado EN_APROBACION no configurado en ListadoDetalle");
+            }
+            Requerimiento requerimiento = requerimientoInformeDetalle.getRequerimientoInforme().getRequerimiento();
             requerimiento.setEstado(estadoEnAprobacion);
             Requerimiento requerimientoDB = requerimientoDao.save(requerimiento);
             ExpedienteInRO expedienteInRO = crearExpediente(
@@ -114,7 +121,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             );
             List<File> archivosAlfresco = new ArrayList<>();
             RequerimientoAprobacion aprobadorG1 = asignarAprobadorG1(requerimiento, contexto);
-            Archivo archivo = archivoRequerimientoInforme(requerimiento, contexto);
+            Archivo archivo = archivoRequerimientoInforme(requerimientoInformeDetalle, contexto);
             archivoService.guardarXRequerimientoInforme(archivo, contexto);
             File file = fileRequerimiento(archivo, requerimiento.getIdRequerimiento());
             archivosAlfresco.add(file);
@@ -126,10 +133,11 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             if (expedienteOutRO.getResultCode() == 1) {
                 requerimiento.setNuExpediente(expedienteOutRO.getCodigoExpediente());
             }
-            requerimientoInforme = requerimientoInformeDao.save(requerimientoInforme);
-            return requerimientoInforme;
+            requerimientoInformeDao.save(requerimientoInformeDetalle.getRequerimientoInforme());
+            requerimientoInformeDetalle = requerimientoInformeDetalleDao.save(requerimientoInformeDetalle);
+            return requerimientoInformeDetalle;
         } catch (Exception ex) {
-            logger.error("Error al guardar el informe. Contexto: {}, Entidad: {}", contexto, requerimientoInforme, ex);
+            logger.error("Error al guardar el informe. Contexto: {}, Entidad: {}", contexto, requerimientoInformeDetalle, ex);
             throw new RuntimeException("Error al guardar el informe", ex);
         }
     }
@@ -182,31 +190,28 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         return expediente;
     }
 
-    private Archivo archivoRequerimientoInforme(Requerimiento requerimiento, Contexto contexto) {
-        ListadoDetalle perfil = listadoDetalleService.obtener(requerimiento.getPerfil().getIdListadoDetalle(), contexto);
-        requerimiento.setPerfil(perfil);
-        requerimiento.setUsuarioCreador(usuarioService.obtener(Long.valueOf(requerimiento.getUsuCreacion())));
+    private Archivo archivoRequerimientoInforme(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
         Archivo archivo = new Archivo();
-        Long idRequerimiento = requerimiento.getIdRequerimiento();
+        Long idRequerimiento = requerimientoInformeDetalle.getRequerimientoInforme().getRequerimiento().getIdRequerimiento();
         archivo.setIdRequerimiento(idRequerimiento);
-        archivo.setNombre("Solicitud_Requerimiento_Contrato_PN_" + idRequerimiento + ".pdf");
-        archivo.setNombreReal("Solicitud_Requerimiento_Contrato_PN_" + idRequerimiento + ".pdf");
+        archivo.setNombre("Requerimiento_Informe_" + idRequerimiento + ".pdf");
+        archivo.setNombreReal("Requerimiento_Informe_" + idRequerimiento + ".pdf");
         archivo.setTipo("application/pdf");
         ByteArrayOutputStream output;
         JasperPrint print;
         InputStream appLogo = null;
         InputStream osinermingLogo = null;
         try {
-            File jrxml = new File(pathJasper + "Formato_04_Requerimiento.jrxml");
+            File jrxml = new File(pathJasper + "Formato_04_Requerimiento_Informe.jrxml");
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("SUBREPORT_DIR", pathJasper);
             appLogo = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
             osinermingLogo = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
             parameters.put("P_LOGO_APP", appLogo);
             parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
-            List<Requerimiento> requerimientos = new ArrayList<>();
-            requerimientos.add(requerimiento);
-            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(requerimientos);
+            List<RequerimientoInformeDetalle> requerimientosInformeDetalle = new ArrayList<>();
+            requerimientosInformeDetalle.add(requerimientoInformeDetalle);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(requerimientosInformeDetalle);
             JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
             print = JasperFillManager.fillReport(jasperReport, parameters, ds);
             output = new ByteArrayOutputStream();
