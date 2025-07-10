@@ -18,34 +18,33 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
 
     @Query(value = "SELECT DISTINCT r FROM Requerimiento r " +
             "LEFT JOIN FETCH r.division d " +
-            "LEFT JOIN FETCH r.perfil " +
-            "LEFT JOIN FETCH r.estado " +
-            "LEFT JOIN FETCH r.reqInvitaciones i " +
-            "WHERE (:division IS NULL OR r.division = :division) " +
-            "AND (:perfil IS NULL OR r.perfil = :perfil) " +
-            "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
+            "LEFT JOIN FETCH r.perfil p " +
+            "LEFT JOIN FETCH r.estado e " +
+            "LEFT JOIN FETCH r.supervisora s " +
+            "WHERE (:idDivision IS NULL OR d.idDivision = :idDivision) " +
+            "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
+            "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +
+            "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
+            "AND d.idDivision IN :divisionIds " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
-            "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion) " +
-            "AND d.idDivision IN :divisionIds " +
             "ORDER BY r.nuExpediente ASC",
             countQuery = "SELECT COUNT(DISTINCT r) FROM Requerimiento r " +
-                    "LEFT JOIN r.reqInvitaciones i " +
                     "LEFT JOIN r.division d " +
-                    "WHERE (:division IS NULL OR r.division = :division) " +
-                    "AND (:perfil IS NULL OR r.perfil = :perfil) " +
-                    "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
+                    "LEFT JOIN r.perfil p " +
+                    "LEFT JOIN r.estado e " +
+                    "LEFT JOIN r.supervisora s " +
+                    "WHERE (:idDivision IS NULL OR d.idDivision = :idDivision) " +
+                    "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
+                    "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +
+                    "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
+                    "AND d.idDivision IN :divisionIds " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
-                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
-                    "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion) " +
-                    "AND d.idDivision IN :divisionIds")
-    Page<Requerimiento> listarRequerimientos(@Param("division") Division division,
-                                             @Param("perfil") ListadoDetalle perfil,
-                                             @Param("fechaInicio") Date fechaInicio,
-                                             @Param("fechaFin") Date fechaFin,
-                                             @Param("supervisora") Supervisora supervisora,
-                                             @Param("estadoAprobacion") ListadoDetalle estadoAprobacion,
-                                             @Param("divisionIds") List<Long> divisionIds,
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
+    Page<Requerimiento> listarRequerimientos(Long idDivision, Long idPerfil, Date fechaInicio, Date fechaFin,
+                                             Long idSupervisora,
+                                             Long idEstado,
+                                             List<Long> divisionIds,
                                              Pageable pageable);
 
     @Query("SELECT r FROM Requerimiento r WHERE r.idRequerimiento = :id")

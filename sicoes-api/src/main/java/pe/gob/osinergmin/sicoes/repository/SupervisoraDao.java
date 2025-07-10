@@ -196,6 +196,10 @@ public interface SupervisoraDao extends JpaRepository<Supervisora, Long> {
 			+ "and e.codigo ='"+Constantes.LISTADO.ESTADO_SUPERVISORA.VIGENTE+"' ")
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc);
 
-
+	@Query("select distinct s.idSupervisora, (s.nombres|| ' '|| s.apellidoPaterno|| ' '||s.apellidoMaterno), s.numeroDocumento from Supervisora s, SupervisoraPerfil sp "
+			+ "left join sp.supervisora sps "
+			+ "left join sp.perfil per "
+			+ "where s.idSupervisora = sps.idSupervisora and  per.idListadoDetalle = :idPerfil ")
+	public List<Object[]> listarProfesionalesPorPerfil(Long idPerfil);
 	
 }

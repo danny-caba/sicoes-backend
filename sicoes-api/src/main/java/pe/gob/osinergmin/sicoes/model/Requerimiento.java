@@ -54,7 +54,7 @@ public class Requerimiento extends BaseModel implements Serializable {
     @Column(name = "NU_SIAF")
     private String nuSiaf;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ID_SUPERVISORA")
     private Supervisora supervisora;
 

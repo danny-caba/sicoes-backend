@@ -124,6 +124,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Override
     public Page<RequerimientoInvitacion> obtener(Long idEstado, String fechaInicioInvitacion,
                                                  String fechaFinInvitacion, Contexto contexto, Pageable pageable) {
+        Long idSupervisora = null;
         Date fechaInicio = DateUtil.getInitDay(fechaInicioInvitacion);
         Date fechaFin = DateUtil.getEndDay(fechaFinInvitacion);
         if (fechaInicio != null && fechaInicio.after(new Date())) {
@@ -132,8 +133,11 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         if (fechaInicio != null && fechaFin != null && fechaFin.before(fechaInicio)) {
             throw new ValidacionException(ERROR_FECHA_FIN_ANTES_INICIO);
         }
-        Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
-        Long idSupervisora = supervisora.getIdSupervisora();
+
+        if (contexto.getUsuario().getCodigoUsuarioInterno() == null) {
+            Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
+            idSupervisora = supervisora.getIdSupervisora();
+        }
         return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);
     }
 

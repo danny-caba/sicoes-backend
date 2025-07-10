@@ -287,30 +287,31 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         }
         if (fechaInicio != null) fechaInicio = DateUtil.getInitDay(fechaInicio);
         if (fechaFin != null) fechaFin = DateUtil.getEndDay(fechaFin);
-        Division division = filtro.getDivision() != null ? crearDivision(filtro.getDivision()) : null;
-        ListadoDetalle perfil = filtro.getPerfil() != null ? crearListadoDetalle(filtro.getPerfil()) : null;
-        Supervisora supervisora = filtro.getSupervisora() != null ? crearSupervisora(filtro.getSupervisora()) : null;
-        ListadoDetalle estadoAprobacion = filtro.getEstadoAprobacion() != null ? crearListadoDetalle(filtro.getEstadoAprobacion()) : null;
-        return requerimientoDao.listarRequerimientos(division, perfil, fechaInicio, fechaFin, supervisora, estadoAprobacion, divisionIds, pageable);
+//        Division division = filtro.getDivision() != null ? crearDivision(filtro.getDivision()) : null;
+//        ListadoDetalle perfil = filtro.getPerfil() != null ? crearListadoDetalle(filtro.getPerfil()) : null;
+//        Supervisora supervisora = filtro.getSupervisora() != null ? crearSupervisora(filtro.getSupervisora()) : null;
+//        ListadoDetalle estadoAprobacion = filtro.getEstadoAprobacion() != null ? crearListadoDetalle(filtro.getEstadoAprobacion()) : null;
+//        return requerimientoDao.listarRequerimientos(division, perfil, fechaInicio, fechaFin, supervisora, estadoAprobacion, divisionIds, pageable);
+        return requerimientoDao.listarRequerimientos(filtro.getDivision(), filtro.getPerfil(), fechaInicio, fechaFin, filtro.getSupervisora(), filtro.getEstadoAprobacion(), divisionIds, pageable);
     }
 
-    private Division crearDivision(Long id) {
-        Division division = new Division();
-        division.setIdDivision(id);
-        return division;
-    }
-
-    private ListadoDetalle crearListadoDetalle(Long id) {
-        ListadoDetalle detalle = new ListadoDetalle();
-        detalle.setIdListadoDetalle(id);
-        return detalle;
-    }
-
-    private Supervisora crearSupervisora(Long id) {
-        Supervisora s = new Supervisora();
-        s.setIdSupervisora(id);
-        return s;
-    }
+//    private Division crearDivision(Long id) {
+//        Division division = new Division();
+//        division.setIdDivision(id);
+//        return division;
+//    }
+//
+//    private ListadoDetalle crearListadoDetalle(Long id) {
+//        ListadoDetalle detalle = new ListadoDetalle();
+//        detalle.setIdListadoDetalle(id);
+//        return detalle;
+//    }
+//
+//    private Supervisora crearSupervisora(Long id) {
+//        Supervisora s = new Supervisora();
+//        s.setIdSupervisora(id);
+//        return s;
+//    }
 
     @Override
     @Transactional

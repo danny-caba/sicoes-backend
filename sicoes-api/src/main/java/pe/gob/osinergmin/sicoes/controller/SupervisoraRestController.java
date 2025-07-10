@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
+import pe.gob.osinergmin.sicoes.model.dto.ProfesionalPerfilDTO;
 import pe.gob.osinergmin.sicoes.model.dto.SupervisoraDTO;
 import pe.gob.osinergmin.sicoes.service.SupervisoraDictamenService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraService;
@@ -163,6 +164,13 @@ public class SupervisoraRestController extends BaseRestController {
 			@RequestParam(required=false) Long idPerfil){
 		logger.info("listarSupervisoras ");
 		return supervisoraService.listarSupervisoras(idPerfil,getContexto());
+	}
+
+	@GetMapping("/profesionales/perfil")
+	public ResponseEntity<List<ProfesionalPerfilDTO>> listarProfesionalesPerfil(
+			@RequestParam(required=false) Long idPerfil){
+		logger.info("Iniciando listado de profesionales con idPerfil: {}", idPerfil);
+		return supervisoraService.listarProfesionalesPerfil(idPerfil);
 	}
 	
 }
