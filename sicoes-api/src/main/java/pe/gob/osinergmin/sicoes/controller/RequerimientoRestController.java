@@ -14,6 +14,7 @@ import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
 @RestController
@@ -41,15 +42,17 @@ public class RequerimientoRestController extends BaseRestController {
     @PatchMapping("/{uid}/archivar")
     @Raml("requerimiento.archivar.properties")
     public Requerimiento archivarRequerimiento(@PathVariable("uid") String requerimientoUuid, @RequestBody Requerimiento requerimiento) {
-        Requerimiento requerimientoDB = requerimientoService.obtenerPorUuid(requerimientoUuid);
+        Requerimiento requerimientoDB = requerimientoService.obtenerPorUuid(requerimientoUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requerimiento no encontrado"));
         requerimientoDB.setDeObservacion(requerimiento.getDeObservacion());
         return requerimientoService.archivar(requerimientoDB, getContexto());
     }
 
     @GetMapping("/{uid}")
     @Raml("requerimiento.obtener.properties")
-    public Requerimiento obtenerRequerimiento(@PathVariable("uid") Long id) {
-        return requerimientoService.obtenerPorId(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parámetros inválidos"));
+    public Requerimiento obtenerRequerimiento(@PathVariable("uid") String uuid) {
+        return requerimientoService.obtenerPorUuid(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requerimiento no encontrado con UUID: " + uuid));
     }
 
     @PatchMapping("/{uuid}/aprobar")

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
@@ -33,8 +34,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -64,6 +63,9 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private SigedApiConsumer sigedApiConsumer;
+
     @Override
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
         ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
@@ -86,16 +88,10 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         requerimientoInvitacion.setEstado(estadoInvitado);
         Date fechaInvitacion = new Date();
         requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
-        LocalDate fechaCaducidadLocal = fechaInvitacion.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .plusDays(3);
-        Date fechaCaducidad = Date.from(fechaCaducidadLocal
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant());
+        Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, 3L, "H");
         requerimientoInvitacion.setFechaCaducidad(fechaCaducidad);
         AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
-        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getRequerimiento().getSupervisora().getIdSupervisora());
+        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora());
         notificacionService.enviarRequerimientoInvitacion(usuarioSupervisorPN, requerimientoInvitacion, contexto);
         return requerimientoInvitacionDao.save(requerimientoInvitacion);
     }
@@ -106,11 +102,16 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     }
 
     @Override
-    public void eliminar(Long id, Contexto contexto) {
-        logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", id, contexto.getUsuario());
-        Optional<RequerimientoInvitacion> optional = requerimientoInvitacionDao.findById(id);
+    public void eliminar(Long aLong, Contexto contexto) {
+
+    }
+
+    @Override
+    public void eliminar(String uuid, Contexto contexto) {
+        logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", uuid, contexto.getUsuario());
+        Optional<RequerimientoInvitacion> optional = requerimientoInvitacionDao.obtenerPorUuid(uuid);
         if (!optional.isPresent()) {
-            throw new RuntimeException("RequerimientoInvitacion no encontrado con ID: " + id);
+            throw new RuntimeException("RequerimientoInvitacion no encontrado con UUID: " + uuid);
         }
         ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_INVITACION.ELIMINADO);
         if (estadoEliminado == null) {

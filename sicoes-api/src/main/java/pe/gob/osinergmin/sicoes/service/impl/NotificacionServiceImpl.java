@@ -42,6 +42,7 @@ import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
 import pe.gob.osinergmin.sicoes.repository.ConfBandejaDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
@@ -110,7 +111,9 @@ public class NotificacionServiceImpl implements NotificacionService{
 	
 	@Autowired
 	private UsuarioService usuarioService;
-	
+	@Autowired
+	private RequerimientoDao requerimientoDao;
+
 	@Override
 	public Notificacion obtener(Long idNotificacion, Contexto contexto) {
 		Notificacion notificacion= notificacionDao.obtener(idNotificacion);
@@ -1065,6 +1068,14 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacionDao.save(notificacion);
 	}
 
+	public void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+
+	}
+
+	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+
+	}
+
 	@Override
 	public void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
@@ -1147,7 +1158,9 @@ public class NotificacionServiceImpl implements NotificacionService{
 			notificacion.setAsunto("INVITACIÓN PERSONA NATURAL S4");
 			final Context ctx = new Context();
 			ctx.setVariable("nombre_supervisor_pn", usuarioSupervisorPN.getNombreUsuario());
-			ctx.setVariable("division", requerimientoInvitacion.getRequerimiento().getDivision().getDeDivision());
+			Requerimiento requerimiento = requerimientoDao.obtener(requerimientoInvitacion.getRequerimiento().getIdRequerimiento())
+				.orElseThrow(() -> new IllegalArgumentException("Requerimiento no encontrado"));
+			ctx.setVariable("division", requerimiento.getDivision().getDeDivision());
 			ctx.setVariable("fechaInvitacion", requerimientoInvitacion.getFechaInvitacion());
 			ctx.setVariable("fechaCancelacion", requerimientoInvitacion.getFechaCaducidad());
 			String htmlContent = templateEngine.process("28-invitacion-requerimiento.html", ctx);

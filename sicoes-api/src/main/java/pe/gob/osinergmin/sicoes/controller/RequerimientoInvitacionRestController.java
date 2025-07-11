@@ -46,9 +46,9 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
 
     @DeleteMapping("/{uid}/eliminar")
     @Raml("requerimientoInvitacion.eliminar.properties")
-    public Map<String, Object> eliminarRequerimientoInvitacion(@PathVariable("uid") Long id) {
-        logger.info("Eliminando invitación con ID: {}", id);
-        requerimientoInvitacionService.eliminar(id, getContexto());
+    public Map<String, Object> eliminarRequerimientoInvitacion(@PathVariable("uid") String uuid) {
+        logger.info("Eliminando invitación con ID: {}", uuid);
+        requerimientoInvitacionService.eliminar(uuid, getContexto());
         Map<String, Object> response = new HashMap<>();
         response.put("status", 200);
         response.put("mensaje", "Registro eliminado");
