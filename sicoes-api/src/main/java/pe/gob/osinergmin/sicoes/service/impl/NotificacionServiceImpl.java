@@ -1042,28 +1042,20 @@ public class NotificacionServiceImpl implements NotificacionService{
 
 	@Override
 	public void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean esAprobacion, Contexto contexto) {
-		String asunto, fecha;
-		Date valorFecha;
-		if(esAprobacion) {
-			asunto = "ACEPTACIÓN";
-			fecha = "fechaAceptacion";
-			valorFecha = invitacion.getFechaAceptacion();
-		} else {
-			asunto = "RECHAZO";
-			fecha = "fechaCancelacion";
-			valorFecha = invitacion.getFechaRechazo();
-		}
 		Notificacion notificacion = new Notificacion();
-		String correos = invitacion.getSupervisora().getCorreo()
-								.concat(";")
-								.concat("correo coordinador");
+//		String correos = invitacion.getSupervisora().getCorreo()
+//								.concat(";")
+//								.concat("correo coordinador");
+		String correos = "yamir.monroe@dlwlatam.com";
 		notificacion.setCorreo(correos);// gestor y supervisor
-		notificacion.setAsunto(asunto + " DE INVITACIÓN SUPERVISOR PERSONA NATURAL");
+		notificacion.setAsunto((esAprobacion ? "ACEPTACIÓN" : "RECHAZO") + " DE INVITACIÓN SUPERVISOR PERSONA NATURAL");
 		final Context ctx = new Context();
+		ctx.setVariable("esAprobacion", esAprobacion);
 		ctx.setVariable("nombre", invitacion.getSupervisora().getNombreRazonSocial());
 		ctx.setVariable("division", invitacion.getRequerimiento().getDivision().getDeDivision());
-		ctx.setVariable("fechaInvitacion", invitacion.getFechaInvitacion());
-		ctx.setVariable(fecha, valorFecha);
+		ctx.setVariable("fechaInvitacion", DateUtil.getDate(invitacion.getFechaInvitacion(), "dd/MM/yyyy"));
+		ctx.setVariable("fechaCaducidad", DateUtil.getDate(invitacion.getFechaCaducidad(), "dd/MM/yyyy"));
+		ctx.setVariable("fechaAceptacion", DateUtil.getDate(invitacion.getFechaAceptacion(), "dd/MM/yyyy"));
 		String htmlContent = templateEngine.process("26-aprobacion-invitacion.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
@@ -1074,13 +1066,58 @@ public class NotificacionServiceImpl implements NotificacionService{
 	}
 
 	@Override
-	public void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto) {
-
+	public void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = "yamir.monroe@dlwlatam.com";
+		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setAsunto("NOTIFICACIÓN PARA APROBAR");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", "Nombre del rol GPPM o GSE");//TODO: buscar nombre del rol
+		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
+		String htmlContent = templateEngine.process("27-requerimiento-por-aprobar.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
 	}
 
 	@Override
-	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = "yamir.monroe@dlwlatam.com";
+		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setAsunto("NOTIFICACIÓN DE RECHAZAR APROBACIÓN");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", "Nombre del rol Coordinador de Gestión");//TODO: buscar nombre del rol
+		ctx.setVariable("rol", rol);
+		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
+		String htmlContent = templateEngine.process("28-requerimiento-rechazado.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
 
+	@Override
+	public void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = "yamir.monroe@dlwlatam.com";
+		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setAsunto("NOTIFICACIÓN CARGAR DOCUMENTOS");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", "Nombre del rol Supervisor");//TODO: buscar nombre del rol
+		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
+		String htmlContent = templateEngine.process("29-requerimiento-cargar-documentos.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
 	}
 
 	@Override

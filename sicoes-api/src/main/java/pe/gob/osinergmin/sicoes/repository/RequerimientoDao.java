@@ -11,7 +11,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.Division;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 
 @Repository
 public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
@@ -50,11 +53,9 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
     @Query("SELECT r FROM Requerimiento r WHERE r.idRequerimiento = :id")
     Optional<Requerimiento> obtener(@Param("id") Long id);
 
-    @Query("select r from Requerimiento r where r.idRequerimiento=:idRequerimiento")
-    public Requerimiento obtenerRequerimiento(Long idRequerimiento);
-
     @Query("select r.idRequerimiento from Requerimiento r where r.requerimientoUuid=:requerimientoUuid")
-    public Long obtenerId(String requerimientoUuid);
+    Long obtenerId(String requerimientoUuid);
 
-    Requerimiento findByRequerimientoUuid(String requerimientoUuid);
+    @Query("SELECT r FROM Requerimiento r WHERE r.requerimientoUuid = :uuid")
+    Optional<Requerimiento> obtenerPorUuid(@Param("uuid") String uuid);
 }

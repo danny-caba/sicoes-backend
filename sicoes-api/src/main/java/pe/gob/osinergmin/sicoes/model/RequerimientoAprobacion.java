@@ -14,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -69,6 +70,15 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name = "FE_FIRMA")
     private Date fechaFirma;
+
+    @Transient
+    private ListadoDetalle tipoRolAprobador;
+
+    @Transient
+    private ListadoDetalle grupoRolAprobador;
+
+    @Transient
+    private String nombreRolAprobador;
 
     public Long getIdRequerimientoAprobacion() {
         return idRequerimientoAprobacion;
@@ -156,5 +166,29 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     public void setFechaFirma(Date fechaFirma) {
         this.fechaFirma = fechaFirma;
+    }
+
+    public ListadoDetalle getTipoRolAprobador() {
+        return tipoRolAprobador;
+    }
+
+    public void setTipoRolAprobador(ListadoDetalle tipoRolAprobador) {
+        this.tipoRolAprobador = tipoRolAprobador;
+    }
+
+    public ListadoDetalle getGrupoRolAprobador() {
+        return grupoRolAprobador;
+    }
+
+    public void setGrupoRolAprobador(ListadoDetalle grupoRolAprobador) {
+        this.grupoRolAprobador = grupoRolAprobador;
+    }
+
+    public String getNombreRolAprobador() {
+        return nombreRolAprobador;
+    }
+
+    public void setNombreRolAprobador(String nombreRolAprobador) {
+        this.nombreRolAprobador = nombreRolAprobador;
     }
 }

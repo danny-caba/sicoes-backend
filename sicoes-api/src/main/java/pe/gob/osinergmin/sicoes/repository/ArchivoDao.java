@@ -158,6 +158,12 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+ " where ta.codigo=:codigo and a.idSolicitud=:idSolicitud ")
 	public Archivo obtenerTipoArchivo(Long idSolicitud, String codigo);
 
+	@Query(value="select a from Archivo a "
+			+ "left join fetch a.tipoArchivo ta "
+			+ "left join fetch a.estado e "
+			+ " where ta.codigo = :codigo and a.idRequerimiento = :idRequerimiento ")
+	Archivo obtenerTipoArchivoRequerimiento(Long idRequerimiento, String codigo);
+
 	@Modifying
 	@Query(value="delete from Archivo a where a.idEstudio=:idEstudio")			
 	public void eliminarIdEstudio(Long idEstudio);
@@ -247,6 +253,16 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	@Query("select a from Archivo a "
 		+ "where a.idOtroRequisito = :idOtroRequisito ")
 	List<Archivo> obtenerArchivoDjAsociado(Long idOtroRequisito);
+
+	@Query("select a from Archivo a "
+		+"left join fetch a.estado e "
+		+ "where a.idContrato=:idContrato")
+	public List<Archivo> findByIdContrato(Long idContrato);
+
+	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+ "where a.idSoliPerfCont=:idSoliPerfCont")
+		public List<Archivo> findByIdSoliPerfCont(Long idSoliPerfCont);
 
 	@Query("select a from Archivo a "
 			+"left join fetch a.estado e "

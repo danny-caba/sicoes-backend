@@ -44,4 +44,6 @@ public interface PropuestaProfesionalService extends BaseService<PropuestaProfes
 
 	public List<PropuestaProfesional> listarNoAceptados(String propuestaUuid, Contexto contexto);
 
+	public List<Object[]> obtenerPersonalPropuesto(Long idSoliPerfCont);
+
 }

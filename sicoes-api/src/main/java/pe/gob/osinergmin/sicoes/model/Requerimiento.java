@@ -58,8 +58,29 @@ public class Requerimiento extends BaseModel implements Serializable {
     @JoinColumn(name="ID_SUPERVISORA")
     private Supervisora supervisora;
 
+    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
+    private List<RequerimientoAprobacion> reqAprobaciones;
+
     @Transient
     private Usuario usuarioCreador;
+
+    @Transient
+    private String tipoAprobacion;
+
+    @Transient
+    private String estadoFirmaJefeUnidad;
+
+    @Transient
+    private String estadoFirmaGerente;
+
+    @Transient
+    private String estadoAprobacionGPPM;
+
+    @Transient
+    private String estadoAprobacionGSE;
+
+    @Transient
+    private List<Archivo> archivos;
 
     public Long getIdRequerimiento() {
         return idRequerimiento;
@@ -157,4 +178,51 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.usuarioCreador = usuarioCreador;
     }
 
+    public String getTipoAprobacion() {
+        return tipoAprobacion;
+    }
+
+    public void setTipoAprobacion(String tipoAprobacion) {
+        this.tipoAprobacion = tipoAprobacion;
+    }
+
+    public String getEstadoFirmaJefeUnidad() {
+        return estadoFirmaJefeUnidad;
+    }
+
+    public void setEstadoFirmaJefeUnidad(String estadoFirmaJefeUnidad) {
+        this.estadoFirmaJefeUnidad = estadoFirmaJefeUnidad;
+    }
+
+    public String getEstadoFirmaGerente() {
+        return estadoFirmaGerente;
+    }
+
+    public void setEstadoFirmaGerente(String estadoFirmaGerente) {
+        this.estadoFirmaGerente = estadoFirmaGerente;
+    }
+
+    public String getEstadoAprobacionGPPM() {
+        return estadoAprobacionGPPM;
+    }
+
+    public void setEstadoAprobacionGPPM(String estadoAprobacionGPPM) {
+        this.estadoAprobacionGPPM = estadoAprobacionGPPM;
+    }
+
+    public String getEstadoAprobacionGSE() {
+        return estadoAprobacionGSE;
+    }
+
+    public void setEstadoAprobacionGSE(String estadoAprobacionGSE) {
+        this.estadoAprobacionGSE = estadoAprobacionGSE;
+    }
+
+    public List<Archivo> getArchivos() {
+        return archivos;
+    }
+
+    public void setArchivos(List<Archivo> archivos) {
+        this.archivos = archivos;
+    }
 }

@@ -4,9 +4,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 
 import java.util.Date;
+import java.util.Optional;
 
 public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoInvitacion, Long> {
 
@@ -30,7 +32,8 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
                                                       Pageable pageable);
 
     @Query(value="select i from RequerimientoInvitacion i " +
-            "where i.idRequerimientoInvitacion = :idInvitacion ")
-    RequerimientoInvitacion obtener(Long idInvitacion);
+            "where i.requerimientoInvitacionUuid = :uuid " +
+            "and i.flagActivo = 1")
+    Optional<RequerimientoInvitacion> obtenerPorUuid(@Param("uuid") String uuid);
 
 }

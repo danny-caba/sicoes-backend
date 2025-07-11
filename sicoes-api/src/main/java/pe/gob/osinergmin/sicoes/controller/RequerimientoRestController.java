@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
+import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -51,4 +52,15 @@ public class RequerimientoRestController extends BaseRestController {
         return requerimientoService.obtenerPorId(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parámetros inválidos"));
     }
 
+    @PatchMapping("/{uuid}/aprobar")
+    @Raml("requerimiento.obtener.properties")
+    public Requerimiento aprobar(@PathVariable("uuid") String uuid, @RequestBody RequerimientoAprobacionDTO aprobacion) {
+        return requerimientoService.aprobar(uuid, aprobacion, getContexto());
+    }
+
+    @GetMapping("/aprobar")
+    @Raml("requerimiento.aprobar.properties")
+    public Page<Requerimiento> listarRequerimientosPorAprobar(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable, Contexto contexto) {
+        return requerimientoService.listarPorAprobar(filtros, pageable, contexto);
+    }
 }

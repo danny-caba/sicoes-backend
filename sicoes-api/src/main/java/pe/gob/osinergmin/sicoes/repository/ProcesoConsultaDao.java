@@ -60,7 +60,8 @@ public interface ProcesoConsultaDao extends JpaRepository<ProcesoConsulta, Long>
             + "left join fetch c.estado e "
             + "left join fetch c.seccion s "
             + "where (:idProceso = p.idProceso) "
+            + "and (:idUsuario = c.usuCreacion) "
             + "order by c.idProcesoConsulta")
-    List<ProcesoConsulta> listarConsultasNoEnviado(Long idProceso);
+    List<ProcesoConsulta> listarConsultasNoEnviado(Long idProceso, String idUsuario);
 
 }

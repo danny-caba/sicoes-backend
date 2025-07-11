@@ -119,7 +119,7 @@ public class ProcesoDocumentoServiceImpl implements ProcesoDocumentoService {
 		archivo.setDescripcion(documentName);
 		archivo.setIdProceso(idProceso);
 
-		Archivo archivoSave = archivoService.guardarEnSiged(idProceso, archivo, contexto);
+		Archivo archivoSave = archivoService.guardarExcelEnSiged(idProceso, archivo, contexto);
 
 		return guardarProcesoDocumento(idProceso, contexto, archivoSave, documentName, tipoArchivo, idEtapa, false);
 	}

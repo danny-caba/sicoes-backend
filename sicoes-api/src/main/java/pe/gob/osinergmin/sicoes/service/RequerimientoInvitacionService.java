@@ -15,6 +15,6 @@ public interface RequerimientoInvitacionService extends BaseService<Requerimient
 
     Page<RequerimientoInvitacion> obtener(Long idEstado, String fechaInicioInvitacion, String fechaFinInvitacion, Contexto contexto, Pageable pageable);
 
-    Requerimiento evaluar(Long id, ListadoDetalleDTO estado, Contexto contexto);
+    Requerimiento evaluar(String  uuid, ListadoDetalleDTO estado, Contexto contexto);
 
 }

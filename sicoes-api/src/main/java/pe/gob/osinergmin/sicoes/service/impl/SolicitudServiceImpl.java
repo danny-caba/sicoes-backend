@@ -53,6 +53,7 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SneApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
+import pe.gob.osinergmin.sicoes.model.Contrato;
 import pe.gob.osinergmin.sicoes.model.DictamenEvaluacion;
 import pe.gob.osinergmin.sicoes.model.Documento;
 import pe.gob.osinergmin.sicoes.model.Estudio;
@@ -61,6 +62,7 @@ import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.model.Persona;
 import pe.gob.osinergmin.sicoes.model.Representante;
+import pe.gob.osinergmin.sicoes.model.ReqInicioServicio;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
@@ -68,12 +70,14 @@ import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.model.SupervisoraRepresentante;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.ContratoDao;
 import pe.gob.osinergmin.sicoes.repository.DocumentoDao;
 import pe.gob.osinergmin.sicoes.repository.EstudioDao;
 import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.PersonaDao;
 import pe.gob.osinergmin.sicoes.repository.RepresentanteDao;
+import pe.gob.osinergmin.sicoes.repository.ReqInicioServicioDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.AsignacionService;
@@ -199,6 +203,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 	
 	@Autowired
 	private SupervisoraDictamenService supervisoraDictamenService;
+	
+	@Autowired
+	private ReqInicioServicioDao reqInicioServicioDao;
+	
+	@Autowired
+	private ContratoDao contratoDao;
 
 	public boolean validarJuridicoPostor(String solicitudUuid) {
 		ListadoDetalle tipoPersona = obtenerTipoPersona(solicitudUuid);
@@ -2001,6 +2011,26 @@ public class SolicitudServiceImpl implements SolicitudService {
 
 		return page;
 	}
+	
+	@Override
+	public Page<Contrato> buscarAprobadorContratos(String nroExpediente, String contratista, String idTipoContrato,
+			String idTipoAprobacion, Pageable pageable, Contexto contexto) {
+		String codigoEstadoBorrador = Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR;
+		Long idUsuario = contexto.getUsuario().getIdUsuario();
+		if (StringUtils.isBlank(nroExpediente)) {
+			nroExpediente = null;
+		} else {
+			nroExpediente = "%" + nroExpediente + "%";
+		}
+		if (StringUtils.isBlank(contratista)) {
+			contratista = null;
+		} else {
+			contratista = "%" + contratista.toUpperCase() + "%";
+		}
+		Page<Contrato> page = contratoDao.obtenerContratosAprobados(nroExpediente, contratista, idTipoContrato,
+				idTipoAprobacion, pageable);
+		return page;
+	}
 
 	private Archivo generarSubsanacionPN(Solicitud solicitud, Contexto contexto) throws Exception {
 		Long idSolicitud = solicitud.getIdSolicitud();
@@ -3377,12 +3407,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 		}
 		return solicitudDao.obtenerId(solicitudUuid);
 	}
-
+	
 	@Override
 	public List<PerfilAprobador> buscarAprobadoresPorSolicitud(Long idSolicitud) {
 	    return solicitudDao.buscarAprobadoresPorSolicitud(idSolicitud);
 	}
-
+	
 	@Override
 	public Solicitud obtenerSolicitudAprobada(String codigoRuc) {
 		return solicitudDao.obtenerAprobadaPorRuc(codigoRuc);
@@ -4104,5 +4134,26 @@ public class SolicitudServiceImpl implements SolicitudService {
 		}
 		return false;
 	}
+
+    @Transactional
+    public void guardarLote(List<ReqInicioServicio> registros) {
+        for (ReqInicioServicio body : registros) {
+            Optional<ReqInicioServicio> existente = reqInicioServicioDao.findBySolicitudPerfilIdAndTipoDocumento(
+                body.getSolicitudPerfilId(), body.getTipoDocumento()
+            );
+            ReqInicioServicio e = existente.orElse(new ReqInicioServicio());
+            e.setSolicitudPerfilId(body.getSolicitudPerfilId());
+            e.setSupervisoraId(body.getSupervisoraId());
+            e.setTipoDocumento(body.getTipoDocumento());
+            e.setArchivoId(body.getArchivoId());
+            e.setFechaInicio(body.getFechaInicio());
+            e.setFechaFin(body.getFechaFin());
+            e.setEstadoEvaluacion(null); // OBLIGATORIAMENTE en null
+            e.setUsuarioId(null);
+            e.setFechaEvaluacion(null);
+            e.setObservacion(null);
+            reqInicioServicioDao.save(e);
+        }
+    }
 
 }

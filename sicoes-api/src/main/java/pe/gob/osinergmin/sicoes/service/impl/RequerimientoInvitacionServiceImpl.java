@@ -2,6 +2,8 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.INVITACION_NO_ENCONTRADA;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -103,7 +105,6 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         return null;
     }
 
-
     @Override
     public void eliminar(Long id, Contexto contexto) {
         logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", id, contexto.getUsuario());
@@ -143,10 +144,10 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Requerimiento evaluar(Long id, ListadoDetalleDTO estado, Contexto contexto) {
-
-        RequerimientoInvitacion invitacion = requerimientoInvitacionDao.obtener(id);
-        if (!invitacion.getRequerimiento().getEstado().getCodigo()
+    public Requerimiento evaluar(String  uuid, ListadoDetalleDTO estado, Contexto contexto) {
+        RequerimientoInvitacion invitacion = requerimientoInvitacionDao.obtenerPorUuid(uuid)
+                .orElseThrow(() -> new ValidacionException(INVITACION_NO_ENCONTRADA));
+        if(!invitacion.getRequerimiento().getEstado().getCodigo()
                 .equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_EN_PROCESO);
         }
@@ -154,8 +155,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         ListadoDetalle estadoInvitacion = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, estado.getCodigo());
         Requerimiento requerimiento = requerimientoDao.obtener(invitacion.getRequerimiento().getIdRequerimiento())
-                .orElseThrow(() -> new RuntimeException("Requerimiento no encontrado con ID: " + id));
-        if (estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
+                .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
+        if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaAceptacion(new Date());
@@ -171,9 +172,9 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
             //insert en req aprobacion
             ListadoDetalle tipoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_TIPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_TIPO_APROBACION.APROBAR);
+                    Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.APROBAR);
             ListadoDetalle grupoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_GRUPO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GPPM);
+                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GPPM);
             ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
             RequerimientoAprobacion aprobacion = new RequerimientoAprobacion();
@@ -189,7 +190,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             esAprobacion = true;
 
             //Notificacion Asignacion Requerimiento
-            //notificacionService.enviarMensajeAsignacionRequerimiento(requerimiento, contexto);
+            notificacionService.enviarMensajeRequerimientoPorAprobar(requerimiento, contexto);
 
         } else if (estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.RECHAZADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
@@ -199,10 +200,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             requerimientoInvitacionDao.save(invitacion);
         }
 
-        //select req para el response
-
         //Enviar notificacion
-        //notificacionService.enviarMensajeAprobacionRechazoReqInvitacion(invitacion, esAprobacion, contexto);
+        notificacionService.enviarMensajeAprobacionRechazoReqInvitacion(invitacion, esAprobacion, contexto);
         return requerimiento;
     }
 

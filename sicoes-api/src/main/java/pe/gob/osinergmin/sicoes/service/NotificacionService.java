@@ -47,5 +47,7 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto);
 	void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario usuario, Requerimiento requerimiento, Contexto contexto);
 	void enviarRequerimientoInvitacion(Usuario usuario, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
-	
+	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto);
+	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto);
+	void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto);
 }

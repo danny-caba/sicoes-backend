@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.ConfBandejaService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -289,10 +290,22 @@ public class ConfBandejaServiceImpl implements ConfBandejaService {
 		 
 	}
 	
-	@Override
+	/*@Override
 	public List<Division> obtenerDivisiones() {
 		return divisionDao.obtener();
 		 
+	}*/
+	
+	@Override
+	public List<DivisionDTO> obtenerDivisiones() {
+	    return divisionDao.obtener().stream()
+	        .map(d -> {
+	            DivisionDTO dto = new DivisionDTO();
+	            dto.setIdDivision(d.getIdDivision());
+	            dto.setDeDivision(d.getDeDivision());
+	            return dto;
+	        })
+	        .collect(Collectors.toList());
 	}
 	
 	@Override
