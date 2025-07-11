@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.model.dto;
 
 public class DivisionDTO {
+
 	private Long idDivision;
 	private String deDivision;
 

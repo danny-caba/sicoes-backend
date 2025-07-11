@@ -171,6 +171,10 @@ public class Constantes {
 			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
 			public static final String INFORME_REQUERIMIENTO = "TA28";
 
+			public static final String REQUERIMIENTO = "TA26";
+			public static final String APROBACION_REQUERIMIENTO = "TA27";
+			public static final String INFORME_REQUERIMIENTO = "TA28";
+
 		}
 		
 		public static final class ESTADO_REQUISITO {
@@ -497,7 +501,7 @@ public class Constantes {
 			public static final String ACEPTADO			= "ACEPTADO";
 			public static final String RECHAZADO		= "RECHAZADO";
 			public static final String CADUCADO			= "CADUCADO";	
-			
+			public static final String ARCHIVADO			= "ARCHIVADO";
 		}
 
 		public static final class ETAPA_PROCESO {
@@ -947,6 +951,7 @@ public class Constantes {
 		public static final String ARCHIVO_DUPLICADO = "V01015";
 		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
 		public static final String DJ_AUSENTE = "V01017";
+
 		public static final String FECHA_FINAL_CONTRATO = "V01018";
 		public static final String SIAF_NO_ENVIADO = "V01019";
 		public static final String REQUERIMIENTO_NO_ENCONTRADO = "V01020";
@@ -954,6 +959,8 @@ public class Constantes {
 		public static final String APROBACION_NO_ENCONTRADA = "V01022";
 		public static final String INVITACION_NO_ENCONTRADA = "V01023";
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
+    public static final String ERROR_LISTA_DIVISIONES = "V01025";
+
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -964,6 +971,7 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
+		public static final String COORDINADOR_GESTION = "13";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

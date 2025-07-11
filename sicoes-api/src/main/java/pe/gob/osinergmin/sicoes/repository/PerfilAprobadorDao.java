@@ -1,10 +1,12 @@
 package pe.gob.osinergmin.sicoes.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,5 +71,7 @@ public interface PerfilAprobadorDao extends JpaRepository<PerfilAprobador, Long>
 	           "JOIN pa.aprobadorG1 ag1 " + // Join explícito con la entidad Usuario (alias ag1)
 	           "WHERE ag1.idUsuario = :idAprobador") // Comparación con el ID del usuario
 	public List<Integer> obtenerIdsPerfilesAsignadosAprobador(Long idAprobador);
+
+	Optional<PerfilAprobador> findFirstByPerfilIdListadoDetalle(Long idPerfil);
 
 }

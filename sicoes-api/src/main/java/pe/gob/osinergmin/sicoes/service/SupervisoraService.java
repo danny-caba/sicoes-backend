@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.http.ResponseEntity;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SuspensionCancelacion;
+import pe.gob.osinergmin.sicoes.model.dto.ProfesionalPerfilDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface SupervisoraService extends BaseService<Supervisora, Long>  {
@@ -57,7 +59,7 @@ public interface SupervisoraService extends BaseService<Supervisora, Long>  {
 
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc);
 
-
+	ResponseEntity<List<ProfesionalPerfilDTO>> listarProfesionalesPerfil(Long idPerfil);
 	
 
 

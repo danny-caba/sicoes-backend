@@ -15,13 +15,16 @@ public interface RequerimientoService extends BaseService<Requerimiento, Long> {
 
     Page<Requerimiento> listar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
 
-    Requerimiento archivar(Long id, String observacion, Contexto contexto);
+    Requerimiento archivar(Requerimiento requerimiento, Contexto contexto);
 
     Optional<Requerimiento> obtenerPorId(Long id);
 
     Long obtenerId(String requerimientoUuid);
 
+    Requerimiento obtenerPorUuid(String requerimientoUuid);
+
     Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto);
 
     Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
+  
 }

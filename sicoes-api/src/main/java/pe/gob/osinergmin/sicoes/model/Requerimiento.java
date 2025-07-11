@@ -54,12 +54,9 @@ public class Requerimiento extends BaseModel implements Serializable {
     @Column(name = "NU_SIAF")
     private String nuSiaf;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ID_SUPERVISORA")
     private Supervisora supervisora;
-
-    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RequerimientoInvitacion> reqInvitaciones;
 
     @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
     private List<RequerimientoAprobacion> reqAprobaciones;
@@ -171,22 +168,6 @@ public class Requerimiento extends BaseModel implements Serializable {
 
     public void setSupervisora(Supervisora supervisora) {
         this.supervisora = supervisora;
-    }
-
-    public List<RequerimientoInvitacion> getReqInvitaciones() {
-        return reqInvitaciones;
-    }
-
-    public List<RequerimientoAprobacion> getReqAprobaciones() {
-        return reqAprobaciones;
-    }
-
-    public void setReqAprobaciones(List<RequerimientoAprobacion> reqAprobaciones) {
-        this.reqAprobaciones = reqAprobaciones;
-    }
-
-    public void setReqInvitaciones(List<RequerimientoInvitacion> reqInvitaciones) {
-        this.reqInvitaciones = reqInvitaciones;
     }
 
     public Usuario getUsuarioCreador() {
