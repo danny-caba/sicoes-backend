@@ -35,6 +35,7 @@ import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
@@ -1151,13 +1152,13 @@ public class NotificacionServiceImpl implements NotificacionService{
 	}
 
 	@Override
-	public void enviarRequerimientoInvitacion(Usuario usuarioSupervisorPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+	public void enviarRequerimientoInvitacion(Supervisora supervisoraPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
 			Notificacion notificacion = new Notificacion();
-			String correos = usuarioSupervisorPN.getCorreo();
+			String correos = supervisoraPN.getCorreo();
 			notificacion.setCorreo(correos);
 			notificacion.setAsunto("INVITACIÓN PERSONA NATURAL S4");
 			final Context ctx = new Context();
-			ctx.setVariable("nombre_supervisor_pn", usuarioSupervisorPN.getNombreUsuario());
+			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
 			Requerimiento requerimiento = requerimientoDao.obtener(requerimientoInvitacion.getRequerimiento().getIdRequerimiento())
 				.orElseThrow(() -> new IllegalArgumentException("Requerimiento no encontrado"));
 			ctx.setVariable("division", requerimiento.getDivision().getDeDivision());

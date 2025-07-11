@@ -1034,4 +1034,9 @@ public class Constantes {
 		public static final String ARCHIVADO 		= "ARCHIVADO";
 	}
 
+	public static final class FLAG_INVITACION {
+		public static final String ACTIVO 		= "1";
+		public static final String INACTIVO 		= "0";
+	}
+
 }

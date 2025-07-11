@@ -5,6 +5,7 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECH
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.INVITACION_NO_ENCONTRADA;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitacionService {
@@ -67,6 +69,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     private SigedApiConsumer sigedApiConsumer;
 
     @Override
+    @Transactional
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
         ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
@@ -75,9 +78,9 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         if (estadoArchivado == null) {
             throw new ValidacionException("Estado ARCHIVADO no configurado en ListadoDetalle");
         }
-        if (estadoArchivado.getCodigo().equals(requerimientoInvitacion.getEstado().getCodigo())) {
-            throw new ValidacionException("No se puede archivar una invitación en estado ARCHIVADO");
-        }
+//        if (estadoArchivado.getCodigo().equals(requerimientoInvitacion.getEstado().getCodigo())) {
+//            throw new ValidacionException("No se puede archivar una invitación en estado ARCHIVADO");
+//        }
         ListadoDetalle estadoInvitado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
                 Constantes.LISTADO.ESTADO_INVITACION.INVITADO
@@ -90,9 +93,17 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
         Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, 3L, "H");
         requerimientoInvitacion.setFechaCaducidad(fechaCaducidad);
+
+        // Asignar flag activo
+        requerimientoInvitacion.setFlagActivo(Constantes.FLAG_INVITACION.ACTIVO);
+
+        // Asignar uuid
+        requerimientoInvitacion.setRequerimientoInvitacionUuid(UUID.randomUUID().toString());
+
         AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
-        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora());
-        notificacionService.enviarRequerimientoInvitacion(usuarioSupervisorPN, requerimientoInvitacion, contexto);
+//        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora());
+        Supervisora supervisoraPN = supervisoraService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora(), contexto);
+        notificacionService.enviarRequerimientoInvitacion(supervisoraPN, requerimientoInvitacion, contexto);
         return requerimientoInvitacionDao.save(requerimientoInvitacion);
     }
 

@@ -6,6 +6,7 @@ import gob.osinergmin.siged.remote.rest.ro.in.DocumentoInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.ClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -121,13 +122,15 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
     public RequerimientoInforme guardar(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
         validarInformeDetalle(requerimientoInformeDetalle);
         try {
-            Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
-                    .orElseThrow(() -> new IllegalArgumentException("Requerimiento no encontrado"));
+//            Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
+//                    .orElseThrow(() -> new IllegalArgumentException("Requerimiento no encontrado"));
+              Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
             RequerimientoInforme requerimientoInformeDB = guardarRequerimientoInforme(requerimiento, contexto);
             guardarDetalle(requerimientoInformeDetalle, requerimientoInformeDB, contexto);
             cambiarEstadoRequerimiento(requerimiento, contexto);
             ExpedienteInRO expedienteInRO = crearExpediente(
-                    requerimientoInformeDB,
+                    requerimiento,
                     Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
             );
             List<File> archivosAlfresco = new ArrayList<>();
@@ -136,13 +139,10 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             archivoService.guardarXRequerimientoInforme(archivo, contexto);
             File file = fileRequerimiento(archivo, requerimiento.getIdRequerimiento());
             archivosAlfresco.add(file);
-            ExpedienteOutRO expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
-            logger.info("SIGED RESULT: {}", expedienteOutRO.getMessage());
-            if (expedienteOutRO.getResultCode() != 1) {
-                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, expedienteOutRO.getMessage());
-            }
-            if (expedienteOutRO.getResultCode() == 1) {
-                requerimiento.setNuExpediente(expedienteOutRO.getCodigoExpediente());
+            DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+            logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
+            if (documentoOutRO.getResultCode() != 1) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, documentoOutRO.getMessage());
             }
             return requerimientoInformeDB;
         } catch (Exception ex) {
@@ -151,7 +151,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         }
     }
 
-    private ExpedienteInRO crearExpediente(RequerimientoInforme requerimientoInforme, Integer codigoTipoDocumento) {
+    private ExpedienteInRO crearExpediente(Requerimiento requerimiento, Integer codigoTipoDocumento) {
         ExpedienteInRO expediente = new ExpedienteInRO();
         DocumentoInRO documento = new DocumentoInRO();
         ClienteListInRO clientes = new ClienteListInRO();
@@ -162,8 +162,8 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         List<DireccionxClienteInRO> direccion = new ArrayList<>();
         expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
         expediente.setDocumento(documento);
-        if (requerimientoInforme.getRequerimiento().getNuExpediente() != null) {
-            expediente.setNroExpediente(requerimientoInforme.getRequerimiento().getNuExpediente());
+        if (requerimiento.getNuExpediente() != null) {
+            expediente.setNroExpediente(requerimiento.getNuExpediente());
         }
         documento.setAsunto(INFORME_REQUERIMIENTO);
         documento.setAppNameInvokes(SIGLA_PROYECTO);
