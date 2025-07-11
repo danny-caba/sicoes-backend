@@ -21,7 +21,7 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="objectivo" class="java.lang.String"/>
+	<field name="objetivo" class="java.lang.String"/>
 	<field name="perfilRequerido" class="java.lang.String"/>
 	<field name="plazoEjecucion" class="java.lang.String"/>
 	<field name="costoServicio" class="java.lang.String"/>
@@ -89,7 +89,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{objectivo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{objetivo}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="52" width="425" height="18" uuid="fd103e75-146d-4028-9cee-37e56d025971"/>
@@ -180,14 +180,14 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{terminoServicio}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{terminoServicio} != null ? $F{terminoServicio} : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement x="0" y="268" width="425" height="18" uuid="87bb2737-3631-4ca3-999a-d42dd7c43ff5"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{entregables}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{entregables} != null ? $F{entregables} : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement x="0" y="320" width="425" height="18" uuid="70ba552c-d47a-4309-882a-403ac0557d94"/>
