@@ -18,11 +18,11 @@ import pe.gob.osinergmin.sicoes.model.Supervisora;
 @Repository
 public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
 
-    @Query(value = "SELECT r FROM Requerimiento r " +
+    @Query(value = "SELECT DISTINCT r FROM Requerimiento r " +
             "LEFT JOIN FETCH r.division " +
             "LEFT JOIN FETCH r.perfil " +
             "LEFT JOIN FETCH r.estado " +
-            "LEFT JOIN r.reqInvitaciones i " +
+            "LEFT JOIN FETCH r.reqInvitaciones i " +
             "WHERE (:division IS NULL OR r.division = :division) " +
             "AND (:perfil IS NULL OR r.perfil = :perfil) " +
             "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
@@ -30,13 +30,13 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
             "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion) " +
             "ORDER BY r.nuExpediente ASC",
-            countQuery = "SELECT COUNT(r) FROM Requerimiento r " +
+            countQuery = "SELECT COUNT(DISTINCT r) FROM Requerimiento r " +
                     "LEFT JOIN r.reqInvitaciones i " +
                     "WHERE (:division IS NULL OR r.division = :division) " +
                     "AND (:perfil IS NULL OR r.perfil = :perfil) " +
                     "AND (:supervisora IS NULL OR i.supervisora = :supervisora) " +
-                    "AND (:fechaInicio IS NULL or r.feRegistro>=:fechaInicio) " +
-                    "AND (:fechaFin IS NULL or r.feRegistro<=:fechaFin) " +
+                    "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
                     "AND (:estadoAprobacion IS NULL OR r.estado = :estadoAprobacion)")
     Page<Requerimiento> listarRequerimientos(@Param("division") Division division,
                                              @Param("perfil") ListadoDetalle perfil,
@@ -49,4 +49,9 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
     @Query("SELECT r FROM Requerimiento r WHERE r.id = :id")
     Optional<Requerimiento> obtener(@Param("id") Long id);
 
+    @Query("select r.idRequerimiento from Requerimiento r where r.requerimientoUuid=:requerimientoUuid")
+    Long obtenerId(String requerimientoUuid);
+
+    @Query("SELECT r FROM Requerimiento r WHERE r.requerimientoUuid = :uuid")
+    Optional<Requerimiento> obtenerPorUuid(@Param("uuid") String uuid);
 }

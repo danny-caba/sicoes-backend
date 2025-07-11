@@ -14,12 +14,13 @@ import pe.gob.osinergmin.sicoes.util.bean.siged.ResponseUserListDto;
 
 public interface SigedApiConsumer {
 	
-	public ExpedienteOutRO crearExpediente(ExpedienteInRO expediente, List<File> archivos) throws Exception;
+	public ExpedienteOutRO crearExpediente(ExpedienteInRO expediente, List<File> archivos);
 	public DocumentoOutRO agregarDocumento(ExpedienteInRO expediente, List<File> archivos) throws Exception;
 	public Date calcularFechaFin(Date fechaInicio, Long diasPlazo,String tipoPlazo);	
 	public BaseOutRO archivarExpediente(String numeroExpediente, String observacion);
 	public List<ResponseUserListDto.Usuario> listarUsuariosSiged() throws Exception;
 	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
 	public ClienteConsultaOutRO buscarCliente(Integer tipoIdentificacion, String nroIdentificacion);
+	public DocumentoOutRO agregarDocumentoVersionar(ExpedienteInRO expediente, List<File> archivos) throws Exception;
 	
 }

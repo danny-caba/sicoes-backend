@@ -1,20 +1,10 @@
 package pe.gob.osinergmin.sicoes.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +31,7 @@ public class Requerimiento extends BaseModel implements Serializable {
     private ListadoDetalle estado;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name = "FE_REGISTRO")
     private Date feRegistro;
 
@@ -64,8 +54,36 @@ public class Requerimiento extends BaseModel implements Serializable {
     @Column(name = "NU_SIAF")
     private String nuSiaf;
 
-    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_SUPERVISORA")
+    private Supervisora supervisora;
+
+    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequerimientoInvitacion> reqInvitaciones;
+
+    @OneToMany(mappedBy = "requerimiento", fetch = FetchType.LAZY)
+    private List<RequerimientoAprobacion> reqAprobaciones;
+
+    @Transient
+    private Usuario usuarioCreador;
+
+    @Transient
+    private String tipoAprobacion;
+
+    @Transient
+    private String estadoFirmaJefeUnidad;
+
+    @Transient
+    private String estadoFirmaGerente;
+
+    @Transient
+    private String estadoAprobacionGPPM;
+
+    @Transient
+    private String estadoAprobacionGSE;
+
+    @Transient
+    private List<Archivo> archivos;
 
     public Long getIdRequerimiento() {
         return idRequerimiento;
@@ -147,12 +165,83 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.nuSiaf = nuSiaf;
     }
 
+    public Supervisora getSupervisora() {
+        return supervisora;
+    }
+
+    public void setSupervisora(Supervisora supervisora) {
+        this.supervisora = supervisora;
+    }
+
     public List<RequerimientoInvitacion> getReqInvitaciones() {
         return reqInvitaciones;
+    }
+
+    public List<RequerimientoAprobacion> getReqAprobaciones() {
+        return reqAprobaciones;
+    }
+
+    public void setReqAprobaciones(List<RequerimientoAprobacion> reqAprobaciones) {
+        this.reqAprobaciones = reqAprobaciones;
     }
 
     public void setReqInvitaciones(List<RequerimientoInvitacion> reqInvitaciones) {
         this.reqInvitaciones = reqInvitaciones;
     }
 
+    public Usuario getUsuarioCreador() {
+        return usuarioCreador;
+    }
+
+    public void setUsuarioCreador(Usuario usuarioCreador) {
+        this.usuarioCreador = usuarioCreador;
+    }
+
+    public String getTipoAprobacion() {
+        return tipoAprobacion;
+    }
+
+    public void setTipoAprobacion(String tipoAprobacion) {
+        this.tipoAprobacion = tipoAprobacion;
+    }
+
+    public String getEstadoFirmaJefeUnidad() {
+        return estadoFirmaJefeUnidad;
+    }
+
+    public void setEstadoFirmaJefeUnidad(String estadoFirmaJefeUnidad) {
+        this.estadoFirmaJefeUnidad = estadoFirmaJefeUnidad;
+    }
+
+    public String getEstadoFirmaGerente() {
+        return estadoFirmaGerente;
+    }
+
+    public void setEstadoFirmaGerente(String estadoFirmaGerente) {
+        this.estadoFirmaGerente = estadoFirmaGerente;
+    }
+
+    public String getEstadoAprobacionGPPM() {
+        return estadoAprobacionGPPM;
+    }
+
+    public void setEstadoAprobacionGPPM(String estadoAprobacionGPPM) {
+        this.estadoAprobacionGPPM = estadoAprobacionGPPM;
+    }
+
+    public String getEstadoAprobacionGSE() {
+        return estadoAprobacionGSE;
+    }
+
+    public void setEstadoAprobacionGSE(String estadoAprobacionGSE) {
+        this.estadoAprobacionGSE = estadoAprobacionGSE;
+    }
+
+    public List<Archivo> getArchivos() {
+        return archivos;
+    }
+
+    public void setArchivos(List<Archivo> archivos) {
+        this.archivos = archivos;
+    }
 }

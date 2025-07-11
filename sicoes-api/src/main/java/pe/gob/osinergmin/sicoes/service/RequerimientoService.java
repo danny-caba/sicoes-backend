@@ -4,11 +4,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
+import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.Optional;
 
-public interface RequerimientoService  extends BaseService<Requerimiento, Long> {
+public interface RequerimientoService extends BaseService<Requerimiento, Long> {
 
     Requerimiento guardar(Requerimiento requerimiento, Contexto contexto);
 
@@ -18,4 +19,9 @@ public interface RequerimientoService  extends BaseService<Requerimiento, Long> 
 
     Optional<Requerimiento> obtenerPorId(Long id);
 
+    Long obtenerId(String requerimientoUuid);
+
+    Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto);
+
+    Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
 }
