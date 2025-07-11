@@ -5,7 +5,6 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECH
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.INVITACION_NO_ENCONTRADA;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
@@ -76,32 +74,23 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                 Constantes.LISTADO.ESTADO_INVITACION.ARCHIVADO
         );
         if (estadoArchivado == null) {
-            throw new ValidacionException("Estado ARCHIVADO no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ARCHIVADO_NO_CONFIGURADO_EN_LISTADO_DETALLE);
         }
-//        if (estadoArchivado.getCodigo().equals(requerimientoInvitacion.getEstado().getCodigo())) {
-//            throw new ValidacionException("No se puede archivar una invitación en estado ARCHIVADO");
-//        }
         ListadoDetalle estadoInvitado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
                 Constantes.LISTADO.ESTADO_INVITACION.INVITADO
         );
         if (estadoInvitado == null) {
-            throw new ValidacionException("Estado INVITADO no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_INVITADO_NO_CONFIGURADO_EN_LISTADO_DETALLE);
         }
         requerimientoInvitacion.setEstado(estadoInvitado);
         Date fechaInvitacion = new Date();
         requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
         Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, 3L, "H");
         requerimientoInvitacion.setFechaCaducidad(fechaCaducidad);
-
-        // Asignar flag activo
         requerimientoInvitacion.setFlagActivo(Constantes.FLAG_INVITACION.ACTIVO);
-
-        // Asignar uuid
         requerimientoInvitacion.setRequerimientoInvitacionUuid(UUID.randomUUID().toString());
-
         AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
-//        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora());
         Supervisora supervisoraPN = supervisoraService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora(), contexto);
         notificacionService.enviarRequerimientoInvitacion(supervisoraPN, requerimientoInvitacion, contexto);
         return requerimientoInvitacionDao.save(requerimientoInvitacion);

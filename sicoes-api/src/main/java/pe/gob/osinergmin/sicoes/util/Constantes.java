@@ -842,8 +842,8 @@ public class Constantes {
 		public static final String ID_REQUERIMIENTO_NO_ENVIADO  = "V00657";
 		public static final String REQUERIMIENTO_INFORME_DETALLE_NULO  = "V00658";
 		public static final String REQUERIMIENTO_INFORME_NULO  = "V00659";
-
-
+		public static final String ESTADO_ARCHIVADO_NO_CONFIGURADO_EN_LISTADO_DETALLE  = "V00660";
+		public static final String ESTADO_INVITADO_NO_CONFIGURADO_EN_LISTADO_DETALLE  = "V00661";
 		
 		public static final String  SUSPENSION_CANCELACION_FECHA_INICIO_MAYOR= "V00700";
 		public static final String SUSPENSION_CANCELACION_TIENE_SUSPENSION_CANCELACION_PENDIENTE = "V00701";

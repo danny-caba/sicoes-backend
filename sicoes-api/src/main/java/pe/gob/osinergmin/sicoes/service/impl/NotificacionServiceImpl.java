@@ -1160,10 +1160,16 @@ public class NotificacionServiceImpl implements NotificacionService{
 			final Context ctx = new Context();
 			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
 			Requerimiento requerimiento = requerimientoDao.obtener(requerimientoInvitacion.getRequerimiento().getIdRequerimiento())
-				.orElseThrow(() -> new IllegalArgumentException("Requerimiento no encontrado"));
+				.orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
+			Long tipoDocumento = supervisoraPN.getTipoDocumento().getIdListadoDetalle();
+			if (tipoDocumento == 2){
+				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
+			} else if (tipoDocumento == 3) {
+				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
+			}
 			ctx.setVariable("division", requerimiento.getDivision().getDeDivision());
-			ctx.setVariable("fechaInvitacion", requerimientoInvitacion.getFechaInvitacion());
-			ctx.setVariable("fechaCancelacion", requerimientoInvitacion.getFechaCaducidad());
+			ctx.setVariable("fechaInvitacion", DateUtil.getDate(requerimientoInvitacion.getFechaInvitacion(), "dd/MM/yyyy HH:mm"));
+			ctx.setVariable("fechaCancelacion", DateUtil.getDate(requerimientoInvitacion.getFechaCaducidad(), "dd/MM/yyyy HH:mm"));
 			String htmlContent = templateEngine.process("28-invitacion-requerimiento.html", ctx);
 			notificacion.setMensaje(htmlContent);
 			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);

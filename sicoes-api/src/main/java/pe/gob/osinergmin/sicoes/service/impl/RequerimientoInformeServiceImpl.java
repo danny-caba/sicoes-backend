@@ -7,7 +7,6 @@ import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.ClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
-import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -122,9 +121,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
     public RequerimientoInforme guardar(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
         validarInformeDetalle(requerimientoInformeDetalle);
         try {
-//            Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
-//                    .orElseThrow(() -> new IllegalArgumentException("Requerimiento no encontrado"));
-              Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
+            Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
                     .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
             RequerimientoInforme requerimientoInformeDB = guardarRequerimientoInforme(requerimiento, contexto);
             guardarDetalle(requerimientoInformeDetalle, requerimientoInformeDB, contexto);
