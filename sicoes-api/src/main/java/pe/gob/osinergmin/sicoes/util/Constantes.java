@@ -168,10 +168,6 @@ public class Constantes {
 
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
 			public static final String ARCHIVO_REQUERIMIENTO = "TA26";
-			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
-			public static final String INFORME_REQUERIMIENTO = "TA28";
-
-			public static final String REQUERIMIENTO = "TA26";
 			public static final String APROBACION_REQUERIMIENTO = "TA27";
 			public static final String INFORME_REQUERIMIENTO = "TA28";
 

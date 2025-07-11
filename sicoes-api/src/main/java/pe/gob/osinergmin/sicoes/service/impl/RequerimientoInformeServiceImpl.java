@@ -16,7 +16,15 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
+import pe.gob.osinergmin.sicoes.model.Archivo;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInformeDetalle;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
@@ -25,6 +33,7 @@ import pe.gob.osinergmin.sicoes.repository.RequerimientoInformeDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInformeService;
+import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.ArchivoUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -100,6 +109,8 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
 
     @Value("${siged.ws.cliente.osinergmin.numero.documento}")
     private String OSI_DOCUMENTO;
+    @Autowired
+    private RequerimientoService requerimientoService;
 
     @Override
     public RequerimientoInformeDetalle guardar(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
@@ -268,8 +279,8 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             throw new IllegalStateException("Estado ASIGNADO no configurado en ListadoDetalle");
         }
         ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_TIPO_APROBACION.CODIGO,
-                Constantes.LISTADO.ESTADO_TIPO_APROBACION.FIRMAR);
+                Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                Constantes.LISTADO.TIPO_APROBACION.FIRMAR);
         requerimientoAprobacion.setEstado(asignado);
         requerimientoAprobacion.setRequerimiento(requerimiento);
         requerimientoAprobacion.setTipo(tipo);

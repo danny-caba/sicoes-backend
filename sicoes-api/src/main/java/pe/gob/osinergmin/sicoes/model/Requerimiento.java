@@ -170,6 +170,14 @@ public class Requerimiento extends BaseModel implements Serializable {
         this.supervisora = supervisora;
     }
 
+    public List<RequerimientoAprobacion> getReqAprobaciones() {
+        return reqAprobaciones;
+    }
+
+    public void setReqAprobaciones(List<RequerimientoAprobacion> reqAprobaciones) {
+        this.reqAprobaciones = reqAprobaciones;
+    }
+
     public Usuario getUsuarioCreador() {
         return usuarioCreador;
     }

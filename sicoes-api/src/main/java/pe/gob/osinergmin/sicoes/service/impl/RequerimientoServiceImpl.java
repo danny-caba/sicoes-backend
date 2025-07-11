@@ -34,6 +34,10 @@ import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Division;
+import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
+import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
@@ -47,9 +51,12 @@ import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
+import pe.gob.osinergmin.sicoes.service.DivisionService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
+import pe.gob.osinergmin.sicoes.service.RolService;
+import pe.gob.osinergmin.sicoes.service.UsuarioRolService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.ArchivoUtil;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -131,9 +138,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Autowired
     private DivisionService divisionService;
-
-    @Autowired
-    private NotificacionService notificacionService;
 
     @Autowired
     private PerfilAprobadorDao perfilAprobadorDao;
@@ -505,7 +509,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Override
     public Requerimiento obtenerPorUuid(String requerimientoUuid) {
-        return requerimientoDao.findByRequerimientoUuid(requerimientoUuid);
+        return requerimientoDao.obtenerPorUuid(requerimientoUuid)
+                .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
     }
 
     private RequerimientoAprobacion asignarAprobadorG2(Requerimiento requerimiento, Contexto contexto) {
@@ -526,14 +531,14 @@ public class RequerimientoServiceImpl implements RequerimientoService {
             throw new IllegalStateException("Estado ASIGNADO no configurado en ListadoDetalle");
         }
         ListadoDetalle firmaPendiente = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_FIRMA.CODIGO,
-                Constantes.LISTADO.ESTADO_FIRMA.PENDIENTE);
+                Constantes.LISTADO.ESTADO_FIRMADO.CODIGO,
+                Constantes.LISTADO.ESTADO_FIRMADO.PENDIENTE);
         ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_GRUPO_APROBACION.CODIGO,
-                Constantes.LISTADO.ESTADO_GRUPO_APROBACION.GERENTE);
+                Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                Constantes.LISTADO.GRUPO_APROBACION.GERENTE);
         ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_TIPO_APROBACION.CODIGO,
-                Constantes.LISTADO.ESTADO_TIPO_APROBACION.APROBAR);
+                Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                Constantes.LISTADO.TIPO_APROBACION.APROBAR);
         requerimientoAprobacion.setEstado(asignado);
         requerimientoAprobacion.setRequerimiento(requerimiento);
         requerimientoAprobacion.setFirmado(firmaPendiente);
@@ -671,8 +676,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    public Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos) {
-        return this.listar(filtroRequerimientoDTO, pageable, contextos)
+    public Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contexto) {
+        return this.listar(filtroRequerimientoDTO, pageable, contexto)
                 .map(req -> {
                     req.setArchivos(new ArrayList<Archivo>());
                     Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(req.getIdRequerimiento(),

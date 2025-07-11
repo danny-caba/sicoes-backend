@@ -60,7 +60,7 @@ public class RequerimientoRestController extends BaseRestController {
 
     @GetMapping("/aprobar")
     @Raml("requerimiento.aprobar.properties")
-    public Page<Requerimiento> listarRequerimientosPorAprobar(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable, Contexto contexto) {
-        return requerimientoService.listarPorAprobar(filtros, pageable, contexto);
+    public Page<Requerimiento> listarRequerimientosPorAprobar(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable) {
+        return requerimientoService.listarPorAprobar(filtros, pageable, getContexto());
     }
 }
