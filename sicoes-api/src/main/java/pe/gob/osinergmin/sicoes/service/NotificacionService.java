@@ -7,7 +7,11 @@ import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface NotificacionService extends BaseService<Notificacion, Long> {
@@ -36,4 +40,13 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajePresentacionPropuesta(Propuesta propuesta, int numeroDocTec, int numeroDocEco, Contexto contexto);
 	public void enviarMensajeAsignacionEvaluacion03(Asignacion asignacionBD,Contexto contexto);
 	public void enviarMensajeEvaluacionPendiente(String asunto, String correo, String tipo, String table, Contexto contexto);
+	public void enviarMensajeAsignacionEvaluacion04(Long idOtroRequisito, Contexto contexto);
+	public void enviarMensajeSolicitudRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
+	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
+	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean estado, Contexto contexto);
+	void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario usuario, Requerimiento requerimiento, Contexto contexto);
+	void enviarRequerimientoInvitacion(Usuario usuario, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
+	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto);
+	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto);
+	void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto);
 }

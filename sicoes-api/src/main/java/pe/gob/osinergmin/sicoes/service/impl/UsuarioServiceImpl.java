@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,8 +39,6 @@ import gob.osinergmin.sisseg.servicio.cliente.security.SissegAuthenticationProvi
 import gob.osinergmin.sisseg.servicio.cliente.security.SissegAuthenticationToken;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
-import pe.gob.osinergmin.sicoes.model.BaseModel;
-import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Opcion;
@@ -51,7 +48,10 @@ import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioReasignacion;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.UsuarioRolConfiguracion;
-import pe.gob.osinergmin.sicoes.model.dto.*;
+import pe.gob.osinergmin.sicoes.model.dto.PerfilDTO;
+import pe.gob.osinergmin.sicoes.model.dto.ReasignacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsernameDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioDetalleSigedDTO;
 import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.RolDao;
@@ -223,11 +223,11 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 				System.out.println("cadenaEncriptada: " + cadenaEncriptada);
 				String produccion=env.getProperty("modo-produccion");
 //				if("1".equals(produccion)){
-//					Authentication authentication=getSissegAuthenticationProvider().authenticate(new SissegAuthenticationToken(env.getProperty("sisseg.encryption-key") + "::" + env.getProperty("sisseg.application-id") + "::" + cadenaEncriptada, cadenaEncriptada));
-//					System.out.println("authentication: " + authentication);
-//					usuarioStr=(String)authentication.getPrincipal();
+					Authentication authentication=getSissegAuthenticationProvider().authenticate(new SissegAuthenticationToken(env.getProperty("sisseg.encryption-key") + "::" + env.getProperty("sisseg.application-id") + "::" + cadenaEncriptada, cadenaEncriptada));
+					System.out.println("authentication: " + authentication);
+					usuarioStr=(String)authentication.getPrincipal();
 //				}else {
-					usuarioStr=getUsuarioInterno(cadenaEncriptada);
+//					usuarioStr=getUsuarioInterno(cadenaEncriptada);
 //				}
 			}
 			
@@ -570,7 +570,7 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 	}
 	
 	@Override
-	public UsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
+	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
 		return sigedApiConsumer.obtenerUsuarioSiged(idUsuario);
 	}
 	
@@ -695,7 +695,7 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 	public List<Usuario> listarUsuariosXCodigoRol(String codigoRol, Long idUsuario) {
 		return usuarioEvaluacionDao.obtenerUsuariosXCodigoRol(codigoRol,idUsuario);
 	}
-
+	
 	 public static void main(String[] args) {
 		    
 			

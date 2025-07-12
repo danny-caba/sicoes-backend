@@ -86,6 +86,9 @@ public class Asignacion extends BaseModel implements Serializable {
 	@Column(name="ID_USUARIO_ORIGEN")
 	private Long idUsuarioOrigen;
 	
+	@Column(name="ID_CONTRATO_LD")
+	private Long contrato;
+	
 	@Transient
 	private ConfiguracionBandeja configuracionBandeja;
 
@@ -215,5 +218,13 @@ public class Asignacion extends BaseModel implements Serializable {
 
 	public void setConfiguracionBandeja(ConfiguracionBandeja configuracionBandeja) {
 		this.configuracionBandeja = configuracionBandeja;
+	}
+
+	public Long getContrato() {
+		return contrato;
+	}
+
+	public void setContrato(Long contrato) {
+		this.contrato = contrato;
 	}
 }

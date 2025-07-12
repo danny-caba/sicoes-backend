@@ -54,14 +54,14 @@ private Logger logger = LogManager.getLogger(SicoesSolicitudSeccionRestControlle
 		return sicoesSolicitudSeccionService.actualizarRequisitoPersonal(personalPropuesto , getContexto());
 	}
 
-	@GetMapping("/secciones/requisitos/{idSeccion}/{tipoContrato}")
+	@GetMapping("/secciones/requisitos/{idSeccion}/{tipoContrato}/{evaluador}/{propuesta}")
 	@Raml("sicoesSolicitudSeccion.listar.properties")
-	public Page<SicoesSolicitudSeccion> obtener(@PathVariable Long idSeccion, @PathVariable Long tipoContrato, Pageable pageable) {
+	public Page<SicoesSolicitudSeccion> obtener(@PathVariable Long idSeccion, @PathVariable Long tipoContrato, @PathVariable boolean evaluador, @PathVariable Long propuesta, Pageable pageable) {
 		logger.info("obtener requisitos x seccion {} ", idSeccion);
 
 //		Long tipoContratoLong = Long.parseLong(tipoContrato);
 
-		return sicoesSolicitudSeccionService.obtenerRequisitosPorSeccion(idSeccion, tipoContrato, pageable, getContexto());
+		return sicoesSolicitudSeccionService.obtenerRequisitosPorSeccion(idSeccion, tipoContrato, evaluador, propuesta, pageable, getContexto());
 	}
 
 	@GetMapping("/personas/requisitos/{idSoliPersProp}/{tipoContrato}")

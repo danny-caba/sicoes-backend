@@ -13,7 +13,7 @@ public interface SicoesSolicitudService extends BaseService<SicoesSolicitud, Lon
 	SicoesSolicitud guardarContratoConsentido(Propuesta propuesta, Contexto contexto);
 	Page<SicoesSolicitud> listarSolicitudesPresentacion(String estado, String nroConcurso, Long item, String convocatoria, String tipoSolicitud, Pageable pageable, Contexto contexto);
 	boolean validarFechaPresentacionSubsanacion(Long idSolicitud, Contexto contexto);
-	String actualizarSolicitud(List<SicoesSolicitudSeccion> listaSolicitudSeccion, SicoesSolicitud solicitud, Contexto contexto);
+	String actualizarSolicitud(List<SicoesSolicitudSeccion> listaSolicitudSeccion, SicoesSolicitud solicitud, Contexto contexto) throws Exception;
 	Page<SicoesSolicitud> listarSolicitudesProceso(String estado, String nroConcurso, Long item, String convocatoria, String tipoSolicitud, Pageable pageable, Contexto contexto);
 	SicoesSolicitud finalizarSolicitud(SicoesSolicitud solicitud, List<SicoesSolicitudSeccion> listaSolicitudSeccion, Contexto contexto);
 	boolean enviarCorreoSancion(SicoesSolicitud solicitud, String periodoInhabilitacion, String inicio, String fin, Contexto contexto);

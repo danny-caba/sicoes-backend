@@ -93,6 +93,11 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 	@Value("${siged.ws.cliente.osinergmin.numero.documento}")
 	private String numeroDocumentoOsinergmin;
+    @Autowired
+    private OtroRequisitoService otroRequisitoService;
+
+	@Autowired
+	private RequerimientoService requerimientoService;
 
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
@@ -194,7 +199,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(), archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null , archivo);
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -231,7 +236,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -492,24 +497,47 @@ public class ArchivoServiceImpl implements ArchivoService {
 		List<Archivo> archivos = buscarPresentacion( idSolicitud, tipoArchivo,  contexto);
 
 		List<File> files = new ArrayList<>();
-		File dir = new File(path + idSolicitud);
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
+		// Crear directorio temporal si no existe
+        String dirPath = path + File.separator + "temporales" + File.separator + idSolicitud;
+        File dir = new File(dirPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        // Verificar si hay archivos _v2
+        boolean tieneV2 = archivos.stream()
+                                .anyMatch(a -> a.getNombre() != null && 
+                                            a.getNombre().matches(".*_v2\\.pdf$"));
+                                          
 		for (Archivo archivo : archivos) {
-			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
-			try {
-				String ruta=path + File.separator +"temporales"+ File.separator + idSolicitud + File.separator + archivo.getNombre();
-				logger.info(ruta);
-				File file = new File(ruta);
-				FileUtils.writeByteArrayToFile(file, contenido);
-				files.add(file);
-				logger.info(file.getName());
-			} catch (IOException e) {
-				logger.error(e.getMessage(), e);
-				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
-			}
-		}
+            // Si hay _v2, solo procesamos los _v2. Si no hay _v2, procesamos todos
+            if (!tieneV2 || (tieneV2 && archivo.getNombre() != null && 
+                            archivo.getNombre().matches(".*_v2\\.pdf$"))) {
+                
+                try {
+                    byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+                    if (contenido == null || contenido.length == 0) {
+                        logger.warn("Archivo {} sin contenido", archivo.getNombre());
+                        continue;
+                    }
+
+                    String rutaCompleta = dirPath + File.separator + archivo.getNombre();
+                    File file = new File(rutaCompleta);
+                    
+                    FileUtils.writeByteArrayToFile(file, contenido);
+                    files.add(file);
+                    logger.info("Archivo descargado: {}", file.getAbsolutePath());
+                    
+                } catch (IOException e) {
+                    logger.error("Error al descargar/guardar archivo {}: {}", 
+                            archivo.getNombre(), e.getMessage(), e);
+                    throw new ValidacionException(
+                        Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+                }
+            } else {
+                logger.debug("Archivo {} omitido por regla de versiones", archivo.getNombre());
+            }
+        }
 		return files;
 	}
 
@@ -753,6 +781,24 @@ public class ArchivoServiceImpl implements ArchivoService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto) {
+		boolean nuevo = archivo.getIdArchivo() == null;
+		if(archivo.getSolicitudUuid() != null) {
+			archivo.setIdSolicitud(solicitudService.obtenerId(archivo.getSolicitudUuid()));
+		}
+		if(archivo.getPropuestaUuid() != null) {
+			archivo.setIdPropuesta(propuestaService.obtener(archivo.getPropuestaUuid(),contexto).getIdPropuesta());
+		}
+		if (nuevo) {
+			cargarAbsolucionExcel(idProceso, archivo, contexto);
+			return registrar(archivo, contexto);
+		} else {
+			return modificar(archivo, contexto);
+		}
+	}
+
+	@Override
 	public Archivo obtenerArchivoXlsPorProceso(Long idProceso) {
 
 		Archivo archivo;
@@ -791,18 +837,51 @@ public class ArchivoServiceImpl implements ArchivoService {
 		if (archivo == null) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
 		}
-		try {
-			Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
+		// try {
+		// 	Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
 
-			if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
-				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-			}
-		} catch (NumberFormatException e) {
-			logger.error(e.getMessage(), e);
-			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-		}
+		// 	if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
+		// 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+		// 	}
+		// } catch (NumberFormatException e) {
+		// 	logger.error(e.getMessage(), e);
+		// 	throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
+		// }
 		archivoDao.deleteById(archivo.getIdArchivo());
 
+	}
+
+	@Override
+	public List<File> obtenerArchivoDj(Long idOtroRequisito, String procedimiento, Contexto contexto) {
+		List<Archivo> ArchivoDj = archivoDao.obtenerArchivoDjAsociado(idOtroRequisito);
+		List<Archivo> archivos = new ArrayList<>();
+
+		if (!ArchivoDj.isEmpty()) {
+			archivos.addAll(ArchivoDj);
+		}
+
+		List<File> files = new ArrayList<>();
+		File dir = new File(path + idOtroRequisito);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		for (Archivo archivo : archivos) {
+			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+			String millis = Long.toString(System.currentTimeMillis());
+			archivo.setNombre(millis + "_" + procedimiento	+ "_" + archivo.getNombre());
+			try {
+				String ruta=path + File.separator +"temporales"+ File.separator + idOtroRequisito + File.separator + archivo.getNombre();
+				logger.info(ruta);
+				File file = new File(ruta);
+				FileUtils.writeByteArrayToFile(file, contenido);
+				files.add(file);
+				logger.info(file.getName());
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			}
+		}
+		return files;
 	}
 
 	public void cargarAbsolucion(Long idProceso, Archivo archivo, Contexto contexto) {
@@ -843,6 +922,62 @@ public class ArchivoServiceImpl implements ArchivoService {
 		}
 
 		return file;
+	}
+
+	public void cargarAbsolucionExcel(Long idProceso, Archivo archivo, Contexto contexto) {
+	    Proceso procesoDB = procesoService.obtener(idProceso, contexto);
+	    ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(procesoDB);
+
+	    File fichero = null;
+		try {
+			fichero = convertirMultipartFileAFileExcel(archivo);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    boolean existiaAntes = fichero.exists();
+
+	    List<File> archivosAlfresco = Collections.singletonList(fichero);
+
+	    DocumentoOutRO doc = null;
+	    if (existiaAntes) {
+	        try {
+				doc = sigedApiConsumer.agregarDocumentoVersionar(expedienteInRO, archivosAlfresco);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    } else {
+	        try {
+				doc = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    }
+
+	    if (doc.getResultCode() != 1) {
+	        throw new ValidacionException(
+	            Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO,
+	            doc.getMessage()
+	        );
+	    }
+	}
+
+	public File convertirMultipartFileAFileExcel(Archivo archivo) throws IOException {
+	    MultipartFile mf = archivo.getFile();
+	    File file = new File(mf.getOriginalFilename());
+
+	    boolean existiaAntes = file.exists();
+
+	    try (FileOutputStream fos = new FileOutputStream(file)) {
+	        fos.write(mf.getBytes());
+	    } catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	    if (existiaAntes) {
+	        logger.info("El archivo ya existía y se va a versionar: " + file.getName());
+	    }
+
+	    return file;
 	}
 
 	public ExpedienteInRO crearExpedienteAgregarDocumentos(Proceso proceso) {
@@ -910,4 +1045,501 @@ public class ArchivoServiceImpl implements ArchivoService {
 		return null;
 	}
 
+	@Override
+	public List<File> obtenerArchivoModificacion(Long idSolicitud, Contexto contexto) {
+		List<Archivo> archivos = buscarArchivosPendientes( idSolicitud,  contexto);
+
+		List<File> files = new ArrayList<>();
+		File dir = new File(path + idSolicitud);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		for (Archivo archivo : archivos) {
+			byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+			try {
+				String ruta=path + File.separator +"temporales"+ File.separator + idSolicitud + File.separator + archivo.getNombre();
+				logger.info(ruta);
+				File file = new File(ruta);
+				FileUtils.writeByteArrayToFile(file, contenido);
+				files.add(file);
+				logger.info(file.getName());
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			}
+		}
+		return files;
+	}
+
+	@Override
+	public List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto) {
+		List<Archivo> archivo1 = archivoDao.obtenerArchivoDocumentoPendiente(idSolicitud);
+		List<Archivo> archivo2 = archivoDao.obtenerArchivoEstudioPendiente(idSolicitud);
+		List<OtroRequisito> otroRequisitoList = otroRequisitoService.listarOtroRequisito(idSolicitud);
+		OtroRequisito dj = null;
+		dj = otroRequisitoList.stream().filter(or -> or.getTipoRequisito().getCodigo().equals(Constantes.LISTADO.OTROS_DOCUMENTOS_PN.DJ))
+				.findFirst().orElse(null);
+		List<Archivo> archivo3 = buscar(null, null, dj.getIdOtroRequisito(), contexto);
+		if (archivo3 == null) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.DJ_AUSENTE);
+		}
+		String procedimiento = "Modificacion";
+		String millis = Long.toString(System.currentTimeMillis());
+		archivo3.forEach(a -> a.setNombre(millis + "_" + procedimiento + "_" + a.getNombre()));
+		List<Archivo> archivos = new ArrayList<>();
+		if (!archivo1.isEmpty()) {
+			archivos.addAll(archivo1);
+		}
+		if (!archivo2.isEmpty()) {
+			archivos.addAll(archivo2);
+		}
+		if (!archivo3.isEmpty()) {
+			archivos.addAll(archivo3);
+		}
+		return archivos;
+	}
+
+	@Transactional
+	public Archivo guardarArchivoContrato(Long idContrato, String tipoRequisito, MultipartFile file, Contexto contexto) {
+		if (file == null || file.isEmpty()) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENVIADO);
+		}
+
+		String originalFileName = reemplazarCaracteres(file.getOriginalFilename());
+		String uniqueCode = UUID.randomUUID().toString(); // co_archivo
+
+		Archivo archivo = new Archivo();
+		archivo.setIdContrato(idContrato);
+		archivo.setFile(file);
+
+		ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+		archivo.setEstado(estadoLd);
+
+		archivo.setNombre(tipoRequisito);
+		archivo.setNombreReal(originalFileName);
+		archivo.setCodigo(uniqueCode);
+		archivo.setTipo(file.getContentType());
+		archivo.setPeso(file.getSize());
+
+		try {
+			if ("application/pdf".equals(file.getContentType())) {
+				PdfReader reader = new PdfReader(file.getBytes());
+				int count = reader.getNumberOfPages();
+				archivo.setNroFolio(count * 1L);
+			} else {
+				archivo.setNroFolio(1L);
+			}
+		} catch (Exception e) {
+			logger.error("Error al leer el archivo para obtener el número de folios: " + e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+		}
+
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+
+		Archivo archivoGuardadoBD = archivoDao.save(archivo);
+
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, archivo);
+		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
+
+		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
+
+		logger.info("Archivo registrado en DB con ID: " + archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);
+
+		Archivo dto = new Archivo();
+		dto.setIdArchivo(archivoGuardadoBD.getIdArchivo());
+		dto.setIdContrato(archivoGuardadoBD.getIdContrato());
+		dto.setNombre(archivoGuardadoBD.getNombre());
+		dto.setNombreReal(archivoGuardadoBD.getNombreReal());
+		dto.setNombreAlFresco(archivoGuardadoBD.getNombreAlFresco());
+		dto.setCodigo(archivoGuardadoBD.getCodigo());
+		dto.setTipo(archivoGuardadoBD.getTipo());
+		dto.setPeso(archivoGuardadoBD.getPeso());
+
+		if (archivoGuardadoBD instanceof BaseModel) {
+            BaseModel baseModel = (BaseModel) archivoGuardadoBD;
+            dto.setFecCreacion(baseModel.getFecCreacion());
+            dto.setIpCreacion(baseModel.getIpCreacion());
+        }
+
+		if (archivoGuardadoBD.getEstado() != null) {
+			ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+			dto.setEstado(estado);
+		}
+
+		return dto;
+	}
+
+	@Transactional(readOnly = true)
+	public List<Archivo> obtenerArchivosPorContrato(Long idContrato) { // Changed return type to List<ArchivoDTO>
+		List<Archivo> archivos = archivoDao.findByIdContrato(idContrato);
+		Long correlativo = 1L, version = 1L;
+		return archivos.stream()
+					   .map(archivo -> {
+						   Archivo dto = new Archivo();
+						   dto.setIdArchivo(archivo.getIdArchivo());
+						   dto.setIdContrato(archivo.getIdContrato());
+						   dto.setNombre(archivo.getNombre());
+						   dto.setNombreReal(archivo.getNombreReal());
+						   dto.setNombreAlFresco(archivo.getNombreAlFresco());
+						   dto.setCodigo(archivo.getCodigo());
+						   dto.setTipo(archivo.getTipo());
+						   dto.setPeso(archivo.getPeso());
+						   dto.setCorrelativo(correlativo);
+						   dto.setVersion(version);
+						   if (archivo instanceof BaseModel) {
+							   BaseModel baseModel = (BaseModel) archivo;
+							   dto.setFecCreacion(baseModel.getFecCreacion());
+							   dto.setIpCreacion(baseModel.getIpCreacion());
+						   }
+						   if (archivo.getEstado() != null) {
+							   ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+								dto.setEstado(estado);
+						   }
+						   return dto;
+					   })
+					   .collect(Collectors.toList());
+	}
+
+	@Transactional
+	public void eliminarArchivo(Long idArchivo) {
+		Optional<Archivo> archivoOptional = archivoDao.findById(idArchivo); // Asumiendo findById
+		if (archivoOptional.isPresent()) {
+			Archivo archivo = archivoOptional.get();
+			archivoDao.deleteById(idArchivo);
+			logger.info("Archivo con ID " + idArchivo + " eliminado de la DB.");
+		} else {
+			logger.warn("Intento de eliminar archivo con ID " + idArchivo + " que no existe.");
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
+		}
+	}
+
+	@Transactional
+	public Archivo guardarArchivoPerfContrato(Long idSoliPerfCont, String tipoRequisito, MultipartFile file, Contexto contexto) {
+		if (file == null || file.isEmpty()) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENVIADO);
+		}
+
+		String originalFileName = reemplazarCaracteres(file.getOriginalFilename());
+		String uniqueCode = UUID.randomUUID().toString();
+
+		Archivo archivo = new Archivo();
+		archivo.setIdSoliPerfCont(idSoliPerfCont);
+		archivo.setFile(file);
+
+		ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+		archivo.setEstado(estadoLd);
+
+		archivo.setNombre(tipoRequisito);
+		archivo.setNombreReal(originalFileName);
+		archivo.setCodigo(uniqueCode);
+		archivo.setTipo(file.getContentType());
+		archivo.setPeso(file.getSize());
+
+		try {
+			if ("application/pdf".equals(file.getContentType())) {
+				PdfReader reader = new PdfReader(file.getBytes());
+				int count = reader.getNumberOfPages();
+				archivo.setNroFolio(count * 1L);
+			} else {
+				archivo.setNroFolio(1L);
+			}
+		} catch (Exception e) {
+			logger.error("Error al leer el archivo para obtener el número de folios: " + e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+		}
+
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+
+		Archivo archivoGuardadoBD = archivoDao.save(archivo);
+
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
+		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
+
+		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
+
+		logger.info("Archivo registrado en DB con ID: " + archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);
+
+		Archivo dto = new Archivo();
+		dto.setIdArchivo(archivoGuardadoBD.getIdArchivo());
+		dto.setIdSoliPerfCont(archivoGuardadoBD.getIdSoliPerfCont());
+		dto.setNombre(archivoGuardadoBD.getNombre());
+		dto.setNombreReal(archivoGuardadoBD.getNombreReal());
+		dto.setNombreAlFresco(archivoGuardadoBD.getNombreAlFresco());
+		dto.setCodigo(archivoGuardadoBD.getCodigo());
+		dto.setTipo(archivoGuardadoBD.getTipo());
+		dto.setPeso(archivoGuardadoBD.getPeso());
+
+		if (archivoGuardadoBD instanceof BaseModel) {
+            BaseModel baseModel = (BaseModel) archivoGuardadoBD;
+            dto.setFecCreacion(baseModel.getFecCreacion());
+            dto.setIpCreacion(baseModel.getIpCreacion());
+        }
+
+		if (archivoGuardadoBD.getEstado() != null) {
+			ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+			dto.setEstado(estado);
+		}
+
+		return dto;
+	}
+
+	@Transactional(readOnly = true)
+	public List<Archivo> obtenerArchivosPorPerfContrato(Long idSoliPerfCont) { // Changed return type to List<ArchivoDTO>
+		List<Archivo> archivos = archivoDao.findByIdSoliPerfCont(idSoliPerfCont);
+		Long correlativo = 1L, version = 1L;
+		return archivos.stream()
+					   .map(archivo -> {
+						   Archivo dto = new Archivo();
+						   dto.setIdArchivo(archivo.getIdArchivo());
+						   dto.setIdSoliPerfCont(archivo.getIdSoliPerfCont());
+						   dto.setNombre(archivo.getNombre());
+						   dto.setNombreReal(archivo.getNombreReal());
+						   dto.setNombreAlFresco(archivo.getNombreAlFresco());
+						   dto.setCodigo(archivo.getCodigo());
+						   dto.setTipo(archivo.getTipo());
+						   dto.setPeso(archivo.getPeso());
+						   dto.setCorrelativo(correlativo);
+						   dto.setVersion(version);
+						   if (archivo instanceof BaseModel) {
+							   BaseModel baseModel = (BaseModel) archivo;
+							   dto.setFecCreacion(baseModel.getFecCreacion());
+							   dto.setIpCreacion(baseModel.getIpCreacion());
+						   }
+						   if (archivo.getEstado() != null) {
+							   ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+								dto.setEstado(estado);
+						   }
+						   return dto;
+					   })
+					   .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<Archivo> buscarXRequerimiento(Long idSolicitud, Contexto contexto) {
+		return archivoDao.buscarXRequerimiento(idSolicitud,Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarXRequerimiento(Archivo archivo, Contexto contexto) {
+		boolean nuevo = archivo.getIdArchivo() == null;
+		if(archivo.getRequerimientoUuid() != null) {
+			archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
+			if(archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA)) {
+				List<Archivo> archivosExperiencia = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA,
+								archivo.getSolicitudUuid(), null, null)
+						.getContent()
+						.stream()
+						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+						.collect(Collectors.toList());
+				boolean existe = archivosExperiencia.stream()
+						.anyMatch(arch -> {
+							try {
+								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
+								if(Optional.ofNullable(archivo.getFile()).isPresent()
+										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+									InputStream nuevoArch = archivo.getFile().getInputStream();
+									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+									nuevoArch.close();
+									oldArch.close();
+									return existeArchivo;
+								} else {
+									return false;
+								}
+							} catch (Exception e) {
+								return false;
+							}
+						});
+				if(existe) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+				}
+			}
+		}
+		if (nuevo) {
+			return registrarRequerimiento(archivo, contexto);
+		} else {
+			return modificarRequerimiento(archivo, contexto);
+		}
+	}
+
+	private Archivo registrarRequerimiento(Archivo archivo, Contexto contexto) {
+		Archivo archivoBD;
+		int tamanioByte;
+		Double tamanioMB;
+		try {
+			if(archivo.getFile()!=null) {
+				tamanioByte=archivo.getFile().getBytes().length;
+			}else {
+				tamanioByte=archivo.getContenido().length;
+			}
+			tamanioMB=tamanioByte/(1024.0*1024.0);
+			logger.info("tamanio bytes : "+tamanioByte);
+			logger.info("tamanio : "+tamanioMB);
+		} catch (IOException e) {
+			logger.info(e.getMessage(),e);
+		}
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+		if (archivo.getCodigo() == null) {
+			archivo.setCodigo(UUID.randomUUID().toString());
+		}
+		if (archivo.getFile() != null) {
+			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
+			archivo.setTipo(archivo.getFile().getContentType());
+			PdfReader reader;
+			try {
+				if ("application/pdf".equals(archivo.getFile().getContentType())) {
+					reader = new PdfReader(archivo.getFile().getBytes());
+					int count = reader.getNumberOfPages();
+					archivo.setNroFolio(count * 1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				} else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(archivo.getFile().getContentType()) ||
+						"application/vnd.ms-excel".equals(archivo.getFile().getContentType())) {
+					archivo.setNroFolio(1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				}
+			} catch (Exception e) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+			}
+
+		}
+		if(archivo.getDescripcion()==null||"".equals(archivo.getDescripcion())) {
+			archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.CARGADO));
+		}else {
+			archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		}
+		archivoBD = archivoDao.save(archivo);
+		if (archivo.getFile() != null || archivo.getContenido() != null) {
+			String nombre = sigedOldConsumer.subirArchivosAlfrescoRequerimiento(archivoBD.getIdRequerimiento(), archivo);
+			archivo.setNombreAlFresco(nombre);
+			archivoBD = archivoDao.save(archivo);
+		}
+		return archivoBD;
+	}
+
+	private Archivo modificarRequerimiento(Archivo archivo, Contexto contexto) {
+		Archivo archivoBD = null;
+		archivoBD = archivoDao.obtener(archivo.getIdArchivo());
+		AuditoriaUtil.setAuditoriaRegistro(archivoBD, contexto);
+		archivoBD.setDescripcion(archivo.getDescripcion());
+		archivoBD.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		if (archivo.getFile() != null) {
+			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
+			archivoBD.setNombreReal(archivo.getNombreReal());
+			archivoBD.setTipo(archivo.getFile().getContentType());
+			if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
+				SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+				String hora = sdf2.format(new Date());
+				String nombre = reemplazarCaracteres(archivo.getNombreReal());
+				nombre=nombre.replace(".pdf", "");
+				archivoBD.setNombreReal(nombre+"-"+hora+".pdf");
+			}
+			PdfReader reader;
+			try {
+				reader = new PdfReader(archivo.getFile().getBytes());
+				int count = reader.getNumberOfPages();
+				archivoBD.setNroFolio(count * 1L);
+				archivoBD.setPeso(archivo.getFile().getSize());
+				if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
+					SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+					String hora = sdf2.format(new Date());
+					String nombre = reemplazarCaracteres(archivo.getNombreReal());
+					nombre=nombre.replace(".pdf", "");
+					archivo.setNombreReal(nombre+"-"+hora+".pdf");
+				}
+				String nombre = sigedOldConsumer.subirArchivosAlfrescoRequerimiento(archivoBD.getIdRequerimiento(),archivo);
+				archivoBD.setNombreAlFresco(nombre);
+			} catch (Exception e) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+			}
+
+		}
+		archivoDao.save(archivoBD);
+		return archivoBD;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarXRequerimientoAprobacion (Archivo archivo, Contexto contexto) {
+			boolean nuevo = archivo.getIdArchivo() == null;
+			if (archivo.getRequerimientoUuid() != null) {
+					archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
+					if (archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.APROBACION_REQUERIMIENTO)) {
+							List<Archivo> archivosRequerimiento = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.APROBACION_REQUERIMIENTO,
+															archivo.getSolicitudUuid(), null, null)
+											.getContent()
+											.stream()
+											.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+											.collect(Collectors.toList());
+							boolean existe = archivosRequerimiento.stream()
+											.anyMatch(arch -> {
+													try {
+															arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
+															if (Optional.ofNullable(archivo.getFile()).isPresent()
+																			&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+																	InputStream nuevoArch = archivo.getFile().getInputStream();
+																	InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+																	boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+																	nuevoArch.close();
+																	oldArch.close();
+																	return existeArchivo;
+															} else {
+																	return false;
+															}
+													} catch (Exception e) {
+															return false;
+													}
+											});
+							if (existe) {
+									throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+							}
+					}
+			}
+			if (nuevo) {
+					return registrarRequerimiento(archivo, contexto);
+			} else {
+					return modificarRequerimiento(archivo, contexto);
+			}
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarXRequerimientoInforme (Archivo archivo, Contexto contexto) {
+			boolean nuevo = archivo.getIdArchivo() == null;
+			if (archivo.getRequerimientoUuid() != null) {
+					archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
+					if (archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO)) {
+							List<Archivo> archivosRequerimiento = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO,
+															archivo.getSolicitudUuid(), null, null)
+											.getContent()
+											.stream()
+											.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+											.collect(Collectors.toList());
+							boolean existe = archivosRequerimiento.stream()
+											.anyMatch(arch -> {
+													try {
+															arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
+															if (Optional.ofNullable(archivo.getFile()).isPresent()
+																			&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+																	InputStream nuevoArch = archivo.getFile().getInputStream();
+																	InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+																	boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+																	nuevoArch.close();
+																	oldArch.close();
+																	return existeArchivo;
+															} else {
+																	return false;
+															}
+													} catch (Exception e) {
+															return false;
+													}
+											});
+							if (existe) {
+									throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+							}
+					}
+			}
+			if (nuevo) {
+					return registrarRequerimiento(archivo, contexto);
+			} else {
+					return modificarRequerimiento(archivo, contexto);
+			}
+	}
 }

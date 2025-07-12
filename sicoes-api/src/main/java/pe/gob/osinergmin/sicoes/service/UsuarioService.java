@@ -7,14 +7,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
 import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Token;
 import pe.gob.osinergmin.sicoes.model.Usuario;
-import pe.gob.osinergmin.sicoes.model.UsuarioReasignacion;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.UsuarioRolConfiguracion;
-import pe.gob.osinergmin.sicoes.model.dto.*;
+import pe.gob.osinergmin.sicoes.model.dto.PerfilDTO;
+import pe.gob.osinergmin.sicoes.model.dto.ReasignacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsernameDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioDetalleSigedDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.bean.siged.ResponseUserListDto;
 import pe.gob.osinergmin.sicoes.util.vo.OpcionDTO;
@@ -39,7 +40,7 @@ public interface UsuarioService extends UserDetailsService{
 	Usuario cambiarContrasenia(Usuario usuario);
 	public Usuario obtener(Long idUsuario);
 	public List<ResponseUserListDto.Usuario> listarUsuariosSiged() throws Exception;
-	public UsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
+	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
 	public Page<Usuario> buscar(String nombreUsuario, Pageable pageable);
 	public Page<UsuarioRol> listarUsuarioRol(Long idUsuario, Pageable pageable);
 	public Usuario registrarUsuario(Usuario usuario, Contexto contexto);

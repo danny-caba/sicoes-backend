@@ -213,4 +213,11 @@ public class BitacoraServiceImpl implements BitacoraService {
 		bitacora.setDescripcion("Registro de participación de cada empresa consorcio - Error al registrar");
 		bitacoraDao.save(bitacora);			
 	}
+
+	@Override
+	public void registrarModificacionSolicitud(Solicitud solicitud, Contexto contexto) {
+		Bitacora bitacora=getBitacora(solicitud.getUsuario(),contexto);
+		bitacora.setDescripcion("Registro de Modificacion de Solicitud - Envío");
+		bitacoraDao.save(bitacora);
+	}
 }

@@ -17,110 +17,121 @@ import javax.persistence.Transient;
 
 import org.springframework.web.multipart.MultipartFile;
 
-
 /**
  * The persistent class for the listado database table.
  * 
  */
 @Entity
-@Table(name="SICOES_TR_ARCHIVO")
+@Table(name = "SICOES_TR_ARCHIVO")
 public class Archivo extends BaseModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_ARCHIVO")
-	@SequenceGenerator(name="GEN_SICOES_SEQ_ARCHIVO", sequenceName = "SICOES_SEQ_ARCHIVO", allocationSize = 1)
-	@Column(name = "ID_ARCHIVO")	
+	@SequenceGenerator(name = "GEN_SICOES_SEQ_ARCHIVO", sequenceName = "SICOES_SEQ_ARCHIVO", allocationSize = 1)
+	@Column(name = "ID_ARCHIVO")
 	private Long idArchivo;
-	
-	@Column(name="ID_DOCUMENTO")	
+
+	@Column(name = "ID_DOCUMENTO")
 	private Long idDocumento;
-	
-	@Column(name = "ID_OTRO_REQUISITO")	
+
+	@Column(name = "ID_OTRO_REQUISITO")
 	private Long idOtroRequisito;
-	
-	@Column(name = "ID_ESTUDIO")	
+
+	@Column(name = "ID_ESTUDIO")
 	private Long idEstudio;
-	
-	@Column(name = "ID_PROPUESTA")	
+
+	@Column(name = "ID_PROPUESTA")
 	private Long idPropuesta;
-	
-	@Column(name = "ID_PRO_TECNICA")	
+
+	@Column(name = "ID_PRO_TECNICA")
 	private Long idPropuestaTecnica;
-	
-	@Column(name = "ID_PRO_ECONOMICA")	
+
+	@Column(name = "ID_PRO_ECONOMICA")
 	private Long idPropuestaEconomica;
-	
-	@Column(name = "ID_NOTIFICACION_SOLICITUD")	
+
+	@Column(name = "ID_NOTIFICACION_SOLICITUD")
 	private Long idNotificacionSolicitud;
-	
-	@Column(name = "ID_NOTIFICACION")	
+
+	@Column(name = "ID_NOTIFICACION")
 	private Long idNotificacion;
-	
-	@Column(name = "ID_PROCESO")	
+
+	@Column(name = "ID_PROCESO")
 	private Long idProceso;
-	
-	@Column(name = "ID_ASIGNACION")	
+
+	@Column(name = "ID_ASIGNACION")
 	private Long idAsignacion;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_ESTADO_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_ESTADO_LD")
 	private ListadoDetalle estado;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_TIPO_ARCHIVO_LD")	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_TIPO_ARCHIVO_LD")
 	private ListadoDetalle tipoArchivo;
-	
-	@Column(name="ID_SOLICITUD")	
+
+	@Column(name = "ID_SOLICITUD")
 	private Long idSolicitud;
-	
-	@Column(name="NO_ARCHIVO")	
+
+	@Column(name = "NO_ARCHIVO")
 	private String nombre;
-	
-	@Column(name="NO_REAL")	
+
+	@Column(name = "NO_REAL")
 	private String nombreReal;
-	
-	@Column(name="NO_ALFRESCO")	
+
+	@Column(name = "NO_ALFRESCO")
 	private String nombreAlFresco;
-	
-	@Column(name="CO_ARCHIVO")
+
+	@Column(name = "CO_ARCHIVO")
 	private String codigo;
-	
-	@Column(name="CO_TIPO_ARCHIVO")
+
+	@Column(name = "CO_TIPO_ARCHIVO")
 	private String tipo;
-		
-	@Column(name="DE_ARCHIVO")
+
+	@Column(name = "DE_ARCHIVO")
 	private String descripcion;
-	
-	@Column(name="NU_CORRELATIVO")	
+
+	@Column(name = "NU_CORRELATIVO")
 	private Long correlativo;
-	
-	@Column(name="NU_VERSION")	
+
+	@Column(name = "NU_VERSION")
 	private Long version;
-	
-	@Column(name="NU_FOLIO")	
+
+	@Column(name = "NU_FOLIO")
 	private Long nroFolio;
-	
-	@Column(name="NU_PESO")	
+
+	@Column(name = "NU_PESO")
 	private Long peso;
-	
-	@Column(name="FL_SIGED")	
+
+	@Column(name = "FL_SIGED")
 	private Long flagSiged;
 
 	@Column(name = "ID_DET_SOLI_PERF_CONT")
 	private Long idSeccionRequisito;
-	
+
+	@Column(name = "ID_CONTRATO")
+	private Long idContrato;
+
+	@Column(name = "ID_SOLI_PERF_CONT_LD")
+	private Long idSoliPerfCont;
+
+    @Column(name="ID_REQUERIMIENTO")
+    private Long idRequerimiento;
+
 	@Transient
 	private MultipartFile file;
-	
+
 	@Transient
 	private byte[] contenido;
-	
+
 	@Transient
 	private String solicitudUuid;
-	
+
 	@Transient
 	private String propuestaUuid;
+
+	@Transient
+	private String requerimientoUuid;
 
 	public Long getIdArchivo() {
 		return idArchivo;
@@ -373,5 +384,37 @@ public class Archivo extends BaseModel implements Serializable {
 
 	public void setIdSeccionRequisito(Long idSeccionRequisito) {
 		this.idSeccionRequisito = idSeccionRequisito;
+	}
+
+	public Long getIdContrato() {
+		return idContrato;
+	}
+
+	public void setIdContrato(Long idContrato) {
+		this.idContrato = idContrato;
+	}
+
+	public Long getIdSoliPerfCont() {
+		return idSoliPerfCont;
+	}
+
+	public void setIdSoliPerfCont(Long idSoliPerfCont) {
+		this.idSoliPerfCont = idSoliPerfCont;
+	}
+
+	public Long getIdRequerimiento() {
+		return idRequerimiento;
+	}
+
+	public void setIdRequerimiento(Long idRequerimiento) {
+		this.idRequerimiento = idRequerimiento;
+	}
+
+	public String getRequerimientoUuid() {
+		return requerimientoUuid;
+	}
+
+	public void setRequerimientoUuid(String requerimientoUuid) {
+		this.requerimientoUuid = requerimientoUuid;
 	}
 }

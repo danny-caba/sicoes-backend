@@ -60,6 +60,21 @@ public class Requisito extends BaseModel implements Serializable {
 	@Column(name="ES_SECCION_REQUISITO")	
 	private String esSeccionRequisito;
 
+	@Column(name="FL_CONFORMA_CONSORCIO")
+	private String flagConformaConsorcio;
+
+	@Column(name="FL_REMYPE")
+	private String flagRemype;
+
+	@Column(name="FL_VISIBLE_FIEL_CUMPLIMIENTO")
+	private String flagVisibleFielCumplimiento;
+
+	@Column(name="FL_VISIBLE_RETENCION")
+	private String flagVisibleRetencion;
+
+	@Column(name="FL_VISIBLE_SUPERA_PROPUESTA")
+	private String flagVisibleSuperaPropuesta;
+
 	public Long getIdSeccionRequisito() {
 		return idSeccionRequisito;
 	}
@@ -124,6 +139,46 @@ public class Requisito extends BaseModel implements Serializable {
 		this.esSeccionRequisito = esSeccionRequisito;
 	}
 
+	public String getFlagConformaConsorcio() {
+		return flagConformaConsorcio;
+	}
+
+	public void setFlagConformaConsorcio(String flagConformaConsorcio) {
+		this.flagConformaConsorcio = flagConformaConsorcio;
+	}
+
+	public String getFlagRemype() {
+		return flagRemype;
+	}
+
+	public void setFlagRemype(String flagRemype) {
+		this.flagRemype = flagRemype;
+	}
+
+	public String getFlagVisibleFielCumplimiento() {
+		return flagVisibleFielCumplimiento;
+	}
+
+	public void setFlagVisibleFielCumplimiento(String flagVisibleFielCumplimiento) {
+		this.flagVisibleFielCumplimiento = flagVisibleFielCumplimiento;
+	}
+
+	public String getFlagVisibleRetencion() {
+		return flagVisibleRetencion;
+	}
+
+	public void setFlagVisibleRetencion(String flagVisibleRetencion) {
+		this.flagVisibleRetencion = flagVisibleRetencion;
+	}
+
+	public String getFlagVisibleSuperaPropuesta() {
+		return flagVisibleSuperaPropuesta;
+	}
+
+	public void setFlagVisibleSuperaPropuesta(String flagVisibleSuperaPropuesta) {
+		this.flagVisibleSuperaPropuesta = flagVisibleSuperaPropuesta;
+	}
+
 	@Override
 	public String toString() {
 		return "Requisito{" +
@@ -135,6 +190,11 @@ public class Requisito extends BaseModel implements Serializable {
 				", tipoContrato=" + tipoContrato +
 				", deSeccionRequisito='" + deSeccionRequisito + '\'' +
 				", esSeccionRequisito='" + esSeccionRequisito + '\'' +
+				", flagConformaConsorcio='" + flagConformaConsorcio + '\'' +
+				", flagRemype='" + flagRemype + '\'' +
+				", flagVisibleFielCumplimiento='" + flagVisibleFielCumplimiento + '\'' +
+				", flagVisibleRetencion='" + flagVisibleRetencion + '\'' +
+				", flagVisibleSuperaPropuesta='" + flagVisibleSuperaPropuesta + '\'' +
 				'}';
 	}
 }

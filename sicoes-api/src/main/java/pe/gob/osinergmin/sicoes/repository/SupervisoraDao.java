@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 
@@ -131,8 +132,16 @@ public interface SupervisoraDao extends JpaRepository<Supervisora, Long> {
 			+ "left join fetch s.estado e "
 			+ "where s.codigoRuc=:codigoRuc")
 	public Supervisora obtenerSupervisoraXRUC(String codigoRuc);
-	
-	
+
+	@Query("select s from Supervisora s "
+			+ "left join fetch s.tipoDocumento td "
+			+ "left join fetch s.pais p "
+			+ "left join fetch s.tipoPersona t "
+			+ "left join fetch s.estado e "
+			+ "where s.codigoRuc=:codigoRuc "
+			+ "and s.tipoPersona.codigo in ('"+Constantes.LISTADO.TIPO_PERSONA.PN_POSTOR+"','"+Constantes.LISTADO.TIPO_PERSONA.JURIDICA+"') ")
+	public Supervisora obtenerSupervisoraPorRucPostorOrJuridica(String codigoRuc);
+
 	@Query("select s from Supervisora s "
 			+ "left join fetch s.tipoDocumento td "
 			+ "left join fetch s.pais p "
@@ -187,6 +196,10 @@ public interface SupervisoraDao extends JpaRepository<Supervisora, Long> {
 			+ "and e.codigo ='"+Constantes.LISTADO.ESTADO_SUPERVISORA.VIGENTE+"' ")
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc);
 
-
+	@Query("select distinct s.idSupervisora, (s.nombres|| ' '|| s.apellidoPaterno|| ' '||s.apellidoMaterno), s.numeroDocumento from Supervisora s, SupervisoraPerfil sp "
+			+ "left join sp.supervisora sps "
+			+ "left join sp.perfil per "
+			+ "where s.idSupervisora = sps.idSupervisora and  per.idListadoDetalle = :idPerfil ")
+	public List<Object[]> listarProfesionalesPorPerfil(Long idPerfil);
 	
 }

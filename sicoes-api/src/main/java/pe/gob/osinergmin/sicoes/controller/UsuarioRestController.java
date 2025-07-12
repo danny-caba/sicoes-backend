@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import gob.osinergmin.sne.domain.dto.UsuarioSigedDTO;
 import pe.gob.osinergmin.sicoes.consumer.PidoConsumer;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
@@ -31,8 +32,7 @@ import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.UsuarioRolConfiguracion;
 import pe.gob.osinergmin.sicoes.model.dto.ReasignacionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.ResponseUsuarioSigedDTO;
-import pe.gob.osinergmin.sicoes.model.dto.UsuarioDTO;
-import pe.gob.osinergmin.sicoes.model.dto.UsuarioSigedDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioDetalleSigedDTO;
 import pe.gob.osinergmin.sicoes.service.UsuarioRolService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -157,7 +157,7 @@ public class UsuarioRestController extends BaseRestController{
     }
 	
 	@PostMapping("/obtener-usuario-siged")
-    public UsuarioSigedDTO obtenerUsuarioSiged(@RequestBody ResponseUsuarioSigedDTO usuarioSiged, HttpServletRequest request) throws Exception {
+    public UsuarioDetalleSigedDTO obtenerUsuarioSiged(@RequestBody ResponseUsuarioSigedDTO usuarioSiged, HttpServletRequest request) throws Exception {
     	return usuarioService.obtenerUsuarioSiged(usuarioSiged.getIdUsuario());
     }
 	

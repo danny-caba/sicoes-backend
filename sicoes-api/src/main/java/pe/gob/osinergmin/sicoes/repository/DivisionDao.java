@@ -16,5 +16,10 @@ public interface DivisionDao extends JpaRepository<Division, Long> {
 	
 	@Query("select u from Division u ")
 	public List<Division> obtener();
+
+	@Query("select d from Division d " +
+			"left join fetch d.usuario u " +
+			"where u.idUsuario = :usuario")
+	List<Division> findByIdUsuario(Long usuario);
 	
 }

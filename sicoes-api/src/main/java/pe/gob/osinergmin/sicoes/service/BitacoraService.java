@@ -31,4 +31,5 @@ public interface BitacoraService {
 	public void registrarEmpresaConsorcioError(PropuestaConsorcio propuestaConsorcio, Contexto contexto);
 	public void registrarParticipacionEmpresaConsorcio(List<PropuestaConsorcio> propuestaConsorcio ,Contexto contexto);
 	public void registrarParticipacionEmpresaConsorcioError(List<PropuestaConsorcio> propuestaConsorcio ,Contexto contexto);
+	void registrarModificacionSolicitud(Solicitud solicitud,Contexto contexto);
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.ProcesoItem;
@@ -266,6 +267,21 @@ public interface PropuestaProfesionalDao extends JpaRepository<PropuestaProfesio
 			+ "and e.codigo='"+Constantes.LISTADO.ESTADO_INVITACION.ACEPTADO+ "' "
 			+ "and g.codigo='"+Constantes.LISTADO.SI_NO.NO +"' ")	
 	public List<PropuestaProfesional> listarNoGanadoresXItem(String procesoItemUuid);
+	
+	
+	@Query(value = "SELECT su.nu_documento, " +
+            "su.no_persona || ' ' || su.ap_paterno || ' ' || su.ap_materno, " +
+            "ld.no_listado_detalle " +
+            "FROM sicoes_tm_supervisora su " +
+            "INNER JOIN SICOES_TR_PRO_PROFESIONAL pro ON su.id_supervisora = pro.id_supervisora " +
+            "INNER JOIN SICOES_TC_SOLI_PERF_CONT s ON pro.id_propuesta = s.id_propuesta " +
+            "INNER JOIN SICOES_TM_LISTADO_DETALLE ld ON pro.id_perfil_ld = ld.id_listado_detalle " +
+            "WHERE s.ID_SOLI_PERF_CONT = :idSoliPerfCont " +
+            "AND pro.id_estado_ld = 738",
+    nativeQuery = true)
+	List<Object[]> findPersonalPropuesto(@Param("idSoliPerfCont") Long idSoliPerfCont);
+
+
 
 
 }

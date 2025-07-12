@@ -60,10 +60,16 @@ public class SicoesSolicitud extends BaseModel implements Serializable {
 	@Column(name="NU_EXPEDIENTE")
 	private String numeroExpediente;
 
+	@Column(name="DE_VALOR_ADJ_SIMPLIFICADA")
+	private String valorAdjSimplificada;
+	
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
 	@Column(name="FE_PRESENTACION")
 	private Date fechaHoraPresentacion;
+	
+	@Column(name="ID_DOC_INICIO")
+	private Long idDocInicio;
 
 	@Transient
 	private List<SicoesSolicitudSeccion> requisitos;
@@ -234,4 +240,21 @@ public class SicoesSolicitud extends BaseModel implements Serializable {
 	public void setFechaPlazoInscripcion(Date fechaPlazoInscripcion) {
 		this.fechaPlazoInscripcion = fechaPlazoInscripcion;
 	}
+
+	public String getValorAdjSimplificada() {
+		return valorAdjSimplificada;
+	}
+
+	public void setValorAdjSimplificada(String valorAdjSimplificada) {
+		this.valorAdjSimplificada = valorAdjSimplificada;
+	}
+
+	public Long getIdDocInicio() {
+		return idDocInicio;
+	}
+
+	public void setIdDocInicio(Long idDocInicio) {
+		this.idDocInicio = idDocInicio;
+	}
+
 }

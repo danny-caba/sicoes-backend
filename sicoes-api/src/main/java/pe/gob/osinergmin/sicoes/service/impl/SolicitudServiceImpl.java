@@ -53,6 +53,7 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SneApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
+import pe.gob.osinergmin.sicoes.model.Contrato;
 import pe.gob.osinergmin.sicoes.model.DictamenEvaluacion;
 import pe.gob.osinergmin.sicoes.model.Documento;
 import pe.gob.osinergmin.sicoes.model.Estudio;
@@ -61,6 +62,7 @@ import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.model.Persona;
 import pe.gob.osinergmin.sicoes.model.Representante;
+import pe.gob.osinergmin.sicoes.model.ReqInicioServicio;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
@@ -68,12 +70,14 @@ import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.model.SupervisoraRepresentante;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.ContratoDao;
 import pe.gob.osinergmin.sicoes.repository.DocumentoDao;
 import pe.gob.osinergmin.sicoes.repository.EstudioDao;
 import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.PersonaDao;
 import pe.gob.osinergmin.sicoes.repository.RepresentanteDao;
+import pe.gob.osinergmin.sicoes.repository.ReqInicioServicioDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.AsignacionService;
@@ -92,12 +96,7 @@ import pe.gob.osinergmin.sicoes.service.SupervisoraPerfilService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraRepresentanteService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
-import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
-import pe.gob.osinergmin.sicoes.util.CloneUtil;
-import pe.gob.osinergmin.sicoes.util.Constantes;
-import pe.gob.osinergmin.sicoes.util.Contexto;
-import pe.gob.osinergmin.sicoes.util.DateUtil;
-import pe.gob.osinergmin.sicoes.util.ValidacionException;
+import pe.gob.osinergmin.sicoes.util.*;
 import pe.gob.osinergmin.sicoes.util.bean.sne.AfiliacionVvoBeanDTO;
 import pe.gob.osinergmin.sicoes.util.bean.sne.AfiliacionVvoOutRO;
 import pe.gob.osinergmin.sicoes.util.bean.sne.NotificacionBeanDTO;
@@ -204,6 +203,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 	
 	@Autowired
 	private SupervisoraDictamenService supervisoraDictamenService;
+	
+	@Autowired
+	private ReqInicioServicioDao reqInicioServicioDao;
+	
+	@Autowired
+	private ContratoDao contratoDao;
 
 	public boolean validarJuridicoPostor(String solicitudUuid) {
 		ListadoDetalle tipoPersona = obtenerTipoPersona(solicitudUuid);
@@ -230,7 +235,9 @@ public class SolicitudServiceImpl implements SolicitudService {
 	public Solicitud enviar(Solicitud solicitud, Contexto contexto) {	
 		Solicitud solicitudBD = obtener(solicitud.getSolicitudUuid(), contexto);
 		List<File> archivosAlfresco=null;
-		if (solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)) {
+		if (solicitudBD.getOrigenRegistro() != null && solicitudBD.getOrigenRegistro().getCodigo().equals(Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION) && (solicitudBD.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL) || solicitudBD.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO))) {
+			return enviarModificacion(solicitud, contexto);
+		} else if (solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)) {
 			try {
 			archivosAlfresco = archivoService.obtenerArchivoContenido(solicitudBD.getIdSolicitud(),Constantes.LISTADO.TIPO_ARCHIVO.FORMATO, contexto);
 			return enviar(solicitud,solicitudBD,archivosAlfresco,contexto);
@@ -251,7 +258,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 	}
 	
 	
-	@Transactional(rollbackFor = { Exception.class, ValidacionException.class })
+//	@Transactional(rollbackFor = { Exception.class, ValidacionException.class })
 	private Solicitud enviar(Solicitud solicitud,Solicitud solicitudBD,List<File> archivosAlfresco, Contexto contexto) {
 		Long inicioTotal=getDate();
 		Long inicioParcial=getDate();
@@ -621,6 +628,11 @@ public class SolicitudServiceImpl implements SolicitudService {
 					List<PerfilAprobador> perfilesAprobador = new ArrayList<PerfilAprobador>();
 					// OBTENER PERFIL APROBADOR POR EL ID DE ACTIVIDAD AREA
 					perfilesAprobador = perfilAprobadorDao.obtenerPerfilAprobadorPorIdPerfil(doc.getActividadArea().getIdListadoDetalle());
+
+					if (solicitudBD.getOrigenRegistro() != null && doc.getEvaluacion().getCodigo().equals(Constantes.LISTADO.RESULTADO_EVALUACION.CUMPLE)
+							&& Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION.equals(solicitudBD.getOrigenRegistro().getCodigo())) {
+						continue;
+					}
 					
 					//Verificar si el perfil cuenta con más de un evaluador
 					List<Long> idEvaluadores = new ArrayList<Long>();
@@ -843,7 +855,48 @@ public class SolicitudServiceImpl implements SolicitudService {
 		
 		return null;
 	}
-	
+
+	private Solicitud enviarModificacion(Solicitud solicitudBD, Contexto contexto) {
+		Solicitud solicitudPadre = solicitudDao.obtener(solicitudBD.getIdSolicitudPadre());
+		Solicitud solicitudRes = null;
+
+		if (solicitudPadre != null) {
+			solicitudBD.setResultadoAdministrativo(solicitudPadre.getResultadoAdministrativo());
+			solicitudBD.setEstadoEvaluacionTecnica(solicitudPadre.getEstadoEvaluacionTecnica());
+			solicitudBD.setEstadoEvaluacionAdministrativa(solicitudPadre.getEstadoEvaluacionAdministrativa());
+			solicitudBD.setObservacionAdmnistrativa(solicitudPadre.getObservacionAdmnistrativa());
+		}
+
+		ListadoDetalle estadoConcluido = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO);
+
+		ListadoDetalle estadoRevision = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.CONCLUIDO);
+
+		solicitudBD.setEstado(estadoConcluido);
+		solicitudBD.setEstadoRevision(estadoRevision);
+		solicitudBD.setFechaPresentacion(new Date());
+		solicitudBD.setFlagActivo(Constantes.FLAG.ACTIVO);
+		ExpedienteInRO expedienteInRO = null;
+		List<File> archivosAlfresco = null;
+		try {
+			expedienteInRO = crearExpedientePresentacion(solicitudBD, contexto);
+			archivosAlfresco = archivoService.obtenerArchivoModificacion(solicitudBD.getIdSolicitud(), contexto);
+			DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+			if (documentoOutRO.getResultCode() != 1) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
+						documentoOutRO.getMessage());
+			}
+			
+			AuditoriaUtil.setAuditoriaActualizacion(solicitudBD, contexto);
+			solicitudRes = solicitudDao.save(solicitudBD);
+		} catch (Exception e) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
+		}
+
+		return solicitudRes;
+	}
+
 	private void archivarExpediente(String codigoExpediente) {
 		sigedApiConsumer.archivarExpediente(codigoExpediente, "SICOES-Error en transaccion");		
 	}
@@ -1137,13 +1190,26 @@ public class SolicitudServiceImpl implements SolicitudService {
 					Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
 			ListadoDetalle estadoRevision = listadoDetalleService.obtenerListadoDetalle(
 					Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.POR_ASIGNAR);
-			solicitud.setTipoSolicitud(tipoSolicitud);
+
+			if (solicitud.getTipoSolicitud() != null && solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.MODIFICACION)) {
+				tipoSolicitud = listadoDetalleService.obtenerListadoDetalle(
+						Constantes.LISTADO.TIPO_SOLICITUD.CODIGO, Constantes.LISTADO.TIPO_SOLICITUD.MODIFICACION);
+				solicitud.setTipoSolicitud(tipoSolicitud);
+			} else {
+				solicitud.setTipoSolicitud(tipoSolicitud);
+			}
 
 			solicitud.setEstadoRevision(estadoRevision);
 			solicitud.setFechaRegistro(new Date());
 			solicitud.setUsuario(contexto.getUsuario());
 			solicitud.setEstado(estadoSolicitud);
 			solicitud.setFlagActivo(Constantes.FLAG.ACTIVO);
+			if (solicitudBD != null) {
+				solicitud.setIdSolicitudPadre(solicitudBD.getIdSolicitudPadre());
+				solicitud.setSolicitudUuidPadre(solicitudBD.getSolicitudUuidPadre());
+				solicitud.setOrigenRegistro(solicitudBD.getOrigenRegistro());
+			}
+
 			AuditoriaUtil.setAuditoriaRegistro(solicitud, contexto);
 			solicitudBD = solicitudDao.save(solicitud);
 
@@ -1201,7 +1267,6 @@ public class SolicitudServiceImpl implements SolicitudService {
 					for (OtroRequisito otroRequisito : otroRequisitos) {
 						otroRequisito.setSolicitud(solicitudBD);
 						otroRequisito = otroRequisitoService.guardar(otroRequisito, contexto);
-
 					}
 				}
 			}
@@ -1316,6 +1381,80 @@ public class SolicitudServiceImpl implements SolicitudService {
 				persona.setCorreo(this.validarCampo(personaRequest.getCorreo()));
 				solicitudBD.setPersona(persona);
 			}
+
+			// Actualizar DJ
+			List<OtroRequisito> otrosReqs = solicitud.getOtrosRequisitos();
+			String procedimiento = "Actualizacion";
+			if (otrosReqs != null) {
+				OtroRequisito dj = null;
+				ListadoDetalle tipoPersonaSolicitud = obtenerTipoPersona(solicitud.getSolicitudUuid());
+				if (tipoPersonaSolicitud != null &&
+						(tipoPersonaSolicitud.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.JURIDICA)
+						|| tipoPersonaSolicitud.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.EXTRANJERO)
+						|| tipoPersonaSolicitud.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_POSTOR))) {
+					dj = otrosReqs.stream().filter(or -> or.getTipoRequisito().getCodigo().equals(Constantes.LISTADO.OTROS_DOCUMENTOS_PJ.DJ))
+							.findFirst().orElse(null);
+				}
+
+				if (tipoPersonaSolicitud != null &&
+						(tipoPersonaSolicitud.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL)
+						|| tipoPersonaSolicitud.getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO))) {
+					dj = otrosReqs.stream().filter(or -> or.getTipoRequisito().getCodigo().equals(Constantes.LISTADO.OTROS_DOCUMENTOS_PN.DJ))
+							.findFirst().orElse(null);
+				}
+
+				if (dj == null) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.DJ_AUSENTE);
+				}
+
+				if (dj.getArchivo() == null) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.DJ_AUSENTE);
+				}
+
+				List<Archivo> archivoOtroReq = archivoService.buscar(null, null, dj.getIdOtroRequisito(), contexto);
+				for (Archivo archivoBD : archivoOtroReq) {
+					if (dj.getArchivo() != null &&
+							!Objects.equals(archivoBD.getIdArchivo(), dj.getArchivo().getIdArchivo())) {
+						dj.setSolicitud(solicitudBD);
+						ExpedienteInRO expedienteInRO = null;
+						try {
+							expedienteInRO = crearExpedientePresentacion(solicitudBD, contexto);
+							List<File> files;
+							files = archivoService.obtenerArchivoDj(dj.getIdOtroRequisito(), procedimiento, contexto);
+							DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, files);
+							if (documentoOutRO.getResultCode() != 1) {
+								throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
+										documentoOutRO.getMessage());
+							}
+							otroRequisitoService.guardar(dj, contexto);
+						} catch (Exception e) {
+							logger.error("ERROR {}", e.getMessage(), e);
+							throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
+						}
+
+					}
+				}
+			}
+
+			AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
+			return solicitudDao.save(solicitudBD);
+		} else if (solicitudBD.getOrigenRegistro() != null && Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION.equals(solicitudBD.getOrigenRegistro().getCodigo())) {
+			// Actualizar DJ
+			List<OtroRequisito> otrosReqs = solicitud.getOtrosRequisitos();
+			if (otrosReqs != null) {
+				OtroRequisito dj = otrosReqs.stream().filter(or -> or.getTipoRequisito().getCodigo().equals(Constantes.LISTADO.OTROS_DOCUMENTOS_PJ.DJ))
+						.findFirst().orElse(null);
+
+				List<Archivo> archivoOtroReq = archivoService.buscar(null, null, dj.getIdOtroRequisito(), contexto);
+				for (Archivo archivoBD : archivoOtroReq) {
+					if (dj.getArchivo() != null &&
+							!Objects.equals(archivoBD.getIdArchivo(), dj.getArchivo().getIdArchivo())) {
+						dj.setSolicitud(solicitudBD);
+						otroRequisitoService.guardar(dj, contexto);
+					}
+				}
+			}
+
 			AuditoriaUtil.setAuditoriaRegistro(solicitudBD, contexto);
 			return solicitudDao.save(solicitudBD);
 		} else {
@@ -1331,10 +1470,10 @@ public class SolicitudServiceImpl implements SolicitudService {
 		if(solicitudBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)
 				&& (solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
 				|| solicitudBD.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))) {
-			//Clonar Solicitud
+			// Clonar Solicitud
 			Solicitud solicitudNueva = this.clonarSolicitud(solicitudBD, contexto);
 
-			//Obtener Asignacion
+			// Obtener Asignacion
 			asignacionService.clonarAsignacion(solicitudBD, solicitudNueva, contexto);
 			Pageable pageable = PageRequest.of(0, Integer.parseInt(env.getProperty("maximo.paginas")));
 			solicitudNueva.setAsignados(asignacionService.buscar(solicitudNueva.getIdSolicitud(), null, pageable, contexto).getContent());
@@ -1343,7 +1482,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			ListadoDetalle estadoRevision = listadoDetalleService.obtenerListadoDetalle(
 					Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.POR_ASIGNAR);
 
-			//Actualizar Solicitud con campos faltantes
+			// Actualizar Solicitud con campos faltantes
 			ListadoDetalle estadoPreliminar = listadoDetalleService.obtenerListadoDetalle(
 					Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
 			solicitudNueva.setEstado(estadoPreliminar);
@@ -1351,62 +1490,25 @@ public class SolicitudServiceImpl implements SolicitudService {
 			solicitudNueva.setFlagRespuesta(solicitudBD.getFlagRespuesta());
 			solicitudNueva.setObservacionAdmnistrativa(solicitudBD.getObservacionAdmnistrativa());
 			solicitudNueva.setObservacionTecnica(solicitudBD.getObservacionTecnica());
-			solicitudNueva.setNumeroExpediente(null);
-			solicitudNueva.setFechaRegistro(null);
-			solicitudNueva.setFechaPresentacion(null);
-			solicitudNueva.setResultadoAdministrativo(null);
 			solicitudNueva.setEstadoRevision(estadoRevision);
-			solicitudNueva.setEstadoEvaluacionTecnica(null);
-			solicitudNueva.setEstadoEvaluacionAdministrativa(null);
-			solicitudNueva.setNumeroPlazoResp(null);
-			solicitudNueva.setFechaPlazoResp(null);
-			solicitudNueva.setNumeroPlazoAsig(null);
-			solicitudNueva.setFechaPlazoAsig(null);
-			solicitudNueva.setObservacionTecnica(null);
-			solicitudNueva.setObservacionAdmnistrativa(null);
-			solicitudNueva.setCodigoConsentimiento(null);
-			solicitudNueva.setNumeroPlazoSub(null);
-			solicitudNueva.setNumeroPlazoSub(null);
-			solicitudNueva.setFechaPlazoTecnico(null);
-			solicitudNueva.setFechaPlazoTecnico(null);
-			solicitudNueva.setObservacionNoCalifica(null);
-			solicitudNueva.setFechaArchivamiento(null);
-			solicitudNueva.setFlagArchivamiento(null);
-			solicitudNueva.setFlagRespuesta(null);
-			solicitudDao.save(solicitudNueva);
 
-			//Actualizar estado Otro Requisito
-			List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudNueva.getIdSolicitud());
-			if(!otrosRequisito.isEmpty()) {
-				ListadoDetalle estadoOtroRequisito = listadoDetalleService.obtenerListadoDetalle(
-						Constantes.LISTADO.ESTADO_OTRO_REQUISITO.CODIGO, Constantes.LISTADO.ESTADO_OTRO_REQUISITO.ORIGINAL);
-				otrosRequisito = otrosRequisito.stream()
-						.peek(req -> req.setEstado(estadoOtroRequisito))
-						.collect(Collectors.toList());
-				otroRequisitoDao.saveAll(otrosRequisito);
+			// Actualizar Solicitud y secciones
+			Solicitud solicitudNuevaActualizada = actualizarSolicitudModificada(solicitudNueva, contexto);
+
+            // Obtener el origen de registro
+            ListadoDetalle origenRegistro = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ORIGEN_REGISTRO.CODIGO, Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION);
+            solicitudNuevaActualizada.setOrigenRegistro(origenRegistro);
+
+			// Asignar numero de expediente de solicitud padre para solicitudes de PN
+			if (
+					solicitudNuevaActualizada.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL)
+					|| solicitudNuevaActualizada.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO)
+			) {
+				solicitudNuevaActualizada.setNumeroExpediente(solicitudBD.getNumeroExpediente());
 			}
 
-			//Actualizar estado Documento
-			List<Documento> documentos = documentoService.buscar(solicitudNueva.getIdSolicitud(), contexto);
-			if(!documentos.isEmpty()) {
-				ListadoDetalle estadoDocumento = listadoDetalleService.obtenerListadoDetalle(
-						Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_DOCUMENTO.ORIGINAL);
-				documentos = documentos.stream()
-						.peek(doc -> doc.setEstado(estadoDocumento))
-						.collect(Collectors.toList());
-				documentoDao.saveAll(documentos);
-			}
-
-			//Actualizar estado Estudios
-			List<Estudio> estudios = estudioService.buscar(solicitudNueva.getIdSolicitud(), contexto);
-			if(!estudios.isEmpty()) {
-				ListadoDetalle estadoEstudio = listadoDetalleService.obtenerListadoDetalle(
-						Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO, Constantes.LISTADO.ESTADO_ESTUDIO.ORIGINAL);
-				estudios = estudios.stream()
-						.peek(estudio -> estudio.setEstado(estadoEstudio))
-						.collect(Collectors.toList());
-				estudioDao.saveAll(estudios);
-			}
+			solicitudDao.save(solicitudNuevaActualizada);
 
 			//Actualizar idSolicitud en Representantes
 			List<Representante> representantes = representanteDao.obtenerRepresentantesSolicitud(solicitudBD.getIdSolicitud(),
@@ -1416,14 +1518,14 @@ public class SolicitudServiceImpl implements SolicitudService {
 						.map(repre -> {
 							Representante representante = CloneUtil.clonarRepresentante(repre, contexto);
 							AuditoriaUtil.setAuditoriaRegistro(representante, contexto);
-							representante.setIdSolicitud(solicitudNueva.getIdSolicitud());
+							representante.setIdSolicitud(solicitudNuevaActualizada.getIdSolicitud());
 							return representante;
 						})
 						.collect(Collectors.toList());
 				representanteDao.saveAll(representantes);
-				solicitudNueva.setHistorialRepresentante(representantes);
+				solicitudNuevaActualizada.setHistorialRepresentante(representantes);
 			}
-			return solicitudNueva;
+			return solicitudNuevaActualizada;
 		}
 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO);
 	}
@@ -1858,7 +1960,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			Archivo archivo02 = null;
 			Archivo archivo03 = null;
 			Archivo archivo04 = null;
-			if (solicitud.getIdSolicitudPadre() == null) {
+			if (solicitud.getIdSolicitudPadre() == null || solicitud.getOrigenRegistro() != null) {
 				archivo01 = archivoService.obtenerTipoArchivo(solicitud.getIdSolicitud(),
 						Constantes.LISTADO.TIPO_ARCHIVO.FORMATO);
 				archivo02 = archivoService.obtenerTipoArchivo(solicitud.getIdSolicitud(),
@@ -1907,6 +2009,26 @@ public class SolicitudServiceImpl implements SolicitudService {
 			solicitud.setAsignados(asignados);
 		}
 
+		return page;
+	}
+	
+	@Override
+	public Page<Contrato> buscarAprobadorContratos(String nroExpediente, String contratista, String idTipoContrato,
+			String idTipoAprobacion, Pageable pageable, Contexto contexto) {
+		String codigoEstadoBorrador = Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR;
+		Long idUsuario = contexto.getUsuario().getIdUsuario();
+		if (StringUtils.isBlank(nroExpediente)) {
+			nroExpediente = null;
+		} else {
+			nroExpediente = "%" + nroExpediente + "%";
+		}
+		if (StringUtils.isBlank(contratista)) {
+			contratista = null;
+		} else {
+			contratista = "%" + contratista.toUpperCase() + "%";
+		}
+		Page<Contrato> page = contratoDao.obtenerContratosAprobados(nroExpediente, contratista, idTipoContrato,
+				idTipoAprobacion, pageable);
 		return page;
 	}
 
@@ -3285,7 +3407,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 		}
 		return solicitudDao.obtenerId(solicitudUuid);
 	}
-
+	
+	@Override
+	public List<PerfilAprobador> buscarAprobadoresPorSolicitud(Long idSolicitud) {
+	    return solicitudDao.buscarAprobadoresPorSolicitud(idSolicitud);
+	}
+	
 	@Override
 	public Solicitud obtenerSolicitudAprobada(String codigoRuc) {
 		return solicitudDao.obtenerAprobadaPorRuc(codigoRuc);
@@ -3790,7 +3917,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 			logger.info("subirDocumentoAdministrativos Fin");
 		}
-		//AFC
+	//AFC
 	
 	@Override
 	public Solicitud obtenerUltimaSolicitudPresentadaPorUsuario(Contexto contexto) {
@@ -3890,5 +4017,143 @@ public class SolicitudServiceImpl implements SolicitudService {
 	public List<Long> obtenerSubsectoresXUsuarioSolicitud(String uuid, Long idUsuario) {
 		return solicitudDao.obtenerSubsectoresXUsuarioSolicitud(uuid, idUsuario);
 	}
+
+	private Solicitud actualizarSolicitudModificada(Solicitud solicitudNueva, Contexto contexto) {
+		// Setear algunos campos en null
+		solicitudNueva.resetCamposModificables();
+
+		// Asignar Solicitud de Modificacion a Personas Naturales
+		if (solicitudNueva.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL)
+		|| solicitudNueva.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO)) {
+			ListadoDetalle tipoModificacion = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.TIPO_SOLICITUD.CODIGO, Constantes.LISTADO.TIPO_SOLICITUD.MODIFICACION);
+			solicitudNueva.setTipoSolicitud(tipoModificacion);
+		}
+
+		// Actualizar estado Otro Requisito
+		List<OtroRequisito> otrosRequisito = otroRequisitoService.listarOtroRequisito(solicitudNueva.getIdSolicitud());
+		if(!otrosRequisito.isEmpty()) {
+			ListadoDetalle estadoOtroRequisito = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_OTRO_REQUISITO.CODIGO, Constantes.LISTADO.ESTADO_OTRO_REQUISITO.ORIGINAL);
+			otrosRequisito = otrosRequisito.stream()
+					.peek(req -> req.setEstado(estadoOtroRequisito))
+					.collect(Collectors.toList());
+			otroRequisitoDao.saveAll(otrosRequisito);
+		}
+
+		//Actualizar estado Documento
+		List<Documento> documentos = documentoService.buscar(solicitudNueva.getIdSolicitud(), contexto);
+		if(!documentos.isEmpty()) {
+			ListadoDetalle estadoDocumento = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_DOCUMENTO.ORIGINAL);
+			if (solicitudNueva.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL)
+					|| solicitudNueva.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO)) {
+				documentos = documentos.stream()
+						.peek(doc -> {
+							doc.setEstado(estadoDocumento);
+						})
+						.collect(Collectors.toList());
+			} else {
+				documentos = documentos.stream()
+						.peek(doc -> {
+							doc.setEstado(estadoDocumento);
+							doc.setFlagSiged(0L);
+						})
+						.collect(Collectors.toList());
+			}
+
+			documentoDao.saveAll(documentos);
+		}
+
+		//Actualizar estado Estudios
+		List<Estudio> estudios = estudioService.buscar(solicitudNueva.getIdSolicitud(), contexto);
+		if(!estudios.isEmpty()) {
+			ListadoDetalle estadoEstudio = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO, Constantes.LISTADO.ESTADO_ESTUDIO.ORIGINAL);
+			estudios = estudios.stream()
+					.peek(estudio -> estudio.setEstado(estadoEstudio))
+					.collect(Collectors.toList());
+			estudioDao.saveAll(estudios);
+		}
+
+		return solicitudNueva;
+	}
+
+	@Override
+	public boolean validarCambios(Solicitud solicitud, Contexto contexto) {
+
+		Long solicitudId = obtenerId(solicitud.getSolicitudUuid());
+		Solicitud solicitudDB = obtener(solicitudId, contexto);
+
+		List<Documento> documentosPadre = documentoService.buscar(solicitudDB.getIdSolicitudPadre(), contexto);
+		List<Documento> documentosHijo = documentoService.buscar(solicitudDB.getIdSolicitud(), contexto);
+
+		List<Estudio> estudiosPadre = estudioService.buscar(solicitudDB.getIdSolicitudPadre(), contexto);
+		List<Estudio> estudiosHijo = estudioService.buscar(solicitudDB.getIdSolicitud(), contexto);
+
+		if (solicitudDB.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.NATURAL)
+				|| solicitudDB.getPersona().getTipoPersona().getCodigo().equals(Constantes.LISTADO.TIPO_PERSONA.PN_PERS_PROPUESTO)) {
+			// Si las listas tienen diferente tamaño, hay cambios
+			if (documentosPadre.size() != documentosHijo.size() || estudiosPadre.size() != estudiosHijo.size()) {
+				return true;
+			}
+		} else {
+			// Si las listas tienen diferente tamaño, hay cambios
+			if (documentosPadre.size() != documentosHijo.size()) {
+				return true;
+			}
+
+			// Verificar si algún documento en la lista hijo coincide con algún documento en la lista padre
+			for (Documento docHijo : documentosHijo) {
+				boolean encontroCoincidencia = false;
+
+				for (Documento docPadre : documentosPadre) {
+					boolean mismoTipoDocumento = ComparisonUtil.sonIguales(docHijo.getTipoDocumento(), docPadre.getTipoDocumento());
+					boolean mismoTipoCambio = ComparisonUtil.sonIguales(docHijo.getTipoCambio(), docPadre.getTipoCambio());
+					boolean mismoCodigoContrato = ComparisonUtil.sonIguales(docHijo.getCodigoContrato(), docPadre.getCodigoContrato());
+					boolean mismaFechaInicio = ComparisonUtil.sonIguales(docHijo.getFechaInicio(), docPadre.getFechaInicio());
+					boolean mismaFechaFin = ComparisonUtil.sonIguales(docHijo.getFechaFin(), docPadre.getFechaFin());
+					boolean mismoFlagVigente = ComparisonUtil.sonIguales(docHijo.getFlagVigente(), docPadre.getFlagVigente());
+					boolean mismoMontoContrato = ComparisonUtil.sonIguales(docHijo.getMontoContrato(), docPadre.getMontoContrato());
+					boolean mismoMontoContratoSol = ComparisonUtil.sonIguales(docHijo.getMontoContratoSol(), docPadre.getMontoContratoSol());
+
+					// Si todos los campos coinciden, marcar como encontrado
+					if (mismoTipoDocumento && mismoTipoCambio && mismoCodigoContrato && mismaFechaInicio &&
+							mismaFechaFin && mismoFlagVigente && mismoMontoContrato && mismoMontoContratoSol) {
+						encontroCoincidencia = true;
+					} else {
+						encontroCoincidencia = false;
+						break;
+					}
+				}
+
+				if (!encontroCoincidencia) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+    @Transactional
+    public void guardarLote(List<ReqInicioServicio> registros) {
+        for (ReqInicioServicio body : registros) {
+            Optional<ReqInicioServicio> existente = reqInicioServicioDao.findBySolicitudPerfilIdAndTipoDocumento(
+                body.getSolicitudPerfilId(), body.getTipoDocumento()
+            );
+            ReqInicioServicio e = existente.orElse(new ReqInicioServicio());
+            e.setSolicitudPerfilId(body.getSolicitudPerfilId());
+            e.setSupervisoraId(body.getSupervisoraId());
+            e.setTipoDocumento(body.getTipoDocumento());
+            e.setArchivoId(body.getArchivoId());
+            e.setFechaInicio(body.getFechaInicio());
+            e.setFechaFin(body.getFechaFin());
+            e.setEstadoEvaluacion(null); // OBLIGATORIAMENTE en null
+            e.setUsuarioId(null);
+            e.setFechaEvaluacion(null);
+            e.setObservacion(null);
+            reqInicioServicioDao.save(e);
+        }
+    }
 
 }

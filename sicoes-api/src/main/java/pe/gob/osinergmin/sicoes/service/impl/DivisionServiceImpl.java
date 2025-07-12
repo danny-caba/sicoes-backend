@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.PerfilDivision;
+import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.repository.DivisionAdicionalDao;
 import pe.gob.osinergmin.sicoes.repository.DivisionDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilDivisionDao;
@@ -49,8 +51,15 @@ public class DivisionServiceImpl implements DivisionService {
 	}
 
 	@Override
-	public List<Division> listarDivisiones() {
-		return divisionDao.findAll();
+	public List<DivisionDTO> listarDivisiones() {
+		return divisionDao.findAll().stream()
+				.map(division -> {
+					DivisionDTO dto = new DivisionDTO();
+					dto.setIdDivision(division.getIdDivision());
+					dto.setDeDivision(division.getDeDivision());
+					return dto;
+				})
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -65,6 +74,22 @@ public class DivisionServiceImpl implements DivisionService {
         return resultados.stream()
 				.map(PerfilDivision::getDivision)
 				.distinct()
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<DivisionDTO> listarDivisionesCoordinador(Contexto contexto) {
+		List<Division> divisiones = divisionDao.findByIdUsuario(contexto.getUsuario().getIdUsuario());
+		if (divisiones.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return divisiones.stream()
+				.map(division -> {
+					DivisionDTO dto = new DivisionDTO();
+					dto.setIdDivision(division.getIdDivision());
+					dto.setDeDivision(division.getDeDivision());
+					return dto;
+				})
 				.collect(Collectors.toList());
 	}
 

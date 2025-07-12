@@ -571,5 +571,11 @@ public interface OtroRequisitoDao extends JpaRepository<OtroRequisito, Long> {
 	        + "and s.idListadoDetalle <> :idSector "
 	        + "and (:tipo = 91)")
 	public Long existeSector(Long idSolicitud, Long idSector, int tipo);
+
+	@Query("SELECT o FROM OtroRequisito o " +
+	           "JOIN o.solicitud so " +
+	           "WHERE o.idOtroRequisito = :idOtroRequisito " +
+	           "AND so.idSolicitud = :idSolicitud")
+	public OtroRequisito obtenerPorIdYSolicitud(Long idOtroRequisito, Long idSolicitud);
 	
 }

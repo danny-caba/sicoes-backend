@@ -46,6 +46,9 @@ public class Seccion extends BaseModel implements Serializable {
 	
 	@Column(name="CO_SECCION")	
 	private String coSeccion;
+
+	@Column(name="FL_VISIBLE_SECCION")
+	private String flVisibleSeccion;
 	
 	public String getFlReqPersonal() {
 		return flReqPersonal;
@@ -96,8 +99,12 @@ public class Seccion extends BaseModel implements Serializable {
 		this.esSeccion = esSeccion;
 	}
 
- 
-  
- 
+	public String getFlVisibleSeccion() {
+		return flVisibleSeccion;
+	}
+
+	public void setFlVisibleSeccion(String flVisibleSeccion) {
+		this.flVisibleSeccion = flVisibleSeccion;
+	}
 	 
 }

@@ -6,14 +6,14 @@ import java.util.List;
 
 @XmlRootElement(name = "usuarios")
 public class UsuariosSigedDTO {
-    private List<UsuarioSigedDTO> usuarioList;
+    private List<UsuarioDetalleSigedDTO> usuarioList;
 
     @XmlElement(name = "usuario")
-    public List<UsuarioSigedDTO> getUsuarioList() {
+    public List<UsuarioDetalleSigedDTO> getUsuarioList() {
         return usuarioList;
     }
 
-    public void setUsuarioList(List<UsuarioSigedDTO> usuarioList) {
+    public void setUsuarioList(List<UsuarioDetalleSigedDTO> usuarioList) {
         this.usuarioList = usuarioList;
     }
 }

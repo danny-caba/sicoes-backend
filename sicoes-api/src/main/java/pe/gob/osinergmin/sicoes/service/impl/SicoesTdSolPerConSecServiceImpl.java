@@ -21,6 +21,7 @@ import pe.gob.osinergmin.sicoes.repository.SeccionDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesTdSolPerConSecDao;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 
@@ -51,7 +52,7 @@ public class SicoesTdSolPerConSecServiceImpl  implements SicoesTdSolPerConSecSer
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public
-	Iterable <SicoesTdSolPerConSec> guardarSicoes(SicoesSolicitud sicoesSolicitud, Contexto contexto) {
+	List<SicoesTdSolPerConSec> guardarSicoes(SicoesSolicitud sicoesSolicitud, Contexto contexto) {
 		 try	{
 			 List<Map<String, Object>> response = new ArrayList<>();
 			 
@@ -74,11 +75,7 @@ public class SicoesTdSolPerConSecServiceImpl  implements SicoesTdSolPerConSecSer
 				 lista.add(modelPerso);
 
 			 });
-			 Iterable<SicoesTdSolPerConSec> savedUsers = sicoesTdSolPerConSecDao.saveAll(lista);
-			    // Use Stream API to process the saved users
-			    StreamSupport.stream(savedUsers.spliterator(), false)
-			                 .forEach(x -> System.out.println("Saved solicitud:   " + x.getIdSeccion()));
-
+			 List<SicoesTdSolPerConSec> savedUsers = sicoesTdSolPerConSecDao.saveAll(lista);
 			 return	savedUsers;
 		  }catch (Exception ex) {
 			 logger.error("Ocurrio un error al guardar la solicitud: {}, Contexto: {}, Excepción: {}", sicoesSolicitud, contexto, ex.getMessage(), ex);
@@ -116,7 +113,7 @@ public class SicoesTdSolPerConSecServiceImpl  implements SicoesTdSolPerConSecSer
 
 				response.add(seccionSubsanacion);
 
-				if ("1".equals(seccionPadre.getFlConPersonal())) {
+				if (Constantes.FLAG_PERSONAL_PERF_CONTRATO.SI.equals(seccionPadre.getFlConPersonal())) {
 					List<SicoesTdSoliPersProp> listaPersonal = sicoesTdSolPersPropService.obtenerProfesionalesPorSeccion(seccionPadre.getIdSolPerConSec());
 
 					for (SicoesTdSoliPersProp profesionalPadre : listaPersonal) {
@@ -139,7 +136,7 @@ public class SicoesTdSolPerConSecServiceImpl  implements SicoesTdSolPerConSecSer
 								requisitoSubsanacion.setProcRevision("1");
 							} else {
 								requisitoSubsanacion.setProcSubsanacion("1");
-								requisitoSubsanacion.setProcRevision("0");
+								requisitoSubsanacion.setProcRevision(requisitoPresentacion.getProcRevision());
 								requisitoSubsanacion.setFechaEvaluacion(null);
 								requisitoSubsanacion.setUsuarioEvaluacion(null);
 								requisitoSubsanacion.setEvaluacion(null);
@@ -154,6 +151,7 @@ public class SicoesTdSolPerConSecServiceImpl  implements SicoesTdSolPerConSecSer
 								Archivo archivoNew = new Archivo();
 								BeanUtils.copyProperties(archivo.get(0), archivoNew, "idArchivo", "idPerfContrato", "fecCreacion", "usuCreacion", "ipCreacion", "fecActualizacion", "usuActualizacion", "ipActualizacion");
 								archivoNew.setIdSeccionRequisito(requisitoSubsanacionDB.getIdSolicitudSeccion());
+								archivoNew.setCodigo(UUID.randomUUID().toString());
 								AuditoriaUtil.setAuditoriaRegistro(archivoNew, contexto);
 								archivoService.guardarArchivoSubsanacionContrato(archivoNew, contexto);
 							}
@@ -185,6 +183,7 @@ public class SicoesTdSolPerConSecServiceImpl  implements SicoesTdSolPerConSecSer
 							Archivo archivoNew = new Archivo();
 							BeanUtils.copyProperties(archivo.get(0), archivoNew, "idArchivo", "idSeccionRequisito", "fecCreacion", "usuCreacion", "ipCreacion", "fecActualizacion", "usuActualizacion", "ipActualizacion");
 							archivoNew.setIdSeccionRequisito(requisitoSubsanacionDB.getIdSolicitudSeccion());
+							archivoNew.setCodigo(UUID.randomUUID().toString());
 							AuditoriaUtil.setAuditoriaRegistro(archivoNew, contexto);
 							archivoService.guardarArchivoSubsanacionContrato(archivoNew, contexto);
 						}

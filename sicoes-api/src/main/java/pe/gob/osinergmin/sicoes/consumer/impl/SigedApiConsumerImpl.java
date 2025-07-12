@@ -38,7 +38,7 @@ import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import gob.osinergmin.siged.rest.util.ExpedienteInvoker;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
-import pe.gob.osinergmin.sicoes.model.dto.UsuarioSigedDTO;
+import pe.gob.osinergmin.sicoes.model.dto.UsuarioDetalleSigedDTO;
 import pe.gob.osinergmin.sicoes.model.dto.UsuarioSigedResponseDTO;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
@@ -67,9 +67,8 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 	@Value("${siged.ws.path.buscar.cliente}")
 	private String SIGED_PATH_BUSCAR_CLIENTE;
 	
-	
 	@Override
-	public ExpedienteOutRO crearExpediente(ExpedienteInRO expediente, List<File> archivos) throws Exception {
+	public ExpedienteOutRO crearExpediente(ExpedienteInRO expediente, List<File> archivos) {
 		return ExpedienteInvoker.create(SIGED_WS_URL+SIGED_PATH_CREAR_EXPEDIENTE, expediente, archivos);
 	}
 	
@@ -81,8 +80,15 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getMessage());
 		return doc;
 	}
-
 	
+	@Override
+	public DocumentoOutRO agregarDocumentoVersionar(ExpedienteInRO expediente, List<File> archivos) throws Exception {
+		DocumentoOutRO doc =ExpedienteInvoker.addDocument(SIGED_WS_URL+SIGED_PATH_AGREGAR_DOCUMENTO, expediente, archivos, true);
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getResultCode());
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getErrorCode());
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getMessage());
+		return doc;
+	}
 	
 	private SOAPMessage sendPidoRequest(String xmlRequest, String URL) {
 		RestTemplate restTemplate = new RestTemplate();
@@ -217,7 +223,7 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 	}
 	
 	@Override
-	public UsuarioSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
+	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception {
 		String url=SIGED_WS_URL+SIGED_PATH_OBTENER_USUARIO;
 
 		try {			
@@ -238,7 +244,7 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 			JAXBContext jaxbContext = JAXBContext.newInstance(UsuarioSigedResponseDTO.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			UsuarioSigedResponseDTO responseDTO = (UsuarioSigedResponseDTO) unmarshaller.unmarshal(new StringReader(result));
-			UsuarioSigedDTO usuario = null;
+			UsuarioDetalleSigedDTO usuario = null;
 			if (responseDTO.getResultCode() == 1 && responseDTO.getUsuarios() != null) {
 				usuario = responseDTO.getUsuarios().getUsuarioList().get(0);
 			} else {

@@ -31,6 +31,8 @@ import pe.gob.osinergmin.sicoes.util.ValidacionUtil;
 import pe.gob.osinergmin.sicoes.util.bean.GradoTituloRO;
 import pe.gob.osinergmin.sicoes.util.bean.SuneduOutRO;
 
+import javax.persistence.EntityNotFoundException;
+
 
 @Service
 public class EstudioServiceImpl implements EstudioService{
@@ -132,13 +134,12 @@ public class EstudioServiceImpl implements EstudioService{
 			estudio.setFuente(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.FUENTE_ESTUDIO.CODIGO,Constantes.LISTADO.FUENTE_ESTUDIO.MANUAL));
 			estudio.setEvaluacion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.RESULTADO_EVALUACION.CODIGO,Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
 			if(solicitud.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
-					&& (solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
-					|| solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))
+					&& (solicitud.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.MODIFICACION))
 					&& Optional.ofNullable(solicitud.getIdSolicitudPadre()).isPresent()) {
 				estudio.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ESTUDIO.CODIGO,Constantes.LISTADO.ESTADO_ESTUDIO.ACTUAL));
 			}
 			estudioBD=estudio;
-		}else { 
+		}else {
 			estudioBD = estudioDao.obtener(estudio.getIdEstudio());			
 				if(Constantes.LISTADO.FUENTE_ESTUDIO.MANUAL.equals(estudioBD.getFuente().getCodigo())){
 					estudioBD.setTipo(estudio.getTipo());
@@ -381,11 +382,36 @@ public class EstudioServiceImpl implements EstudioService{
 	}
 
 	@Override
-	public Estudio actualizarFile(Estudio estudio, Contexto contexto) {
+	@Transactional
+	public Estudio modificarEstudio(Estudio estudio, Contexto contexto) {
+
+		if (estudio == null || estudio.getIdEstudio() == null) {
+			throw new IllegalArgumentException("Estudio o ID no puede ser nulo");
+		}
+
 		Estudio estudioDB = estudioDao.obtener(estudio.getIdEstudio());
-		archivoService.asociarArchivos(estudioDB.getSolicitud().getIdSolicitud(), estudioDB.getIdEstudio(), estudio.getArchivos(),contexto);
+		if (estudioDB == null) {
+			throw new EntityNotFoundException("No existe estudio con ID: " + estudio.getIdEstudio());
+		}
+
+		if (estudioDB.getSolicitud() == null || estudioDB.getSolicitud().getIdSolicitud() == null) {
+			throw new IllegalStateException("El estudio no tiene una solicitud asociada válida");
+		}
+
+		if (estudio.getArchivos() == null) {
+			throw new IllegalArgumentException("La lista de archivos no puede ser nula");
+		}
+
+		archivoService.asociarArchivos(
+				estudioDB.getSolicitud().getIdSolicitud(),
+				estudioDB.getIdEstudio(),
+				estudio.getArchivos(),
+				contexto
+		);
+
 		actualizarNombreArchivo(estudioDB.getSolicitud().getIdSolicitud(), contexto);
-		return estudio;
+
+		return estudioDB;
 	}
 
 }

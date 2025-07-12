@@ -26,6 +26,6 @@ public interface EstudioService extends BaseService<Estudio, Long> {
 	
 	public void copiarCapacitacionesUltimaSolicitud(String solicitudUuidUltima, String solicitudUuid, Contexto contexto);
 
-	Estudio actualizarFile(Estudio estudio, Contexto contexto);
+	Estudio modificarEstudio(Estudio estudio, Contexto contexto);
 
 }

@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import pe.gob.osinergmin.sicoes.model.Archivo;
+import pe.gob.osinergmin.sicoes.model.Contrato;
+import pe.gob.osinergmin.sicoes.model.ReqInicioServicio;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.dto.SolicitudDTO;
 import pe.gob.osinergmin.sicoes.service.BitacoraService;
@@ -106,11 +108,23 @@ public class SolicitudRestController extends BaseRestController{
 		logger.info("modificar {} {}",solicitudUuid,solicitud);
 		try {
 			solicitud.setSolicitudUuid(solicitudUuid);
-			if(solicitud.getIdSolicitudPadre()==null) {
+
+			// Validar si la solicitud proviene de una modificacion
+			if (solicitud.getOrigenRegistro() != null && Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION.equals(solicitud.getOrigenRegistro().getCodigo())) {
+				boolean existenCambios = solicitudService.validarCambios(solicitud, getContexto());
+				if (!existenCambios) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_SIN_CAMBIOS);
+				}
+			}
+
+			if (solicitud.getOrigenRegistro() != null && Constantes.LISTADO.ORIGEN_REGISTRO.MODIFICACION.equals(solicitud.getOrigenRegistro().getCodigo())) {
+				bitacoraService.registrarModificacionSolicitud(solicitud, getContexto());
+			} else if (solicitud.getIdSolicitudPadre()==null) {
 				bitacoraService.registrarSolicitudInscripcion(solicitud, getContexto());
-			}else {
+			} else {
 				bitacoraService.subsanacionSolicitud(solicitud, getContexto());
-			}			
+			}
+
 			solicitudService.guardar(solicitud,getContexto());
 			Solicitud solicitudBD= solicitudService.enviar(solicitud,getContexto());
 			if(solicitudBD.getIdSolicitudPadre()==null) {
@@ -310,6 +324,18 @@ public class SolicitudRestController extends BaseRestController{
 		return solicitudService.buscarAprobador(nroExpediente,solicitante,idTipoSolicitud,idEstadoRevision,idEstadoEvaluacionTecnica,idEstadoEvaluacionAdministrativa,pageable,getContexto());
 	}
 	
+	
+	@GetMapping("/aprobadorContratos")
+	@Raml("solicitud.listar.properties")
+	public Page<Contrato> buscarAprobadorContratos(
+			@RequestParam(required=false) String nroExpediente,
+			@RequestParam(required=false) String contratista,
+			@RequestParam(required=false) String idTipoContrato,
+			@RequestParam(required=false) String idTipoAprobacion,
+			Pageable pageable) {
+		return solicitudService.buscarAprobadorContratos(nroExpediente,contratista,idTipoContrato,idTipoAprobacion,pageable,getContexto());
+	}
+	
 	@GetMapping("/copiar")
 	public void copiar(@RequestParam(required=false) Long idSolicitud) {
 		solicitudService.copiar(idSolicitud, getContexto());
@@ -372,5 +398,12 @@ public class SolicitudRestController extends BaseRestController{
 		logger.info("obtener {} ", solicitudUuid);
 		return solicitudService.obtenerSubsectoresXUsuarioSolicitud(solicitudUuid, getContexto().getUsuario().getIdUsuario());
 	}
+	
+    @PostMapping("/req-inicio-servicio/lote")
+    public ResponseEntity<?> guardarLote(@RequestBody List<ReqInicioServicio> registros) {
+        solicitudService.guardarLote(registros);
+        return ResponseEntity.ok().build();
+    }
+
 	
 }

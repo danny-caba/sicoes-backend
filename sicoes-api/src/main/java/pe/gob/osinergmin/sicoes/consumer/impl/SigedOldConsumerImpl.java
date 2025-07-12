@@ -83,7 +83,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
 
-	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Archivo archivo) {
+	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Long idContrato,Long idSoliPerfCont,Archivo archivo) {
 		
 		try {
 			
@@ -117,6 +117,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PROPUESTA/"+idPropuesta;
 	        }else if(archivo.getIdProceso()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PROCESO/"+idProceso;
+	        }else if(archivo.getIdContrato()!=null) {
+	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/CONTRATO/"+idContrato;
+	        }else if(archivo.getIdSoliPerfCont()!=null) {
+	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_CONTRATO/"+idSoliPerfCont;
 	        }else if(archivo.getIdSeccionRequisito()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_REQUISITO/"+idSeccionRequisito;
 			}else {
@@ -346,5 +350,56 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		parametros.setPasswordUsuario(SIGED_PASSWORD_FIRMA_DIGITAL);
 		
 		return parametros;
+	}
+
+	public String subirArchivosAlfrescoRequerimiento(Long idRequerimiento,Archivo archivo) {
+		logger.info("Requerimiento: "+archivo.getIdRequerimiento());
+		try {
+			RestTemplate restTemplate=new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+			MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+			ContentDisposition contentDisposition = ContentDisposition
+					.builder("form-data")
+					.name("file")
+					.filename(archivo.getNombreReal())
+					.build();
+			fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+			HttpEntity<byte[]> fileEntity;
+			if(archivo.getFile()!=null) {
+				fileEntity = new HttpEntity<>(archivo.getFile().getBytes(), fileMap);
+			}else {
+				fileEntity = new HttpEntity<>(archivo.getContenido(), fileMap);
+			}
+			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+			body.add("file", fileEntity);
+			HttpEntity<MultiValueMap<String, Object>> requestEntity =
+					new HttpEntity<>(body, headers);
+			String path="";
+			if(archivo.getIdRequerimiento()!=null) {
+				path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO/"+idRequerimiento;
+			}else {
+				logger.info("Sin path enviar idRequerimiento "+path);
+			}
+			logger.info("Enviado a alfresco : "+path);
+			logger.info("nombre Archivo: "+archivo.getNombreReal());
+			if(archivo.getFile()!=null) {
+				logger.info("contenido Archivo: "+archivo.getFile().getBytes().length);
+			}else {
+				logger.info("contenido Archivo: "+archivo.getContenido().length);
+			}
+			ResponseEntity<String> response = restTemplate.exchange(
+					path,
+					HttpMethod.POST,
+					requestEntity,
+					String.class);
+			XmlMapper xmlMapper = new XmlMapper();
+			AlfrescoFileOut fileOut=xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
+			logger.info("respuesta: "+fileOut);
+			return  fileOut.getFiles().getFullFilePath();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_SUBIR_ALFRESCO,e);
+		}
 	}
 }

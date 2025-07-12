@@ -9,8 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.core.env.Environment;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Set;
@@ -44,12 +46,7 @@ import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.PerfilDivisionDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
-import pe.gob.osinergmin.sicoes.service.ArchivoService;
-import pe.gob.osinergmin.sicoes.service.AsignacionService;
-import pe.gob.osinergmin.sicoes.service.DocumentoService;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.OtroRequisitoService;
-import pe.gob.osinergmin.sicoes.service.SolicitudService;
+import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -103,6 +100,9 @@ public class DocumentoServiceImpl implements DocumentoService {
 	private OtroRequisitoService otroRequisitoService;
 
 	@Autowired
+	private DictamenEvaluacionService dictamenEvaluacionService;
+
+	@Autowired
 	private Environment env;
 
 	private final EntityManager entityManager;
@@ -149,7 +149,9 @@ public class DocumentoServiceImpl implements DocumentoService {
 		PageUtilImpl<Documento> page = new PageUtilImpl<Documento>(documentos.getContent(), documentos.getPageable(),
 				documentos.getTotalElements());
 		page.setTotalMonto(documentoDao.sumarMontoTotal(idSolicitud));
-		page.setTotalMontoEvaluado(documentoDao.sumarMontoTotalEvaluado(idSolicitud));
+		// Obtener monto facturado evaluado
+		Double totalMontoEvaluado = dictamenEvaluacionService.sumarMontoEvaluado(idSolicitud, contexto);
+		page.setTotalMontoEvaluado(totalMontoEvaluado);
 		if (page.getTotalMonto() == null) {
 			calcularExperienciaTotal(page, documentoTotal.getContent());
 		}
@@ -353,7 +355,8 @@ public class DocumentoServiceImpl implements DocumentoService {
 							Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR));
 			if(sol.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
 					&& (sol.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.INSCRIPCION)
-					|| sol.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION))
+					|| sol.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.SUBSANACION)
+					|| sol.getTipoSolicitud().getCodigo().equals(Constantes.LISTADO.TIPO_SOLICITUD.MODIFICACION))
 					&& Optional.ofNullable(sol.getIdSolicitudPadre()).isPresent()) {
 				documento.setEstado(
 						listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_DOCUMENTO.CODIGO,
@@ -713,16 +716,41 @@ public class DocumentoServiceImpl implements DocumentoService {
 	}
 
 	@Override
-	public Documento actualizarFile(Documento documento, Contexto contexto) {
+	@Transactional
+	public Documento modificarDocumento(Documento documento, Contexto contexto) {
+
+		if (documento == null || documento.getIdDocumento() == null) {
+			throw new IllegalArgumentException("Documento o ID no puede ser nulo");
+		}
+
 		Documento documentoBD = documentoDao.obtener(documento.getIdDocumento());
-		if(documentoBD.getFlagVigente().equals("1")) {
+		if (documentoBD == null) {
+			throw new EntityNotFoundException("No existe documento con ID: " + documento.getIdDocumento());
+		}
+
+		if ("1".equals(documentoBD.getFlagVigente())
+				&& (documento.getFlagVigente() != null || documento.getFechaFin() != null)) {
 			documentoBD.setFlagVigente(documento.getFlagVigente());
 			documentoBD.setFechaFin(documento.getFechaFin());
+			documentoBD.setDuracion(documento.getDuracion());
 		}
+
+		if (documento.getArchivo() == null || documento.getArchivo().getIdArchivo() == null) {
+			throw new IllegalArgumentException("Archivo o ID de archivo no puede ser nulo");
+		}
+
 		Archivo archivoBD = archivoDao.obtener(documento.getArchivo().getIdArchivo());
+		if (archivoBD == null) {
+			throw new EntityNotFoundException("No existe archivo con ID: " + documento.getArchivo().getIdArchivo());
+		}
+
 		archivoService.asociarArchivo(documentoBD, archivoBD, contexto);
-		actualizarNombreArchivo(documentoBD.getSolicitud().getIdSolicitud(), contexto);
-		return documento;
+
+		if (documentoBD.getSolicitud() != null && documentoBD.getSolicitud().getIdSolicitud() != null) {
+			actualizarNombreArchivo(documentoBD.getSolicitud().getIdSolicitud(), contexto);
+		}
+
+		return documentoBD;
 	}
 
 	public void actualizarRequisitos(Long solicitudId, Contexto contexto, ListadoDetalle actividadArea,

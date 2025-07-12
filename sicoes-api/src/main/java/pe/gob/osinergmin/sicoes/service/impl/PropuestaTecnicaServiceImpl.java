@@ -70,8 +70,7 @@ public class PropuestaTecnicaServiceImpl implements PropuestaTecnicaService {
 
 	@Override
 	public PropuestaTecnica obtener(Long id, Contexto contexto) {
-		// TODO Auto-generated method stub
-		return null;
+		return propuestaTecnicaDao.findById(id).orElse(null);
 	}
 
 	@Override

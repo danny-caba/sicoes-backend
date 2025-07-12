@@ -255,7 +255,11 @@ public class PidoConsumerImpl implements PidoConsumer {
 				} else if (nombreUbigeo.length == 2) {
 					pidoOutRO.setProvincia(nombreUbigeo[0]);
 					pidoOutRO.setDistrito(nombreUbigeo[1]);
-				}
+				} else if (nombreUbigeo.length == 4) {
+					pidoOutRO.setDepartamento(nombreUbigeo[0]);
+					pidoOutRO.setProvincia(nombreUbigeo[1]);
+					pidoOutRO.setDistrito(nombreUbigeo[2]);
+				} 
 
 				if (pidoOutRO.getDepartamento() == null || "".equals(pidoOutRO.getDepartamento())) {
 					pidoOutRO.setDepartamento("CALLAO");

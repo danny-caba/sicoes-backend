@@ -98,13 +98,13 @@ public class EstudioRestController extends BaseRestController {
 		
 	}
 
-	@PutMapping("/{tipo}/{id}/file")
+	@PutMapping("/{tipo}/{id}/modificar")
 	@Raml("estudio.obtener.properties")
-	public Estudio actualizarFile(@PathVariable String tipo, @PathVariable Long  id, @RequestBody Estudio estudio) {
-		logger.info("actualizarFile {} {}",id,estudio);
+	public Estudio modificarEstudio(@PathVariable String tipo, @PathVariable Long  id, @RequestBody Estudio estudio) {
+		logger.info("modificarEstudio {} {}",id,estudio);
 		estudio.setIdEstudio(id);
 		logger.info("TIPO================ {} {}",tipo);
-		return estudioService.actualizarFile(estudio, getContexto());
+		return estudioService.modificarEstudio(estudio, getContexto());
 
 	}
 

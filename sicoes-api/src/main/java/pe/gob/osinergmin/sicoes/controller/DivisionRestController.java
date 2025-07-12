@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.PerfilDivision;
+import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.service.DivisionService;
 
 @RestController
@@ -26,7 +27,7 @@ public class DivisionRestController extends BaseRestController {
     private DivisionService divisionService;
 
     @GetMapping
-    public List<Division> listarDivisiones(HttpServletRequest request) {
+    public List<DivisionDTO> listarDivisiones(HttpServletRequest request) {
     	return divisionService.listarDivisiones();
     }
 	
@@ -39,6 +40,11 @@ public class DivisionRestController extends BaseRestController {
     public List<Division> listarDivisionesPorUsuario(@PathVariable Long idUsuario, HttpServletRequest request) {
         logger.info("listarDivisionesPorUsuario {} ", idUsuario);
     	return divisionService.listarDivisionesPorUsuario(idUsuario);
+    }
+
+    @GetMapping("/coordinador")
+    public List<DivisionDTO> listarDivisionesCoordinador(HttpServletRequest request) {
+        return divisionService.listarDivisionesCoordinador(getContexto());
     }
 
 }

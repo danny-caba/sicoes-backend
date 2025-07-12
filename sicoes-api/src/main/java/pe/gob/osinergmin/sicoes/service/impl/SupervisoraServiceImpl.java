@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +30,8 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
-import pe.gob.osinergmin.sicoes.model.SupervisoraRepresentante;
-import pe.gob.osinergmin.sicoes.model.SuspensionCancelacion;
+import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.dto.ProfesionalPerfilDTO;
 import pe.gob.osinergmin.sicoes.repository.SupervisoraDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraPerfilService;
@@ -280,6 +280,11 @@ public class SupervisoraServiceImpl implements SupervisoraService{
 	public Supervisora obtenerSupervisoraXRUC(String codigoRuc) {
 		return supervisoraDao.obtenerSupervisoraXRUC(codigoRuc);
 	}
+
+	@Override
+	public Supervisora obtenerSupervisoraPorRucPostorOrJuridica(String codigoRuc) {
+		return supervisoraDao.obtenerSupervisoraPorRucPostorOrJuridica(codigoRuc);
+	}
 	
 	@Override
 	public Supervisora obtenerSupervisoraXRUCVigente(String codigoRuc) {
@@ -329,6 +334,44 @@ public class SupervisoraServiceImpl implements SupervisoraService{
 		return supervisoraDao.obtenerSupervisoraXRUCNoProfesional(codigoRuc);
 	}
 
+	@Override
+	public ResponseEntity<List<ProfesionalPerfilDTO>> listarProfesionalesPerfil(Long idPerfil) {
 
+		try {
+			List<Object[]> result = supervisoraDao.listarProfesionalesPorPerfil(idPerfil);
+			List<ProfesionalPerfilDTO> profesionales = mapearResultados(result);
+
+			logger.info("Se encontraron {} profesionales", profesionales.size());
+			return ResponseEntity.ok(profesionales);
+		} catch (Exception e) {
+			logger.error("Error al listar profesionales: {}", e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	private List<ProfesionalPerfilDTO> mapearResultados(List<Object[]> resultados) {
+		return resultados.stream()
+				.map(this::mapearProfesional)
+				.collect(Collectors.toList());
+	}
+
+	private ProfesionalPerfilDTO mapearProfesional(Object[] resultado) {
+		return ProfesionalPerfilDTO.builder()
+				.idSupervisora(obtenerValorSeguro(resultado, 0, Long.class))
+				.nombre(obtenerValorSeguro(resultado, 1, String.class))
+				.numeroDocumento(obtenerValorSeguro(resultado, 2, String.class))
+				.build();
+	}
+
+	private <T> T obtenerValorSeguro(Object[] array, int indice, Class<T> tipo) {
+		try {
+			return array != null && array.length > indice && array[indice] != null
+					? tipo.cast(array[indice])
+					: null;
+		} catch (ClassCastException e) {
+			logger.warn("Error al convertir valor en índice {}: {}", indice, e.getMessage());
+			return null;
+		}
+	}
 
 }

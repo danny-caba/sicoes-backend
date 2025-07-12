@@ -63,7 +63,7 @@ public class ScheduledTasks {
 	@Value("${path.temporal}")
 	private String path;
 	
-	@Scheduled(fixedRate = 5*1000)
+	@Scheduled(fixedRate = 5*60*1000)
 	public void reportCurrentTime() throws Exception {
 		logger.info("Inicio el Job");
 //		solicitudService.subirDocumentoTecnicos(getContextoAnonimo());
@@ -131,16 +131,19 @@ public class ScheduledTasks {
 		logger.info("Fin de la actualización de evaluaciones pendientes por vacaciones");
 	}
 
-	@Scheduled(cron = "0 1 0 * * ?")
+	@Scheduled(cron = "0 0 4 * * ?")
 	public void tareaDiariaConsolidadoConsultas() throws Exception {
 		logger.info("Inicio de la tarea diaria de consolidado de consultas");
 		ListadoDetalle etapaFormulacion = listadoDetalleService.obtenerListadoDetalleOrden(Constantes.LISTADO.ETAPA_PROCESO.CODIGO,
 				Constantes.LISTADO.ETAPA_PROCESO.ETAPA_FORMULACION_ORDEN);
 		List<Object[]> lstEtapaProceso = procesoEtapaService.listarEtapasFormulacionConsultas(etapaFormulacion.getIdListadoDetalle());
+		logger.info("Se encontraron {} procesos en etapa de formulación", lstEtapaProceso.size());
+
 		for(Object[] etapaProceso : lstEtapaProceso) {
 			try {
 				Long idProceso = Long.parseLong(etapaProceso[0].toString());
 				Long idEtapa = Long.parseLong(etapaProceso[1].toString());
+				logger.info("Procesando la etapa del proceso: " + etapaProceso[0] + ", " + etapaProceso[1]);
 				InputStream is = procesoConsultaService.generarExport(idProceso);
 				MultipartFile xls = ExcelUtils.crearArchivoXls(is, "consultasFormuladas");
 
