@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.Column;
@@ -29,6 +30,7 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     private Long idRequerimientoDocumentoDetalle;
 
     @ManyToOne(fetch= FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name="ID_REQ_DOCUMENTO")
     private RequerimientoDocumento requerimientoDocumento;
 

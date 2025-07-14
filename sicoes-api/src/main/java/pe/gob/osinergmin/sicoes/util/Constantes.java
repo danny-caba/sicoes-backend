@@ -688,6 +688,12 @@ public class Constantes {
 			public static final String CODIGO 						= "GRUPO_ROL_APROBACION";
 			public static final String GRUPO_1 						= "GRUPO_1";
 		}
+
+		public static final class ESTADO_REQ_DOCUMENTO {
+			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO";
+			public static final String EN_PROCESO	= "EN_PROCESO";
+
+		}
 	}
 	
 
@@ -960,7 +966,8 @@ public class Constantes {
 		public static final String APROBACION_NO_ENCONTRADA = "V01022";
 		public static final String INVITACION_NO_ENCONTRADA = "V01023";
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
-    public static final String ERROR_LISTA_DIVISIONES = "V01025";
+    	public static final String ERROR_LISTA_DIVISIONES = "V01025";
+		public static final String REQUERIMIENTO_DOCUMENTO_DETALLE_NO_ENCONTRADO = "V01026";
 
 	}
 	public static final class ROLES {
