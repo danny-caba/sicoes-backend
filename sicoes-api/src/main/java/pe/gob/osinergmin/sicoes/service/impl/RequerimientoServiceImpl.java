@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Usuario;
@@ -42,8 +41,6 @@ import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
-import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
@@ -94,8 +91,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     private ArchivoDao archivoDao;
     @Autowired
     private ListadoDetalleService listadoDetalleService;
-    @Autowired
-    private NotificacionService notificacionService;
 
     @Autowired
     private Environment env;
@@ -138,6 +133,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Autowired
     private DivisionService divisionService;
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     @Autowired
     private PerfilAprobadorDao perfilAprobadorDao;
@@ -330,31 +328,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         }
         if (fechaInicio != null) fechaInicio = DateUtil.getInitDay(fechaInicio);
         if (fechaFin != null) fechaFin = DateUtil.getEndDay(fechaFin);
-//        Division division = filtro.getDivision() != null ? crearDivision(filtro.getDivision()) : null;
-//        ListadoDetalle perfil = filtro.getPerfil() != null ? crearListadoDetalle(filtro.getPerfil()) : null;
-//        Supervisora supervisora = filtro.getSupervisora() != null ? crearSupervisora(filtro.getSupervisora()) : null;
-//        ListadoDetalle estadoAprobacion = filtro.getEstadoAprobacion() != null ? crearListadoDetalle(filtro.getEstadoAprobacion()) : null;
-//        return requerimientoDao.listarRequerimientos(division, perfil, fechaInicio, fechaFin, supervisora, estadoAprobacion, divisionIds, pageable);
         return requerimientoDao.listarRequerimientos(filtro.getDivision(), filtro.getPerfil(), fechaInicio, fechaFin, filtro.getSupervisora(), filtro.getEstadoAprobacion(), divisionIds, pageable);
     }
-
-//    private Division crearDivision(Long id) {
-//        Division division = new Division();
-//        division.setIdDivision(id);
-//        return division;
-//    }
-//
-//    private ListadoDetalle crearListadoDetalle(Long id) {
-//        ListadoDetalle detalle = new ListadoDetalle();
-//        detalle.setIdListadoDetalle(id);
-//        return detalle;
-//    }
-//
-//    private Supervisora crearSupervisora(Long id) {
-//        Supervisora s = new Supervisora();
-//        s.setIdSupervisora(id);
-//        return s;
-//    }
 
     @Override
     @Transactional
@@ -495,11 +470,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    public Optional<Requerimiento> obtenerPorId(Long id) {
-        return requerimientoDao.obtener(id);
-    }
-
-    @Override
     public Long obtenerId(String requerimientoUuid) {
         if (requerimientoUuid == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_REQUERIMIENTO_NO_ENVIADO);
@@ -508,9 +478,13 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    public Requerimiento obtenerPorUuid(String requerimientoUuid) {
-        return requerimientoDao.obtenerPorUuid(requerimientoUuid)
-                .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
+    public Optional<Requerimiento> obtenerPorUuid(String requerimientoUuid) {
+        return requerimientoDao.findByRequerimientoUuid(requerimientoUuid);
+    }
+
+    public Requerimiento actualizar(Requerimiento requerimiento, Contexto contexto) {
+        AuditoriaUtil.setAuditoriaActualizacion(requerimiento, contexto);
+        return requerimientoDao.save(requerimiento);
     }
 
     private RequerimientoAprobacion asignarAprobadorG2(Requerimiento requerimiento, Contexto contexto) {
@@ -681,7 +655,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 .map(req -> {
                     req.setArchivos(new ArrayList<Archivo>());
                     Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(req.getIdRequerimiento(),
-                            Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO);
+                            Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_REQUERIMIENTO);
                     req.getArchivos().add(informe);
                     req.getReqAprobaciones()
                             .forEach(aprob -> {

@@ -11,7 +11,7 @@ public interface RequerimientoInvitacionService extends BaseService<Requerimient
 
     RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacionDTO, Contexto contexto);
 
-    void eliminar(Long id, Contexto contexto);
+    void eliminar(String uuid, Contexto contexto);
 
     Page<RequerimientoInvitacion> obtener(Long idEstado, String fechaInicioInvitacion, String fechaFinInvitacion, Contexto contexto, Pageable pageable);
 

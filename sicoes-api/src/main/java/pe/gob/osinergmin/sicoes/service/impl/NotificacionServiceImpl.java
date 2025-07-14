@@ -35,6 +35,7 @@ import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
 import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
@@ -42,6 +43,7 @@ import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
 import pe.gob.osinergmin.sicoes.repository.ConfBandejaDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
@@ -110,7 +112,9 @@ public class NotificacionServiceImpl implements NotificacionService{
 	
 	@Autowired
 	private UsuarioService usuarioService;
-	
+	@Autowired
+	private RequerimientoDao requerimientoDao;
+
 	@Override
 	public Notificacion obtener(Long idNotificacion, Contexto contexto) {
 		Notificacion notificacion= notificacionDao.obtener(idNotificacion);
@@ -1065,6 +1069,14 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacionDao.save(notificacion);
 	}
 
+	public void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+
+	}
+
+	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+
+	}
+
 	@Override
 	public void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
@@ -1140,16 +1152,24 @@ public class NotificacionServiceImpl implements NotificacionService{
 	}
 
 	@Override
-	public void enviarRequerimientoInvitacion(Usuario usuarioSupervisorPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+	public void enviarRequerimientoInvitacion(Supervisora supervisoraPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
 			Notificacion notificacion = new Notificacion();
-			String correos = usuarioSupervisorPN.getCorreo();
+			String correos = supervisoraPN.getCorreo();
 			notificacion.setCorreo(correos);
 			notificacion.setAsunto("INVITACIÓN PERSONA NATURAL S4");
 			final Context ctx = new Context();
-			ctx.setVariable("nombre_supervisor_pn", usuarioSupervisorPN.getNombreUsuario());
-			ctx.setVariable("division", requerimientoInvitacion.getRequerimiento().getDivision().getDeDivision());
-			ctx.setVariable("fechaInvitacion", requerimientoInvitacion.getFechaInvitacion());
-			ctx.setVariable("fechaCancelacion", requerimientoInvitacion.getFechaCaducidad());
+			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
+			Requerimiento requerimiento = requerimientoDao.obtener(requerimientoInvitacion.getRequerimiento().getIdRequerimiento())
+				.orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
+			Long tipoDocumento = supervisoraPN.getTipoDocumento().getIdListadoDetalle();
+			if (tipoDocumento == 2){
+				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
+			} else if (tipoDocumento == 3) {
+				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
+			}
+			ctx.setVariable("division", requerimiento.getDivision().getDeDivision());
+			ctx.setVariable("fechaInvitacion", DateUtil.getDate(requerimientoInvitacion.getFechaInvitacion(), "dd/MM/yyyy HH:mm"));
+			ctx.setVariable("fechaCancelacion", DateUtil.getDate(requerimientoInvitacion.getFechaCaducidad(), "dd/MM/yyyy HH:mm"));
 			String htmlContent = templateEngine.process("28-invitacion-requerimiento.html", ctx);
 			notificacion.setMensaje(htmlContent);
 			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);

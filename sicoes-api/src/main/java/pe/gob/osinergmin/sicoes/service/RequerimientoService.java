@@ -17,14 +17,13 @@ public interface RequerimientoService extends BaseService<Requerimiento, Long> {
 
     Requerimiento archivar(Requerimiento requerimiento, Contexto contexto);
 
-    Optional<Requerimiento> obtenerPorId(Long id);
+    Optional<Requerimiento> obtenerPorUuid(String uuid);
 
     Long obtenerId(String requerimientoUuid);
-
-    Requerimiento obtenerPorUuid(String requerimientoUuid);
 
     Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto);
 
     Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contextos);
-  
+
+    Requerimiento actualizar(Requerimiento requerimiento, Contexto contexto);
 }

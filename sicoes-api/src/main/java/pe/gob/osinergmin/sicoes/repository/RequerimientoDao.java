@@ -58,4 +58,6 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
 
     @Query("SELECT r FROM Requerimiento r WHERE r.requerimientoUuid = :uuid")
     Optional<Requerimiento> obtenerPorUuid(@Param("uuid") String uuid);
+
+    Optional<Requerimiento> findByRequerimientoUuid(String requerimientoUuid);
 }
