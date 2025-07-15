@@ -12,20 +12,56 @@ import java.util.Date;
 @Repository
 public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDocumento, Long> {
 
-    @Query(value = "SELECT rd FROM RequerimientoDocumento rd " +
-            "LEFT JOIN FETCH rd.estado e " +
+    @Query(value = "SELECT DISTINCT rd FROM RequerimientoDocumento rd " +
             "LEFT JOIN FETCH rd.requerimiento r " +
-            "WHERE (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
+            "LEFT JOIN FETCH r.division d " +
+            "LEFT JOIN FETCH rd.estado e " +
+            "LEFT JOIN FETCH d.usuario u " +
+            "WHERE u.idUsuario = :usuario " +
+            "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
-            "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin)" +
-            "ORDER BY rd.numeroExpediente ASC",
+            "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
+            "ORDER BY r.nuExpediente ASC",
             countQuery = "SELECT COUNT(rd) FROM RequerimientoDocumento rd " +
-                    "JOIN rd.estado e " +
-                    "JOIN rd.requerimiento r " +
-                    "WHERE (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
+                    "LEFT JOIN rd.requerimiento r " +
+                    "LEFT JOIN r.division d " +
+                    "LEFT JOIN rd.estado e " +
+                    "LEFT JOIN d.usuario u " +
+                    "WHERE u.idUsuario = :usuario " +
+                    "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
-                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin)")
-    Page<RequerimientoDocumento> listarRequerimientosDocumentos(Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
+    Page<RequerimientoDocumento> listarRequerimientosDocumentos(Long usuario, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
 
+    @Query(value = "SELECT DISTINCT rd FROM RequerimientoDocumento rd " +
+            "LEFT JOIN FETCH rd.requerimiento r " +
+            "LEFT JOIN FETCH r.division d " +
+            "LEFT JOIN FETCH r.perfil p " +
+            "LEFT JOIN FETCH rd.estado e " +
+            "LEFT JOIN FETCH r.supervisora s " +
+            "LEFT JOIN FETCH d.usuario u " +
+            "WHERE u.idUsuario = :usuario " +
+            "AND (:idDivision IS NULL OR d.idDivision = :idDivision) " +
+            "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
+            "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +
+            "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
+            "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
+            "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
+            "ORDER BY r.nuExpediente ASC",
+            countQuery = "SELECT COUNT(DISTINCT rd) FROM RequerimientoDocumento rd " +
+                    "LEFT JOIN rd.requerimiento r " +
+                    "LEFT JOIN r.division d " +
+                    "LEFT JOIN r.perfil p " +
+                    "LEFT JOIN rd.estado e " +
+                    "LEFT JOIN r.supervisora s " +
+                    "LEFT JOIN d.usuario u " +
+                    "WHERE u.idUsuario = :usuario " +
+                    "AND (:idDivision IS NULL OR d.idDivision = :idDivision) " +
+                    "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
+                    "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +
+                    "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
+                    "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
+    Page<RequerimientoDocumento> listarRequerimientosDocumentosCoordinador(Long usuario, Long idDivision, Long idPerfil, Long idSupervisora, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
 
 }

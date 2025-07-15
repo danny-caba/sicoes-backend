@@ -300,7 +300,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    @Transactional
     public Page<Requerimiento> listar(FiltroRequerimientoDTO filtro, Pageable pageable, Contexto contexto) {
         Rol rol = rolService.obtenerCodigo(Constantes.ROLES.COORDINADOR_GESTION);
         List<UsuarioRol> usuariosCoordinador = usuarioRolService.obtenerUsuarioRolPorRol(rol);

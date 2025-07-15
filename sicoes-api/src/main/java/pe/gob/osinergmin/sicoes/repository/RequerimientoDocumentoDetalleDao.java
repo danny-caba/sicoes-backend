@@ -6,7 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface RequerimientoDocumentoDetalleDao extends JpaRepository<RequerimientoDocumentoDetalle, Long> {
@@ -14,6 +14,6 @@ public interface RequerimientoDocumentoDetalleDao extends JpaRepository<Requerim
     @Query("SELECT rdd FROM RequerimientoDocumentoDetalle rdd " +
             "JOIN rdd.requerimientoDocumento rd " +
             "WHERE rd.requerimientoDocumentoUuid = :uuid")
-    Optional<RequerimientoDocumentoDetalle> obtenerPorUuid(@Param("uuid") String uuid);
+    List<RequerimientoDocumentoDetalle> listarPorUuid(@Param("uuid") String uuid);
 
 }
