@@ -173,6 +173,7 @@ public class Constantes {
 
 			public static final String REQUERIMIENTO = "TA26";
 			public static final String APROBACION_REQUERIMIENTO = "TA27";
+			public static final String DOCUMENTO_REQUERIMIENTO = "TA29";
 
 		}
 		
@@ -694,6 +695,13 @@ public class Constantes {
 			public static final String EN_PROCESO	= "EN_PROCESO";
 
 		}
+
+		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
+			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO_DETALLE";
+			public static final String OBSERVADO	= "OBSERVADO";
+
+		}
+
 	}
 	
 

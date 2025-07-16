@@ -20,7 +20,6 @@ import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoDocumentoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @RestController
@@ -45,10 +44,9 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
     }
 
     @PostMapping("/detalle")
-    @Raml("requerimientoDocumento.registrar.properties")
-    @Transactional
-    public RequerimientoDocumento registrarRequerimientosDocumento(@RequestBody List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle) {
-        return requerimientoDocumentoService.registrarRequerimientosDocumento(listRequerimientoDocumentoDetalle, getContexto());
+    @Raml("requerimientoDocumentoDetalle.actualizar.properties")
+    public List<RequerimientoDocumentoDetalle> actualizarRequerimientosDocumentosDetalle(@RequestBody List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle) {
+        return requerimientoDocumentoService.actualizarRequerimientosDocumentosDetalle(listRequerimientoDocumentoDetalle, getContexto());
     }
 
     @GetMapping("/coordinador")
@@ -58,15 +56,13 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
     }
 
     @PatchMapping("/detalle")
-    @Raml("requerimientoDocumento.actualizarDetalle.properties")
-    @Transactional
-    public RequerimientoDocumentoDetalle acualizarRequerimientosDocumentoDetalle(@RequestBody RequerimientoDocumentoDetalle requerimientoDocumentoDetalle) {
-        return requerimientoDocumentoService.acualizarRequerimientosDocumentoDetalle(requerimientoDocumentoDetalle, getContexto());
+    @Raml("requerimientoDocumentoDetalle.patch.properties")
+    public RequerimientoDocumentoDetalle patchRequerimientoDocumentoDetalle(@RequestBody RequerimientoDocumentoDetalle requerimientoDocumentoDetalle) {
+        return requerimientoDocumentoService.patchRequerimientoDocumentoDetalle(requerimientoDocumentoDetalle, getContexto());
     }
 
     @PostMapping("/{uuid}/evaluar")
     @Raml("requerimientoDocumento.evaluar.properties")
-    @Transactional
     public RequerimientoDocumento evaluarRequerimientosDocumento(@RequestBody RequerimientoDocumento requerimientoDocumento) {
         return requerimientoDocumentoService.evaluarRequerimientosDocumento(requerimientoDocumento, getContexto());
     }

@@ -85,10 +85,13 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Autowired
     private RequerimientoDao requerimientoDao;
+
     @Autowired
     private RequerimientoAprobacionDao aprobacionDao;
+
     @Autowired
     private ArchivoDao archivoDao;
+
     @Autowired
     private ListadoDetalleService listadoDetalleService;
 

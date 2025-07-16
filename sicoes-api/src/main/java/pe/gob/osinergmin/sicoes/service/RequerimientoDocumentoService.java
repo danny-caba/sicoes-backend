@@ -16,11 +16,11 @@ public interface RequerimientoDocumentoService extends BaseService<Requerimiento
 
     List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(String documentoUuid);
 
-    RequerimientoDocumento registrarRequerimientosDocumento(List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Contexto contexto);
+    List<RequerimientoDocumentoDetalle> actualizarRequerimientosDocumentosDetalle(List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Contexto contexto);
 
     Page<RequerimientoDocumento> listarRequerimientosDocumentosCoordinador(FiltroRequerimientoDocumentoCoordinadorDTO filtroRequerimientoDocumentoCoordinadorDTO, Pageable pageable, Contexto contexto);
 
-    RequerimientoDocumentoDetalle acualizarRequerimientosDocumentoDetalle(RequerimientoDocumentoDetalle requerimientoDocumentoDetalle, Contexto contexto);
+    RequerimientoDocumentoDetalle patchRequerimientoDocumentoDetalle(RequerimientoDocumentoDetalle requerimientoDocumentoDetalle, Contexto contexto);
 
     RequerimientoDocumento evaluarRequerimientosDocumento(RequerimientoDocumento requerimientoDocumento, Contexto contexto);
 

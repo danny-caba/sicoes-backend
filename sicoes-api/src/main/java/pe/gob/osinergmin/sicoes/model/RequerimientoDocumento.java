@@ -1,9 +1,7 @@
 package pe.gob.osinergmin.sicoes.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,15 +10,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name="SICOES_TC_REQ_DOCUMENTO")
@@ -64,18 +59,6 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ID_REVISION_LD")
     private ListadoDetalle revision;
-
-    @OneToMany(mappedBy = "requerimientoDocumento", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<RequerimientoDocumentoDetalle> detalles = new ArrayList<>();
-
-    public List<RequerimientoDocumentoDetalle> getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(List<RequerimientoDocumentoDetalle> detalles) {
-        this.detalles = detalles;
-    }
 
     public Long getIdRequerimientoDocumento() {
         return idRequerimientoDocumento;
