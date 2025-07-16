@@ -83,7 +83,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
 
-	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Archivo archivo) {
+	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Long idContrato,Long idSoliPerfCont,Archivo archivo) {
 		
 		try {
 			
@@ -117,6 +117,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PROPUESTA/"+idPropuesta;
 	        }else if(archivo.getIdProceso()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PROCESO/"+idProceso;
+	        }else if(archivo.getIdContrato()!=null) {
+	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/CONTRATO/"+idContrato;
+	        }else if(archivo.getIdSoliPerfCont()!=null) {
+	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_CONTRATO/"+idSoliPerfCont;
 	        }else if(archivo.getIdSeccionRequisito()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_REQUISITO/"+idSeccionRequisito;
 			}else {

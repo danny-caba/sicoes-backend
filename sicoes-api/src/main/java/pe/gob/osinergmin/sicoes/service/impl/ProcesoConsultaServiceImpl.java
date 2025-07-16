@@ -198,7 +198,10 @@ public class ProcesoConsultaServiceImpl implements ProcesoConsultaService {
 
         ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO, Constantes.LISTADO.ESTADO_NOTIFICACIONES.ENVIADO);
-            List<ProcesoConsulta> lstProcesoConsulta = procesoConsultaDao.listarConsultasNoEnviado(idProceso);
+                
+        String idUsuario = contexto.getUsuario().getIdUsuario().toString();
+
+        List<ProcesoConsulta> lstProcesoConsulta = procesoConsultaDao.listarConsultasNoEnviado(idProceso, idUsuario);
 
         for (ProcesoConsulta consulta : lstProcesoConsulta) {
             consulta.setEstado(estado);

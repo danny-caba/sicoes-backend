@@ -39,6 +39,7 @@ import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.DetalleVacacionesDTO;
 import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
+import pe.gob.osinergmin.sicoes.model.dto.HistorialContratoDto;
 import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
 import pe.gob.osinergmin.sicoes.repository.AsignacionPerfilDivisionDao;
 import pe.gob.osinergmin.sicoes.repository.EvaluacionPendienteDao;
@@ -1372,4 +1373,23 @@ public class AsignacionServiceImpl implements AsignacionService{
 		}
 		return asignacion;
 	}
+
+	@Override
+	  public List<Map<String,Object>> obtenerHistorialPorContrato(Long idContrato) {
+	    List<Object[]> filas = asignacionDao.findHistorialByContrato(idContrato);
+	    List<Map<String,Object>> lista = new ArrayList<>();
+	    for (Object[] f : filas) {
+	      Map<String,Object> m = new HashMap<>();
+	      m.put("tipoLado",        f[0]);
+	      m.put("fechaCreacion",   f[1]);
+	      m.put("usuario",         f[2]);
+	      m.put("fechaAprobacion", f[3]);
+	      m.put("tipoEvaluacion",  f[4]);
+	      m.put("observacion",     f[5]);
+	      lista.add(m);
+	    }
+	    return lista;
+	  }
+    
+
 }
