@@ -130,8 +130,19 @@ public interface SupervisoraMovimientoDao  extends JpaRepository<SupervisoraMovi
 			+ "and ss.idListadoDetalle=:idSubsector "
 			+ "order by m.fechaRegistro desc ")			
 	public List<SupervisoraMovimiento> listarUltimoMovimiento(Long idSupervisora,Long idSubsector);
-	
-	
+
+	@Query("select m from SupervisoraMovimiento m "
+			+ "left join fetch m.sector s "
+			+ "left join fetch m.subsector ss "
+			+ "left join fetch m.supervisora su "
+			+ "left join fetch m.estado e "
+			+ "left join fetch m.motivo mo "
+			+ "left join fetch m.tipoMotivo tm "
+			+ "left join fetch m.accion a "
+			+ "left join fetch m.propuestaProfesional pp "
+			+ "where su.idSupervisora=:idSupervisora "
+			+ "order by m.fechaRegistro desc ")
+	public List<SupervisoraMovimiento> listarUltimoMovimientoSinSubsector(Long idSupervisora);
 	
 
 }

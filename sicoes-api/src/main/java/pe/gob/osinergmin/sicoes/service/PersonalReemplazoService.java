@@ -8,4 +8,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 
     Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto);
+    PersonalReemplazo guardar(PersonalReemplazo personalReemplazo);
+    PersonalReemplazo eliminarPropuesto(PersonalReemplazo personalReemplazo);
 }

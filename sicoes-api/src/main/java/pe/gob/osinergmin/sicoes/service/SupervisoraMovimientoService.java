@@ -22,4 +22,6 @@ public interface SupervisoraMovimientoService extends BaseService<SupervisoraMov
 	public SupervisoraMovimiento ultimoMovimientoXProfesional(Long idSupervisora, Long idSubsector, Long idEstado,
 			Contexto contexto);
 
+	public SupervisoraMovimiento ultimoMovimiento(Long idSupervisora, Contexto contexto);
+
 }

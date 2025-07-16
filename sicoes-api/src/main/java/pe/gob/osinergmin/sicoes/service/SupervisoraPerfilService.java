@@ -3,6 +3,7 @@ package pe.gob.osinergmin.sicoes.service;
 import java.io.InputStream;
 import java.util.List;
 
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -31,4 +32,6 @@ public interface SupervisoraPerfilService extends BaseService<SupervisoraPerfil,
 	public Page<Supervisora> liberacionPersonal(String codigoRuc, Long idEstado, Long idSector, Long idSubsector,
 			String proceso, String item, Pageable pageable, Contexto contexto);
 
+	public Page<SupervisoraPerfil> buscarPorIdPropuesta(Long idPropuesta, Pageable pageable, Contexto contexto);
+	public Page<SupervisoraPerfil> buscarPorIdPerfil(Long idPerfil,Pageable pageable, Contexto contexto);
 }

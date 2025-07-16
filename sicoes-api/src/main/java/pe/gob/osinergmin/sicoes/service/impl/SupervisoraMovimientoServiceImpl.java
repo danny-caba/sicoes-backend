@@ -100,7 +100,20 @@ public class SupervisoraMovimientoServiceImpl implements SupervisoraMovimientoSe
 			return sup;
 		}
 	}
-	
+
+	@Override
+	public SupervisoraMovimiento ultimoMovimiento(Long idSupervisora, Contexto contexto) {
+		List<SupervisoraMovimiento> movimientos = supervisoraMovimientoDao.listarUltimoMovimientoSinSubsector(idSupervisora);
+		if(!movimientos.isEmpty() ) {
+			SupervisoraMovimiento ultimoMovimiento =  movimientos.get(0);
+			return ultimoMovimiento;
+		}else {
+			SupervisoraMovimiento sup = new SupervisoraMovimiento();
+			sup.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
+			return sup;
+		}
+	}
+
 	@Override
 	public List<SupervisoraMovimiento> listarXProfesionalXItem(Long idSupervisora, Long idSubsector) {
 		return supervisoraMovimientoDao.listarXProfesionalXItem(idSupervisora,idSubsector);

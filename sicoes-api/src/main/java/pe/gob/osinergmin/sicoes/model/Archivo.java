@@ -114,6 +114,9 @@ public class Archivo extends BaseModel implements Serializable {
 	
 	@Column(name = "ID_SOLI_PERF_CONT_LD")
 	private Long idSoliPerfCont;
+
+	@Column(name = "ID_DOCUMENTO_REEMPLAZO")
+	private Long idDocumentoReem;
 	
 	@Transient
 	private MultipartFile file;
@@ -394,6 +397,14 @@ public class Archivo extends BaseModel implements Serializable {
 
 	public void setIdSoliPerfCont(Long idSoliPerfCont) {
 		this.idSoliPerfCont = idSoliPerfCont;
+	}
+
+	public Long getIdDocumentoReem(){
+		return idDocumentoReem;
+	}
+
+	public void setIdDocumentoReem(Long idDocumentoReem) {
+		this.idDocumentoReem = idDocumentoReem;
 	}
 	
 }

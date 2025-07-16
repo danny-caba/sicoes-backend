@@ -7,11 +7,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +27,7 @@ import pe.gob.osinergmin.sicoes.repository.SupervisoraPerfilDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraPerfilService;
-import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
-import pe.gob.osinergmin.sicoes.util.Contexto;
-import pe.gob.osinergmin.sicoes.util.DateUtil;
-import pe.gob.osinergmin.sicoes.util.DatosExportacion;
-import pe.gob.osinergmin.sicoes.util.ExcelUtils;
-import pe.gob.osinergmin.sicoes.util.PageUtilImpl;
+import pe.gob.osinergmin.sicoes.util.*;
 
 
 @Service
@@ -183,5 +180,33 @@ public class SupervisoraPerfilServiceImpl implements SupervisoraPerfilService{
 		}
 		
 		return supervisoras;
+	}
+
+	@Override
+	public Page<SupervisoraPerfil> buscarPorIdPropuesta(Long idPropuesta, Pageable pageable, Contexto contexto) {
+		Page<SupervisoraPerfil> supervisoras = supervisoraPerfilDao.buscarPorIdPropuesta(idPropuesta,pageable);
+		ListadoDetalle listadoDetalle = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO);
+		List<SupervisoraPerfil> supervisorasFiltradas = supervisoras.getContent().stream()
+				.filter(supervisora -> {
+					SupervisoraMovimiento movimiento = supervisoraMovimientoService.ultimoMovimiento(supervisora.getSupervisora().getIdSupervisora(), contexto);
+					// Retornar true solo si el movimiento no es nulo y el estado coincide
+					return movimiento != null && movimiento.getEstado().getIdListadoDetalle().equals(listadoDetalle.getIdListadoDetalle());
+				})
+				.collect(Collectors.toList());
+		return new PageImpl<>(supervisorasFiltradas, pageable, supervisorasFiltradas.size());
+	}
+
+	@Override
+	public Page<SupervisoraPerfil> buscarPorIdPerfil(Long idPerfil, Pageable pageable, Contexto contexto) {
+		Page<SupervisoraPerfil> supervisoras = supervisoraPerfilDao.buscarPorIdPerfil(idPerfil,pageable);
+		ListadoDetalle listadoDetalle = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO);
+		List<SupervisoraPerfil> supervisorasFiltradas = supervisoras.getContent().stream()
+				.filter(supervisora -> {
+					SupervisoraMovimiento movimiento = supervisoraMovimientoService.ultimoMovimiento(supervisora.getSupervisora().getIdSupervisora(), contexto);
+					// Retornar true solo si el movimiento no es nulo y el estado coincide
+					return movimiento != null && movimiento.getEstado().getIdListadoDetalle().equals(listadoDetalle.getIdListadoDetalle());
+				})
+				.collect(Collectors.toList());
+		return new PageImpl<>(supervisorasFiltradas, pageable, supervisorasFiltradas.size());
 	}
 }

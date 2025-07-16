@@ -880,6 +880,7 @@ public class Constantes {
 		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
 		public static final String DJ_AUSENTE = "V01017";
 		public static final String FECHA_FINAL_CONTRATO = "V01018";
+		public static final String ID_PERSONAL_REEMPLAZO_NO_ENVIADO = "V01019";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
