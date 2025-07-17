@@ -1598,7 +1598,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 	public Archivo obtenerArchivoPorReqDocumentoDetalle(String requerimientoDocumentoDetalleUuid, Contexto contexto) {
 
 		RequerimientoDocumentoDetalle documentoDetalle = requerimientoDocumentoDetalleDao
-				.getRequerimientoDocumentoDetalleByRequerimientoDocumentoDetalleUuid(requerimientoDocumentoDetalleUuid);
+				.buscarPorUuid(requerimientoDocumentoDetalleUuid);
 
 		List<Archivo> archivos = buscarPorReqDocDetalle(documentoDetalle.getIdRequerimientoDocumentoDetalle());
 
