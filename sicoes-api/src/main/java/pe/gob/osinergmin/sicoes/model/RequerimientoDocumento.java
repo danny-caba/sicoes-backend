@@ -14,8 +14,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name="SICOES_TC_REQ_DOCUMENTO")
@@ -59,6 +61,17 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ID_REVISION_LD")
     private ListadoDetalle revision;
+
+    @Transient
+    private List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles;
+
+    public List<RequerimientoDocumentoDetalle> getRequerimientosDocumentosDetalles() {
+        return requerimientosDocumentosDetalles;
+    }
+
+    public void setRequerimientosDocumentosDetalles(List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles) {
+        this.requerimientosDocumentosDetalles = requerimientosDocumentosDetalles;
+    }
 
     public Long getIdRequerimientoDocumento() {
         return idRequerimientoDocumento;

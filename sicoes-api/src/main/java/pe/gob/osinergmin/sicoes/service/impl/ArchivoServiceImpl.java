@@ -99,6 +99,9 @@ public class ArchivoServiceImpl implements ArchivoService {
 	@Autowired
 	private RequerimientoService requerimientoService;
 
+	@Autowired
+	private RequerimientoDocumentoService requerimientoDocumentoService;
+
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
 		return archivoDao.obtener(idArchivo);
@@ -1547,7 +1550,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 	public Archivo guardarXRequerimientoDocumento (Archivo archivo, Contexto contexto) {
 		boolean nuevo = archivo.getIdArchivo() == null;
 		if (archivo.getRequerimientoUuid() != null) {
-			archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
 			if (archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO)) {
 				List<Archivo> archivosRequerimiento = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO,
 								archivo.getSolicitudUuid(), null, null)
@@ -1585,4 +1587,10 @@ public class ArchivoServiceImpl implements ArchivoService {
 			return modificarRequerimiento(archivo, contexto);
 		}
 	}
+
+	@Override
+	public List<Archivo> obtenerArchivosPorRequerimientoDocumento(Long idRequerimientoDocumento, Contexto contexto) {
+		return archivoDao.obtenerArchivosPorRequerimientoDocumento(idRequerimientoDocumento);
+	}
+
 }

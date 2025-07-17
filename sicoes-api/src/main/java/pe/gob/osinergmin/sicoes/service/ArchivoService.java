@@ -67,5 +67,6 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
     Archivo guardarXRequerimientoAprobacion(Archivo archivo, Contexto contexto);
     Archivo guardarXRequerimientoInforme(Archivo archivo, Contexto contexto);
 	Archivo guardarXRequerimientoDocumento(Archivo archivo, Contexto contexto);
+	List<Archivo> obtenerArchivosPorRequerimientoDocumento(Long idrRequerimientoDocumento, Contexto contexto);
 
 }

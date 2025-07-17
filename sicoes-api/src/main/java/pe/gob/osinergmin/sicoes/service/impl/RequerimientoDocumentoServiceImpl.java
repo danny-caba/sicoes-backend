@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoCoordinadorDTO;
@@ -147,8 +146,20 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
         );
         List<File> archivosAlfresco = new ArrayList<>();
-        Archivo archivo = archivoRequerimiento(requerimientoDocumento, contexto);
+        Archivo archivo = archivoRequerimiento(requerimientoDocumento, listRequerimientoDocumentoDetalle, contexto);
         archivoService.guardarXRequerimientoDocumento(archivo, contexto);
+        List<Archivo> archivos = archivoService.obtenerArchivosPorRequerimientoDocumento(requerimientoDocumento.getIdRequerimientoDocumento(), contexto);
+        listRequerimientoDocumentoDetalle.forEach(requerimientoDocumentoDetalle -> {
+            archivos.forEach(archivoRequisito -> {
+                if (requerimientoDocumentoDetalle..getIdSolicitudSeccion().equals(archivoRequisito.getIdSeccionRequisito())) {
+                    requerimientoDocumentoDetalle.setNombreArchivo(archivoRequisito.getNombreReal());
+                    requerimientoDocumentoDetalle.setPeso((long) (archivoRequisito.getPeso() / 8.0 / 1024.0));
+                    requerimientoDocumentoDetalle.setNroFolio(archivoRequisito.getNroFolio());
+                }
+            });
+        });
+
+
         File file = fileRequerimiento(archivo, requerimientoDocumento.getRequerimiento().getIdRequerimiento());
         archivosAlfresco.add(file);
         try {
@@ -211,30 +222,37 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         return expediente;
     }
 
-    private Archivo archivoRequerimiento(RequerimientoDocumento requerimientoDocumento, Contexto contexto) {
+    private Archivo archivoRequerimiento(RequerimientoDocumento requerimientoDocumento, List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles, Contexto contexto) {
         ListadoDetalle perfil = listadoDetalleService.obtener(requerimientoDocumento.getRequerimiento().getPerfil().getIdListadoDetalle(), contexto);
         requerimientoDocumento.getRequerimiento().setPerfil(perfil);
         requerimientoDocumento.getRequerimiento().setUsuarioCreador(usuarioService.obtener(Long.valueOf(requerimientoDocumento.getRequerimiento().getUsuCreacion())));
         Archivo archivo = new Archivo();
         Long idRequerimiento = requerimientoDocumento.getRequerimiento().getIdRequerimiento();
         archivo.setIdRequerimiento(idRequerimiento);
-        archivo.setNombre("Requerimiento_Documento_" + idRequerimiento + ".pdf");
-        archivo.setNombreReal("Requerimiento_Documento_" + idRequerimiento + ".pdf");
+        archivo.setIdRequimientoDocumento(requerimientoDocumento.getIdRequerimientoDocumento());
+        archivo.setNombre("Requerimie_Documento_" + idRequerimiento + ".pdf");
+        archivo.setNombreReal("Requerimie_Documento_" + idRequerimiento + ".pdf");
         archivo.setTipo("application/pdf");
         ByteArrayOutputStream output;
         JasperPrint print;
         InputStream appLogo = null;
         InputStream osinermingLogo = null;
+        RequerimientoDocumento requerimientoDocumentoJasper = new RequerimientoDocumento();
+        requerimientoDocumentoJasper.setRequerimiento(requerimientoDocumento.getRequerimiento());
+        requerimientoDocumentoJasper.setRequerimientosDocumentosDetalles(requerimientosDocumentosDetalles);
         try {
             File jrxml = new File(pathJasper + "Formato_04_Requerimiento_Documento.jrxml");
+            File jrxml2= new File(pathJasper + "Formato_04_Requerimiento_Documento_Presentados.jrxml");
+            JasperReport jasperReport2 =  archivoUtil.getJasperCompilado(jrxml2);
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("SUBREPORT_DIR", pathJasper);
             appLogo = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
             osinermingLogo = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
             parameters.put("P_LOGO_APP", appLogo);
             parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
-            List<RequerimientoDocumentoDetalle> detalles = requerimientoDocumentoDetalleDao.findByRequerimientoDocumento_IdRequerimientoDocumento(requerimientoDocumento.getIdRequerimientoDocumento());
-            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(detalles);
+            List<RequerimientoDocumento> requerimientosDocumentos = new ArrayList<>();
+            requerimientosDocumentos.add(requerimientoDocumentoJasper);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(requerimientosDocumentos);
             JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
             print = JasperFillManager.fillReport(jasperReport, parameters, ds);
             output = new ByteArrayOutputStream();
@@ -333,5 +351,13 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     @Override
     public void eliminar(Long aLong, Contexto contexto) {
 
+    }
+
+    @Override
+    public Long obtenerId(String requerimientoDocumentoUuid) {
+        if (requerimientoDocumentoUuid == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_REQUERIMIENTO_NO_ENVIADO);
+        }
+        return requerimientoDocumentoDao.obtenerId(requerimientoDocumentoUuid);
     }
 }

@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 
 import java.util.Date;
@@ -65,5 +65,8 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
                     "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
     Page<RequerimientoDocumento> listarRequerimientosDocumentosCoordinador(Long usuario, Long idDivision, Long idPerfil, Long idSupervisora, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
+
+    @Query("select rd.idRequerimientoDocumento from RequerimientoDocumento rd where rd.requerimientoDocumentoUuid=:requerimientoDocumentoUuid")
+    Long obtenerId(String requerimientoDocumentoUuid);
 
 }

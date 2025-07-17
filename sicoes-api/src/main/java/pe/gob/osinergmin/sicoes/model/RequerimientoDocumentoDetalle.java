@@ -14,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -57,6 +58,39 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
 
     @Column(name="FL_PRESENTADO")
     private String presentado;
+
+    @Transient
+    private String nombreArchivo;
+
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
+    }
+
+    @Transient
+    private Long nroFolio;
+
+    @Transient
+    private Long peso;
+
+    public Long getNroFolio() {
+        return nroFolio;
+    }
+
+    public void setNroFolio(Long nroFolio) {
+        this.nroFolio = nroFolio;
+    }
+
+    public Long getPeso() {
+        return peso;
+    }
+
+    public void setPeso(Long peso) {
+        this.peso = peso;
+    }
 
     public String getPresentado() {
         return presentado;

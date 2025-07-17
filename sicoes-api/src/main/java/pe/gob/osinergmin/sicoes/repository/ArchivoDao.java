@@ -269,4 +269,8 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+ "where a.idRequerimiento=:idRequerimiento and a.estado.codigo=:codigoEstadoArchivo")
 	public List<Archivo> buscarXRequerimiento(Long idRequerimiento,String codigoEstadoArchivo);
 
+	@Query("select a from Archivo a "
+			+ "where a.idRequerimientoDocumento = :idRequerimientoDocumento ")
+    List<Archivo> obtenerArchivosPorRequerimientoDocumento(Long idRequerimientoDocumento);
+
 }
