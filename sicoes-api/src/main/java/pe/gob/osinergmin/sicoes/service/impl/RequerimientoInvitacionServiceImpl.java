@@ -12,12 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
@@ -33,10 +33,9 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitacionService {
@@ -64,39 +63,36 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private SigedApiConsumer sigedApiConsumer;
+
     @Override
+    @Transactional
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
         ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
                 Constantes.LISTADO.ESTADO_INVITACION.ARCHIVADO
         );
         if (estadoArchivado == null) {
-            throw new ValidacionException("Estado ARCHIVADO no configurado en ListadoDetalle");
-        }
-        if (estadoArchivado.getCodigo().equals(requerimientoInvitacion.getEstado().getCodigo())) {
-            throw new ValidacionException("No se puede archivar una invitación en estado ARCHIVADO");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ARCHIVADO_NO_CONFIGURADO_EN_LISTADO_DETALLE);
         }
         ListadoDetalle estadoInvitado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
                 Constantes.LISTADO.ESTADO_INVITACION.INVITADO
         );
         if (estadoInvitado == null) {
-            throw new ValidacionException("Estado INVITADO no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_INVITADO_NO_CONFIGURADO_EN_LISTADO_DETALLE);
         }
         requerimientoInvitacion.setEstado(estadoInvitado);
         Date fechaInvitacion = new Date();
         requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
-        LocalDate fechaCaducidadLocal = fechaInvitacion.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .plusDays(3);
-        Date fechaCaducidad = Date.from(fechaCaducidadLocal
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant());
+        Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, 3L, "H");
         requerimientoInvitacion.setFechaCaducidad(fechaCaducidad);
+        requerimientoInvitacion.setFlagActivo(Constantes.FLAG_INVITACION.ACTIVO);
+        requerimientoInvitacion.setRequerimientoInvitacionUuid(UUID.randomUUID().toString());
         AuditoriaUtil.setAuditoriaRegistro(requerimientoInvitacion, contexto);
-        Usuario usuarioSupervisorPN = usuarioService.obtener(requerimientoInvitacion.getRequerimiento().getSupervisora().getIdSupervisora());
-        notificacionService.enviarRequerimientoInvitacion(usuarioSupervisorPN, requerimientoInvitacion, contexto);
+        Supervisora supervisoraPN = supervisoraService.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora(), contexto);
+        notificacionService.enviarRequerimientoInvitacion(supervisoraPN, requerimientoInvitacion, contexto);
         return requerimientoInvitacionDao.save(requerimientoInvitacion);
     }
 
@@ -106,11 +102,16 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     }
 
     @Override
-    public void eliminar(Long id, Contexto contexto) {
-        logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", id, contexto.getUsuario());
-        Optional<RequerimientoInvitacion> optional = requerimientoInvitacionDao.findById(id);
+    public void eliminar(Long aLong, Contexto contexto) {
+
+    }
+
+    @Override
+    public void eliminar(String uuid, Contexto contexto) {
+        logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", uuid, contexto.getUsuario());
+        Optional<RequerimientoInvitacion> optional = requerimientoInvitacionDao.obtenerPorUuid(uuid);
         if (!optional.isPresent()) {
-            throw new RuntimeException("RequerimientoInvitacion no encontrado con ID: " + id);
+            throw new RuntimeException("RequerimientoInvitacion no encontrado con UUID: " + uuid);
         }
         ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_INVITACION.ELIMINADO);
         if (estadoEliminado == null) {
@@ -136,7 +137,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
 
         if (contexto.getUsuario().getCodigoUsuarioInterno() == null) {
-            Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
+            Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
             idSupervisora = supervisora.getIdSupervisora();
         }
         return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);

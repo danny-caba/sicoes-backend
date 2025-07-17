@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service;
 
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -45,7 +46,7 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
 	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean estado, Contexto contexto);
 	void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario usuario, Requerimiento requerimiento, Contexto contexto);
-	void enviarRequerimientoInvitacion(Usuario usuario, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
+	void enviarRequerimientoInvitacion(Supervisora supervisoraPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
 	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto);
 	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto);
 	void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto);

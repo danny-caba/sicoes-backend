@@ -6,7 +6,7 @@ import gob.osinergmin.siged.remote.rest.ro.in.DocumentoInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.ClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
-import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
+import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -42,7 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import pe.gob.osinergmin.sicoes.model.RequerimientoInforme;
+import pe.gob.osinergmin.sicoes.model.*;
 
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
@@ -56,6 +56,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 
 @Service
 public class RequerimientoInformeServiceImpl implements RequerimientoInformeService {
@@ -90,6 +93,9 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
     private UsuarioService usuarioService;
 
     @Autowired
+    private RequerimientoService requerimientoService;
+
+    @Autowired
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
 
     @Autowired
@@ -109,25 +115,19 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
 
     @Value("${siged.ws.cliente.osinergmin.numero.documento}")
     private String OSI_DOCUMENTO;
-    @Autowired
-    private RequerimientoService requerimientoService;
 
     @Override
-    public RequerimientoInformeDetalle guardar(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
+    @Transactional
+    public RequerimientoInforme guardar(RequerimientoInformeDetalle requerimientoInformeDetalle, Contexto contexto) {
+        validarInformeDetalle(requerimientoInformeDetalle);
         try {
-            AuditoriaUtil.setAuditoriaRegistro(requerimientoInformeDetalle, contexto);
-            ListadoDetalle estadoEnAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
-                    Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_APROBACION
-            );
-            if (estadoEnAprobacion == null) {
-                throw new ValidacionException("Estado EN_APROBACION no configurado en ListadoDetalle");
-            }
-            Requerimiento requerimiento = requerimientoInformeDetalle.getRequerimientoInforme().getRequerimiento();
-            requerimiento.setEstado(estadoEnAprobacion);
-            Requerimiento requerimientoDB = requerimientoDao.save(requerimiento);
+            Requerimiento requerimiento = obtenerRequerimiento(requerimientoInformeDetalle)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
+            RequerimientoInforme requerimientoInformeDB = guardarRequerimientoInforme(requerimiento, contexto);
+            guardarDetalle(requerimientoInformeDetalle, requerimientoInformeDB, contexto);
+            cambiarEstadoRequerimiento(requerimiento, contexto);
             ExpedienteInRO expedienteInRO = crearExpediente(
-                    requerimientoDB,
+                    requerimiento,
                     Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
             );
             List<File> archivosAlfresco = new ArrayList<>();
@@ -136,17 +136,12 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             archivoService.guardarXRequerimientoInforme(archivo, contexto);
             File file = fileRequerimiento(archivo, requerimiento.getIdRequerimiento());
             archivosAlfresco.add(file);
-            ExpedienteOutRO expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
-            logger.info("SIGED RESULT: {}", expedienteOutRO.getMessage());
-            if (expedienteOutRO.getResultCode() != 1) {
-                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, expedienteOutRO.getMessage());
+            DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+            logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
+            if (documentoOutRO.getResultCode() != 1) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, documentoOutRO.getMessage());
             }
-            if (expedienteOutRO.getResultCode() == 1) {
-                requerimiento.setNuExpediente(expedienteOutRO.getCodigoExpediente());
-            }
-            requerimientoInformeDao.save(requerimientoInformeDetalle.getRequerimientoInforme());
-            requerimientoInformeDetalle = requerimientoInformeDetalleDao.save(requerimientoInformeDetalle);
-            return requerimientoInformeDetalle;
+            return requerimientoInformeDB;
         } catch (Exception ex) {
             logger.error("Error al guardar el informe. Contexto: {}, Entidad: {}", contexto, requerimientoInformeDetalle, ex);
             throw new RuntimeException("Error al guardar el informe", ex);
@@ -287,4 +282,46 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
         return requerimientoAprobacionDao.save(requerimientoAprobacion);
     }
+
+    private void validarInformeDetalle(RequerimientoInformeDetalle requerimientoInformeDetalle) {
+        if (requerimientoInformeDetalle == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_INFORME_DETALLE_NULO);
+        }
+        if (requerimientoInformeDetalle.getRequerimientoInforme() == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_INFORME_NULO);
+        }
+    }
+
+    private Optional<Requerimiento> obtenerRequerimiento(RequerimientoInformeDetalle requerimientoInformeDetalle) {
+        String requerimientoUuid = requerimientoInformeDetalle.getRequerimientoInforme()
+                .getRequerimiento().getRequerimientoUuid();
+        return requerimientoService.obtenerPorUuid(requerimientoUuid);
+    }
+
+    private RequerimientoInforme guardarRequerimientoInforme(Requerimiento requerimiento, Contexto contexto) {
+        RequerimientoInforme requerimientoInforme = new RequerimientoInforme();
+        requerimientoInforme.setRequerimiento(requerimiento);
+        requerimientoInforme.setRequerimientoInformeUuid(UUID.randomUUID().toString());
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoInforme, contexto);
+        return requerimientoInformeDao.save(requerimientoInforme);
+    }
+
+    private void guardarDetalle(RequerimientoInformeDetalle requerimientoInformeDetalle, RequerimientoInforme requerimientoInforme, Contexto contexto){
+        requerimientoInformeDetalle.setRequerimientoInforme(requerimientoInforme);
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoInformeDetalle, contexto);
+        requerimientoInformeDetalleDao.save(requerimientoInformeDetalle);
+    }
+
+    private void cambiarEstadoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+        ListadoDetalle estadoEnAprobacion = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
+                Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_APROBACION
+        );
+        if (estadoEnAprobacion == null) {
+            throw new ValidacionException("Estado EN_APROBACION no configurado en ListadoDetalle");
+        }
+        requerimiento.setEstado(estadoEnAprobacion);
+        requerimientoService.actualizar(requerimiento, contexto);
+    }
+
 }

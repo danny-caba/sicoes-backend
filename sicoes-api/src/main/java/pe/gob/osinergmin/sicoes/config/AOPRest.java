@@ -130,7 +130,22 @@ public class AOPRest {
 	    			return new PageImpl(list,page.getPageable(),page.getTotalElements());
 	    		}	    			    		
 	    	}
-	    }
+		} else if (obj instanceof List && !((List<?>) obj).isEmpty()) {
+			List<?> list = (List<?>) obj;
+			Class<?> elementType = list.get(0).getClass();
+
+			// Reconstruye el JSON de la lista aplicando el filtro Raml item por item
+			List<Object> filteredList = new ArrayList<>();
+			for (Object item : list) {
+				HashMap<String, Object> filtered = new HashMap<>();
+				filtered = obtenerObjetoGeneral(item, filtered, keysMapRoot);
+				filteredList.add(filtered);
+			}
+
+			String json = objectMapper.writeValueAsString(filteredList);
+			CollectionType typeReference = TypeFactory.defaultInstance().constructCollectionType(List.class, elementType);
+			return objectMapper.readValue(json, typeReference);
+		}
 	    String json=objectMapper.writeValueAsString(salida);
 		return objectMapper.readValue(json, classReturn);
 	}

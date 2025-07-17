@@ -28,7 +28,7 @@ public class RequerimientoInformeDetalle extends BaseModel implements Serializab
     private RequerimientoInforme requerimientoInforme;
 
     @Column(name = "DE_OBJETIVO", length = 5000)
-    private String objectivo;
+    private String objetivo;
 
     @Column(name = "DE_PERFIL_REQUERIDO", length = 5000)
     private String perfilRequerido;
@@ -73,12 +73,12 @@ public class RequerimientoInformeDetalle extends BaseModel implements Serializab
         this.requerimientoInforme = requerimientoInforme;
     }
 
-    public String getObjectivo() {
-        return objectivo;
+    public String getObjetivo() {
+        return objetivo;
     }
 
-    public void setObjectivo(String objectivo) {
-        this.objectivo = objectivo;
+    public void setObjetivo(String objetivo) {
+        this.objetivo = objetivo;
     }
 
     public String getPerfilRequerido() {

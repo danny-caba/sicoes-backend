@@ -14,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -27,6 +28,9 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     @SequenceGenerator(name="GEN_SICOES_SEQ_REQ_DET_DOCUMENTO", sequenceName = "SICOES_SEQ_REQ_DET_DOCUMENTO", allocationSize = 1)
     @Column(name = "ID_REQ_DET_DOCUMENTO")
     private Long idRequerimientoDocumentoDetalle;
+
+    @Column(name="CO_UUID")
+    private String requerimientoDocumentoDetalleUuid;
 
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="ID_REQ_DOCUMENTO")
@@ -55,12 +59,34 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     @Column(name="DE_OBSERVACION")
     private String observacion;
 
+    @Column(name="FL_PRESENTADO")
+    private String presentado;
+
+    @Transient
+    private Archivo archivo;
+
+    public String getPresentado() {
+        return presentado;
+    }
+
+    public void setPresentado(String presentado) {
+        this.presentado = presentado;
+    }
+
     public Long getIdRequerimientoDocumentoDetalle() {
         return idRequerimientoDocumentoDetalle;
     }
 
     public void setIdRequerimientoDocumentoDetalle(Long idRequerimientoDocumentoDetalle) {
         this.idRequerimientoDocumentoDetalle = idRequerimientoDocumentoDetalle;
+    }
+
+    public String getRequerimientoDocumentoDetalleUuid() {
+        return requerimientoDocumentoDetalleUuid;
+    }
+
+    public void setRequerimientoDocumentoDetalleUuid(String requerimientoDocumentoDetalleUuid) {
+        this.requerimientoDocumentoDetalleUuid = requerimientoDocumentoDetalleUuid;
     }
 
     public RequerimientoDocumento getRequerimientoDocumento() {
@@ -118,4 +144,13 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     public void setObservacion(String observacion) {
         this.observacion = observacion;
     }
+
+    public Archivo getArchivo() {
+        return archivo;
+    }
+
+    public void setArchivo(Archivo archivo) {
+        this.archivo = archivo;
+    }
+
 }

@@ -34,6 +34,7 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -98,6 +99,8 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 	@Autowired
 	private RequerimientoService requerimientoService;
+    @Autowired
+    private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
 
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
@@ -159,6 +162,13 @@ public class ArchivoServiceImpl implements ArchivoService {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
 			}	
 		}
+
+		if(archivo.getIdReqDocumentoDetalle()!=null) {
+//			todo: cuanto peso como maximo se debe considerar?
+//			if(tamanioMB>pesoAcreditacion) {
+//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
+//			}
+		}
 		
 		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
 		if (archivo.getCodigo() == null) {
@@ -199,7 +209,14 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null , archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(
+					archivoBD.getIdSolicitud(),
+					archivoBD.getIdPropuesta(),
+					archivoBD.getIdProceso(),
+					archivoBD.getIdSeccionRequisito(),
+					archivoBD.getIdReqDocumentoDetalle(),
+					null,null , archivo);
+
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -236,7 +253,15 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(
+						archivoBD.getIdSolicitud(),
+						archivoBD.getIdPropuesta(),
+						archivoBD.getIdProceso(),
+						archivoBD.getIdSeccionRequisito(),
+						null,
+						null,
+						null,
+						archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -1138,7 +1163,15 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, archivo);
+		String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(
+				null,
+				null,
+				null,
+				null,
+				null,
+				archivoGuardadoBD.getIdContrato(),
+				null,
+				archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1252,7 +1285,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
+		String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1541,5 +1574,68 @@ public class ArchivoServiceImpl implements ArchivoService {
 			} else {
 					return modificarRequerimiento(archivo, contexto);
 			}
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarXRequerimientoDocumento (Archivo archivo, Contexto contexto) {
+		boolean nuevo = archivo.getIdArchivo() == null;
+		if (archivo.getRequerimientoUuid() != null) {
+			archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
+			if (archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO)) {
+				List<Archivo> archivosRequerimiento = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO,
+								archivo.getSolicitudUuid(), null, null)
+						.getContent()
+						.stream()
+						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
+						.collect(Collectors.toList());
+				boolean existe = archivosRequerimiento.stream()
+						.anyMatch(arch -> {
+							try {
+								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
+								if (Optional.ofNullable(archivo.getFile()).isPresent()
+										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
+									InputStream nuevoArch = archivo.getFile().getInputStream();
+									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
+									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
+									nuevoArch.close();
+									oldArch.close();
+									return existeArchivo;
+								} else {
+									return false;
+								}
+							} catch (Exception e) {
+								return false;
+							}
+						});
+				if (existe) {
+					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
+				}
+			}
+		}
+		if (nuevo) {
+			return registrarRequerimiento(archivo, contexto);
+		} else {
+			return modificarRequerimiento(archivo, contexto);
+		}
+	}
+
+	@Override
+	public List<Archivo> buscarPorReqDocDetalle(Long idReqDocumentoDetalle) {
+		return archivoDao.buscarPorIdDocumentoDetalle(idReqDocumentoDetalle);
+	}
+
+	@Override
+	public Archivo obtenerArchivoPorReqDocumentoDetalle(String requerimientoDocumentoDetalleUuid, Contexto contexto) {
+
+		RequerimientoDocumentoDetalle documentoDetalle = requerimientoDocumentoDetalleDao
+				.buscarPorUuid(requerimientoDocumentoDetalleUuid);
+
+		List<Archivo> archivos = buscarPorReqDocDetalle(documentoDetalle.getIdRequerimientoDocumentoDetalle());
+
+		if (archivos.isEmpty()) {
+			return null;
+		} else {
+			return archivos.get(0);
+		}
 	}
 }

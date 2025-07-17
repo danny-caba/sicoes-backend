@@ -168,8 +168,12 @@ public class Constantes {
 
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
 			public static final String ARCHIVO_REQUERIMIENTO = "TA26";
-			public static final String APROBACION_REQUERIMIENTO = "TA27";
+			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
 			public static final String INFORME_REQUERIMIENTO = "TA28";
+
+			public static final String REQUERIMIENTO = "TA26";
+			public static final String APROBACION_REQUERIMIENTO = "TA27";
+			public static final String DOCUMENTO_REQUERIMIENTO = "TA29";
 
 		}
 		
@@ -685,6 +689,19 @@ public class Constantes {
 			public static final String CODIGO 						= "GRUPO_ROL_APROBACION";
 			public static final String GRUPO_1 						= "GRUPO_1";
 		}
+
+		public static final class ESTADO_REQ_DOCUMENTO {
+			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO";
+			public static final String EN_PROCESO	= "EN_PROCESO";
+
+		}
+
+		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
+			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO_DETALLE";
+			public static final String OBSERVADO	= "OBSERVADO";
+
+		}
+
 	}
 	
 
@@ -837,8 +854,10 @@ public class Constantes {
 		public static final String ACCESO_NO_AUTORIZADO 		= "V00655";
 		public static final String FINALICE_TODO_REQUISITOS		= "V00656";
 		public static final String ID_REQUERIMIENTO_NO_ENVIADO  = "V00657";
-
-
+		public static final String REQUERIMIENTO_INFORME_DETALLE_NULO  = "V00658";
+		public static final String REQUERIMIENTO_INFORME_NULO  = "V00659";
+		public static final String ESTADO_ARCHIVADO_NO_CONFIGURADO_EN_LISTADO_DETALLE  = "V00660";
+		public static final String ESTADO_INVITADO_NO_CONFIGURADO_EN_LISTADO_DETALLE  = "V00661";
 		
 		public static final String  SUSPENSION_CANCELACION_FECHA_INICIO_MAYOR= "V00700";
 		public static final String SUSPENSION_CANCELACION_TIENE_SUSPENSION_CANCELACION_PENDIENTE = "V00701";
@@ -955,7 +974,8 @@ public class Constantes {
 		public static final String APROBACION_NO_ENCONTRADA = "V01022";
 		public static final String INVITACION_NO_ENCONTRADA = "V01023";
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
-    public static final String ERROR_LISTA_DIVISIONES = "V01025";
+    	public static final String ERROR_LISTA_DIVISIONES = "V01025";
+		public static final String REQUERIMIENTO_DOCUMENTO_DETALLE_NO_ENCONTRADO = "V01026";
 
 	}
 	public static final class ROLES {
@@ -1027,6 +1047,11 @@ public class Constantes {
 		public static final String OBSERVADO 		= "OBSERVADO";
 		public static final String CONCLUIDO 		= "CONCLUIDO";
 		public static final String ARCHIVADO 		= "ARCHIVADO";
+	}
+
+	public static final class FLAG_INVITACION {
+		public static final String ACTIVO 		= "1";
+		public static final String INACTIVO 		= "0";
 	}
 
 }

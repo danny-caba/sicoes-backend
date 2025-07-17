@@ -83,8 +83,16 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
 
-	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Long idContrato,Long idSoliPerfCont,Archivo archivo) {
-		
+	public String subirArchivosAlfresco(
+			Long idSolicitud,
+			Long idPropuesta,
+			Long idProceso,
+			Long idSeccionRequisito,
+			Long idReqDocumentoDetalle,
+			Long idContrato,
+			Long idSoliPerfCont,
+			Archivo archivo) {
+
 		try {
 			
 			RestTemplate restTemplate=new RestTemplate();

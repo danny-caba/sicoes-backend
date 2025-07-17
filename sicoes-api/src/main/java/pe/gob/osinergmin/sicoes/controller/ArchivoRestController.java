@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import gob.osinergmin.sne.util.StringUtil;
+import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.ProcesoItem;
@@ -58,6 +59,9 @@ public class ArchivoRestController extends BaseRestController {
 
 	@Autowired
 	private ProcesoItemService procesoItemService;
+
+	@Autowired
+	private SigedOldConsumer sigedOldConsumer;
 
 	@Value("${path.formato}")
 	String PATH_FORMATO;
@@ -103,7 +107,8 @@ public class ArchivoRestController extends BaseRestController {
 			@RequestParam(value = "idPropuestaTecnica", required = false) Long idPropuestaTecnica,
 			@RequestParam(value = "idArchivo", required = false) Long idArchivo,
 			@RequestParam(value = "idProceso", required = false) Long idProceso,
-			@RequestParam(value = "idSolicitudSeccion", required = false) Long idSolicitudSeccion) {
+		    @RequestParam(value = "idSolicitudSeccion", required = false) Long idSolicitudSeccion,
+			@RequestParam(value = "idReqDocumentoDetalle", required = false) Long idReqDocumentoDetalle) {
 
 		Archivo archivo = new Archivo();
 
@@ -138,6 +143,7 @@ public class ArchivoRestController extends BaseRestController {
 		archivo.setIdPropuestaTecnica(idPropuestaTecnica);
 		archivo.setIdProceso(idProceso);
 		archivo.setIdSeccionRequisito(idSolicitudSeccion);
+		archivo.setIdReqDocumentoDetalle(idReqDocumentoDetalle);
 		Archivo value = archivoService.guardar(archivo, getContexto());
 		value.setFile(null);
 
@@ -451,6 +457,31 @@ public class ArchivoRestController extends BaseRestController {
 			logger.error("Error al descargar archivo con ID {} del contrato {}: {}", idArchivo, idSoliPerfCont,
 					e.getMessage(), e);
 			return new ResponseEntity<>("Error interno del servidor al descargar el archivo.",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping("/archivos/documento-detalle/{requerimientoDocumentoDetalleUuid}")
+	@Raml("adjunto.obtener.properties")
+	public Archivo obtenerArchivoPorReqDocumentoDetalle(@PathVariable String requerimientoDocumentoDetalleUuid) {
+		return archivoService.obtenerArchivoPorReqDocumentoDetalle(requerimientoDocumentoDetalleUuid, getContexto());
+	}
+
+
+	@GetMapping("/archivos/{uuid}/visualizar")
+	public ResponseEntity<Object> visualizarArchivo(@PathVariable String uuid, HttpServletResponse response) {
+		try {
+			Archivo archivo = archivoService.obtener(uuid, getContexto());
+			byte[] data = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+			response.setContentType(archivo.getTipo());
+			response.setHeader("Content-Disposition", "inline; filename=\"" + archivo.getNombreReal() + "\"");
+			IOUtils.copy(new ByteArrayInputStream(data), response.getOutputStream());
+			response.flushBuffer();
+
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("Error al visualizar archivo con UUID {}: {}", uuid, e.getMessage(), e);
+			return new ResponseEntity<>("Error al visualizar el archivo.",
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

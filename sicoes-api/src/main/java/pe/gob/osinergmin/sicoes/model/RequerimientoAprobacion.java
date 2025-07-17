@@ -71,6 +71,29 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "FE_FIRMA")
     private Date fechaFirma;
 
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @Column(name = "FE_ASIGNACION")
+    private Date fechaAsignacion;
+
+    @Transient
+    private Archivo archivoInforme;
+
+    @Transient
+    private String estadoFirmaJefeUnidad;
+
+    @Transient
+    private String estadoFirmaGerente;
+
+    @Transient
+    private String estadoAprobacionGPPM;
+
+    @Transient
+    private String estadoAprobacionGSE;
+
+    @Transient
+    private Boolean accionAprobar;
+
     @Transient
     private ListadoDetalle tipoRolAprobador;
 
@@ -190,5 +213,63 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     public void setNombreRolAprobador(String nombreRolAprobador) {
         this.nombreRolAprobador = nombreRolAprobador;
+    }
+
+
+
+    public Boolean getAccionAprobar() {
+        return accionAprobar;
+    }
+
+    public void setAccionAprobar(Boolean accionAprobar) {
+        this.accionAprobar = accionAprobar;
+    }
+
+    public Archivo getArchivoInforme() {
+        return archivoInforme;
+    }
+
+    public void setArchivoInforme(Archivo archivoInforme) {
+        this.archivoInforme = archivoInforme;
+    }
+
+    public String getEstadoFirmaJefeUnidad() {
+        return estadoFirmaJefeUnidad;
+    }
+
+    public void setEstadoFirmaJefeUnidad(String estadoFirmaJefeUnidad) {
+        this.estadoFirmaJefeUnidad = estadoFirmaJefeUnidad;
+    }
+
+    public String getEstadoFirmaGerente() {
+        return estadoFirmaGerente;
+    }
+
+    public void setEstadoFirmaGerente(String estadoFirmaGerente) {
+        this.estadoFirmaGerente = estadoFirmaGerente;
+    }
+
+    public String getEstadoAprobacionGPPM() {
+        return estadoAprobacionGPPM;
+    }
+
+    public void setEstadoAprobacionGPPM(String estadoAprobacionGPPM) {
+        this.estadoAprobacionGPPM = estadoAprobacionGPPM;
+    }
+
+    public String getEstadoAprobacionGSE() {
+        return estadoAprobacionGSE;
+    }
+
+    public void setEstadoAprobacionGSE(String estadoAprobacionGSE) {
+        this.estadoAprobacionGSE = estadoAprobacionGSE;
+    }
+
+    public Date getFechaAsignacion() {
+        return fechaAsignacion;
+    }
+
+    public void setFechaAsignacion(Date fechaAsignacion) {
+        this.fechaAsignacion = fechaAsignacion;
     }
 }
