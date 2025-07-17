@@ -34,6 +34,7 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -98,6 +99,8 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 	@Autowired
 	private RequerimientoService requerimientoService;
+    @Autowired
+    private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
 
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
@@ -1585,4 +1588,25 @@ public class ArchivoServiceImpl implements ArchivoService {
 			return modificarRequerimiento(archivo, contexto);
 		}
 	}
+
+	@Override
+	public List<Archivo> buscarPorReqDocDetalle(Long idReqDocumentoDetalle) {
+		return archivoDao.buscarPorIdDocumentoDetalle(idReqDocumentoDetalle);
+	}
+
+	@Override
+	public Archivo obtenerArchivoPorReqDocumentoDetalle(String requerimientoDocumentoDetalleUuid, Contexto contexto) {
+
+		RequerimientoDocumentoDetalle documentoDetalle = requerimientoDocumentoDetalleDao
+				.getRequerimientoDocumentoDetalleByRequerimientoDocumentoDetalleUuid(requerimientoDocumentoDetalleUuid);
+
+		List<Archivo> archivos = buscarPorReqDocDetalle(documentoDetalle.getIdRequerimientoDocumentoDetalle());
+
+		if (archivos.isEmpty()) {
+			return null;
+		} else {
+			return archivos.get(0);
+		}
+	}
+
 }

@@ -19,4 +19,5 @@ public interface RequerimientoDocumentoDetalleDao extends JpaRepository<Requerim
     List<RequerimientoDocumentoDetalle> findByRequerimientoDocumento_IdRequerimientoDocumento(Long idRequerimientoDocumento);
 
 
+    RequerimientoDocumentoDetalle getRequerimientoDocumentoDetalleByRequerimientoDocumentoDetalleUuid(String requerimientoDocumentoDetalleUuid);
 }

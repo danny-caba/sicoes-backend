@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -59,6 +60,10 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ID_REVISION_LD")
     private ListadoDetalle revision;
+
+    @OneToOne(fetch= FetchType.LAZY)
+    @JoinColumn(name="ID_REQ_CONTRATO")
+    private RequerimientoContrato contrato;
 
     public Long getIdRequerimientoDocumento() {
         return idRequerimientoDocumento;
@@ -131,4 +136,13 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     public void setRevision(ListadoDetalle revision) {
         this.revision = revision;
     }
+
+    public RequerimientoContrato getContrato() {
+        return contrato;
+    }
+
+    public void setContrato(RequerimientoContrato contrato) {
+        this.contrato = contrato;
+    }
+
 }

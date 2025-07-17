@@ -35,10 +35,6 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
     @JoinColumn(name="ID_REQUERIMIENTO")
     private Requerimiento requerimiento;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ID_REQ_DOCUMENTO")
-    private RequerimientoDocumento requerimientoDocumento;
-
     @Column(name="NU_CONTRATO")
     private String numeroContrato;
 
@@ -79,14 +75,6 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
 
     public void setRequerimiento(Requerimiento requerimiento) {
         this.requerimiento = requerimiento;
-    }
-
-    public RequerimientoDocumento getRequerimientoDocumento() {
-        return requerimientoDocumento;
-    }
-
-    public void setRequerimientoDocumento(RequerimientoDocumento requerimientoDocumento) {
-        this.requerimientoDocumento = requerimientoDocumento;
     }
 
     public String getNumeroContrato() {

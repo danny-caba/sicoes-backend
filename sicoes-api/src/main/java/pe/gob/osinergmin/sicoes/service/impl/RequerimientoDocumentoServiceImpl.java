@@ -27,6 +27,7 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoCoordinadorDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoDTO;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDao;
@@ -34,6 +35,7 @@ import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoDocumentoService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.ArchivoUtil;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -53,6 +55,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
@@ -100,6 +103,8 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
     @Autowired
     private SigedApiConsumer sigedApiConsumer;
+    @Autowired
+    private SupervisoraService supervisoraService;
 
     public Page<RequerimientoDocumento> listarRequerimientosDocumentos(FiltroRequerimientoDocumentoDTO filtro, Pageable pageable, Contexto contexto) {
         Date fechaInicio = filtro.getFechaInicio();
@@ -112,12 +117,23 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         }
         if (fechaInicio != null) fechaInicio = DateUtil.getInitDay(fechaInicio);
         if (fechaFin != null) fechaFin = DateUtil.getEndDay(fechaFin);
-        return requerimientoDocumentoDao.listarRequerimientosDocumentos(contexto.getUsuario().getIdUsuario(), filtro.getEstado(), fechaInicio, fechaFin, pageable);
+        Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
+        return requerimientoDocumentoDao.listarRequerimientosDocumentos(supervisora.getIdSupervisora(), filtro.getEstado(), fechaInicio, fechaFin, pageable);
     }
 
     @Override
     public List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(String requerimientoUuid) {
-        return requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoUuid);
+        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoUuid);
+        return listaDetalle.stream().map(this::cargarArchivo).collect(Collectors.toList());
+    }
+
+    private RequerimientoDocumentoDetalle cargarArchivo(RequerimientoDocumentoDetalle requerimientoDocumentoDetalle) {
+        List<Archivo> list = archivoService.buscarPorReqDocDetalle(requerimientoDocumentoDetalle.getIdRequerimientoDocumentoDetalle());
+        if (!list.isEmpty() && list != null) {
+            requerimientoDocumentoDetalle.setArchivo(list.get(0));
+        }
+
+        return requerimientoDocumentoDetalle;
     }
 
     @Override

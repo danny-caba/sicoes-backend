@@ -18,8 +18,8 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
             "LEFT JOIN FETCH rd.requerimiento r " +
             "LEFT JOIN FETCH r.division d " +
             "LEFT JOIN FETCH rd.estado e " +
-            "LEFT JOIN FETCH d.usuario u " +
-            "WHERE u.idUsuario = :usuario " +
+            "LEFT JOIN r.supervisora s " +
+            "WHERE s.idSupervisora = :idSupervisora " +
             "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
@@ -28,12 +28,12 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
                     "LEFT JOIN rd.requerimiento r " +
                     "LEFT JOIN r.division d " +
                     "LEFT JOIN rd.estado e " +
-                    "LEFT JOIN d.usuario u " +
-                    "WHERE u.idUsuario = :usuario " +
+                    "LEFT JOIN r.supervisora s " +
+                    "WHERE s.idSupervisora = :idSupervisora " +
                     "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
                     "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
-    Page<RequerimientoDocumento> listarRequerimientosDocumentos(Long usuario, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
+    Page<RequerimientoDocumento> listarRequerimientosDocumentos(Long idSupervisora, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT rd FROM RequerimientoDocumento rd " +
             "LEFT JOIN FETCH rd.requerimiento r " +
@@ -42,6 +42,7 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
             "LEFT JOIN FETCH rd.estado e " +
             "LEFT JOIN FETCH r.supervisora s " +
             "LEFT JOIN FETCH d.usuario u " +
+            "LEFT JOIN FETCH rd.contrato c " +
             "WHERE u.idUsuario = :usuario " +
             "AND (:idDivision IS NULL OR d.idDivision = :idDivision) " +
             "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
@@ -57,6 +58,7 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
                     "LEFT JOIN rd.estado e " +
                     "LEFT JOIN r.supervisora s " +
                     "LEFT JOIN d.usuario u " +
+                    "LEFT JOIN rd.contrato c " +
                     "WHERE u.idUsuario = :usuario " +
                     "AND (:idDivision IS NULL OR d.idDivision = :idDivision) " +
                     "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +

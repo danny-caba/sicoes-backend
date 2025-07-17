@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -268,5 +269,17 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+"left join fetch a.estado e "
 			+ "where a.idRequerimiento=:idRequerimiento and a.estado.codigo=:codigoEstadoArchivo")
 	public List<Archivo> buscarXRequerimiento(Long idRequerimiento,String codigoEstadoArchivo);
+
+	@Query(value = "SELECT a FROM Archivo a " +
+			"LEFT JOIN FETCH a.estado e " +
+			"LEFT JOIN FETCH a.tipoArchivo ta " +
+			"WHERE ta.codigo = :tipoArchivo " +
+			"AND a.idRequerimiento IN :idsRequerimientos")
+	List<Archivo> obtenerTipoArchivoRequerimiento(Set<Long> idsRequerimientos, String tipoArchivo);
+
+	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+ "where a.idReqDocumentoDetalle = :idReqDocumentoDetalle")
+	List<Archivo> buscarPorIdDocumentoDetalle(Long idReqDocumentoDetalle);
 
 }
