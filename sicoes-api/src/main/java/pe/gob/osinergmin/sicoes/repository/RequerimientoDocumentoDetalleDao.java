@@ -16,8 +16,8 @@ public interface RequerimientoDocumentoDetalleDao extends JpaRepository<Requerim
             "WHERE rd.requerimientoDocumentoUuid = :uuid")
     List<RequerimientoDocumentoDetalle> listarPorUuid(@Param("uuid") String uuid);
 
-    List<RequerimientoDocumentoDetalle> buscarPorIdDocumento(Long idRequerimientoDocumento);
-
-
-    RequerimientoDocumentoDetalle buscarPorUuid(String requerimientoDocumentoDetalleUuid);
+    @Query("SELECT rdd FROM RequerimientoDocumentoDetalle rdd " +
+            "JOIN rdd.requerimientoDocumento rd " +
+            "WHERE rdd.requerimientoDocumentoDetalleUuid = :uuid")
+    RequerimientoDocumentoDetalle buscarPorUuid(String uuid);
 }

@@ -653,29 +653,30 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Override
     public Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contexto) {
-        return this.listar(filtroRequerimientoDTO, pageable, contexto)
-                .map(req -> {
-                    req.setArchivos(new ArrayList<Archivo>());
-                    Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(req.getIdRequerimiento(),
-                            Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_REQUERIMIENTO);
-                    req.getArchivos().add(informe);
-                    req.getReqAprobaciones()
-                            .forEach(aprob -> {
-                                if(aprob.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
-                                    req.setTipoAprobacion(aprob.getTipo().getNombre());
-                                }
-                                if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD)) {
-                                    req.setEstadoFirmaJefeUnidad(aprob.getEstado().getNombre());
-                                } else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GERENTE)) {
-                                    req.setEstadoFirmaGerente(aprob.getEstado().getNombre());
-                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GPPM)) {
-                                    req.setEstadoAprobacionGPPM(aprob.getEstado().getNombre());
-                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GSE)) {
-                                    req.setEstadoAprobacionGSE(aprob.getEstado().getNombre());
-                                }
-                            });
-                    return req;
-                });
+//        return this.listar(filtroRequerimientoDTO, pageable, contexto)
+//                .map(req -> {
+//                    req.setArchivos(new ArrayList<Archivo>());
+//                    Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(req.getIdRequerimiento(),
+//                            Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_REQUERIMIENTO);
+//                    req.getArchivos().add(informe);
+//                    req.getReqAprobaciones()
+//                            .forEach(aprob -> {
+//                                if(aprob.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
+//                                    req.setTipoAprobacion(aprob.getTipo().getNombre());
+//                                }
+//                                if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD)) {
+//                                    req.setEstadoFirmaJefeUnidad(aprob.getEstado().getNombre());
+//                                } else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GERENTE)) {
+//                                    req.setEstadoFirmaGerente(aprob.getEstado().getNombre());
+//                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GPPM)) {
+//                                    req.setEstadoAprobacionGPPM(aprob.getEstado().getNombre());
+//                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GSE)) {
+//                                    req.setEstadoAprobacionGSE(aprob.getEstado().getNombre());
+//                                }
+//                            });
+//                    return req;
+//                });
+        return null;
     }
 
 }

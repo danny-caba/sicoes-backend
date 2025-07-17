@@ -162,6 +162,13 @@ public class ArchivoServiceImpl implements ArchivoService {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
 			}	
 		}
+
+		if(archivo.getIdReqDocumentoDetalle()!=null) {
+//			todo: cuanto peso como maximo se debe considerar?
+//			if(tamanioMB>pesoAcreditacion) {
+//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
+//			}
+		}
 		
 		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
 		if (archivo.getCodigo() == null) {
@@ -202,7 +209,14 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null , archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(
+					archivoBD.getIdSolicitud(),
+					archivoBD.getIdPropuesta(),
+					archivoBD.getIdProceso(),
+					archivoBD.getIdSeccionRequisito(),
+					archivoBD.getIdReqDocumentoDetalle(),
+					null,null , archivo);
+
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -239,7 +253,15 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(
+						archivoBD.getIdSolicitud(),
+						archivoBD.getIdPropuesta(),
+						archivoBD.getIdProceso(),
+						archivoBD.getIdSeccionRequisito(),
+						null,
+						null,
+						null,
+						archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -1141,7 +1163,15 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, archivo);
+		String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(
+				null,
+				null,
+				null,
+				null,
+				null,
+				archivoGuardadoBD.getIdContrato(),
+				null,
+				archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1255,7 +1285,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
+		String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1608,5 +1638,4 @@ public class ArchivoServiceImpl implements ArchivoService {
 			return archivos.get(0);
 		}
 	}
-
 }

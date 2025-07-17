@@ -20,6 +20,8 @@ public class FiltroRequerimientoDTO {
 
     private Long estadoAprobacion;
 
+    private String expediente;
+
     public Long getDivision() {
         return division;
     }
@@ -67,4 +69,13 @@ public class FiltroRequerimientoDTO {
     public void setEstadoAprobacion(Long estadoAprobacion) {
         this.estadoAprobacion = estadoAprobacion;
     }
+
+    public String getExpediente() {
+        return expediente;
+    }
+
+    public void setExpediente(String expediente) {
+        this.expediente = expediente;
+    }
+
 }
