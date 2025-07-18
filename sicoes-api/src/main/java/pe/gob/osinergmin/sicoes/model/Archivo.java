@@ -118,6 +118,9 @@ public class Archivo extends BaseModel implements Serializable {
     @Column(name="ID_REQUERIMIENTO")
     private Long idRequerimiento;
 
+	@Column(name="ID_REQ_CONTRATO")
+	private Long idRequerimientoContrato;
+
 	@Transient
 	private MultipartFile file;
 
@@ -416,5 +419,13 @@ public class Archivo extends BaseModel implements Serializable {
 
 	public void setRequerimientoUuid(String requerimientoUuid) {
 		this.requerimientoUuid = requerimientoUuid;
+	}
+
+	public Long getIdRequerimientoContrato() {
+		return idRequerimientoContrato;
+	}
+
+	public void setIdRequerimientoContrato(Long idRequerimientoContrato) {
+		this.idRequerimientoContrato = idRequerimientoContrato;
 	}
 }

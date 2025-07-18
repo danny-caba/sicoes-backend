@@ -57,6 +57,13 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     @Column(name="DE_OBSERVACION")
     private String observacion;
 
+    @Column(name="FL_VISTO_BUENO")
+    private String flagVistoBueno;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_ORIGEN_LD")
+    private ListadoDetalle origenRequisito;
+
     public Long getIdRequerimientoDocumentoDetalle() {
         return idRequerimientoDocumentoDetalle;
     }
@@ -119,5 +126,21 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
 
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public String getFlagVistoBueno() {
+        return flagVistoBueno;
+    }
+
+    public void setFlagVistoBueno(String flagVistoBueno) {
+        this.flagVistoBueno = flagVistoBueno;
+    }
+
+    public ListadoDetalle getOrigenRequisito() {
+        return origenRequisito;
+    }
+
+    public void setOrigenRequisito(ListadoDetalle origenRequisito) {
+        this.origenRequisito = origenRequisito;
     }
 }

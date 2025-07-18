@@ -33,6 +33,7 @@ import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.Proceso;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
@@ -1069,14 +1070,6 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacionDao.save(notificacion);
 	}
 
-	public void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto) {
-
-	}
-
-	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
-
-	}
-
 	@Override
 	public void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
@@ -1086,7 +1079,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 		final Context ctx = new Context();
 		ctx.setVariable("nombre", "Nombre del rol GPPM o GSE");//TODO: buscar nombre del rol
 		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
-		String htmlContent = templateEngine.process("27-requerimiento-por-aprobar.html", ctx);
+		String htmlContent = templateEngine.process("30-requerimiento-por-aprobar.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
@@ -1105,7 +1098,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 		ctx.setVariable("nombre", "Nombre del rol Coordinador de Gestión");//TODO: buscar nombre del rol
 		ctx.setVariable("rol", rol);
 		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
-		String htmlContent = templateEngine.process("28-requerimiento-rechazado.html", ctx);
+		String htmlContent = templateEngine.process("31-requerimiento-rechazado.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
@@ -1180,5 +1173,57 @@ public class NotificacionServiceImpl implements NotificacionService{
 			notificacionDao.save(notificacion);
 	}
 
+	@Override
+	public void enviarMensajeVistoBuenoCoordinador(Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = "yamir.monroe@dlwlatam.com";
+//		notificacion.setCorreo(contexto.getUsuario().getCorreo());
+		notificacion.setCorreo(correos);//TODO: para pruebas
+		notificacion.setAsunto("OBSERVACIÓN INFORME");
+		final Context ctx = new Context();
+		String htmlContent = templateEngine.process("32-documento-sin-visto-bueno-coordinador.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeVistoBuenoSupervisor(Supervisora supervisoraPN, List<RequerimientoDocumentoDetalle> listaReqDocDetalle, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = "yamir.monroe@dlwlatam.com";
+		notificacion.setCorreo(correos);
+		//notificacion.setCorreo(supervisoraPN.getCorreo());// gestor y supervisor
+		notificacion.setAsunto("NOTIFICACIÓN CARGAR DOCUMENTOS");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", supervisoraPN.getNombres());//TODO: buscar nombre del rol
+		ctx.setVariable("documentos", listaReqDocDetalle);
+		String htmlContent = templateEngine.process("33-documento-sin-visto-bueno-supervisor.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeFinalizacionContratacion(Supervisora supervisoraPN, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = "yamir.monroe@dlwlatam.com";
+		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setAsunto("FINALIZACIÓN DEL PROCESO DE CONTRATACIÓN");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", supervisoraPN.getNombres());
+		String htmlContent = templateEngine.process("34-fin-contratacion.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
 
 }

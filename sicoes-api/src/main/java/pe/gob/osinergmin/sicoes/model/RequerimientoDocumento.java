@@ -52,9 +52,6 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     @Column(name="FE_INGRESO")
     private Date fechaIngreso;
 
-    @Column(name="NU_EXPEDIENTE")
-    private String numeroExpediente;
-
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ID_TIPO_LD")
     private ListadoDetalle tipo;
@@ -126,14 +123,6 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
 
     public void setFechaIngreso(Date fechaIngreso) {
         this.fechaIngreso = fechaIngreso;
-    }
-
-    public String getNumeroExpediente() {
-        return numeroExpediente;
-    }
-
-    public void setNumeroExpediente(String numeroExpediente) {
-        this.numeroExpediente = numeroExpediente;
     }
 
     public ListadoDetalle getTipo() {

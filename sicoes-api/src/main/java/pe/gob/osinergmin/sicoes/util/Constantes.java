@@ -173,6 +173,7 @@ public class Constantes {
 
 			public static final String REQUERIMIENTO = "TA26";
 			public static final String APROBACION_REQUERIMIENTO = "TA27";
+			public static final String CONTRATO_REQUERIMIENTO = "TA29";
 
 		}
 		
@@ -639,7 +640,7 @@ public class Constantes {
 			public static final String PRELIMINAR 					= "PRELIMINAR";
 			public static final String EN_APROBACION 				= "EN_APROBACION";
 			public static final String EN_PROCESO 					= "EN_PROCESO";
-			public static final String CONCLUIDO 					= "EN_PROCESO";
+			public static final String CONCLUIDO 					= "CONCLUIDO";
 			public static final String ARCHIVADO 					= "ARCHIVADO";
 			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
@@ -690,9 +691,26 @@ public class Constantes {
 		}
 
 		public static final class ESTADO_REQ_DOCUMENTO {
-			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO";
-			public static final String EN_PROCESO	= "EN_PROCESO";
+			public static final String CODIGO 						= "ESTADO_REQ_DOCUMENTO";
+			public static final String EN_PROCESO					= "EN_PROCESO";
+			public static final String PRELIMINAR 					= "PRELIMINAR";
+		}
 
+		public static final class ESTADO_REQ_CONTRATO {
+			public static final String CODIGO 						= "ESTADO_REQ_CONTRATO";
+			public static final String EN_PROCESO					= "EN_PROCESO";
+			public static final String CONCLUIDO					= "CONCLUIDO";
+		}
+
+		public static final class TIPO_REQ_CONTRATO {
+			public static final String CODIGO 						= "TIPO_REQ_CONTRATO";
+			public static final String PRIMIGENIO					= "PRIMIGENIO";
+		}
+
+		public static final class ORIGEN_REQUISITO {
+			public static final String CODIGO 						= "ORIGEN_REQUISITO";
+			public static final String EXTERNO						= "EXTERNO";
+			public static final String REQUERIMIENTO				= "REQUERIMIENTO";
 		}
 	}
 	
@@ -710,6 +728,7 @@ public class Constantes {
 
 		public static final String ERROR_FECHA_FIN_ANTES_INICIO = "E002001";
 		public static final String ERROR_FECHA_INICIO_ANTES_HOY = "E002002";
+		public static final String ERROR_FECHA_SUSCRIPCION_ANTES_HOY = "E002003";
 		
 		public static final String AUTENTICACION_METODO_NO_SOPORTADO = "V00501";
 		public static final String AUTENTICACION_SIN_CREDENCIALES = "V00502";
@@ -968,6 +987,9 @@ public class Constantes {
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
     	public static final String ERROR_LISTA_DIVISIONES = "V01025";
 		public static final String REQUERIMIENTO_DOCUMENTO_DETALLE_NO_ENCONTRADO = "V01026";
+		public static final String REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO = "V01027";
+		public static final String NUMERO_CONTRATO_NO_ENCONTRADO = "V01028";
+		public static final String REQUERIMIENTO_CONTRATO_NO_ENCONTRADO = "V01029";
 
 	}
 	public static final class ROLES {
@@ -979,7 +1001,7 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
-		public static final String COORDINADOR_GESTION = "13";
+		public static final String COORDINADOR_GESTION 			= "13";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

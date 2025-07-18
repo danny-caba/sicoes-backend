@@ -10,11 +10,14 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoDTO;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoDocumentoService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -22,9 +25,11 @@ import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
@@ -42,6 +47,10 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
     @Autowired
     private ListadoDetalleService listadoDetalleService;
+    @Autowired
+    private SupervisoraService supervisoraService;
+    @Autowired
+    private NotificacionService notificacionService;
 
     @Transactional
     public Page<RequerimientoDocumento> listar(FiltroRequerimientoDocumentoDTO filtro, Pageable pageable, Contexto contexto) {
@@ -68,7 +77,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     @Transactional
     public RequerimientoDocumento registrar(List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Long idRequerimiento, Contexto contexto){
         RequerimientoDocumento requerimientoDocumento = new RequerimientoDocumento();
-        AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
         requerimientoDocumento.setRequerimientoDocumentoUuid(UUID.randomUUID().toString());
         requerimientoDocumento.setFlagActivo("1");
         requerimientoDocumento.setFechaIngreso(new Date());
@@ -84,11 +93,68 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         }
         requerimientoDocumento.setEstado(estadoEnProceso);
         for (RequerimientoDocumentoDetalle requerimientoDocumentoDetalle : listRequerimientoDocumentoDetalle) {
-            AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoDetalle, contexto);AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoDetalle, contexto);
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoDetalle, contexto);
             requerimientoDocumentoDetalle.setRequerimientoDocumento(requerimientoDocumento);
             requerimientoDocumento.getDetalles().add(requerimientoDocumentoDetalle);
         }
         return requerimientoDocumentoDao.save(requerimientoDocumento);
+    }
+
+    @Override
+    @Transactional
+    public RequerimientoDocumento revisar(String documentoUuid, List<RequerimientoDocumentoDetalle> detalleDocumento, Contexto contexto) {
+        //Validar Req. Documento en estado concluido?
+
+        List<RequerimientoDocumentoDetalle> detallesBD = new ArrayList<>();
+        for(RequerimientoDocumentoDetalle detalles: detalleDocumento) {
+            RequerimientoDocumentoDetalle detalle = requerimientoDocumentoDetalleDao.findById(detalles.getIdRequerimientoDocumentoDetalle())
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_DOCUMENTO_DETALLE_NO_ENCONTRADO));
+            detalle.setFlagVistoBueno(detalles.getFlagVistoBueno());
+            detallesBD.add(detalle);
+        }
+        RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(documentoUuid)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO));
+
+        List<RequerimientoDocumentoDetalle> detalleDocumentoSinVistoBueno = detallesBD
+                .stream()
+                .filter(det -> det.getFlagVistoBueno().equals(Constantes.ESTADO.INACTIVO))
+                .collect(Collectors.toList());
+        List<RequerimientoDocumentoDetalle> detalleDocumentoExterno = detalleDocumentoSinVistoBueno
+                .stream()
+                .filter(det -> det.getOrigenRequisito().getCodigo().equals(Constantes.LISTADO.ORIGEN_REQUISITO.EXTERNO))
+                .collect(Collectors.toList());
+        List<RequerimientoDocumentoDetalle> detalleDocumentoInterno = detalleDocumentoSinVistoBueno
+                .stream()
+                .filter(det -> det.getOrigenRequisito().getCodigo().equals(Constantes.LISTADO.ORIGEN_REQUISITO.REQUERIMIENTO))
+                .collect(Collectors.toList());
+
+        if(!detalleDocumentoExterno.isEmpty()) {//Sin visto bueno: Requisitos Supervisor
+            Supervisora supervisora = requerimientoDocumento.getRequerimiento().getSupervisora();
+
+            //update req doc estado solicitud preliminar
+            ListadoDetalle estadoEnProceso = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
+                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.PRELIMINAR
+            );
+            requerimientoDocumento.setEstado(estadoEnProceso);
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
+            requerimientoDocumento = requerimientoDocumentoDao.save(requerimientoDocumento);
+
+            //Enviar Notificacion Supervisor
+            notificacionService.enviarMensajeVistoBuenoSupervisor(supervisora, detalleDocumentoExterno, contexto);
+        }
+
+        if(!detalleDocumentoInterno.isEmpty()) {//Sin visto bueno: Requisitos Coordinador Gestion
+            //Enviar Notificacion Coordinador
+            notificacionService.enviarMensajeVistoBuenoCoordinador(contexto);
+        }
+
+        //Actualizar Visto Bueno
+        for (RequerimientoDocumentoDetalle requerimientoDocumentoDetalle : detallesBD) {
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoDetalle, contexto);
+            requerimientoDocumentoDetalleDao.save(requerimientoDocumentoDetalle);
+        }
+        return requerimientoDocumento;
     }
 
     @Override

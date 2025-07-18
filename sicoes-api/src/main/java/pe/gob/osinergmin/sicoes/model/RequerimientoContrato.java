@@ -35,10 +35,6 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
     @JoinColumn(name="ID_REQUERIMIENTO")
     private Requerimiento requerimiento;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ID_REQ_DOCUMENTO")
-    private RequerimientoDocumento requerimientoDocumento;
-
     @Column(name="NU_CONTRATO")
     private String numeroContrato;
 
@@ -56,6 +52,14 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name="FE_FIN")
     private Date fechaFin;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_TIPO_LD")
+    private ListadoDetalle tipo;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_ESTADO_LD")
+    private ListadoDetalle estado;
 
     public Long getIdRequerimientoContrato() {
         return idRequerimientoContrato;
@@ -79,14 +83,6 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
 
     public void setRequerimiento(Requerimiento requerimiento) {
         this.requerimiento = requerimiento;
-    }
-
-    public RequerimientoDocumento getRequerimientoDocumento() {
-        return requerimientoDocumento;
-    }
-
-    public void setRequerimientoDocumento(RequerimientoDocumento requerimientoDocumento) {
-        this.requerimientoDocumento = requerimientoDocumento;
     }
 
     public String getNumeroContrato() {
@@ -119,5 +115,21 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
 
     public void setFechaFin(Date fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    public ListadoDetalle getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(ListadoDetalle tipo) {
+        this.tipo = tipo;
+    }
+
+    public ListadoDetalle getEstado() {
+        return estado;
+    }
+
+    public void setEstado(ListadoDetalle estado) {
+        this.estado = estado;
     }
 }

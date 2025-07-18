@@ -18,4 +18,5 @@ public interface RequerimientoDocumentoService extends BaseService<Requerimiento
 
     RequerimientoDocumento registrar(List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Long idRequerimiento, Contexto contexto);
 
+    RequerimientoDocumento revisar(String documentoUuid, List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Contexto contexto);
 }
