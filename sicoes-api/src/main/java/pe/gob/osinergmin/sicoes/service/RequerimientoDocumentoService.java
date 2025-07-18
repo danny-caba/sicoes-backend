@@ -24,5 +24,4 @@ public interface RequerimientoDocumentoService extends BaseService<Requerimiento
 
     RequerimientoDocumento evaluarRequerimientosDocumento(RequerimientoDocumento requerimientoDocumento, Contexto contexto);
 
-    Long obtenerId(String requerimientoDocumentoUuid);
 }
