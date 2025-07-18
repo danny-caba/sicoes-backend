@@ -137,7 +137,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
 
         if (contexto.getUsuario().getCodigoUsuarioInterno() == null) {
-            Supervisora supervisora = supervisoraService.obtenerSupervisoraPorRucPostorOrJuridica(contexto.getUsuario().getCodigoRuc());
+            Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
             idSupervisora = supervisora.getIdSupervisora();
         }
         return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);

@@ -4,23 +4,21 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
-public class FiltroRequerimientoDTO {
+public class FiltroRequerimientoDocumentoCoordinadorDTO {
 
     private Long division;
 
     private Long perfil;
+
+    private Long supervisora;
+
+    private Long estado;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaInicio;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaFin;
-
-    private Long supervisora;
-
-    private Long estadoAprobacion;
-
-    private String expediente;
 
     public Long getDivision() {
         return division;
@@ -38,6 +36,22 @@ public class FiltroRequerimientoDTO {
         this.perfil = perfil;
     }
 
+    public Long getSupervisora() {
+        return supervisora;
+    }
+
+    public void setSupervisora(Long supervisora) {
+        this.supervisora = supervisora;
+    }
+
+    public Long getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Long estado) {
+        this.estado = estado;
+    }
+
     public Date getFechaInicio() {
         return fechaInicio;
     }
@@ -52,30 +66,6 @@ public class FiltroRequerimientoDTO {
 
     public void setFechaFin(Date fechaFin) {
         this.fechaFin = fechaFin;
-    }
-
-    public Long getSupervisora() {
-        return supervisora;
-    }
-
-    public void setSupervisora(Long supervisora) {
-        this.supervisora = supervisora;
-    }
-
-    public Long getEstadoAprobacion() {
-        return estadoAprobacion;
-    }
-
-    public void setEstadoAprobacion(Long estadoAprobacion) {
-        this.estadoAprobacion = estadoAprobacion;
-    }
-
-    public String getExpediente() {
-        return expediente;
-    }
-
-    public void setExpediente(String expediente) {
-        this.expediente = expediente;
     }
 
 }

@@ -173,7 +173,8 @@ public class Constantes {
 
 			public static final String REQUERIMIENTO = "TA26";
 			public static final String APROBACION_REQUERIMIENTO = "TA27";
-			public static final String CONTRATO_REQUERIMIENTO = "TA29";
+			public static final String DOCUMENTO_REQUERIMIENTO = "TA29";
+			public static final String CONTRATO_REQUERIMIENTO = "TA30";
 
 		}
 		
@@ -696,6 +697,11 @@ public class Constantes {
 			public static final String PRELIMINAR 					= "PRELIMINAR";
 		}
 
+        public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
+            public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO_DETALLE";
+            public static final String OBSERVADO	= "OBSERVADO";
+        }
+
 		public static final class ESTADO_REQ_CONTRATO {
 			public static final String CODIGO 						= "ESTADO_REQ_CONTRATO";
 			public static final String EN_PROCESO					= "EN_PROCESO";
@@ -729,7 +735,7 @@ public class Constantes {
 		public static final String ERROR_FECHA_FIN_ANTES_INICIO = "E002001";
 		public static final String ERROR_FECHA_INICIO_ANTES_HOY = "E002002";
 		public static final String ERROR_FECHA_SUSCRIPCION_ANTES_HOY = "E002003";
-		
+
 		public static final String AUTENTICACION_METODO_NO_SOPORTADO = "V00501";
 		public static final String AUTENTICACION_SIN_CREDENCIALES = "V00502";
 		public static final String AUTENTICACION_CREDENCIALES_INCORRECTAS = "V00503";

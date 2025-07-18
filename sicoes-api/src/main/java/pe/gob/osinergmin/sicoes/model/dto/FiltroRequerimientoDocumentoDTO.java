@@ -6,15 +6,21 @@ import java.util.Date;
 
 public class FiltroRequerimientoDocumentoDTO {
 
+    private Long estado;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaInicio;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaFin;
 
-    private Long supervisora;
+    public Long getEstado() {
+        return estado;
+    }
 
-    private Long estado;
+    public void setEstado(Long estado) {
+        this.estado = estado;
+    }
 
     public Date getFechaInicio() {
         return fechaInicio;
@@ -32,11 +38,4 @@ public class FiltroRequerimientoDocumentoDTO {
         this.fechaFin = fechaFin;
     }
 
-    public Long getEstado() {
-        return estado;
-    }
-
-    public void setEstado(Long estado) {
-        this.estado = estado;
-    }
 }

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
+import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionResponseDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoAprobacionService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -20,6 +22,12 @@ public class RequerimientoAprobacionRestController extends BaseRestController  {
 
     @Autowired
     private RequerimientoAprobacionService requerimientoAprobacionService;
+
+    @GetMapping
+//    @Raml("requerimientoAprobacion.listar.properties")
+    public Page<RequerimientoAprobacionResponseDTO> getRequerimientoAprobacion(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable) {
+        return requerimientoAprobacionService.buscar(filtroRequerimientoDTO, pageable, getContexto());
+    }
 
     @GetMapping("/{uuid}/historial")
     @Raml("requerimientoAprobacion.historial.properties")

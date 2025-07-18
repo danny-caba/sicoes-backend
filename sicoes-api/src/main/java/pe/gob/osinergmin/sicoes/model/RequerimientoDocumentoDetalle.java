@@ -1,6 +1,5 @@
 package pe.gob.osinergmin.sicoes.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.Column;
@@ -15,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -29,8 +29,10 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     @Column(name = "ID_REQ_DET_DOCUMENTO")
     private Long idRequerimientoDocumentoDetalle;
 
+    @Column(name="CO_UUID")
+    private String requerimientoDocumentoDetalleUuid;
+
     @ManyToOne(fetch= FetchType.LAZY)
-    @JsonBackReference
     @JoinColumn(name="ID_REQ_DOCUMENTO")
     private RequerimientoDocumento requerimientoDocumento;
 
@@ -57,6 +59,9 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     @Column(name="DE_OBSERVACION")
     private String observacion;
 
+    @Column(name="FL_PRESENTADO")
+    private String presentado;
+
     @Column(name="FL_VISTO_BUENO")
     private String flagVistoBueno;
 
@@ -64,12 +69,32 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     @JoinColumn(name="ID_ORIGEN_LD")
     private ListadoDetalle origenRequisito;
 
+    @Transient
+    private Archivo archivo;
+
+    public String getPresentado() {
+        return presentado;
+    }
+
+    public void setPresentado(String presentado) {
+        this.presentado = presentado;
+    }
+
+
     public Long getIdRequerimientoDocumentoDetalle() {
         return idRequerimientoDocumentoDetalle;
     }
 
     public void setIdRequerimientoDocumentoDetalle(Long idRequerimientoDocumentoDetalle) {
         this.idRequerimientoDocumentoDetalle = idRequerimientoDocumentoDetalle;
+    }
+
+    public String getRequerimientoDocumentoDetalleUuid() {
+        return requerimientoDocumentoDetalleUuid;
+    }
+
+    public void setRequerimientoDocumentoDetalleUuid(String requerimientoDocumentoDetalleUuid) {
+        this.requerimientoDocumentoDetalleUuid = requerimientoDocumentoDetalleUuid;
     }
 
     public RequerimientoDocumento getRequerimientoDocumento() {
@@ -127,6 +152,15 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     public void setObservacion(String observacion) {
         this.observacion = observacion;
     }
+
+    public Archivo getArchivo() {
+        return archivo;
+    }
+
+    public void setArchivo(Archivo archivo) {
+        this.archivo = archivo;
+    }
+
 
     public String getFlagVistoBueno() {
         return flagVistoBueno;
