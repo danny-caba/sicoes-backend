@@ -68,7 +68,8 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
                     "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
     Page<RequerimientoDocumento> listarRequerimientosDocumentosCoordinador(Long usuario, Long idDivision, Long idPerfil, Long idSupervisora, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
 
-    @Query("select rd.idRequerimientoDocumento from RequerimientoDocumento rd where rd.requerimientoDocumentoUuid=:requerimientoDocumentoUuid")
-    Long obtenerId(String requerimientoDocumentoUuid);
+    @Query( "SELECT rd FROM RequerimientoDocumento rd " +
+            "WHERE rd.requerimientoDocumentoUuid = :uuid")
+    RequerimientoDocumento obtenerPorUuid(String uuid);
 
 }

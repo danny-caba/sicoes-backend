@@ -18,6 +18,9 @@ public class Constantes {
 	public static final class FLAG {
 		public static final Long ACTIVO = 1L;
 		public static final Long INACTIVO = 0L;
+
+		public static final String PRESENTADO = "1";
+		public static final String NO_PRESENTADO = "0";
 	}
 
 	public static final class UBIGEO{

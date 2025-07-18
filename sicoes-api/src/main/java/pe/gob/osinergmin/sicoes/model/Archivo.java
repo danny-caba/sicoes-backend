@@ -133,9 +133,6 @@ public class Archivo extends BaseModel implements Serializable {
 	@Transient
 	private String propuestaUuid;
 
-	@Transient
-	private String requerimientoUuid;
-
 	public Long getIdArchivo() {
 		return idArchivo;
 	}
@@ -411,14 +408,6 @@ public class Archivo extends BaseModel implements Serializable {
 
 	public void setIdRequerimiento(Long idRequerimiento) {
 		this.idRequerimiento = idRequerimiento;
-	}
-
-	public String getRequerimientoUuid() {
-		return requerimientoUuid;
-	}
-
-	public void setRequerimientoUuid(String requerimientoUuid) {
-		this.requerimientoUuid = requerimientoUuid;
 	}
 
 	public Long getIdReqDocumentoDetalle() {

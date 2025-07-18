@@ -15,8 +15,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name="SICOES_TC_REQ_DOCUMENTO")
@@ -64,6 +66,12 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     @OneToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="ID_REQ_CONTRATO")
     private RequerimientoContrato contrato;
+
+    @Transient
+    private List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles;
+
+    @Transient
+    private Date fechaInvitacion;
 
     public Long getIdRequerimientoDocumento() {
         return idRequerimientoDocumento;
@@ -145,4 +153,19 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
         this.contrato = contrato;
     }
 
+    public List<RequerimientoDocumentoDetalle> getRequerimientosDocumentosDetalles() {
+        return requerimientosDocumentosDetalles;
+    }
+
+    public void setRequerimientosDocumentosDetalles(List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles) {
+        this.requerimientosDocumentosDetalles = requerimientosDocumentosDetalles;
+    }
+
+    public Date getFechaInvitacion() {
+        return fechaInvitacion;
+    }
+
+    public void setFechaInvitacion(Date fechaInvitacion) {
+        this.fechaInvitacion = fechaInvitacion;
+    }
 }
