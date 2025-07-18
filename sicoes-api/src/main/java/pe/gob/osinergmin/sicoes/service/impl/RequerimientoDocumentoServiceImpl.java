@@ -337,31 +337,35 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     }
 
     @Override
+    @Transactional
     public RequerimientoDocumentoDetalle patchRequerimientoDocumentoDetalle(RequerimientoDocumentoDetalle requerimientoDocumentoDetalle, Contexto contexto) {
-        if (requerimientoDocumentoDetalle == null || requerimientoDocumentoDetalle.getIdRequerimientoDocumentoDetalle() == null) {
-            throw new ValidacionException("ID de detalle de documento es obligatorio.");
-        }
-        RequerimientoDocumentoDetalle requerimientoDocumentoDetalleDB = requerimientoDocumentoDetalleDao.findById(requerimientoDocumentoDetalle.getIdRequerimientoDocumentoDetalle())
-                .orElseThrow(() -> new ValidacionException("No se encontró el detalle con ID: " + requerimientoDocumentoDetalle.getIdRequerimientoDocumentoDetalle()));
-        if (requerimientoDocumentoDetalle.getEvaluacion() == null || requerimientoDocumentoDetalle.getEvaluacion().getIdListadoDetalle() == null) {
-            throw new ValidacionException("El campo 'estado' es obligatorio.");
-        }
-        ListadoDetalle estadoObservado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO_DETALLE.CODIGO,
-                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO_DETALLE.OBSERVADO
-        );
-        if (estadoObservado == null) {
-            throw new ValidacionException("Estado OBSERVADO no configurado en ListadoDetalle");
-        }
-        if (!requerimientoDocumentoDetalle.getEvaluacion().equals(estadoObservado)) {
-            if (requerimientoDocumentoDetalle.getObservacion() == null || requerimientoDocumentoDetalle.getObservacion().trim().isEmpty()) {
-                throw new ValidacionException("Debe ingresar una observación cuando el estado es OBSERVADO.");
+
+        validarReqDocumentoDetalle(requerimientoDocumentoDetalle);
+
+        RequerimientoDocumentoDetalle detalleDB = requerimientoDocumentoDetalleDao.buscarPorUuid(
+                requerimientoDocumentoDetalle.getRequerimientoDocumentoDetalleUuid());
+
+        detalleDB.setEvaluacion(requerimientoDocumentoDetalle.getEvaluacion());
+        detalleDB.setObservacion(requerimientoDocumentoDetalle.getObservacion());
+        detalleDB.setUsuario(contexto.getUsuario());
+        detalleDB.setFechaEvaluacion(new Date());
+        AuditoriaUtil.setAuditoriaRegistro(detalleDB, contexto);
+
+        return requerimientoDocumentoDetalleDao.save(detalleDB);
+    }
+
+    private void validarReqDocumentoDetalle(RequerimientoDocumentoDetalle detalle) {
+        if (detalle.getEvaluacion().getCodigo().equals(
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO_DETALLE.OBSERVADO)) {
+
+            if (detalle.getObservacion() == null || detalle.getObservacion().trim().isEmpty()) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.OBSERVACION_AUSENTE);
+            }
+        } else {
+            if (detalle.getEvaluacion() == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUACION_AUSENTE);
             }
         }
-        AuditoriaUtil.setAuditoriaActualizacion(requerimientoDocumentoDetalleDB, contexto);
-        requerimientoDocumentoDetalleDB.setEvaluacion(requerimientoDocumentoDetalle.getEvaluacion());
-        requerimientoDocumentoDetalleDB.setObservacion(requerimientoDocumentoDetalle.getObservacion());
-        return requerimientoDocumentoDetalleDao.save(requerimientoDocumentoDetalleDB);
     }
 
     @Override

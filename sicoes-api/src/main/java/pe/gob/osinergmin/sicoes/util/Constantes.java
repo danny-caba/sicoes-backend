@@ -979,7 +979,8 @@ public class Constantes {
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
     	public static final String ERROR_LISTA_DIVISIONES = "V01025";
 		public static final String REQUERIMIENTO_DOCUMENTO_DETALLE_NO_ENCONTRADO = "V01026";
-
+		public static final String OBSERVACION_AUSENTE = "V01027";
+		public static final String EVALUACION_AUSENTE = "V01028";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
