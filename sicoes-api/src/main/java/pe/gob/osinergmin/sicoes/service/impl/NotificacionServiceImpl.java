@@ -33,6 +33,8 @@ import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.Proceso;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
@@ -44,6 +46,7 @@ import pe.gob.osinergmin.sicoes.repository.ConfBandejaDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
@@ -112,8 +115,12 @@ public class NotificacionServiceImpl implements NotificacionService{
 	
 	@Autowired
 	private UsuarioService usuarioService;
+
 	@Autowired
 	private RequerimientoDao requerimientoDao;
+
+	@Autowired
+	private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
 
 	@Override
 	public Notificacion obtener(Long idNotificacion, Contexto contexto) {
@@ -1180,5 +1187,29 @@ public class NotificacionServiceImpl implements NotificacionService{
 			notificacionDao.save(notificacion);
 	}
 
+	@Override
+	public void enviarRequerimientoEvaluacion(Supervisora supervisoraPN, RequerimientoDocumento requerimientoDocumento, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = supervisoraPN.getCorreo();
+		notificacion.setCorreo(correos);
+		notificacion.setAsunto("SUBSANAR CARGA DE DOCUMENTOS");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
+		Long tipoDocumento = supervisoraPN.getTipoDocumento().getIdListadoDetalle();
+		if (tipoDocumento == 2){
+			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
+		} else if (tipoDocumento == 3) {
+			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
+		}
+		ctx.setVariable("detalles", requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoDocumento.getRequerimientoDocumentoUuid()));
+		String htmlContent = templateEngine.process("31-evaluacion-requerimiento-documento.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+		ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
 
 }

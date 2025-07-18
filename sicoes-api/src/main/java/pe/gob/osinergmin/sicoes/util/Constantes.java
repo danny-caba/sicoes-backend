@@ -643,7 +643,7 @@ public class Constantes {
 			public static final String PRELIMINAR 					= "PRELIMINAR";
 			public static final String EN_APROBACION 				= "EN_APROBACION";
 			public static final String EN_PROCESO 					= "EN_PROCESO";
-			public static final String CONCLUIDO 					= "EN_PROCESO";
+			public static final String CONCLUIDO 					= "CONCLUIDO";
 			public static final String ARCHIVADO 					= "ARCHIVADO";
 			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
@@ -696,12 +696,22 @@ public class Constantes {
 		public static final class ESTADO_REQ_DOCUMENTO {
 			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO";
 			public static final String EN_PROCESO	= "EN_PROCESO";
+			public static final String CONCLUIDO	= "CONCLUIDO";
+			public static final String SOLICITUD_PRELIMINAR	= "SOLICITUD_PRELIMINAR";
 
 		}
 
 		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
 			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO_DETALLE";
+			public static final String CUMPLE		= "CUMPLE";
 			public static final String OBSERVADO	= "OBSERVADO";
+
+		}
+
+		public static final class TIPO_DOCUMENTO_ARCHIVO {
+			public static final String CODIGO 		= "TIPO_DOCUMENTO";
+			public static final String REGISTRO		= "REGISTRO";
+			public static final String SUBSANACION	= "SUBSANACION";
 
 		}
 

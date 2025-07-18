@@ -63,8 +63,8 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
 
     @PostMapping("/{uuid}/evaluar")
     @Raml("requerimientoDocumento.evaluar.properties")
-    public RequerimientoDocumento evaluarRequerimientosDocumento(@RequestBody RequerimientoDocumento requerimientoDocumento) {
-        return requerimientoDocumentoService.evaluarRequerimientosDocumento(requerimientoDocumento, getContexto());
+    public RequerimientoDocumento evaluarRequerimientosDocumento(@PathVariable("uuid") String uuid) {
+        return requerimientoDocumentoService.evaluarRequerimientosDocumento(uuid, getContexto());
     }
 
 }
