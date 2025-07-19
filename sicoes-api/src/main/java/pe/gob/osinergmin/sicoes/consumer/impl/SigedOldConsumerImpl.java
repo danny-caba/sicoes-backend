@@ -131,6 +131,8 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_CONTRATO/"+idSoliPerfCont;
 	        }else if(archivo.getIdSeccionRequisito()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_REQUISITO/"+idSeccionRequisito;
+			}else if(archivo.getIdReqDocumentoDetalle()!=null) {
+				path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO_DOCUMENTO_DETALLE/"+idReqDocumentoDetalle;
 			}else {
 	        	logger.info("Sin path enviar idSolicitud o idPropuesta "+path);
 	        }

@@ -15,55 +15,69 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name="SICOES_TC_REQ_DOCUMENTO")
+@Table(name = "SICOES_TC_REQ_DOCUMENTO")
 public class RequerimientoDocumento extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQ_DOCUMENTO")
-    @SequenceGenerator(name="GEN_SICOES_SEQ_REQ_DOCUMENTO", sequenceName = "SICOES_SEQ_REQ_DOCUMENTO", allocationSize = 1)
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_DOCUMENTO", sequenceName = "SICOES_SEQ_REQ_DOCUMENTO", allocationSize = 1)
     @Column(name = "ID_REQ_DOCUMENTO")
     private Long idRequerimientoDocumento;
 
     @Column(name = "CO_UUID")
     private String requerimientoDocumentoUuid;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ID_REQUERIMIENTO")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REQUERIMIENTO")
     private Requerimiento requerimiento;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ID_ESTADO_LD")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ESTADO_LD")
     private ListadoDetalle estado;
 
-    @Column(name="FL_ACTIVO")
+    @Column(name = "FL_ACTIVO")
     private String flagActivo;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name="FE_INGRESO")
+    @Column(name = "FE_INGRESO")
     private Date fechaIngreso;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="ID_TIPO_LD")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_TIPO_LD")
     private ListadoDetalle tipo;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name="FE_PLAZO_ENTREGA")
+    @Column(name = "FE_PLAZO_ENTREGA")
     private Date fechaplazoEntrega;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="ID_REVISION_LD")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REVISION_LD")
     private ListadoDetalle revision;
 
-    @OneToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="ID_REQ_CONTRATO")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REQ_CONTRATO")
     private RequerimientoContrato contrato;
+
+    @Column(name = "ID_REQ_DOCUMENTO_PADRE")
+    private Long idRequerimientoDocumentoPadre;
+
+    @Column(name = "CO_UUID_PADRE")
+    private String requerimientosDocumentoUuidPadre;
+
+    @Transient
+    private List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles;
+
+    @Transient
+    private Date fechaInvitacion;
 
     public Long getIdRequerimientoDocumento() {
         return idRequerimientoDocumento;
@@ -143,6 +157,38 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
 
     public void setContrato(RequerimientoContrato contrato) {
         this.contrato = contrato;
+    }
+
+    public Long getIdRequerimientoDocumentoPadre() {
+        return idRequerimientoDocumentoPadre;
+    }
+
+    public void setIdRequerimientoDocumentoPadre(Long idRequerimientoDocumentoPadre) {
+        this.idRequerimientoDocumentoPadre = idRequerimientoDocumentoPadre;
+    }
+
+    public String getRequerimientosDocumentoUuidPadre() {
+        return requerimientosDocumentoUuidPadre;
+    }
+
+    public void setRequerimientosDocumentoUuidPadre(String requerimientosDocumentoUuidPadre) {
+        this.requerimientosDocumentoUuidPadre = requerimientosDocumentoUuidPadre;
+    }
+
+    public List<RequerimientoDocumentoDetalle> getRequerimientosDocumentosDetalles() {
+        return requerimientosDocumentosDetalles;
+    }
+
+    public void setRequerimientosDocumentosDetalles(List<RequerimientoDocumentoDetalle> requerimientosDocumentosDetalles) {
+        this.requerimientosDocumentosDetalles = requerimientosDocumentosDetalles;
+    }
+
+    public Date getFechaInvitacion() {
+        return fechaInvitacion;
+    }
+
+    public void setFechaInvitacion(Date fechaInvitacion) {
+        this.fechaInvitacion = fechaInvitacion;
     }
 
 }

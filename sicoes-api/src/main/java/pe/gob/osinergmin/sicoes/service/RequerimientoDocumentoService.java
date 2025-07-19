@@ -22,7 +22,7 @@ public interface RequerimientoDocumentoService extends BaseService<Requerimiento
 
     RequerimientoDocumentoDetalle patchRequerimientoDocumentoDetalle(RequerimientoDocumentoDetalle requerimientoDocumentoDetalle, Contexto contexto);
 
-    RequerimientoDocumento evaluarRequerimientosDocumento(RequerimientoDocumento requerimientoDocumento, Contexto contexto);
+    RequerimientoDocumento evaluarRequerimientosDocumento(String uuid, Contexto contextos);
 
     Long obtenerId(String requerimientoDocumentoUuid);
 

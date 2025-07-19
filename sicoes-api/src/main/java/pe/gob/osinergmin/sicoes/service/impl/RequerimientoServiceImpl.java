@@ -69,7 +69,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths; 
+import java.nio.file.Paths;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Date;
@@ -295,8 +296,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    public Requerimiento obtener(Long aLong, Contexto contexto) {
-        return null;
+    public Requerimiento obtener(Long id, Contexto contexto) {
+        return requerimientoDao.obtener(id).orElse(null);
     }
 
     @Override

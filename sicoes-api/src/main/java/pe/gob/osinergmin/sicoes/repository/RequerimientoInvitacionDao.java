@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 
 import java.util.Date;
@@ -36,4 +37,9 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
             "and i.flagActivo = 1")
     Optional<RequerimientoInvitacion> obtenerPorUuid(@Param("uuid") String uuid);
 
+
+    @Query(value="select i from RequerimientoInvitacion i " +
+            "where i.requerimiento.idRequerimiento = :idRequerimiento " +
+            "and i.flagActivo = '1'")
+    Optional<RequerimientoInvitacion> buscarPorIdRequerimiento(@Param("idRequerimiento") Long idRequerimiento);
 }
