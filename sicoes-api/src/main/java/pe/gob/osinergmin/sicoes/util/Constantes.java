@@ -1003,7 +1003,8 @@ public class Constantes {
 		public static final String USUARIO_ROL_GPPM_NO_ENCONTRADO = "V01030";
 		public static final String USUARIO_ROL_GSE_NO_ENCONTRADO = "V01031";
         public static final String REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO = "V01032";
-        public static final String NUMERO_CONTRATO_NO_ENCONTRADO = "V01033";
+		public static final String NUMERO_CONTRATO_NO_ENCONTRADO = "V01033";
+		public static final String FECHA_SUSCRIPCION_NO_ENCONTRADO = "V01034";
 
 	}
 	public static final class ROLES {

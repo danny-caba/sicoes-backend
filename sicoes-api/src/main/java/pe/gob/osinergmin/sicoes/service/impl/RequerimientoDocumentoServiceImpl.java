@@ -53,14 +53,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
 import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -185,7 +177,8 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
     private RequerimientoDocumento actualizarEstadoReqDocumento(List<RequerimientoDocumentoDetalle> detalle, Contexto contexto) {
         String requerimientoDocumentoUuid = detalle.get(0).getRequerimientoDocumento().getRequerimientoDocumentoUuid();
-        RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(requerimientoDocumentoUuid);
+        RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(requerimientoDocumentoUuid)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO));
         ListadoDetalle estadoEnProceso = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
                 Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.EN_PROCESO);
@@ -395,7 +388,8 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             logger.info("Todos los documentos están 100% cargados y evaluados.");
             boolean todosCumplen = listaDetalle.stream()
                     .allMatch(det -> "CUMPLE".equalsIgnoreCase(det.getEvaluacion().getNombre()));
-            RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(uuid);
+            RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(uuid)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO));
             if (todosCumplen) {
                 logger.info("Todos los documentos cumplen con la evaluación.");
                 ListadoDetalle estadoConcluido = listadoDetalleService.obtenerListadoDetalle(

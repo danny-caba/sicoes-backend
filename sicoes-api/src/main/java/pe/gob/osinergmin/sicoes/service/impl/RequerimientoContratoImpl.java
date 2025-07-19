@@ -3,7 +3,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ARCHIVO_SUBIR_ARCHIVO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
-import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_SUSCRIPCION_ANTES_HOY;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.FECHA_SUSCRIPCION_NO_ENCONTRADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.NUMERO_CONTRATO_NO_ENCONTRADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_CONTRATO_NO_ENCONTRADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_EN_PROCESO;
@@ -123,7 +123,7 @@ public class RequerimientoContratoImpl implements RequerimientoContratoService {
         Date fechaInicio = contrato.getFechaInicio();
         Date fechaFin = contrato.getFechaFin();
         if (fechaSuscripcion == null) {
-            throw new ValidacionException(ERROR_FECHA_SUSCRIPCION_ANTES_HOY);
+            throw new ValidacionException(FECHA_SUSCRIPCION_NO_ENCONTRADO);
         }
         if (fechaInicio != null && fechaInicio.after(new Date())) {
             throw new ValidacionException(ERROR_FECHA_INICIO_ANTES_HOY);
