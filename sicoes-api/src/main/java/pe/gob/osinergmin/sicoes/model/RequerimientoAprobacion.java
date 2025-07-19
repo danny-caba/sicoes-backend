@@ -53,6 +53,14 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_FIRMADO_LD")
     private ListadoDetalle firmado;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_TIPO_APROBADOR_LD")
+    private ListadoDetalle tipoAprobador;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_GRUPO_APROBADOR_LD")
+    private ListadoDetalle grupoAprobador;
+
     @Column(name = "DE_OBSERVACION")
     private String observacion;
 
@@ -93,15 +101,6 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @Transient
     private Boolean accionAprobar;
-
-    @Transient
-    private ListadoDetalle tipoRolAprobador;
-
-    @Transient
-    private ListadoDetalle grupoRolAprobador;
-
-    @Transient
-    private String nombreRolAprobador;
 
     public Long getIdRequerimientoAprobacion() {
         return idRequerimientoAprobacion;
@@ -159,6 +158,22 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.firmado = firmado;
     }
 
+    public ListadoDetalle getTipoAprobador() {
+        return tipoAprobador;
+    }
+
+    public void setTipoAprobador(ListadoDetalle tipoAprobador) {
+        this.tipoAprobador = tipoAprobador;
+    }
+
+    public ListadoDetalle getGrupoAprobador() {
+        return grupoAprobador;
+    }
+
+    public void setGrupoAprobador(ListadoDetalle grupoAprobador) {
+        this.grupoAprobador = grupoAprobador;
+    }
+
     public String getObservacion() {
         return observacion;
     }
@@ -190,32 +205,6 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     public void setFechaFirma(Date fechaFirma) {
         this.fechaFirma = fechaFirma;
     }
-
-    public ListadoDetalle getTipoRolAprobador() {
-        return tipoRolAprobador;
-    }
-
-    public void setTipoRolAprobador(ListadoDetalle tipoRolAprobador) {
-        this.tipoRolAprobador = tipoRolAprobador;
-    }
-
-    public ListadoDetalle getGrupoRolAprobador() {
-        return grupoRolAprobador;
-    }
-
-    public void setGrupoRolAprobador(ListadoDetalle grupoRolAprobador) {
-        this.grupoRolAprobador = grupoRolAprobador;
-    }
-
-    public String getNombreRolAprobador() {
-        return nombreRolAprobador;
-    }
-
-    public void setNombreRolAprobador(String nombreRolAprobador) {
-        this.nombreRolAprobador = nombreRolAprobador;
-    }
-
-
 
     public Boolean getAccionAprobar() {
         return accionAprobar;

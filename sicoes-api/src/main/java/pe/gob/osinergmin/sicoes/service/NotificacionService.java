@@ -46,13 +46,13 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajeAsignacionEvaluacion04(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeSolicitudRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
-	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean estado, Contexto contexto);
+	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, List<String> correos, boolean estado, Contexto contexto);
 	void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario usuario, Requerimiento requerimiento, Contexto contexto);
 	void enviarRequerimientoInvitacion(Supervisora supervisoraPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
-	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto);
-	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto);
+	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Usuario usuario, Contexto contexto);
+	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Usuario usuario, String rol, Contexto contexto);
 	void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto);
-	void enviarMensajeVistoBuenoCoordinador(Contexto contexto);
+	void enviarMensajeVistoBuenoCoordinador(String correo, Contexto contexto);
 	void enviarMensajeVistoBuenoSupervisor(Supervisora supervisoraPN, List<RequerimientoDocumentoDetalle> listaReqDocDetalle, Contexto contexto);
 	void enviarMensajeFinalizacionContratacion(Supervisora supervisoraPN, Contexto contexto);
 }

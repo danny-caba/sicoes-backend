@@ -7,6 +7,8 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECH
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ESTADO_APROBACION_NO_ENVIADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.SIAF_NO_ENVIADO;
+import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_GPPM;
+import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_GSE;
 
 import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.DireccionxClienteInRO;
@@ -526,39 +528,37 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Transactional
     public Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto) {
-        //TODO: buscar el Rol GPPM o GSE
         Requerimiento requerimientoBD = requerimientoDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
-        boolean esGppm = false;
-        boolean esAprobado = false;
-        ListadoDetalle estadoAprobacionRequest = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, aprobacion.getEstado().getCodigo());
+        boolean esGppm = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GPPM));
+        boolean esGse = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GSE));
+        RequerimientoAprobacion reqAprobacion;
         //validar si es GPPM o GSE
-        if(aprobacion.getRol().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GPPM)) {
-            esGppm = true;
+        if(esGppm) {
             //Buscar Aprobacion GPPM
             ListadoDetalle grupoGppm = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GPPM);
-            RequerimientoAprobacion aprobacionGppm = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
+            reqAprobacion = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
                             grupoGppm.getIdListadoDetalle(), Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
                     .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
             //Aprobado o Rechazado
             if(aprobacion.getEstado().getCodigo()
                     .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
-                esAprobado = true;
                 //Registrar Asignado GSE
                 ListadoDetalle tipoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.APROBAR);
-                ListadoDetalle grupoAprobacion = listadoDetalleService.obtenerListadoDetalle(
+                ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
                 ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
-
+                ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
                 RequerimientoAprobacion aprobacionGse = new RequerimientoAprobacion();
                 aprobacionGse.setRequerimiento(requerimientoBD);
                 aprobacionGse.setTipo(tipoAprobacion);
-                aprobacionGse.setGrupo(grupoAprobacion);
+                aprobacionGse.setGrupoAprobador(grupoAprobador);
                 aprobacionGse.setUsuario(contexto.getUsuario());
+                aprobacionGse.setTipoAprobador(tipoAprobador);
                 aprobacionGse.setEstado(estadoAprobacion);
                 AuditoriaUtil.setAuditoriaRegistro(aprobacionGse, contexto);
                 aprobacionDao.save(aprobacionGse);
@@ -570,7 +570,15 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 requerimientoBD.setNuSiaf(aprobacion.getNuSiaf());
 
                 //Actualizar Fecha de Aprobacion
-                aprobacionGppm.setFechaAprobacion(new Date());
+                reqAprobacion.setFechaAprobacion(new Date());
+
+                //Enviar por aprobar a GSE
+                Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GSE);
+                List<UsuarioRol> usuario = usuarioRolService.obtenerUsuarioRolPorRol(rol);
+                if(usuario.isEmpty()) {
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_ROL_GSE_NO_ENCONTRADO);
+                }
+                notificacionService.enviarMensajeRequerimientoPorAprobar(requerimientoBD, usuario.get(0).getUsuario(), contexto);
             } else if(aprobacion.getEstado().getCodigo()
                     .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
                 //Actualizar Estado Requerimiento
@@ -579,76 +587,62 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 requerimientoBD.setEstado(estadoReqDesaprobado);
 
                 //Actualizar Fecha de Rechazo
-                aprobacionGppm.setFechaRechazo(new Date());
+                reqAprobacion.setFechaRechazo(new Date());
+
+                //Enviar que GPPM rechazo
+                Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GPPM);
+                Usuario usuarioCoordinador = requerimientoBD.getDivision().getUsuario();
+                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, usuarioCoordinador, rol.getNombre(), contexto);
             } else {
                 throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
             }
-            //Actualizar Requerimiento
-            requerimientoBD.setDeObservacion(aprobacion.getDeObservacion());
-            AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
-            requerimientoBD = requerimientoDao.save(requerimientoBD);
-
-            //Actualizar GPPM a Aprobado o Desaprobado
-            aprobacionGppm.setEstado(estadoAprobacionRequest);
-            AuditoriaUtil.setAuditoriaRegistro(aprobacionGppm, contexto);
-            aprobacionDao.save(aprobacionGppm);
-        } else if(aprobacion.getRol().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GSE)) {
+        } else if(esGse) {
             //Buscar Aprobacion GSE
             ListadoDetalle grupoGse = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
-            RequerimientoAprobacion aprobacionGse = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
+            reqAprobacion = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
                             grupoGse.getIdListadoDetalle(), Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
                     .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
             //Aprobado o Rechazado
             if(aprobacion.getEstado().getCodigo()
                     .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
-                esAprobado = true;
                 //Actualizar Fecha de Aprobacion
-                aprobacionGse.setFechaAprobacion(new Date());
+                reqAprobacion.setFechaAprobacion(new Date());
+
+                //Enviar para cargar docs
+                notificacionService.enviarMensajeCargarDocumentosRequerimiento(requerimientoBD, contexto);
             } else if(aprobacion.getEstado().getCodigo()
                 .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
                 //Actualizar Fecha de Rechazo
-                aprobacionGse.setFechaRechazo(new Date());
+                reqAprobacion.setFechaRechazo(new Date());
+
                 //Actualizar Requerimiento
                 ListadoDetalle estadoReqDesaprobado = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
                 requerimientoBD.setEstado(estadoReqDesaprobado);
+
+                //Enviar que GSE rechazo
+                Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GSE);
+                Usuario usuarioCoordinador = requerimientoBD.getDivision().getUsuario();
+                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, usuarioCoordinador, rol.getNombre(), contexto);
             } else {
                 throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
             }
-
-            //Actualizar GSE a Aprobado o Desaprobado
-            aprobacionGse.setEstado(estadoAprobacionRequest);
-            AuditoriaUtil.setAuditoriaRegistro(aprobacionGse, contexto);
-            aprobacionDao.save(aprobacionGse);
-
-            //Actualizar Requerimiento
-            requerimientoBD.setDeObservacion(aprobacion.getDeObservacion());
-            AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
-            requerimientoBD = requerimientoDao.save(requerimientoBD);
         } else {
             throw new ValidacionException(ACCESO_NO_AUTORIZADO);
         }
 
-        //Envio de Notificaciones
-        if(esGppm) {
-            if(esAprobado) {
-                //Enviar por aprobar a GSE
-                notificacionService.enviarMensajeRequerimientoPorAprobar(requerimientoBD, contexto);
-            } else {
-                //Enviar q GPPM rechazo
-                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, Constantes.LISTADO.GRUPO_APROBACION.GPPM, contexto);
-            }
-        } else {
-            if(esAprobado) {
-                //Enviar para cargar docs
-                notificacionService.enviarMensajeCargarDocumentosRequerimiento(requerimientoBD, contexto);
-            } else {
-                //Enviar q GSE rechazo
-                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, Constantes.LISTADO.GRUPO_APROBACION.GSE, contexto);
-            }
-        }
-        return requerimientoBD;
+        //Actualizar Aprobacion a Aprobado o Desaprobado
+        ListadoDetalle estadoAprobacionRequest = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, aprobacion.getEstado().getCodigo());
+        reqAprobacion.setEstado(estadoAprobacionRequest);
+        AuditoriaUtil.setAuditoriaRegistro(reqAprobacion, contexto);
+        aprobacionDao.save(reqAprobacion);
+
+        //Actualizar Requerimiento
+        requerimientoBD.setDeObservacion(aprobacion.getDeObservacion());
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
+        return requerimientoDao.save(requerimientoBD);
     }
 
     @Override

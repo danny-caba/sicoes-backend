@@ -209,6 +209,7 @@ public class Constantes {
 			public static final String CODIGO 		= "GRUPOS";
 			public static final String G1 			= "G1";
 			public static final String G2 			= "G2";
+			public static final String G3 			= "G3";
 		}
 		
 		public static final class ESTADO_ARCHIVO {
@@ -996,6 +997,8 @@ public class Constantes {
 		public static final String REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO = "V01027";
 		public static final String NUMERO_CONTRATO_NO_ENCONTRADO = "V01028";
 		public static final String REQUERIMIENTO_CONTRATO_NO_ENCONTRADO = "V01029";
+		public static final String USUARIO_ROL_GPPM_NO_ENCONTRADO = "V01030";
+		public static final String USUARIO_ROL_GSE_NO_ENCONTRADO = "V01031";
 
 	}
 	public static final class ROLES {
@@ -1007,7 +1010,10 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
+		public static final String EVALUADOR_CONTRATOS 			= "12";
 		public static final String COORDINADOR_GESTION 			= "13";
+		public static final String APROBADOR_GPPM 				= "16";
+		public static final String APROBADOR_GSE 				= "17";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

@@ -69,7 +69,6 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
 
     @PostMapping("/{documentoUuid}/revisar")
     @Raml("requerimientoDocumento.registrar.properties")
-    @Transactional
     public RequerimientoDocumento revisarRequerimientosDocumento(@PathVariable("documentoUuid") String documentoUuid,
                                                                  @RequestBody List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle) {
         return requerimientoDocumentoService.revisar(documentoUuid, listRequerimientoDocumentoDetalle, getContexto());

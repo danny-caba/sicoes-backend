@@ -37,8 +37,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
 
     @Override
     public Page<RequerimientoAprobacion> obtenerHistorial(String uuid, Contexto contexto, Pageable pageable) {
-        return requerimientoAprobacionDao.obtenerAprobaciones(uuid, pageable)
-                .map(this::mapHistorialAprobaciones);
+        return requerimientoAprobacionDao.obtenerAprobaciones(uuid, pageable);
     }
 
     @Override
@@ -54,17 +53,6 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
     @Override
     public void eliminar(Long aLong, Contexto contexto) {
 
-    }
-
-    private RequerimientoAprobacion mapHistorialAprobaciones(RequerimientoAprobacion reqAprobacion) {
-        ListadoDetalle tipoRolAprobador = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.TIPO_ROL_APROBACION.CODIGO, Constantes.LISTADO.TIPO_ROL_APROBACION.APROBADOR_TECNICO);
-        ListadoDetalle grupoRolAprobador = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.GRUPO_ROL_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_ROL_APROBACION.GRUPO_1);
-        reqAprobacion.setTipoRolAprobador(tipoRolAprobador);
-        reqAprobacion.setGrupoRolAprobador(grupoRolAprobador);
-        reqAprobacion.setNombreRolAprobador("Nombre Rol Aprobador");//TODO: buscar el nombre el aprobador
-        return reqAprobacion;
     }
 
     @Override

@@ -1,5 +1,10 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
+import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.EVALUADOR_CONTRATOS;
+
 import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.DireccionxClienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.DocumentoInRO;
@@ -56,10 +61,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.UUID;
-
-import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
-import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
 
 @Service
 public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumentoService {
@@ -78,8 +79,6 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     private NotificacionService notificacionService;
     @Autowired
     private SigedApiConsumer sigedApiConsumer;
-    @Autowired
-    private SupervisoraService supervisoraService;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -358,7 +357,9 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     @Transactional
     public RequerimientoDocumento revisar(String documentoUuid, List<RequerimientoDocumentoDetalle> detalleDocumento, Contexto contexto) {
         //Validar Req. Documento en estado concluido?
-
+        if(contexto.getUsuario().getRoles().stream().noneMatch(rol -> rol.getCodigo().equals(EVALUADOR_CONTRATOS))) {
+            throw new ValidacionException(ACCESO_NO_AUTORIZADO);
+        }
         List<RequerimientoDocumentoDetalle> detallesBD = new ArrayList<>();
         for(RequerimientoDocumentoDetalle detalles: detalleDocumento) {
             RequerimientoDocumentoDetalle detalle = requerimientoDocumentoDetalleDao.findById(detalles.getIdRequerimientoDocumentoDetalle())
@@ -399,8 +400,9 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         }
 
         if(!detalleDocumentoInterno.isEmpty()) {//Sin visto bueno: Requisitos Coordinador Gestion
+            String correoCoordinador = requerimientoDocumento.getRequerimiento().getDivision().getUsuario().getCorreo();
             //Enviar Notificacion Coordinador
-            notificacionService.enviarMensajeVistoBuenoCoordinador(contexto);
+            notificacionService.enviarMensajeVistoBuenoCoordinador(correoCoordinador, contexto);
         }
 
         //Actualizar Visto Bueno
