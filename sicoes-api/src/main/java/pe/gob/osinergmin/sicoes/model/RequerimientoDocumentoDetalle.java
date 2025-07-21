@@ -52,7 +52,7 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     private Usuario usuario;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name="FE_EVALUACION")
     private Date fechaEvaluacion;
 

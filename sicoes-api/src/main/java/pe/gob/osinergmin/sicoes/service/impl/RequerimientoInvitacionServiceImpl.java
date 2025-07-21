@@ -127,7 +127,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
         ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_INVITACION.ELIMINADO);
         if (estadoEliminado == null) {
-            throw new IllegalStateException("Estado ELIMINADO no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ELIMINADO_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
         RequerimientoInvitacion entidad = optional.get();
         entidad.setEstado(estadoEliminado);

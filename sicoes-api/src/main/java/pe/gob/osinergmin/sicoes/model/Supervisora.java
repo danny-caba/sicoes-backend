@@ -19,6 +19,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 
 /**
@@ -159,6 +160,27 @@ public class Supervisora extends BaseModel implements Serializable {
 
 	@Transient
 	private SupervisoraPerfil perfil;
+
+	@Transient
+	public String nombreCompleto;
+
+	public String getNombreCompleto() {
+		if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
+			return String.format("%s %s %s",
+					nombres != null ? nombres.trim() : "",
+					apellidoPaterno != null ? apellidoPaterno.trim() : "",
+					apellidoMaterno != null ? apellidoMaterno.trim() : ""
+			).trim();
+		} else if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)) {
+			return nombreRazonSocial != null ? nombreRazonSocial.trim() : "";
+		} else{
+			return null;
+		}
+	}
+
+	public void setNombreCompleto(String nombreCompleto) {
+		this.nombreCompleto = nombreCompleto;
+	}
 
 	public SupervisoraPerfil getPerfil() {
 		return perfil;

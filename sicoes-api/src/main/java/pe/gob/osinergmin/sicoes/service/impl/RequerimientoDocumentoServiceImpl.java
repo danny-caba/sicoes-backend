@@ -154,7 +154,6 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         List<RequerimientoDocumentoDetalle> lstDetalleDB = lstDetalle.stream()
                         .map( rd -> guardarFlagPresentado(rd, requerimientoDocumentoDB, contexto))
                 .collect(Collectors.toList());
-        // TODO: MODIFICAR DATOS DE CLIENTE CON LOS DATOS DEL SUPERVISOR PERSONA NATURAL
         ExpedienteInRO expedienteInRO = crearExpediente(
                 requerimientoDocumentoDB,
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
@@ -223,17 +222,18 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
         }
         cs.setCodigoTipoIdentificacion(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
-        cs.setNombre("OSINERGMIN");
-        cs.setApellidoPaterno("-");
-        cs.setApellidoMaterno("-");
-        cs.setRazonSocial("OSINERGMIN");
+        Supervisora supervisora = requerimientoDocumento.getRequerimiento().getSupervisora();
+        cs.setNombre(supervisora.getNombres());
+        cs.setApellidoPaterno(supervisora.getApellidoPaterno());
+        cs.setApellidoMaterno(supervisora.getApellidoMaterno());
+        cs.setRazonSocial(supervisora.getNombreRazonSocial());
         cs.setNroIdentificacion(OSI_DOCUMENTO);
         cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
         cliente.add(cs);
-        d.setDireccion("-");
+        d.setDireccion(supervisora.getDireccion());
         d.setDireccionPrincipal(true);
         d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
-        d.setTelefono("-");
+        d.setTelefono(supervisora.getTelefono1());
         d.setUbigeo(Integer.parseInt(env.getProperty("siged.ws.cliente.osinergmin.ubigeo")));
         direccion.add(d);
         direcciones.setDireccion(direccion);
@@ -272,7 +272,6 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         JasperPrint print;
         InputStream appLogo = null;
         InputStream osinermingLogo = null;
-        // TODO: HACER LA FUNCION PARA EN NOMBRES ENVIAR NOMBRES Y APELLIDOS O RAZON SOCIAL SEGUN CORRESPONDA
         RequerimientoDocumento requerimientoDocumentoJasper = new RequerimientoDocumento();
         requerimientoDocumentoJasper.setFechaIngreso(requerimientoDocumento.getFechaIngreso());
         requerimientoDocumentoJasper.setFechaInvitacion(invitacion.getFechaInvitacion());
@@ -399,7 +398,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                         Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CONCLUIDO
                 );
                 if (estadoConcluido == null) {
-                    throw new ValidacionException("Estado CONCLUIDO no configurado en ListadoDetalle");
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_CONCLUIDO_NO_CONFIGURADO_EN_LISTADODETALLE);
                 }
                 AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
                 requerimientoDocumento.setEstado(estadoConcluido);
@@ -458,17 +457,18 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
         }
         cs.setCodigoTipoIdentificacion(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
-        cs.setNombre("OSINERGMIN");
-        cs.setApellidoPaterno("-");
-        cs.setApellidoMaterno("-");
-        cs.setRazonSocial("OSINERGMIN");
+        Supervisora supervisora = requerimientoDocumento.getRequerimiento().getSupervisora();
+        cs.setNombre(supervisora.getNombres());
+        cs.setApellidoPaterno(supervisora.getApellidoPaterno());
+        cs.setApellidoMaterno(supervisora.getApellidoMaterno());
+        cs.setRazonSocial(supervisora.getNombreRazonSocial());
         cs.setNroIdentificacion(OSI_DOCUMENTO);
         cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
         cliente.add(cs);
-        d.setDireccion("-");
+        d.setDireccion(supervisora.getDireccion());
         d.setDireccionPrincipal(true);
         d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
-        d.setTelefono("-");
+        d.setTelefono(supervisora.getTelefono1());
         d.setUbigeo(Integer.parseInt(env.getProperty("siged.ws.cliente.osinergmin.ubigeo")));
         direccion.add(d);
         direcciones.setDireccion(direccion);
@@ -505,7 +505,6 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         JasperPrint print;
         InputStream appLogo = null;
         InputStream osinermingLogo = null;
-        // TODO: HACER LA FUNCION PARA EN NOMBRES ENVIAR NOMBRES Y APELLIDOS O RAZON SOCIAL SEGUN CORRESPONDA
         RequerimientoDocumento requerimientoDocumentoJasper = new RequerimientoDocumento();
         requerimientoDocumentoJasper.setRequerimiento(requerimientoDocumento.getRequerimiento());
         requerimientoDocumentoJasper.setRequerimientosDocumentosDetalles(lstDetalleFormated);
@@ -548,7 +547,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR
         );
         if (estadoSolicitudPreliminar == null) {
-            throw new ValidacionException("Estado SOLICITUD_PRELIMINAR no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_SOLICITUD_PRELIMINAR_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
         requerimientoDocumentoNuevo.setEstado(estadoSolicitudPreliminar);
         requerimientoDocumentoNuevo.setFlagActivo(requerimientoDocumentoBD.getFlagActivo());
@@ -558,7 +557,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Constantes.LISTADO.TIPO_DOCUMENTO_ARCHIVO.SUBSANACION
         );
         if (tipoSubsanacion == null) {
-            throw new ValidacionException("Tipo SUBSANACION no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_SUBSANACION_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
         requerimientoDocumentoNuevo.setTipo(tipoSubsanacion);
         requerimientoDocumentoNuevo.setFechaplazoEntrega(requerimientoDocumentoBD.getFechaplazoEntrega());

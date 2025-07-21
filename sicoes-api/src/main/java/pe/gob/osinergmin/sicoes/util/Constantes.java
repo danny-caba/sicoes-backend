@@ -1007,7 +1007,15 @@ public class Constantes {
 		public static final String FECHA_SUSCRIPCION_NO_ENCONTRADO = "V01034";
 		public static final String ARCHIVAR_ESTADO_EN_PROCESO = "V01035";
 		public static final String DOCUMENTOS_SIN_CARGAR_EVALUAR = "V01036";
-
+		public static final String ESTADO_CONCLUIDO_NO_CONFIGURADO_EN_LISTADODETALLE = "V01037";
+		public static final String ESTADO_SOLICITUD_PRELIMINAR_NO_CONFIGURADO_EN_LISTADODETALLE = "V01038";
+		public static final String ESTADO_ASIGNADO_NO_CONFIGURADO_EN_LISTADODETALLE = "V01039";
+		public static final String ESTADO_EN_APROBACION_NO_CONFIGURADO_EN_LISTADODETALLE = "V01040";
+		public static final String ESTADO_ELIMINADO_NO_CONFIGURADO_EN_LISTADODETALLE = "V01041";
+		public static final String TIPO_SUBSANACION_NO_CONFIGURADO_EN_LISTADODETALLE = "V01042";
+		public static final String PERFIL_APROBADOR_NO_ENCONTRADO = "V01043";
+		public static final String PERFIL_APROBADOR_G1_NO_ENCONTRADO = "V01044";
+		public static final String PERFIL_APROBADOR_G2_NO_ENCONTRADO = "V01045";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

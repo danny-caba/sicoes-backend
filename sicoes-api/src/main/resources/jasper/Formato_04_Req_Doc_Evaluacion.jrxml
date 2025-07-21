@@ -22,7 +22,7 @@
 		<![CDATA[]]>
 	</queryString>
 	<field name="requerimiento.nuExpediente" class="java.lang.String"/>
-	<field name="requerimiento.supervisora.nombres" class="java.lang.String"/>
+	<field name="requerimiento.supervisora.nombreCompleto" class="java.lang.String"/>
 	<field name="requerimientosDocumentosDetalles" class="java.util.List"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -62,7 +62,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Estimado solicitante supervisor persona natural - "+$F{requerimiento.supervisora.nombres} +" se le omunica que su solicitud de invitación en el Sistema de Registro y Contrataciones de Empresas Supervisoras - SICOES del Osinergmin, tramitada mediante expediente Nº "+$F{requerimiento.nuExpediente}+", ha tenido el siguiente resultado:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Estimado solicitante supervisor persona natural - "+$F{requerimiento.supervisora.nombreCompleto} +" se le comunica que su solicitud de invitación en el Sistema de Registro y Contrataciones de Empresas Supervisoras - SICOES del Osinergmin, tramitada mediante expediente Nº "+$F{requerimiento.nuExpediente}+", ha tenido el siguiente resultado:"]]></textFieldExpression>
 			</textField>
 			<image scaleImage="FillFrame">
 				<reportElement x="0" y="-40" width="90" height="30" uuid="c9a2d95d-5a54-4a38-b1ec-6dd8115e131c">
@@ -79,7 +79,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="85">
+		<band height="36">
 			<subreport>
 				<reportElement x="0" y="10" width="425" height="22" uuid="917d2836-5698-476d-8762-87e7a7e6510e"/>
 				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{requerimientosDocumentosDetalles})]]></dataSourceExpression>
@@ -88,30 +88,30 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="199">
+		<band height="176">
 			<staticText>
-				<reportElement x="0" y="30" width="425" height="30" uuid="6d291d3d-f374-4950-b459-7063dcb6b7a8"/>
+				<reportElement x="0" y="0" width="425" height="30" uuid="6d291d3d-f374-4950-b459-7063dcb6b7a8"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<text><![CDATA[Nota 1: Para visualizar el detalle del reultado de su solicitud de inscripión, ingrese al sistema SICOES / bandeja de solicitudes de contrato / Ver Solicitudes]]></text>
+				<text><![CDATA[Nota 1: Para visualizar el detalle del resultado de su solicitud de inscripción, ingrese al sistema SICOES / bandeja de solicitudes de contrato / Ver Solicitudes]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="60" width="425" height="30" uuid="c90afe02-a510-4ef3-ac54-3705dc2e363a"/>
+				<reportElement x="0" y="30" width="425" height="30" uuid="c90afe02-a510-4ef3-ac54-3705dc2e363a"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<text><![CDATA[Nota 2: En el caso el resultado sea que no califica el expediente de su solicitud será archivada, cumpliendo con lo estableido en la Directiva para la Contratación de Empresas Supervisoras]]></text>
+				<text><![CDATA[Nota 2: En el caso el resultado sea que no califica el expediente de su solicitud será archivada, cumpliendo con lo establecido en la Directiva para la Contratación de Empresas Supervisoras]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="90" width="425" height="60" uuid="233e9e1e-0e5d-4478-a240-9f8b0a39153a"/>
+				<reportElement x="0" y="60" width="425" height="60" uuid="233e9e1e-0e5d-4478-a240-9f8b0a39153a"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<text><![CDATA[Nota 3: En el caso el resultado sea Observado, a fin de continuar con la evaluación, agradeceremos sirva subsanar las observaciones en el plazo de cuatro (4) días hábiles a través de SICOES. Tenga en cuenta que, superado el plazo para subsanar la observación, su solicitud de perfeccionamiento de contrato será considerado como no presentadoy será archivado, cumpliendo con lo establecido en la Directiva para la Contratación de Empresas Supervisoras de Osinergmin]]></text>
+				<text><![CDATA[Nota 3: En el caso el resultado sea Observado, a fin de continuar con la evaluación, agradeceremos sirva subsanar las observaciones en el plazo de cuatro (4) días hábiles a través de SICOES. Tenga en cuenta que, superado el plazo para subsanar la observación, su solicitud de perfeccionamiento de contrato será considerado como no presentado y será archivado, cumpliendo con lo establecido en la Directiva para la Contratación de Empresas Supervisoras de Osinergmin]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="160" width="100" height="30" uuid="b1428c19-bdca-4a0e-b9cd-38f3821558ba"/>
+				<reportElement x="0" y="130" width="100" height="30" uuid="b1428c19-bdca-4a0e-b9cd-38f3821558ba"/>
 				<text><![CDATA[<<image:osifirma>>]]></text>
 			</staticText>
 		</band>
