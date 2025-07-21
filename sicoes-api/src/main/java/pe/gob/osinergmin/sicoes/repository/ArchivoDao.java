@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -169,7 +170,7 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	@Modifying
 	@Query(value="delete from Archivo a where a.idDocumento=:idDocumento")
 	public void eliminarIdDocumento(Long idDocumento);
-	
+
 	@Query(value="select a from Archivo a "
 			+ "left join fetch a.tipoArchivo ta "
 			+ "left join fetch a.estado e "
@@ -241,6 +242,11 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	public List<Archivo> buscarPorPerfContrato(Long idPerfContrato);
 
 	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+"where a.idDocumentoReem =:idDocumentoReem")
+	public List<Archivo> buscarPorDocumentoReemplazo(Long idDocumentoReem);
+
+	@Query("select a from Archivo a "
 			+ "where a.idSeccionRequisito IN :requisitosIds ")
 	public List<Archivo> obtenerArchivosPorRequisitos(List<Long> requisitosIds);
 
@@ -257,5 +263,12 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+"left join fetch a.estado e "
 			+ "where a.idSoliPerfCont=:idSoliPerfCont")	
 		public List<Archivo> findByIdSoliPerfCont(Long idSoliPerfCont);
-	
+
+	@Modifying
+	@Query(value="delete from Archivo a where a.idDocumentoReem=:idDocumentoReemplazo")
+	public void eliminarIdDocumentoReemplazo(Long idDocumentoReemplazo);
+
+	@Modifying(clearAutomatically = true)
+	@Query("delete from Archivo a where a.idDocumentoReem in :ids")
+	int deleteByDocumentoIds(Collection<Long> ids);
 }

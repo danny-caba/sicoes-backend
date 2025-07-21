@@ -8,7 +8,8 @@ import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
 public interface SigedOldConsumer {
 	
-	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Long idContrato,Long idSoliPerfCont,Archivo archivo);
+	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,
+										Long idContrato,Long idSoliPerfCont,Long idDocumentoReemplazo,Archivo archivo);
 	
 	public byte[] descargarArchivosAlfresco(Archivo archivo);
 	

@@ -8,12 +8,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
+import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.DocumentoReemDao;
+import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.PersonalReemplazoDao;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
+
+import java.util.List;
 
 @Service
 public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
@@ -22,6 +27,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private PersonalReemplazoDao reemplazoDao;
+
+    @Autowired
+    private DocumentoReemDao documentoReemDao;
+
+    @Autowired
+    private ArchivoDao archivoDao;
+
+    @Autowired
+    private ListadoDetalleDao listadoDetalleDao;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto) {
@@ -38,15 +52,107 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo eliminarPropuesto(PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo) {
+        Long id = personalReemplazo.getIdReemplazo();
+        if (id == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
+        }
+
+        PersonalReemplazo entity = reemplazoDao.findById(id)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+
+        entity.setCoPerfilPerBaja(null);
+        entity.setIdPersonaBaja(null);
+        entity.setFeFechaDesvinculacion(null);
+        AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
+        return reemplazoDao.save(entity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo) {
         if (personalReemplazo.getIdReemplazo() == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
-        AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,AuditoriaUtil.getContextoJob());
-        personalReemplazo.setCoPerfilPerBaja(null);
-        personalReemplazo.setIdPersonaBaja(null);
-        personalReemplazo.setFeFechaDesvinculacion(null);
-        return reemplazoDao.save(personalReemplazo);
+
+        PersonalReemplazo existe = reemplazoDao.findById(personalReemplazo.getIdReemplazo())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
+
+        if (personalReemplazo.getIdSolicitud() != null) {
+            existe.setIdSolicitud(personalReemplazo.getIdSolicitud());
+        }
+        if (personalReemplazo.getIdPersonaPropuesta() != null) {
+            existe.setIdPersonaPropuesta(personalReemplazo.getIdPersonaPropuesta());
+        }
+        if (personalReemplazo.getCoPerfil() != null) {
+            existe.setCoPerfil(personalReemplazo.getCoPerfil());
+        }
+        if (personalReemplazo.getFeFechaRegistro() != null) {
+            existe.setFeFechaRegistro(personalReemplazo.getFeFechaRegistro());
+        }
+        if (personalReemplazo.getFeFechaInicioContractual() != null) {
+            existe.setFeFechaInicioContractual(personalReemplazo.getFeFechaInicioContractual());
+        }
+        if (personalReemplazo.getEsEstadoReemplazo() != null) {
+            existe.setEsEstadoReemplazo(personalReemplazo.getEsEstadoReemplazo());
+        }
+        if (personalReemplazo.getIdPersonaBaja() != null) {
+            existe.setIdPersonaBaja(personalReemplazo.getIdPersonaBaja());
+        }
+        if (personalReemplazo.getCoPerfilPerBaja() != null) {
+            existe.setCoPerfilPerBaja(personalReemplazo.getCoPerfilPerBaja());
+        }
+        if (personalReemplazo.getFeFechaBaja() != null) {
+            existe.setFeFechaBaja(personalReemplazo.getFeFechaBaja());
+        }
+        if (personalReemplazo.getFeFechaDesvinculacion() != null) {
+            existe.setFeFechaDesvinculacion(personalReemplazo.getFeFechaDesvinculacion());
+        }
+        if (personalReemplazo.getFeFechaFinalizacionContrato() != null) {
+            existe.setFeFechaFinalizacionContrato(personalReemplazo.getFeFechaFinalizacionContrato());
+        }
+        if (personalReemplazo.getEsEstadoEvalDoc() != null) {
+            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        }
+        if (personalReemplazo.getEsEstadoAprobacionInforme() != null) {
+            existe.setEsEstadoAprobacionInforme(personalReemplazo.getEsEstadoAprobacionInforme());
+        }
+        if (personalReemplazo.getEsEstadoAprobacionAdenda() != null) {
+            existe.setEsEstadoAprobacionAdenda(personalReemplazo.getEsEstadoAprobacionAdenda());
+        }
+        if (personalReemplazo.getEsEstadoEvalDocIniServ() != null) {
+            existe.setEsEstadoEvalDocIniServ(personalReemplazo.getEsEstadoEvalDocIniServ());
+        }
+
+        AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
+        return reemplazoDao.save(existe);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo) {
+        Long id = personalReemplazo.getIdReemplazo();
+        if (id == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
+        }
+        PersonalReemplazo entity = reemplazoDao.findById(id)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+        //Eliminar documentos adjuntos
+        Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.SECCION_DOC_REEMPLZO.PERSONAL_PROPUESTO).get(0).getIdListadoDetalle();
+        logger.info("idSeccion {}:",idSeccion);
+
+        if (!documentoReemDao.existsByIdReemplazoPersonalAndIdSeccion(id,idSeccion)) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
+        }
+        List<Long> ids = documentoReemDao.findIdsByReemplazoAndSeccion(id, idSeccion);
+        archivoDao.deleteByDocumentoIds(ids);
+        documentoReemDao.deleteByIdIn(ids);
+        //Quitar personal
+        entity.setCoPerfil(null);
+        entity.setIdPersonaPropuesta(null);
+        AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
+        return reemplazoDao.save(entity);
     }
 
     @Override
@@ -60,7 +166,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public void eliminar(Long aLong, Contexto contexto) {
-
+    @Transactional(rollbackFor = Exception.class)
+    public void eliminar(Long id, Contexto contexto) {
+        if (documentoReemDao.existsByIdReemplazoPersonal(id)) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_CON_DOCUMENTOS);
+        }
+        reemplazoDao.deleteById(id);
     }
 }

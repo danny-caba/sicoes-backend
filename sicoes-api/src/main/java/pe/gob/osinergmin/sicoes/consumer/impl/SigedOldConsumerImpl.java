@@ -83,7 +83,8 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
 
-	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,Long idContrato,Long idSoliPerfCont,Archivo archivo) {
+	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,
+										Long idContrato,Long idSoliPerfCont,Long idDocumentReemplazo,Archivo archivo) {
 		
 		try {
 			
@@ -123,7 +124,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_CONTRATO/"+idSoliPerfCont;
 	        }else if(archivo.getIdSeccionRequisito()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_REQUISITO/"+idSeccionRequisito;
-			}else {
+			}else if(archivo.getIdDocumentoReem()!=null){
+				path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/DOCUMENTO_REEMPLAZO/"+idDocumentReemplazo;
+			}
+			else {
 	        	logger.info("Sin path enviar idSolicitud o idPropuesta "+path);
 	        }
 	        

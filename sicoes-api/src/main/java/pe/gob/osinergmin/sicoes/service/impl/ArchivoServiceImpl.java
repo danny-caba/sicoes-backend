@@ -196,7 +196,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null , archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null ,null, archivo);
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -233,7 +233,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,null,archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -796,6 +796,27 @@ public class ArchivoServiceImpl implements ArchivoService {
 	}
 
 	@Override
+	public void asociarArchivo(DocumentoReemplazo documento, Archivo archivo, Contexto contexto) {
+		List<Archivo> archivosBD = archivoDao.buscarPorDocumentoReemplazo(documento.getIdDocumento());
+		Archivo archivoBD = archivoDao.obtener(archivo.getIdArchivo());
+		if (archivoBD == null) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
+		}
+		archivosBD.stream()
+				.filter(archivoAux -> !archivoAux.getIdArchivo().equals(archivoBD.getIdArchivo()))
+				.forEach(archivoDao::delete);
+		archivoBD.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		archivoBD.setIdDocumentoReem(documento.getIdDocumento());
+		AuditoriaUtil.setAuditoriaRegistro(archivoBD, contexto);
+		archivoDao.save(archivoBD);
+	}
+
+	@Override
+	public void eliminarIdDocumentoReem(Long idDocumentoReem, Contexto contexto) {
+		archivoDao.eliminarIdDocumentoReemplazo(idDocumentoReem);
+	}
+
+	@Override
 	public Archivo obtenerArchivoXlsPorProceso(Long idProceso) {
 
 		Archivo archivo;
@@ -1135,7 +1156,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, archivo);
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, null,archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 		
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1249,7 +1270,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), archivo);
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), null,archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 		
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);

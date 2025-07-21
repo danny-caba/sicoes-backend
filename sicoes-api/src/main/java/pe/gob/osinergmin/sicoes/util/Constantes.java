@@ -622,6 +622,14 @@ public class Constantes {
 			public static final String MODIFICACION		= "MODIFICACION";
 		}
 
+		public static final class SECCION_DOC_REEMPLZO {
+			public static final String BAJA_PERSONAL_PROPUESTO = "BAJA_PERSONAL_PROPUESTO";
+			public static final String PERSONAL_PROPUESTO = "PERSONAL_PROPUESTO";
+			public static final String SOLICITUD_REEMPLAZO_SUPERVISOR = "SOLICITUD_REEMPLAZO_SUPERVISOR";
+
+		}
+
+
 	}
 	
 
@@ -881,6 +889,9 @@ public class Constantes {
 		public static final String DJ_AUSENTE = "V01017";
 		public static final String FECHA_FINAL_CONTRATO = "V01018";
 		public static final String ID_PERSONAL_REEMPLAZO_NO_ENVIADO = "V01019";
+		public static final String REEMPLAZO_PERSONAL_CON_DOCUMENTOS = "V01020";
+		public static final String DOCUMENTO_REEMPLAZO_NO_EXISTE = "V01021";
+		public static final String REEMPLAZO_PERSONAL_NO_EXISTE="V01022";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -951,5 +962,4 @@ public class Constantes {
 		public static final String CONCLUIDO 		= "CONCLUIDO";
 		public static final String ARCHIVADO 		= "ARCHIVADO";
 	}
-
 }

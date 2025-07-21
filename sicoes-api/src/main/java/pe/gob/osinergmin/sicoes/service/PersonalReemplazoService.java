@@ -9,5 +9,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
 
     Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto);
     PersonalReemplazo guardar(PersonalReemplazo personalReemplazo);
-    PersonalReemplazo eliminarPropuesto(PersonalReemplazo personalReemplazo);
+    PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo);
+    PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo);
+    PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo);
 }

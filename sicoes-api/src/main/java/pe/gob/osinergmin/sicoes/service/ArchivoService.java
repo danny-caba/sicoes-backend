@@ -64,5 +64,7 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	public List<Archivo> obtenerArchivosPorPerfContrato(Long idSoliPerfCont);
 	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto);
 
+	public void asociarArchivo(DocumentoReemplazo documentoBD, Archivo archivo, Contexto contexto);
+	public void eliminarIdDocumentoReem(Long idDocumentoReem, Contexto contexto);
 
 }

@@ -42,9 +42,21 @@ public class PersonalReemplazoRestController extends BaseRestController {
     }
 
     @PutMapping("/externo/reemplazo/solicitud/baja/elimina/propuesto")
+    public PersonalReemplazo eliminaBajaPropuesto(@RequestBody PersonalReemplazo personalReemplazo){
+        logger.info("eliminar baja {}",personalReemplazo);
+        return personalReemplazoService.eliminarBaja(personalReemplazo);
+    }
+
+    @PutMapping("/externo/reemplazo/solicitud/propuesta/inserta/propuesto")
+    public PersonalReemplazo registrarPropuesto(@RequestBody PersonalReemplazo personalReemplazo){
+        logger.info(" registrar propuesto {}", personalReemplazo);
+        return personalReemplazoService.actualizar(personalReemplazo);
+    }
+
+    @PutMapping("/externo/reemplazo/solicitud/propuesta/elimina/propuesto")
     public PersonalReemplazo eliminaPropuesto(@RequestBody PersonalReemplazo personalReemplazo){
-        logger.info("eliminar propuesto {}",personalReemplazo);
-        return personalReemplazoService.eliminarPropuesto(personalReemplazo);
+        logger.info(" eliminar propuesto {}", personalReemplazo);
+        return personalReemplazoService.eliminarPropuesta(personalReemplazo);
     }
 
 }
