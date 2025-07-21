@@ -261,4 +261,30 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     public void setFechaAsignacion(Date fechaAsignacion) {
         this.fechaAsignacion = fechaAsignacion;
     }
+
+    @Override
+    public String toString() {
+        return "RequerimientoAprobacion{" +
+                "idRequerimientoAprobacion=" + idRequerimientoAprobacion +
+                ", requerimiento=" + requerimiento +
+                ", tipo=" + tipo +
+                ", grupo=" + grupo +
+                ", usuario=" + usuario +
+                ", estado=" + estado +
+                ", firmado=" + firmado +
+                ", tipoAprobador=" + tipoAprobador +
+                ", grupoAprobador=" + grupoAprobador +
+                ", observacion='" + observacion + '\'' +
+                ", fechaAprobacion=" + fechaAprobacion +
+                ", fechaRechazo=" + fechaRechazo +
+                ", fechaFirma=" + fechaFirma +
+                ", fechaAsignacion=" + fechaAsignacion +
+                ", archivoInforme=" + archivoInforme +
+                ", estadoFirmaJefeUnidad='" + estadoFirmaJefeUnidad + '\'' +
+                ", estadoFirmaGerente='" + estadoFirmaGerente + '\'' +
+                ", estadoAprobacionGPPM='" + estadoAprobacionGPPM + '\'' +
+                ", estadoAprobacionGSE='" + estadoAprobacionGSE + '\'' +
+                ", accionAprobar=" + accionAprobar +
+                '}';
+    }
 }

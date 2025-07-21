@@ -64,6 +64,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -380,8 +381,9 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                     detalle.getRequerimientoDocumentoDetalleUuid(),
                     presentado,
                     (evaluacion != null ? evaluacion.getNombre() : "null"));
-            if (!"1".equals(presentado) || evaluacion == null) {
+            if (!Objects.equals(Constantes.FLAG.PRESENTADO, presentado) || evaluacion == null) {
                 todosCargadosYEvaluados = false;
+                break;
             }
         }
         if (todosCargadosYEvaluados) {
@@ -429,8 +431,8 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             }
         } else {
             logger.info("Existen documentos no presentados o sin evaluación.");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTOS_SIN_CARGAR_EVALUAR);
         }
-        return null;
     }
 
     private ExpedienteInRO crearExpediente2(RequerimientoDocumento requerimientoDocumento, Integer codigoTipoDocumento) {

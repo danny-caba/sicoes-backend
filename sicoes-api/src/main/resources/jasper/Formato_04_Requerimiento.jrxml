@@ -21,10 +21,10 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="division" class="pe.gob.osinergmin.sicoes.model.Division"/>
-	<field name="perfil" class="pe.gob.osinergmin.sicoes.model.ListadoDetalle"/>
 	<field name="feRegistro" class="java.util.Date"/>
-	<field name="usuarioCreador" class="pe.gob.osinergmin.sicoes.model.Usuario"/>
+	<field name="division.deDivision" class="java.lang.String"/>
+	<field name="perfil.nombre" class="java.lang.String"/>
+	<field name="usuarioCreador.nombreUsuario" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -32,7 +32,7 @@
 		<band height="213" splitType="Stretch">
 			<printWhenExpression><![CDATA[$V{PAGE_NUMBER}==1]]></printWhenExpression>
 			<staticText>
-				<reportElement x="180" y="80" width="130" height="15" uuid="ca8fe5cd-12a1-4eb4-83bf-493adc38875f">
+				<reportElement x="0" y="80" width="130" height="15" uuid="ca8fe5cd-12a1-4eb4-83bf-493adc38875f">
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.firstLineIndent" value="px"/>
 				</reportElement>
@@ -118,7 +118,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{division}.getDeDivision()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{division.deDivision}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="FillFrame">
 				<reportElement x="0" y="-40" width="90" height="30" uuid="c9a2d95d-5a54-4a38-b1ec-6dd8115e131c">
@@ -147,7 +147,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{perfil}.getNombre()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{perfil.nombre}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="200" y="191" width="225" height="14" uuid="903c5b4a-dea6-47c9-bc34-a9e74c1df950">
@@ -164,7 +164,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{usuarioCreador}.getNombreUsuario()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{usuarioCreador.nombreUsuario}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="191" width="200" height="14" uuid="3a172214-341d-42f7-aa17-1b4f7ff64e83">
@@ -185,7 +185,7 @@
 				<text><![CDATA[Solicitado por]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy h:mm a" isBlankWhenNull="true">
-				<reportElement x="310" y="80" width="114" height="15" uuid="442659cf-232a-4f6a-8e8a-40d7780f35c7">
+				<reportElement x="130" y="80" width="114" height="15" uuid="442659cf-232a-4f6a-8e8a-40d7780f35c7">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 				</reportElement>

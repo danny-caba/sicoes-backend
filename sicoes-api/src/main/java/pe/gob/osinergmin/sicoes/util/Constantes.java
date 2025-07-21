@@ -173,11 +173,11 @@ public class Constantes {
 			public static final String ARCHIVO_REQUERIMIENTO = "TA26";
 			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
 			public static final String INFORME_REQUERIMIENTO = "TA28";
-
 			public static final String REQUERIMIENTO = "TA26";
 			public static final String APROBACION_REQUERIMIENTO = "TA27";
 			public static final String DOCUMENTO_REQUERIMIENTO = "TA29";
 			public static final String CONTRATO_REQUERIMIENTO = "TA30";
+			public static final String ARCHIVO_ARCHIVAR_REQUERIMIENTO = "TA31";
 
 		}
 		
@@ -1005,6 +1005,8 @@ public class Constantes {
         public static final String REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO = "V01032";
 		public static final String NUMERO_CONTRATO_NO_ENCONTRADO = "V01033";
 		public static final String FECHA_SUSCRIPCION_NO_ENCONTRADO = "V01034";
+		public static final String ARCHIVAR_ESTADO_EN_PROCESO = "V01035";
+		public static final String DOCUMENTOS_SIN_CARGAR_EVALUAR = "V01036";
 
 	}
 	public static final class ROLES {

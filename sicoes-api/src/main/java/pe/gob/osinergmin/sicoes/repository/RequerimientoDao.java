@@ -44,11 +44,15 @@ public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {
                     "AND d.idDivision IN :divisionIds " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
                     "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
-    Page<Requerimiento> listarRequerimientos(Long idDivision, Long idPerfil, Date fechaInicio, Date fechaFin,
-                                             Long idSupervisora,
-                                             Long idEstado,
-                                             List<Long> divisionIds,
-                                             Pageable pageable);
+    Page<Requerimiento> listarRequerimientos(
+            @Param("idDivision") Long idDivision,
+            @Param("idPerfil") Long idPerfil,
+            @Param("fechaInicio") Date fechaInicio,
+            @Param("fechaFin") Date fechaFin,
+            @Param("idSupervisora") Long idSupervisora,
+            @Param("idEstado") Long idEstado,
+            @Param("divisionIds") List<Long> divisionIds,
+            @Param("pageable") Pageable pageable);
 
     @Query("SELECT r FROM Requerimiento r WHERE r.idRequerimiento = :id")
     Optional<Requerimiento> obtener(@Param("id") Long id);

@@ -1,9 +1,12 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import pe.gob.osinergmin.sicoes.controller.RequerimientoAprobacionRestController;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
@@ -11,6 +14,7 @@ import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraDTO;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -22,11 +26,14 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobacionService {
+
+    private static final Logger logger = LogManager.getLogger(RequerimientoAprobacionRestController.class);
 
     @Autowired
     private ListadoDetalleService listadoDetalleService;
@@ -83,6 +90,8 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
     private RequerimientoAprobacionResponseDTO convertirResponseDTO(RequerimientoAprobacion requerimientoAprobacion) {
         RequerimientoAprobacionResponseDTO responseDTO = new RequerimientoAprobacionResponseDTO();
 
+        logger.info("RequerimientoAprobacion obtenido: {}", requerimientoAprobacion);
+
         // Mapear RequerimientoAprobacion
         responseDTO.setTipo(requerimientoAprobacion.getTipo());
         responseDTO.setFechaAsignacion(requerimientoAprobacion.getFechaAsignacion());
@@ -97,8 +106,18 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         RequerimientoAprobacionResponseDTO.RequerimientoDTO requerimientoDTO = new RequerimientoAprobacionResponseDTO.RequerimientoDTO();
         requerimientoDTO.setNuExpediente(requerimientoAprobacion.getRequerimiento().getNuExpediente());
         requerimientoDTO.setEstado(requerimientoAprobacion.getRequerimiento().getEstado());
-        requerimientoDTO.setSupervisora(requerimientoAprobacion.getRequerimiento().getSupervisora());
         requerimientoDTO.setRequerimientoUuid(requerimientoAprobacion.getRequerimiento().getRequerimientoUuid());
+
+        // Mapear Supervisora
+        RequerimientoAprobacionResponseDTO.SupervisoraDTO supervisoraDTO = new RequerimientoAprobacionResponseDTO.SupervisoraDTO();
+        if (requerimientoAprobacion.getRequerimiento().getSupervisora() != null) {
+            supervisoraDTO.setTipoDocumento(requerimientoAprobacion.getRequerimiento().getSupervisora().getTipoDocumento().getCodigo());
+            supervisoraDTO.setNombreRazonSocial(requerimientoAprobacion.getRequerimiento().getSupervisora().getNombreRazonSocial());
+            supervisoraDTO.setNombres(requerimientoAprobacion.getRequerimiento().getSupervisora().getNombres());
+            supervisoraDTO.setApellidoMaterno(requerimientoAprobacion.getRequerimiento().getSupervisora().getApellidoMaterno());
+            supervisoraDTO.setApellidoPaterno(requerimientoAprobacion.getRequerimiento().getSupervisora().getApellidoPaterno());
+        }
+        requerimientoDTO.setSupervisora(supervisoraDTO);
 
         // Mapear DivisionDTO
         DivisionDTO divisionDTO = new DivisionDTO();
@@ -173,17 +192,14 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
 
     private void validarRolAprobador(Contexto contexto) {
 
-        List<Rol> rolesUsuario = contexto.getUsuario().getRoles();
+        boolean isAprobador = contexto.getUsuario().getRoles()
+                .stream()
+                .anyMatch(rol ->
+                        Objects.equals(rol.getCodigo(), Constantes.ROLES.APROBADOR_TECNICO) ||
+                        Objects.equals(rol.getCodigo(), Constantes.ROLES.APROBADOR_ADMINISTRATIVO));
 
-        boolean tieneRolAprobador = rolesUsuario.stream()
-                .anyMatch(rolUsu ->
-                        rolUsu.getCodigo().equals(Constantes.ROLES.APROBADOR_TECNICO) ||
-                                rolUsu.getCodigo().equals(Constantes.ROLES.APROBADOR_ADMINISTRATIVO));
-
-        if (!tieneRolAprobador) {
+        if (!isAprobador)
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
-        }
-
     }
 
     private Map<Long, Archivo> cargarArchivosInforme(Set<Long> idsRequerimientos) {
@@ -204,12 +220,12 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         // Agrupar por requerimiento y mapear estados por grupo
         for (RequerimientoAprobacion aprobacion : listAprobaciones) {
             Long idRequerimiento = aprobacion.getRequerimiento().getIdRequerimiento();
-            String codigoGrupo = aprobacion.getGrupo().getCodigo();
+            String codigoGrupoAprobador = aprobacion.getGrupoAprobador().getCodigo();
             String nombreEstado = aprobacion.getEstado().getNombre();
 
             estadosPorRequerimiento
                     .computeIfAbsent(idRequerimiento, k -> new HashMap<>())
-                    .put(codigoGrupo, nombreEstado);
+                    .put(codigoGrupoAprobador, nombreEstado);
         }
 
         return estadosPorRequerimiento;

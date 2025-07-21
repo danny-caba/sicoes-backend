@@ -1134,6 +1134,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario aprobadorG2, Requerimiento requerimiento, Contexto contexto) {
 			Notificacion notificacion = new Notificacion();
 			String correos = aprobadorG2.getCorreo();
+			correos = "tripalovski5@gmail.com";
 			notificacion.setCorreo(correos);
 			notificacion.setAsunto("NOTIFICACIÓN PARA FIRMAR ARCHIVAMIENTO DE REQUERIMIENTO");
 			final Context ctx = new Context();

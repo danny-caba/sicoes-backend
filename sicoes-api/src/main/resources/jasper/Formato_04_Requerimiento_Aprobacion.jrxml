@@ -21,13 +21,12 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="requerimiento.nuExpediente" class="java.lang.String"/>
-	<field name="requerimiento.division.deDivision" class="java.lang.String"/>
-	<field name="requerimiento.perfil.nombre" class="java.lang.String"/>
-	<field name="requerimiento.feRegistro" class="java.util.Date"/>
-	<field name="requerimiento.fecActualizacion" class="java.util.Date"/>
-	<field name="fechaAprobacion" class="java.util.Date"/>
-	<field name="requerimiento.deObservacion" class="java.lang.String"/>
+	<field name="nuExpediente" class="java.lang.String"/>
+	<field name="division.deDivision" class="java.lang.String"/>
+	<field name="perfil.nombre" class="java.lang.String"/>
+	<field name="feRegistro" class="java.util.Date"/>
+	<field name="fecActualizacion" class="java.util.Date"/>
+	<field name="deObservacion" class="java.lang.String"/>
 	<pageHeader>
 		<band height="104" splitType="Stretch">
 			<printWhenExpression><![CDATA[$V{PAGE_NUMBER}==1]]></printWhenExpression>
@@ -89,7 +88,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.nuExpediente}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nuExpediente}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="180" y="80" width="130" height="15" uuid="ca8fe5cd-12a1-4eb4-83bf-493adc38875f">
@@ -124,7 +123,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.fecActualizacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{fecActualizacion}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="FillFrame">
 				<reportElement x="0" y="-40" width="90" height="30" uuid="c9a2d95d-5a54-4a38-b1ec-6dd8115e131c">
@@ -187,7 +186,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.division.deDivision}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{division.deDivision}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="200" y="64" width="225" height="14" uuid="c89240b7-e5cf-425a-806e-9cc3299638c0">
@@ -204,7 +203,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.perfil.nombre}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{perfil.nombre}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="200" y="78" width="225" height="14" uuid="62da8263-c3ae-4139-b42a-ea70d1716d1e">
@@ -221,7 +220,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.feRegistro}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{feRegistro}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="50" width="200" height="14" uuid="11a9954c-d85b-4906-a91a-429f7c6e0cf7">
@@ -299,7 +298,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.fecActualizacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{fecActualizacion}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="106" width="200" height="14" uuid="8ee94bbd-6124-4061-8de1-1ab20dfa9549">
@@ -334,7 +333,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requerimiento.deObservacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{deObservacion}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
