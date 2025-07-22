@@ -8,11 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
-import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
-import pe.gob.osinergmin.sicoes.repository.DocumentoReemDao;
-import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
-import pe.gob.osinergmin.sicoes.repository.PersonalReemplazoDao;
+import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
+import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -36,6 +35,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private ListadoDetalleDao listadoDetalleDao;
+
+    @Autowired
+    private SupervisoraMovimientoService supervisoraMovimientoService;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto) {
@@ -111,6 +113,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getFeFechaFinalizacionContrato() != null) {
             existe.setFeFechaFinalizacionContrato(personalReemplazo.getFeFechaFinalizacionContrato());
         }
+        if (personalReemplazo.getEsEstadoRevisarEval() != null) {
+            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        }
         if (personalReemplazo.getEsEstadoEvalDoc() != null) {
             existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
         }
@@ -153,6 +158,89 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         entity.setIdPersonaPropuesta(null);
         AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
         return reemplazoDao.save(entity);
+    }
+
+    @Override
+    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazo) {
+        Long id = personalReemplazo.getIdReemplazo();
+        if (id == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
+        }
+
+        PersonalReemplazo existe = reemplazoDao.findById(id)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
+
+        if (personalReemplazo.getIdSolicitud() != null) {
+            existe.setIdSolicitud(personalReemplazo.getIdSolicitud());
+        }
+        if (personalReemplazo.getIdPersonaPropuesta() != null) {
+            existe.setIdPersonaPropuesta(personalReemplazo.getIdPersonaPropuesta());
+        } else {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
+        }
+        if (personalReemplazo.getCoPerfil() != null) {
+            existe.setCoPerfil(personalReemplazo.getCoPerfil());
+        }
+        if (personalReemplazo.getFeFechaRegistro() != null) {
+            existe.setFeFechaRegistro(personalReemplazo.getFeFechaRegistro());
+        }
+        if (personalReemplazo.getFeFechaInicioContractual() != null) {
+            existe.setFeFechaInicioContractual(personalReemplazo.getFeFechaInicioContractual());
+        }
+        if (personalReemplazo.getEsEstadoReemplazo() != null) {
+            existe.setEsEstadoReemplazo(personalReemplazo.getEsEstadoReemplazo());
+        }
+        if (personalReemplazo.getIdPersonaBaja() != null) {
+            existe.setIdPersonaBaja(personalReemplazo.getIdPersonaBaja());
+        } else {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
+        }
+        if (personalReemplazo.getCoPerfilPerBaja() != null) {
+            existe.setCoPerfilPerBaja(personalReemplazo.getCoPerfilPerBaja());
+        }
+        if (personalReemplazo.getFeFechaBaja() != null) {
+            existe.setFeFechaBaja(personalReemplazo.getFeFechaBaja());
+        }
+        if (personalReemplazo.getFeFechaDesvinculacion() != null) {
+            existe.setFeFechaDesvinculacion(personalReemplazo.getFeFechaDesvinculacion());
+        }
+        if (personalReemplazo.getFeFechaFinalizacionContrato() != null) {
+            existe.setFeFechaFinalizacionContrato(personalReemplazo.getFeFechaFinalizacionContrato());
+        }
+
+        //Buscamos que este llena la seccion 3.-Solcitud de reemplazo de supervisor
+        Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.SECCION_DOC_REEMPLZO.SOLICITUD_REEMPLAZO_SUPERVISOR).get(0).getIdListadoDetalle();
+        logger.info("idSeccion-validar {}:",idSeccion);
+        if (!documentoReemDao.existsByIdReemplazoPersonalAndIdSeccion(id,idSeccion)) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
+        }
+        existe.setEsEstadoReemplazo(listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0).getIdListadoDetalle());
+
+        //solicitudHija.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));
+        //solicitudHija.setEstadoRevision(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.ARCHIVADO));
+        if (personalReemplazo.getEsEstadoEvalDoc() != null) {
+            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        }
+        if (personalReemplazo.getEsEstadoRevisarEval() != null) {
+            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        }
+        if (personalReemplazo.getEsEstadoAprobacionInforme() != null) {
+            existe.setEsEstadoAprobacionInforme(personalReemplazo.getEsEstadoAprobacionInforme());
+        }
+        if (personalReemplazo.getEsEstadoAprobacionAdenda() != null) {
+            existe.setEsEstadoAprobacionAdenda(personalReemplazo.getEsEstadoAprobacionAdenda());
+        }
+        if (personalReemplazo.getEsEstadoEvalDocIniServ() != null) {
+            existe.setEsEstadoEvalDocIniServ(personalReemplazo.getEsEstadoEvalDocIniServ());
+        }
+
+        //Actualizamos el estao de movimiento del perfil:
+        //SupervisoraMovimiento movi = new SupervisoraMovimiento();
+        //supervisoraMovimientoService.guardar(movi,AuditoriaUtil.getContextoJob());
+        AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
+        return reemplazoDao.save(existe);
     }
 
     @Override

@@ -72,7 +72,7 @@ public class Constantes {
 			public static final String OBSERVADO	= "OBSERVADO";
 			public static final String CONCLUIDO	= "CONCLUIDO";	
 			public static final String ARCHIVADO	= "ARCHIVADO";
-			
+			public static final String EN_EVALUACION = "EN_EVALUACION";
 		}
 		
 		public static final class TIPO_SUSPENSION_CANCELACION {
@@ -892,6 +892,8 @@ public class Constantes {
 		public static final String REEMPLAZO_PERSONAL_CON_DOCUMENTOS = "V01020";
 		public static final String DOCUMENTO_REEMPLAZO_NO_EXISTE = "V01021";
 		public static final String REEMPLAZO_PERSONAL_NO_EXISTE="V01022";
+		public static final String ID_PERSONA_BAJA = "V01023";
+		public static final String ID_PERSONA_PROPUESTA = "V01024";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

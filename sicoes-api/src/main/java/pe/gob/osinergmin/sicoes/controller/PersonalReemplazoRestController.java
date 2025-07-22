@@ -59,4 +59,9 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.eliminarPropuesta(personalReemplazo);
     }
 
+    @PutMapping("/externo/reemplazo/inserta")
+    public PersonalReemplazo finalizarRegistro(@RequestBody PersonalReemplazo personalReemplazo){
+        logger.info("Finalizar registro propuesto {}", personalReemplazo);
+        return personalReemplazoService.registrar(personalReemplazo);
+    }
 }

@@ -41,7 +41,7 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     private Date feFechaInicioContractual;
 
     @Column(name = "ES_ESTADO_REEMPLAZO", length = 1)
-    private String esEstadoReemplazo;
+    private Long esEstadoReemplazo;
 
     @Column(name = "ID_PERSONA_BAJA")
     private Long idPersonaBaja;
@@ -65,15 +65,18 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     private Date feFechaFinalizacionContrato;
 
     @Column(name = "ES_ESTADO_EVAL_DOC", length = 1)
-    private String esEstadoEvalDoc;
+    private Long esEstadoEvalDoc;
+
+    @Column(name = "ES_ESTADO_REVISAR_EVAL_DOC", length = 1)
+    private Long esEstadoRevisarEval;
 
     @Column(name = "ES_ESTADO_APROBACION_INFORME", length = 1)
-    private String esEstadoAprobacionInforme;
+    private Long esEstadoAprobacionInforme;
 
     @Column(name = "ES_ESTADO_APROBACION_ADENDA", length = 1)
-    private String esEstadoAprobacionAdenda;
+    private Long esEstadoAprobacionAdenda;
 
     @Column(name = "ES_ESTADO_EVAL_DOC_INI_SERV", length = 1)
-    private String esEstadoEvalDocIniServ;
+    private Long esEstadoEvalDocIniServ;
 
 }
