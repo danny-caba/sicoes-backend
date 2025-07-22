@@ -72,7 +72,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Date;
@@ -138,9 +137,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Value("${solicitud.requerimiento.contrato.pn}")
     private String SOLICITUD_REQUERIMIENTO_CONTRATO_PN;
-
-    @Value("${solicitud.requerimiento.contrato.supervisor}")
-    private String SOLICITUD_REQUERIMIENTO_CONTRATO_SUPERVISOR;
 
     @Value("${siged.old.proyecto}")
     private String SIGLA_PROYECTO;
@@ -273,13 +269,12 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     private RequerimientoAprobacion asignarAprobadorG2(Requerimiento requerimiento, Contexto contexto) {
         RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
-        // TODO: EN LOS THROWS CONSIDERAR VALIDACIONEXCEPTION
         PerfilAprobador perfilAprobador = perfilAprobadorDao
                 .findFirstByPerfilIdListadoDetalle(requerimiento.getPerfil().getIdListadoDetalle())
-                .orElseThrow(() -> new IllegalStateException("No se encontró perfil aprobador para el perfil del requerimiento"));
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_NO_ENCONTRADO));
         Usuario aprobadorG2 = perfilAprobador.getAprobadorG2();
         if (aprobadorG2 == null) {
-            throw new IllegalStateException("No se encontró aprobador G2 para el perfil del requerimiento");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_G2_NO_ENCONTRADO);
         }
         requerimientoAprobacion.setUsuario(aprobadorG2);
         // TODO: EL ESTADO APROBACION SE DEBE REUTILIZAR
@@ -598,55 +593,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO);
         }
     }
-
-//    private ExpedienteInRO crearExpediente(RequerimientoAprobacion requerimientoAprobacion, Integer codigoTipoDocumento) {
-//        ExpedienteInRO expediente = new ExpedienteInRO();
-//        DocumentoInRO documento = new DocumentoInRO();
-//        ClienteListInRO clientes = new ClienteListInRO();
-//        ClienteInRO cs = new ClienteInRO();
-//        List<ClienteInRO> cliente = new ArrayList<>();
-//        DireccionxClienteListInRO direcciones = new DireccionxClienteListInRO();
-//        DireccionxClienteInRO d = new DireccionxClienteInRO();
-//        List<DireccionxClienteInRO> direccion = new ArrayList<>();
-//        expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
-//        expediente.setDocumento(documento);
-//        if (requerimientoAprobacion.getRequerimiento().getNuExpediente() != null) {
-//            expediente.setNroExpediente(requerimientoAprobacion.getRequerimiento().getNuExpediente());
-//        }
-//        documento.setAsunto(SOLICITUD_REQUERIMIENTO_CONTRATO_SUPERVISOR);
-//        documento.setAppNameInvokes(SIGLA_PROYECTO);
-//        documento.setCodTipoDocumento(codigoTipoDocumento);
-//        documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
-//        documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
-//        if (Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.respuesta.solicitud.pn")) == codigoTipoDocumento) {
-//            documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
-//        }
-//        cs.setCodigoTipoIdentificacion(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
-//        cs.setNombre("OSINERGMIN");
-//        cs.setApellidoPaterno("-");
-//        cs.setApellidoMaterno("-");
-//        cs.setRazonSocial("OSINERGMIN");
-//        cs.setNroIdentificacion(OSI_DOCUMENTO);
-//        cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
-//        cliente.add(cs);
-//        d.setDireccion("-");
-//        d.setDireccionPrincipal(true);
-//        d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
-//        d.setTelefono("-");
-//        d.setUbigeo(Integer.parseInt(env.getProperty("siged.ws.cliente.osinergmin.ubigeo")));
-//        direccion.add(d);
-//        direcciones.setDireccion(direccion);
-//        cs.setDirecciones(direcciones);
-//        clientes.setCliente(cliente);
-//        documento.setClientes(clientes);
-//        documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
-//        documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
-//        documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
-//        documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente").charAt(0));
-//        documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
-//        return expediente;
-//    }
-
 
     private String registrarExpedienteSiged(Archivo archivo, Requerimiento requerimiento) {
         List<File> archivosAlfresco = new ArrayList<>();

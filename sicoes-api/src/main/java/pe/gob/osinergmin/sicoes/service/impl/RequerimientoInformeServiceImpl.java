@@ -260,10 +260,10 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
         PerfilAprobador perfilAprobador = perfilAprobadorDao
                 .findFirstByPerfilIdListadoDetalle(requerimiento.getPerfil().getIdListadoDetalle())
-                .orElseThrow(() -> new IllegalStateException("No se encontró perfil aprobador para el perfil del requerimiento"));
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_NO_ENCONTRADO));
         Usuario aprobadorG1 = perfilAprobador.getAprobadorG1();
         if (aprobadorG1 == null) {
-            throw new IllegalStateException("No se encontró aprobador G1 para el perfil del requerimiento");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_G1_NO_ENCONTRADO);
         }
         requerimientoAprobacion.setUsuario(aprobadorG1);
         ListadoDetalle asignado = listadoDetalleService.obtenerListadoDetalle(
@@ -271,7 +271,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                 Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO
         );
         if (asignado == null) {
-            throw new IllegalStateException("Estado ASIGNADO no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ASIGNADO_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
         ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.TIPO_APROBACION.CODIGO,
@@ -318,7 +318,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                 Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_APROBACION
         );
         if (estadoEnAprobacion == null) {
-            throw new ValidacionException("Estado EN_APROBACION no configurado en ListadoDetalle");
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_EN_APROBACION_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
         requerimiento.setEstado(estadoEnAprobacion);
         requerimientoService.actualizar(requerimiento, contexto);
