@@ -544,7 +544,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         requerimientoDocumentoNuevo.setRequerimiento(requerimientoDocumentoBD.getRequerimiento());
         ListadoDetalle estadoSolicitudPreliminar = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
-                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.PRELIMINAR
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR
         );
         if (estadoSolicitudPreliminar == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_SOLICITUD_PRELIMINAR_NO_CONFIGURADO_EN_LISTADODETALLE);
@@ -553,8 +553,8 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         requerimientoDocumentoNuevo.setFlagActivo(requerimientoDocumentoBD.getFlagActivo());
         requerimientoDocumentoNuevo.setFechaIngreso(requerimientoDocumentoBD.getFechaIngreso());
         ListadoDetalle tipoSubsanacion = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.TIPO_DOCUMENTO_ARCHIVO.CODIGO,
-                Constantes.LISTADO.TIPO_DOCUMENTO_ARCHIVO.SUBSANACION
+                Constantes.LISTADO.TIPO_REQ_DOCUMENTO.CODIGO,
+                Constantes.LISTADO.TIPO_REQ_DOCUMENTO.SUBSANACION
         );
         if (tipoSubsanacion == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_SUBSANACION_NO_CONFIGURADO_EN_LISTADODETALLE);
@@ -636,7 +636,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             //update req doc estado solicitud preliminar
             ListadoDetalle estadoEnProceso = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
-                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.PRELIMINAR
+                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR
             );
             requerimientoDocumento.setEstado(estadoEnProceso);
             AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);

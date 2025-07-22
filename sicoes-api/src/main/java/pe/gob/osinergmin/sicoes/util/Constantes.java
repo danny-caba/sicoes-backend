@@ -687,7 +687,7 @@ public class Constantes {
 
 		public static final class ESTADO_REQ_DOCUMENTO {
 			public static final String CODIGO 		                = "ESTADO_REQ_DOCUMENTO";
-			public static final String PRELIMINAR 	    			= "PRELIMINAR";
+//			public static final String PRELIMINAR 	    			= "PRELIMINAR";
             public static final String EN_PROCESO	                = "EN_PROCESO";
 			public static final String CONCLUIDO	                = "CONCLUIDO";
 			public static final String SOLICITUD_PRELIMINAR 	    = "SOLICITUD_PRELIMINAR";
@@ -701,11 +701,10 @@ public class Constantes {
 
 		}
 
-		public static final class TIPO_DOCUMENTO_ARCHIVO {
-			public static final String CODIGO 		= "TIPO_DOCUMENTO";
+		public static final class TIPO_REQ_DOCUMENTO {
+			public static final String CODIGO 		= "TIPO_REQ_DOCUMENTO";
 			public static final String REGISTRO		= "REGISTRO";
 			public static final String SUBSANACION	= "SUBSANACION";
-
 		}
 
         public static final class ESTADO_REQ_CONTRATO {

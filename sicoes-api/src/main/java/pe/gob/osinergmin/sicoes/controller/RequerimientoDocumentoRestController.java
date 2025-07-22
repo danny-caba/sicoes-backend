@@ -17,6 +17,7 @@ import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoCoordinadorDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoDTO;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.RequerimientoDocumentoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -30,6 +31,8 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
 
     @Autowired
     private RequerimientoDocumentoService requerimientoDocumentoService;
+    @Autowired
+    private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
 
     @GetMapping
     @Raml("requerimientoDocumento.listar.properties")
@@ -72,5 +75,11 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
     public RequerimientoDocumento revisarRequerimientosDocumento(@PathVariable("documentoUuid") String documentoUuid,
                                                                  @RequestBody List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle) {
         return requerimientoDocumentoService.revisar(documentoUuid, listRequerimientoDocumentoDetalle, getContexto());
+    }
+
+    @GetMapping("/detalle/{uuid}")
+    @Raml("requerimientoDocumentoDetalle.obtener.properties")
+    public RequerimientoDocumentoDetalle obtenerDetalle(@PathVariable("uuid") String uuid) {
+        return requerimientoDocumentoDetalleDao.buscarPorUuid(uuid);
     }
 }
