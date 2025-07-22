@@ -1501,39 +1501,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 	@Transactional(rollbackFor = Exception.class)
 	public Archivo guardarXRequerimientoInforme (Archivo archivo, Contexto contexto) {
 			boolean nuevo = archivo.getIdArchivo() == null;
-//			if (archivo.getIdArchivo() != null) {
-//					archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
-//					if (archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO)) {
-//							List<Archivo> archivosRequerimiento = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO,
-//															archivo.getSolicitudUuid(), null, null)
-//											.getContent()
-//											.stream()
-//											.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
-//											.collect(Collectors.toList());
-//							boolean existe = archivosRequerimiento.stream()
-//											.anyMatch(arch -> {
-//													try {
-//															arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
-//															if (Optional.ofNullable(archivo.getFile()).isPresent()
-//																			&& Optional.ofNullable(arch.getContenido()).isPresent()) {
-//																	InputStream nuevoArch = archivo.getFile().getInputStream();
-//																	InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
-//																	boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
-//																	nuevoArch.close();
-//																	oldArch.close();
-//																	return existeArchivo;
-//															} else {
-//																	return false;
-//															}
-//													} catch (Exception e) {
-//															return false;
-//													}
-//											});
-//							if (existe) {
-//									throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
-//							}
-//					}
-//			}
 			if (nuevo) {
 					return registrarRequerimiento(archivo, contexto);
 			} else {
@@ -1544,40 +1511,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 	@Transactional(rollbackFor = Exception.class)
 	public Archivo guardarXRequerimientoDocumento (Archivo archivo, Contexto contexto) {
 		boolean nuevo = archivo.getIdArchivo() == null;
-
-//		if (archivo.getIdArchivo() != null) {
-//			archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
-//			if (archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO)) {
-//				List<Archivo> archivosRequerimiento = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO,
-//								archivo.getSolicitudUuid(), null, null)
-//						.getContent()
-//						.stream()
-//						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
-//						.collect(Collectors.toList());
-//				boolean existe = archivosRequerimiento.stream()
-//						.anyMatch(arch -> {
-//							try {
-//								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
-//								if (Optional.ofNullable(archivo.getFile()).isPresent()
-//										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
-//									InputStream nuevoArch = archivo.getFile().getInputStream();
-//									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
-//									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
-//									nuevoArch.close();
-//									oldArch.close();
-//									return existeArchivo;
-//								} else {
-//									return false;
-//								}
-//							} catch (Exception e) {
-//								return false;
-//							}
-//						});
-//				if (existe) {
-//					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
-//				}
-//			}
-//		}
 		if (nuevo) {
 			return registrarRequerimiento(archivo, contexto);
 		} else {

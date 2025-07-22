@@ -64,7 +64,6 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto);
     List<Archivo> buscarXRequerimiento(Long idSolicitud, Contexto contexto);
 	Archivo guardarXRequerimiento(Archivo archivo, Contexto contexto);
-//    Archivo guardarXRequerimientoAprobacion(Archivo archivo, Contexto contexto);
     Archivo guardarXRequerimientoInforme(Archivo archivo, Contexto contexto);
 	Archivo guardarXRequerimientoDocumento(Archivo archivo, Contexto contexto);
 	List<Archivo> buscarPorReqDocDetalle(Long idReqDocumentoDetalle);
