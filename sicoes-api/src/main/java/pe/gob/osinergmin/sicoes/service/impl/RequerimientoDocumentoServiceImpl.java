@@ -545,7 +545,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         requerimientoDocumentoNuevo.setRequerimiento(requerimientoDocumentoBD.getRequerimiento());
         ListadoDetalle estadoSolicitudPreliminar = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
-                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.PRELIMINAR
         );
         if (estadoSolicitudPreliminar == null) {
             throw new ValidacionException("Estado SOLICITUD_PRELIMINAR no configurado en ListadoDetalle");
@@ -637,7 +637,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             //update req doc estado solicitud preliminar
             ListadoDetalle estadoEnProceso = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
-                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR
+                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.PRELIMINAR
             );
             requerimientoDocumento.setEstado(estadoEnProceso);
             AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
