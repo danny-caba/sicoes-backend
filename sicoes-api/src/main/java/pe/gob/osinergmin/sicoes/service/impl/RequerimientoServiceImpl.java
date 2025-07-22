@@ -10,6 +10,7 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.SIAF_NO_EN
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_GPPM;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_GSE;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_TECNICO;
+import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.EVALUADOR_CONTRATOS;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.RESPONSABLE_TECNICO;
 
 import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
@@ -147,7 +148,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     @Override
     @Transactional
     public Requerimiento guardar(Requerimiento requerimiento, Contexto contexto) {
-        // TODO: AGREGAR VALIDACION DE ROL
+        if(contexto.getUsuario().getRoles().stream().noneMatch(rol -> rol.getCodigo().equals(RESPONSABLE_TECNICO))) {
+            throw new ValidacionException(ACCESO_NO_AUTORIZADO);
+        }
         ListadoDetalle perfil = listadoDetalleService.obtener(requerimiento.getPerfil().getIdListadoDetalle(), contexto);
         requerimiento.setPerfil(perfil);
         ListadoDetalle estadoPreliminar = listadoDetalleService.obtenerListadoDetalle(
@@ -220,7 +223,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     @Override
     @Transactional
     public Requerimiento archivar(Requerimiento requerimiento, Contexto contexto) {
-        // TODO: AGREGAR VALIDACION DE ROL
+        if(contexto.getUsuario().getRoles().stream().noneMatch(rol -> rol.getCodigo().equals(RESPONSABLE_TECNICO))) {
+            throw new ValidacionException(ACCESO_NO_AUTORIZADO);
+        }
         if (!Objects.equals(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO,
                 requerimiento.getEstado().getCodigo())) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVAR_ESTADO_EN_PROCESO);

@@ -75,28 +75,40 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
     @Autowired
     private RequerimientoDocumentoDao requerimientoDocumentoDao;
+
     @Autowired
     private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
+
     @Autowired
     private ListadoDetalleService listadoDetalleService;
+
     @Autowired
     private SupervisoraService supervisoraService;
+
     @Autowired
     private NotificacionService notificacionService;
+
     @Autowired
     private SigedApiConsumer sigedApiConsumer;
+
     @Autowired
     private UsuarioService usuarioService;
+
     @Autowired
     private RequerimientoService requerimientoService;
+
     @Autowired
     private ArchivoUtil archivoUtil;
+
     @Autowired
     private ArchivoService archivoService;
+
     @Autowired
     private RequerimientoInvitacionDao requerimientoInvitacionDao;
+
     @Autowired
     private ArchivoDao archivoDao;
+
     @Autowired
     private Environment env;
 
@@ -159,7 +171,10 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
         );
         List<File> archivosAlfresco = new ArrayList<>();
-        Archivo archivo = archivoRequerimiento(requerimientoDocumentoDB, lstDetalle);
+        List<RequerimientoDocumentoDetalle> lstDetalleCargado = lstDetalle.stream()
+                .map(rd -> requerimientoDocumentoDetalleDao.buscarPorUuid(rd.getRequerimientoDocumentoDetalleUuid()))
+                .collect(Collectors.toList());
+        Archivo archivo = archivoRequerimiento(requerimientoDocumentoDB, lstDetalleCargado);
         archivoService.guardarXRequerimientoDocumento(archivo, contexto);
         File file = fileRequerimiento(archivo, requerimientoDocumentoDB.getRequerimiento().getIdRequerimiento());
         archivosAlfresco.add(file);
@@ -190,14 +205,15 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     }
 
     private RequerimientoDocumentoDetalle guardarFlagPresentado(RequerimientoDocumentoDetalle detalle, RequerimientoDocumento documento, Contexto contexto) {
-        detalle.setRequerimientoDocumento(documento);
-        if (detalle.getArchivo() != null) {
-            detalle.setPresentado(Constantes.FLAG.PRESENTADO);
+        RequerimientoDocumentoDetalle detalleDB = requerimientoDocumentoDetalleDao.buscarPorUuid(detalle.getRequerimientoDocumentoDetalleUuid());
+        detalleDB.setRequerimientoDocumento(documento);
+        if (detalleDB.getArchivo() != null) {
+            detalleDB.setPresentado(Constantes.FLAG.PRESENTADO);
         } else {
-            detalle.setPresentado(Constantes.FLAG.NO_PRESENTADO);
+            detalleDB.setPresentado(Constantes.FLAG.NO_PRESENTADO);
         }
-        AuditoriaUtil.setAuditoriaRegistro(detalle, contexto);
-        return requerimientoDocumentoDetalleDao.save(detalle);
+        AuditoriaUtil.setAuditoriaActualizacion(detalleDB, contexto);
+        return requerimientoDocumentoDetalleDao.save(detalleDB);
     }
 
     private ExpedienteInRO crearExpediente(RequerimientoDocumento requerimientoDocumento, Integer codigoTipoDocumento) {
@@ -280,8 +296,6 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         requerimientoDocumentoJasper.setRequerimientosDocumentosDetalles(lstDetalleFormated);
         try {
             File jrxml = new File(pathJasper + "Formato_04_Requerimiento_Documento.jrxml");
-            File jrxml2= new File(pathJasper + "Formato_04_Requerimiento_Documento_Presentados.jrxml");
-            JasperReport jasperReport2 =  archivoUtil.getJasperCompilado(jrxml2);
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("SUBREPORT_DIR", pathJasper);
             appLogo = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
@@ -387,41 +401,12 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             }
         }
         if (todosCargadosYEvaluados) {
-            logger.info("Todos los documentos están 100% cargados y evaluados.");
             boolean todosCumplen = listaDetalle.stream()
                     .allMatch(det -> "CUMPLE".equalsIgnoreCase(det.getEvaluacion().getNombre()));
             RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(uuid)
                     .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO));
             if (todosCumplen) {
-                logger.info("Todos los documentos cumplen con la evaluación.");
-                ListadoDetalle estadoConcluido = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
-                        Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CONCLUIDO
-                );
-                if (estadoConcluido == null) {
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_CONCLUIDO_NO_CONFIGURADO_EN_LISTADODETALLE);
-                }
-                AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
-                requerimientoDocumento.setEstado(estadoConcluido);
-                ExpedienteInRO expedienteInRO = crearExpediente2(
-                        requerimientoDocumento,
-                        Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
-                );
-                List<File> archivosAlfresco = new ArrayList<>();
-                Archivo archivo = archivoRequerimiento2(requerimientoDocumento, listaDetalle);
-                archivoService.guardarXRequerimientoDocumento(archivo, contexto);
-                File file = fileRequerimiento(archivo, requerimientoDocumento.getRequerimiento().getIdRequerimiento());
-                archivosAlfresco.add(file);
-                try {
-                    DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
-                    logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
-                    if (documentoOutRO.getResultCode() != 1) {
-                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, documentoOutRO.getMessage());
-                    }
-                } catch (Exception e) {
-                    logger.error("Error al agregar documento en SIGED", e);
-                }
-                return requerimientoDocumentoDao.save(requerimientoDocumento);
+                return todosCumplen(requerimientoDocumento, listaDetalle, contexto);
             } else {
                 RequerimientoDocumento requerimientoDocumentoClon = clonarSolicitud(requerimientoDocumento, contexto);
                 Supervisora supervisoraPN = supervisoraService.obtener(requerimientoDocumento.getRequerimiento().getSupervisora().getIdSupervisora(), contexto);
@@ -433,6 +418,38 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             logger.info("Existen documentos no presentados o sin evaluación.");
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTOS_SIN_CARGAR_EVALUAR);
         }
+    }
+
+    private RequerimientoDocumento todosCumplen(RequerimientoDocumento requerimientoDocumento, List<RequerimientoDocumentoDetalle> listaDetalle, Contexto contexto) {
+        logger.info("Todos los documentos cumplen con la evaluación.");
+        ListadoDetalle estadoConcluido = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CONCLUIDO
+        );
+        if (estadoConcluido == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_CONCLUIDO_NO_CONFIGURADO_EN_LISTADODETALLE);
+        }
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
+        requerimientoDocumento.setEstado(estadoConcluido);
+        ExpedienteInRO expedienteInRO = crearExpediente2(
+                requerimientoDocumento,
+                Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
+        );
+        List<File> archivosAlfresco = new ArrayList<>();
+        Archivo archivo = archivoRequerimiento2(requerimientoDocumento, listaDetalle);
+        archivoService.guardarXRequerimientoDocumento(archivo, contexto);
+        File file = fileRequerimiento(archivo, requerimientoDocumento.getRequerimiento().getIdRequerimiento());
+        archivosAlfresco.add(file);
+        try {
+            DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+            logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
+            if (documentoOutRO.getResultCode() != 1) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, documentoOutRO.getMessage());
+            }
+        } catch (Exception e) {
+            logger.error("Error al agregar documento en SIGED", e);
+        }
+        return requerimientoDocumentoDao.save(requerimientoDocumento);
     }
 
     private ExpedienteInRO crearExpediente2(RequerimientoDocumento requerimientoDocumento, Integer codigoTipoDocumento) {
@@ -511,8 +528,6 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         requerimientoDocumentoJasper.setRequerimientosDocumentosDetalles(lstDetalleFormated);
         try {
             File jrxml = new File(pathJasper + "Formato_04_Req_Doc_Evaluacion.jrxml");
-            File jrxml2= new File(pathJasper + "Formato_04_Req_Doc_Evaluacion_Requisitos.jrxml");
-            JasperReport jasperReport2 =  archivoUtil.getJasperCompilado(jrxml2);
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("SUBREPORT_DIR", pathJasper);
             appLogo = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
@@ -576,11 +591,13 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             requerimientoDocumentoDetalleNuevo.setRequerimientoDocumento(clonRequerimientoDocumento);
             requerimientoDocumentoDetalleNuevo.setDescripcionRequisito(requerimientoDocumentoDetalleBD.getDescripcionRequisito());
             requerimientoDocumentoDetalleNuevo.setRequisito(requerimientoDocumentoDetalleBD.getRequisito());
-            requerimientoDocumentoDetalleNuevo.setEvaluacion(requerimientoDocumentoDetalleBD.getEvaluacion());
-            requerimientoDocumentoDetalleNuevo.setUsuario(requerimientoDocumentoDetalleBD.getUsuario());
-            requerimientoDocumentoDetalleNuevo.setFechaEvaluacion(requerimientoDocumentoDetalleBD.getFechaEvaluacion());
             requerimientoDocumentoDetalleNuevo.setObservacion(requerimientoDocumentoDetalleBD.getObservacion());
             requerimientoDocumentoDetalleNuevo.setPresentado(requerimientoDocumentoDetalleBD.getPresentado());
+            if(!Constantes.LISTADO.ESTADO_REQ_DOCUMENTO_DETALLE.OBSERVADO.equals(requerimientoDocumentoDetalleBD.getEvaluacion().getCodigo())){
+                requerimientoDocumentoDetalleNuevo.setEvaluacion(requerimientoDocumentoDetalleBD.getEvaluacion());
+                requerimientoDocumentoDetalleNuevo.setUsuario(requerimientoDocumentoDetalleBD.getUsuario());
+                requerimientoDocumentoDetalleNuevo.setFechaEvaluacion(requerimientoDocumentoDetalleBD.getFechaEvaluacion());
+            }
             AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoDetalleNuevo, contexto);
             requerimientoDocumentoDetalleDao.save(requerimientoDocumentoDetalleNuevo);
             Archivo archivoBD = archivoService.obtenerArchivoPorReqDocumentoDetalle(requerimientoDocumentoDetalleBD.getRequerimientoDocumentoDetalleUuid(), contexto);
