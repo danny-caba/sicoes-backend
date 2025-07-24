@@ -171,10 +171,11 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
         );
         List<File> archivosAlfresco = new ArrayList<>();
-        List<RequerimientoDocumentoDetalle> lstDetalleCargado = lstDetalle.stream()
-                .map(rd -> requerimientoDocumentoDetalleDao.buscarPorUuid(rd.getRequerimientoDocumentoDetalleUuid()))
-                .collect(Collectors.toList());
-        Archivo archivo = archivoRequerimiento(requerimientoDocumentoDB, lstDetalleCargado);
+        for (RequerimientoDocumentoDetalle detalle : lstDetalle) {
+            RequerimientoDocumentoDetalle detalleDB = requerimientoDocumentoDetalleDao.buscarPorUuid(detalle.getRequerimientoDocumentoDetalleUuid());
+            detalle.setDescripcionRequisito(detalleDB.getDescripcionRequisito());
+        }
+        Archivo archivo = archivoRequerimiento(requerimientoDocumentoDB, lstDetalle);
         archivoService.guardarXRequerimientoDocumento(archivo, contexto);
         File file = fileRequerimiento(archivo, requerimientoDocumentoDB.getRequerimiento().getIdRequerimiento());
         archivosAlfresco.add(file);
