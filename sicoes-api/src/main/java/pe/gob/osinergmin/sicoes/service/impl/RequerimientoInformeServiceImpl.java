@@ -319,6 +319,14 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                 Constantes.LISTADO.GRUPOS.CODIGO,
                 Constantes.LISTADO.GRUPOS.G1);
         requerimientoAprobacion.setGrupo(grupo);
+        ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD);
+        requerimientoAprobacion.setGrupoAprobador(grupoAprobador);
+        ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+        requerimientoAprobacion.setTipoAprobador(tipoAprobador);
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
         requerimientoAprobacionDao.save(requerimientoAprobacion);
     }
@@ -352,6 +360,14 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                 Constantes.LISTADO.GRUPOS.CODIGO,
                 Constantes.LISTADO.GRUPOS.G1);
         requerimientoAprobacion.setGrupo(grupo);
+        ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                Constantes.LISTADO.GRUPO_APROBACION.GERENTE);
+        requerimientoAprobacion.setGrupoAprobador(grupoAprobador);
+        ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+        requerimientoAprobacion.setTipoAprobador(tipoAprobador);
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
         requerimientoAprobacionDao.save(requerimientoAprobacion);
     }
