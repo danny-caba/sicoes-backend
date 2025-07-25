@@ -11,10 +11,29 @@ import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
 public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, Long> {
 
     @Query(value = "select p from PersonalReemplazo p"
+    + " left join fetch p.personaPropuesta pp"
+    + " left join fetch p.perfil pe"
+    + " left join fetch p.personaBaja pb"
+    + " left join fetch p.perfilBaja peb"
+    + " left join fetch p.estadoReemplazo e"
+    + " left join fetch p.estadoEvalDoc e1"
+    + " left join fetch p.estadoRevisarEval e2"
+    + " left join fetch p.estadoAprobacionInforme e3"
+    + " left join fetch p.estadoAprobacionAdenda e4"
+    + " left join fetch p.estadoEvalDocIniServ e5"
     + " where p.idSolicitud = :idSolicitud"
     + " order by p.idReemplazo",
     countQuery = "select count(p) from PersonalReemplazo p"
-    + " where p.idSolicitud = :idSolicitud"
-    + " order by p.idReemplazo")
+    + " left join p.personaPropuesta pp"
+    + " left join p.perfil pe"
+    + " left join p.personaBaja pb"
+    + " left join p.perfilBaja peb"
+    + " left join p.estadoReemplazo e"
+    + " left join p.estadoEvalDoc e1"
+    + " left join p.estadoRevisarEval e2"
+    + " left join p.estadoAprobacionInforme e3"
+    + " left join p.estadoAprobacionAdenda e4"
+    + " left join p.estadoEvalDocIniServ e5"
+    + " where p.idSolicitud = :idSolicitud")
     Page<PersonalReemplazo> obtenerxIdSolicitud(Long idSolicitud, Pageable pageable);
 }
