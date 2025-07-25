@@ -4,13 +4,13 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ACCESO_NO_
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.APROBACION_NO_ENCONTRADA;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
+import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ESTADO_APROBACION_INCORRECTO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ESTADO_APROBACION_NO_ENVIADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.SIAF_NO_ENVIADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_GPPM;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_GSE;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.APROBADOR_TECNICO;
-import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.EVALUADOR_CONTRATOS;
 import static pe.gob.osinergmin.sicoes.util.Constantes.ROLES.RESPONSABLE_TECNICO;
 
 import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
@@ -40,6 +40,8 @@ import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
@@ -52,6 +54,8 @@ import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DivisionService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -73,6 +77,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Date;
@@ -132,6 +138,12 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Autowired
     private PerfilAprobadorDao perfilAprobadorDao;
+
+    @Autowired
+    private RequerimientoDocumentoDao requerimientoDocumentoDao;
+
+    @Autowired
+    private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
 
     @Autowired
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
@@ -317,6 +329,11 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     public Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto) {
         Requerimiento requerimientoBD = requerimientoDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
+        RequerimientoAprobacion reqAprobacion = aprobacionDao.findById(aprobacion.getIdReqAprobacion())
+                .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
+        if(!reqAprobacion.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
+            throw new ValidacionException(ESTADO_APROBACION_INCORRECTO);
+        }
 
         if(isAprobacionArchivamiento(requerimientoBD)) {
             return aprobarArchivamiento(requerimientoBD, contexto);
@@ -324,15 +341,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
         boolean esGppm = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GPPM));
         boolean esGse = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GSE));
-        RequerimientoAprobacion reqAprobacion;
-        //validar si es GPPM o GSE
+
         if(esGppm) {
-            //Buscar Aprobacion GPPM
-            ListadoDetalle grupoGppm = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GPPM);
-            reqAprobacion = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
-                            grupoGppm.getIdListadoDetalle(), Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
-                    .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
             //Aprobado o Rechazado
             if(aprobacion.getEstado().getCodigo()
                     .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
@@ -389,12 +399,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
             }
         } else if(esGse) {
-            //Buscar Aprobacion GSE
-            ListadoDetalle grupoGse = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
-            reqAprobacion = aprobacionDao.obtenerPorRequerimientoYGrupo(requerimientoBD.getIdRequerimiento(),
-                            grupoGse.getIdListadoDetalle(), Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
-                    .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
             //Aprobado o Rechazado
             if(aprobacion.getEstado().getCodigo()
                     .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
@@ -403,6 +407,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
                 //Enviar para cargar docs
                 notificacionService.enviarMensajeCargarDocumentosRequerimiento(requerimientoBD, contexto);
+
+                //Crear Documento y Detalle
+                this.crearDocumento(requerimientoBD, contexto);
             } else if(aprobacion.getEstado().getCodigo()
                 .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
                 //Actualizar Fecha de Rechazo
@@ -435,6 +442,54 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         requerimientoBD.setDeObservacion(aprobacion.getDeObservacion());
         AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
         return requerimientoDao.save(requerimientoBD);
+    }
+
+    private void crearDocumento(Requerimiento requerimiento, Contexto contexto) {
+        ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.EN_PROCESO);
+        ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_REQ_DOCUMENTO.CODIGO, Constantes.LISTADO.TIPO_REQ_DOCUMENTO.REGISTRO);
+        ListadoDetalle revision = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.REVISION_DOCUMENTO.CODIGO, Constantes.LISTADO.REVISION_DOCUMENTO.PENDIENTE);
+        RequerimientoDocumento reqDoc = new RequerimientoDocumento();
+        reqDoc.setRequerimiento(requerimiento);
+        reqDoc.setRequerimientoDocumentoUuid(UUID.randomUUID().toString());
+        reqDoc.setEstado(estado);
+        reqDoc.setFlagActivo(Constantes.ESTADO.ACTIVO);
+        reqDoc.setFechaIngreso(new Date());
+        reqDoc.setTipo(tipo);
+        reqDoc.setRevision(revision);
+        AuditoriaUtil.setAuditoriaRegistro(reqDoc, contexto);
+        reqDoc = requerimientoDocumentoDao.save(reqDoc);
+
+        Set<String> requisitos = new HashSet<>();
+        requisitos.add(Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.COPIA_DOCUMENTO);
+        requisitos.add(Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.RUC_PERSONA);
+        requisitos.add(Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.DJ_IMPEDIMENTO);
+        requisitos.add(Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.DJ_VINCULO_OSINERGMIN);
+        requisitos.add(Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.INFORME_REQUERIMIENTO);
+
+        ListadoDetalle origenExterno = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ORIGEN_REQUISITO.CODIGO, Constantes.LISTADO.ORIGEN_REQUISITO.EXTERNO);
+        ListadoDetalle origenRequerimiento = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ORIGEN_REQUISITO.CODIGO, Constantes.LISTADO.ORIGEN_REQUISITO.REQUERIMIENTO);
+
+        for(String req: requisitos) {
+            ListadoDetalle requisito = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.CODIGO, req);
+            RequerimientoDocumentoDetalle detalle = new RequerimientoDocumentoDetalle();
+            detalle.setRequerimientoDocumentoDetalleUuid(UUID.randomUUID().toString());
+            detalle.setRequerimientoDocumento(reqDoc);
+            detalle.setDescripcionRequisito(requisito.getDescripcion());
+            detalle.setRequisito(requisito);
+            if(req.equals(Constantes.LISTADO.REQUISITO_REQ_DOCUMENTO.INFORME_REQUERIMIENTO)) {
+                detalle.setOrigenRequisito(origenRequerimiento);
+            } else {
+                detalle.setOrigenRequisito(origenExterno);
+            }
+            AuditoriaUtil.setAuditoriaRegistro(detalle, contexto);
+            requerimientoDocumentoDetalleDao.save(detalle);
+        }
     }
 
     @Override

@@ -687,18 +687,15 @@ public class Constantes {
 
 		public static final class ESTADO_REQ_DOCUMENTO {
 			public static final String CODIGO 		                = "ESTADO_REQ_DOCUMENTO";
-//			public static final String PRELIMINAR 	    			= "PRELIMINAR";
             public static final String EN_PROCESO	                = "EN_PROCESO";
 			public static final String CONCLUIDO	                = "CONCLUIDO";
 			public static final String SOLICITUD_PRELIMINAR 	    = "SOLICITUD_PRELIMINAR";
-
 		}
 
 		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
 			public static final String CODIGO 		                = "ESTADO_REQ_DOCUMENTO_DETALLE";
 			public static final String CUMPLE		                = "CUMPLE";
 			public static final String OBSERVADO	                = "OBSERVADO";
-
 		}
 
 		public static final class TIPO_REQ_DOCUMENTO {
@@ -723,6 +720,22 @@ public class Constantes {
             public static final String EXTERNO						= "EXTERNO";
             public static final String REQUERIMIENTO				= "REQUERIMIENTO";
         }
+
+		public static final class REVISION_DOCUMENTO {
+			public static final String CODIGO 						= "REVISION_DOCUMENTO";
+			public static final String PENDIENTE					= "PENDIENTE";
+			public static final String EVALUADO						= "EVALUADO";
+			public static final String REVISADO						= "REVISADO";
+		}
+
+		public static final class REQUISITO_REQ_DOCUMENTO {
+			public static final String CODIGO 		                = "REQUISITO_REQ_DOCUMENTO";
+			public static final String COPIA_DOCUMENTO	            = "COPIA_DOCUMENTO";
+			public static final String RUC_PERSONA	                = "RUC_PERSONA";
+			public static final String DJ_IMPEDIMENTO 	    		= "DJ_IMPEDIMENTO";
+			public static final String DJ_VINCULO_OSINERGMIN 	    = "DJ_VINCULO_OSINERGMIN";
+			public static final String INFORME_REQUERIMIENTO 	    = "INFORME_REQUERIMIENTO";
+		}
 	}
 	
 
@@ -1017,6 +1030,8 @@ public class Constantes {
 		public static final String PERFIL_APROBADOR_G1_NO_ENCONTRADO = "V01044";
 		public static final String PERFIL_APROBADOR_G2_NO_ENCONTRADO = "V01045";
 		public static final String PERFIL_APROBADOR_G3_NO_ENCONTRADO = "V01046";
+		public static final String ESTADO_APROBACION_INCORRECTO = "V01047";
+
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
