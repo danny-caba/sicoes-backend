@@ -24,11 +24,13 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @Column(name = "ID_SOLI_PERF_CONT",nullable = false)
     private Long idSolicitud;
 
-    @Column(name = "ID_PERSONA_PROPUESTA")
-    private Long idPersonaPropuesta;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PERSONA_PROPUESTA")
+    private Supervisora personaPropuesta;
 
-    @Column(name = "CO_PERFIL", length = 15)
-    private String coPerfil;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="CO_PERFIL")
+    private ListadoDetalle perfil;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
@@ -40,14 +42,17 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @Column(name = "FE_FECHA_INICIO_CONTRACTUAL")
     private Date feFechaInicioContractual;
 
-    @Column(name = "ES_ESTADO_REEMPLAZO", length = 1)
-    private Long esEstadoReemplazo;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_REEMPLAZO")
+    private ListadoDetalle estadoReemplazo;
 
-    @Column(name = "ID_PERSONA_BAJA")
-    private Long idPersonaBaja;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PERSONA_BAJA")
+    private Supervisora personaBaja;
 
-    @Column(name = "CO_PERFIL_PER_BAJA", length = 15)
-    private String coPerfilPerBaja;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="CO_PERFIL_PER_BAJA")
+    private ListadoDetalle perfilBaja;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
@@ -64,19 +69,24 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @Column(name = "FE_FECHA_FINALIZACION_CONTRATO")
     private Date feFechaFinalizacionContrato;
 
-    @Column(name = "ES_ESTADO_EVAL_DOC", length = 1)
-    private Long esEstadoEvalDoc;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_EVAL_DOC")
+    private ListadoDetalle estadoEvalDoc;
 
-    @Column(name = "ES_ESTADO_REVISAR_EVAL_DOC", length = 1)
-    private Long esEstadoRevisarEval;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_REVISAR_EVAL_DOC")
+    private ListadoDetalle estadoRevisarEval;
 
-    @Column(name = "ES_ESTADO_APROBACION_INFORME", length = 1)
-    private Long esEstadoAprobacionInforme;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_APROBACION_INFORME")
+    private ListadoDetalle estadoAprobacionInforme;
 
-    @Column(name = "ES_ESTADO_APROBACION_ADENDA", length = 1)
-    private Long esEstadoAprobacionAdenda;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_APROBACION_ADENDA")
+    private ListadoDetalle estadoAprobacionAdenda;
 
-    @Column(name = "ES_ESTADO_EVAL_DOC_INI_SERV", length = 1)
-    private Long esEstadoEvalDocIniServ;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_EVAL_DOC_INI_SERV")
+    private ListadoDetalle estadoEvalDocIniServ;
 
 }

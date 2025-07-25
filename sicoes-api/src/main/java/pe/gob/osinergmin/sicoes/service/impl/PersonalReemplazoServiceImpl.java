@@ -42,7 +42,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto) {
         logger.info("listarPersonalReemplazo");
-        return reemplazoDao.obtenerxIdSolicitud(idSolicitud,pageable);
+        Pageable pageRequest = pageable == null ? Pageable.unpaged() : pageable;
+        return reemplazoDao.obtenerxIdSolicitud(idSolicitud,pageRequest);
     }
 
     @Override
@@ -63,8 +64,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         PersonalReemplazo entity = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
 
-        entity.setCoPerfilPerBaja(null);
-        entity.setIdPersonaBaja(null);
+        entity.setPerfilBaja(null);
+        entity.setPersonaBaja(null);
         entity.setFeFechaDesvinculacion(null);
         AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
         return reemplazoDao.save(entity);
@@ -77,17 +78,20 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
 
+        logger.info("actualizando {}:",personalReemplazo.getIdReemplazo());
+
         PersonalReemplazo existe = reemplazoDao.findById(personalReemplazo.getIdReemplazo())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
 
         if (personalReemplazo.getIdSolicitud() != null) {
             existe.setIdSolicitud(personalReemplazo.getIdSolicitud());
         }
-        if (personalReemplazo.getIdPersonaPropuesta() != null) {
-            existe.setIdPersonaPropuesta(personalReemplazo.getIdPersonaPropuesta());
+        if (personalReemplazo.getPersonaPropuesta() != null &&
+                personalReemplazo.getPersonaPropuesta().getIdSupervisora() != null) {
+            existe.setPersonaPropuesta(personalReemplazo.getPersonaPropuesta());
         }
-        if (personalReemplazo.getCoPerfil() != null) {
-            existe.setCoPerfil(personalReemplazo.getCoPerfil());
+        if (personalReemplazo.getPerfil() != null) {
+            existe.setPerfil(personalReemplazo.getPerfil());
         }
         if (personalReemplazo.getFeFechaRegistro() != null) {
             existe.setFeFechaRegistro(personalReemplazo.getFeFechaRegistro());
@@ -95,14 +99,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getFeFechaInicioContractual() != null) {
             existe.setFeFechaInicioContractual(personalReemplazo.getFeFechaInicioContractual());
         }
-        if (personalReemplazo.getEsEstadoReemplazo() != null) {
-            existe.setEsEstadoReemplazo(personalReemplazo.getEsEstadoReemplazo());
+        if (personalReemplazo.getEstadoReemplazo() != null) {
+            existe.setEstadoReemplazo(personalReemplazo.getEstadoReemplazo());
         }
-        if (personalReemplazo.getIdPersonaBaja() != null) {
-            existe.setIdPersonaBaja(personalReemplazo.getIdPersonaBaja());
+        if (personalReemplazo.getPersonaBaja() != null &&
+                personalReemplazo.getPersonaBaja().getIdSupervisora() != null) {
+            existe.setPersonaBaja(personalReemplazo.getPersonaBaja());
         }
-        if (personalReemplazo.getCoPerfilPerBaja() != null) {
-            existe.setCoPerfilPerBaja(personalReemplazo.getCoPerfilPerBaja());
+        if (personalReemplazo.getPerfilBaja() != null) {
+            existe.setPerfilBaja(personalReemplazo.getPerfilBaja());
         }
         if (personalReemplazo.getFeFechaBaja() != null) {
             existe.setFeFechaBaja(personalReemplazo.getFeFechaBaja());
@@ -113,21 +118,23 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getFeFechaFinalizacionContrato() != null) {
             existe.setFeFechaFinalizacionContrato(personalReemplazo.getFeFechaFinalizacionContrato());
         }
-        if (personalReemplazo.getEsEstadoRevisarEval() != null) {
-            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        if (personalReemplazo.getEstadoRevisarEval() != null) {
+            existe.setEstadoRevisarEval(personalReemplazo.getEstadoRevisarEval());
         }
-        if (personalReemplazo.getEsEstadoEvalDoc() != null) {
-            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        if (personalReemplazo.getEstadoEvalDoc() != null) {
+            existe.setEstadoEvalDoc(personalReemplazo.getEstadoEvalDoc());
         }
-        if (personalReemplazo.getEsEstadoAprobacionInforme() != null) {
-            existe.setEsEstadoAprobacionInforme(personalReemplazo.getEsEstadoAprobacionInforme());
+        if (personalReemplazo.getEstadoAprobacionInforme() != null) {
+            existe.setEstadoAprobacionInforme(personalReemplazo.getEstadoAprobacionInforme());
         }
-        if (personalReemplazo.getEsEstadoAprobacionAdenda() != null) {
-            existe.setEsEstadoAprobacionAdenda(personalReemplazo.getEsEstadoAprobacionAdenda());
+        if (personalReemplazo.getEstadoAprobacionAdenda() != null) {
+            existe.setEstadoAprobacionAdenda(personalReemplazo.getEstadoAprobacionAdenda());
         }
-        if (personalReemplazo.getEsEstadoEvalDocIniServ() != null) {
-            existe.setEsEstadoEvalDocIniServ(personalReemplazo.getEsEstadoEvalDocIniServ());
+        if (personalReemplazo.getEstadoEvalDocIniServ() != null) {
+            existe.setEstadoEvalDocIniServ(personalReemplazo.getEstadoEvalDocIniServ());
         }
+
+        logger.info("actualizando_Ex {}:",existe);
 
         AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
         return reemplazoDao.save(existe);
@@ -154,8 +161,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         archivoDao.deleteByDocumentoIds(ids);
         documentoReemDao.deleteByIdIn(ids);
         //Quitar personal
-        entity.setCoPerfil(null);
-        entity.setIdPersonaPropuesta(null);
+        entity.setPerfil(null);
+        entity.setPersonaPropuesta(null);
         AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
         return reemplazoDao.save(entity);
     }
@@ -173,13 +180,14 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getIdSolicitud() != null) {
             existe.setIdSolicitud(personalReemplazo.getIdSolicitud());
         }
-        if (personalReemplazo.getIdPersonaPropuesta() != null) {
-            existe.setIdPersonaPropuesta(personalReemplazo.getIdPersonaPropuesta());
+        if (personalReemplazo.getPersonaPropuesta().getIdSupervisora() != null){
+            existe.setPersonaPropuesta(personalReemplazo.getPersonaPropuesta());
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
-        if (personalReemplazo.getCoPerfil() != null) {
-            existe.setCoPerfil(personalReemplazo.getCoPerfil());
+
+        if (personalReemplazo.getPerfil() != null) {
+            existe.setPerfil(personalReemplazo.getPerfil());
         }
         if (personalReemplazo.getFeFechaRegistro() != null) {
             existe.setFeFechaRegistro(personalReemplazo.getFeFechaRegistro());
@@ -187,16 +195,16 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getFeFechaInicioContractual() != null) {
             existe.setFeFechaInicioContractual(personalReemplazo.getFeFechaInicioContractual());
         }
-        if (personalReemplazo.getEsEstadoReemplazo() != null) {
-            existe.setEsEstadoReemplazo(personalReemplazo.getEsEstadoReemplazo());
+        if (personalReemplazo.getEstadoReemplazo() != null) {
+            existe.setEstadoReemplazo(personalReemplazo.getEstadoReemplazo());
         }
-        if (personalReemplazo.getIdPersonaBaja() != null) {
-            existe.setIdPersonaBaja(personalReemplazo.getIdPersonaBaja());
+        if (personalReemplazo.getPersonaBaja() != null) {
+            existe.setPersonaBaja(personalReemplazo.getPersonaBaja());
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
         }
-        if (personalReemplazo.getCoPerfilPerBaja() != null) {
-            existe.setCoPerfilPerBaja(personalReemplazo.getCoPerfilPerBaja());
+        if (personalReemplazo.getPerfilBaja() != null) {
+            existe.setPerfilBaja(personalReemplazo.getPerfilBaja());
         }
         if (personalReemplazo.getFeFechaBaja() != null) {
             existe.setFeFechaBaja(personalReemplazo.getFeFechaBaja());
@@ -215,25 +223,25 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (!documentoReemDao.existsByIdReemplazoPersonalAndIdSeccion(id,idSeccion)) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
         }
-        existe.setEsEstadoReemplazo(listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0).getIdListadoDetalle());
+        existe.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
 
         //solicitudHija.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));
         //solicitudHija.setEstadoRevision(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.ARCHIVADO));
-        if (personalReemplazo.getEsEstadoEvalDoc() != null) {
-            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        if (personalReemplazo.getEstadoEvalDoc() != null) {
+            existe.setEstadoEvalDoc(personalReemplazo.getEstadoEvalDoc());
         }
-        if (personalReemplazo.getEsEstadoRevisarEval() != null) {
-            existe.setEsEstadoEvalDoc(personalReemplazo.getEsEstadoEvalDoc());
+        if (personalReemplazo.getEstadoRevisarEval() != null) {
+            existe.setEstadoEvalDoc(personalReemplazo.getEstadoEvalDoc());
         }
-        if (personalReemplazo.getEsEstadoAprobacionInforme() != null) {
-            existe.setEsEstadoAprobacionInforme(personalReemplazo.getEsEstadoAprobacionInforme());
+        if (personalReemplazo.getEstadoAprobacionInforme() != null) {
+            existe.setEstadoAprobacionInforme(personalReemplazo.getEstadoAprobacionInforme());
         }
-        if (personalReemplazo.getEsEstadoAprobacionAdenda() != null) {
-            existe.setEsEstadoAprobacionAdenda(personalReemplazo.getEsEstadoAprobacionAdenda());
+        if (personalReemplazo.getEstadoAprobacionAdenda() != null) {
+            existe.setEstadoAprobacionAdenda(personalReemplazo.getEstadoAprobacionAdenda());
         }
-        if (personalReemplazo.getEsEstadoEvalDocIniServ() != null) {
-            existe.setEsEstadoEvalDocIniServ(personalReemplazo.getEsEstadoEvalDocIniServ());
+        if (personalReemplazo.getEstadoEvalDocIniServ() != null) {
+            existe.setEstadoEvalDocIniServ(personalReemplazo.getEstadoEvalDocIniServ());
         }
 
         //Actualizamos el estao de movimiento del perfil:
