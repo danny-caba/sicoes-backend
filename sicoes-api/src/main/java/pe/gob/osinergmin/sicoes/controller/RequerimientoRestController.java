@@ -50,7 +50,7 @@ public class RequerimientoRestController extends BaseRestController {
     @PatchMapping("/{uuid}/archivar")
     @Raml("requerimiento.archivar.properties")
     public Requerimiento archivarRequerimiento(@PathVariable("uuid") String requerimientoUuid, @RequestBody Requerimiento requerimiento) {
-        logger.info("Archivar requerimiento {}", requerimientoUuid, requerimiento);
+        logger.info("Archivar requerimiento {} {}", requerimientoUuid, requerimiento);
         Requerimiento requerimientoDB = requerimientoService.obtenerPorUuid(requerimientoUuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requerimiento no encontrado"));
         requerimientoDB.setDeObservacion(requerimiento.getDeObservacion());

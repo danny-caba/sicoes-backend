@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +132,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                     Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
             );
             List<File> archivosAlfresco = new ArrayList<>();
-            RequerimientoAprobacion aprobadorG1 = asignarAprobadorG1(requerimiento, contexto);
+            firmarG1(requerimiento, contexto);
             Archivo archivo = archivoRequerimientoInforme(requerimientoInformeDetalle, contexto);
             archivoService.guardarXRequerimientoInforme(archivo, contexto);
             File file = fileRequerimiento(archivo, requerimiento.getIdRequerimiento());
@@ -141,6 +142,8 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             if (documentoOutRO.getResultCode() != 1) {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, documentoOutRO.getMessage());
             }
+            aprobarG1(requerimientoInformeDB, contexto);
+            aprobarG3(requerimientoInformeDB, contexto);
             return requerimientoInformeDB;
         } catch (Exception ex) {
             logger.error("Error al guardar el informe. Contexto: {}, Entidad: {}", contexto, requerimientoInformeDetalle, ex);
@@ -256,7 +259,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         }
     }
 
-    private RequerimientoAprobacion asignarAprobadorG1(Requerimiento requerimiento, Contexto contexto) {
+    private void firmarG1(Requerimiento requerimiento, Contexto contexto) {
         RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
         PerfilAprobador perfilAprobador = perfilAprobadorDao
                 .findFirstByPerfilIdListadoDetalle(requerimiento.getPerfil().getIdListadoDetalle())
@@ -279,8 +282,78 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         requerimientoAprobacion.setEstado(asignado);
         requerimientoAprobacion.setRequerimiento(requerimiento);
         requerimientoAprobacion.setTipo(tipo);
+        ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPOS.CODIGO,
+                Constantes.LISTADO.GRUPOS.G1);
+        requerimientoAprobacion.setGrupo(grupo);
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
-        return requerimientoAprobacionDao.save(requerimientoAprobacion);
+        requerimientoAprobacionDao.save(requerimientoAprobacion);
+    }
+
+    private void aprobarG1(RequerimientoInforme requerimientoInforme, Contexto contexto) {
+        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
+        PerfilAprobador perfilAprobador = perfilAprobadorDao
+                .findFirstByPerfilIdListadoDetalle(requerimientoInforme.getRequerimiento().getPerfil().getIdListadoDetalle())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_NO_ENCONTRADO));
+        Usuario aprobadorG1 = perfilAprobador.getAprobadorG1();
+        if (aprobadorG1 == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_G1_NO_ENCONTRADO);
+        }
+        requerimientoAprobacion.setUsuario(aprobadorG1);
+        ListadoDetalle aprobado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                Constantes.LISTADO.ESTADO_APROBACION.APROBADO
+        );
+        if (aprobado == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ASIGNADO_NO_CONFIGURADO_EN_LISTADODETALLE);
+        }
+        ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                Constantes.LISTADO.TIPO_APROBACION.APROBAR);
+        requerimientoAprobacion.setEstado(aprobado);
+        requerimientoAprobacion.setRequerimiento(requerimientoInforme.getRequerimiento());
+        requerimientoAprobacion.setRequerimientoInforme(requerimientoInforme);
+        requerimientoAprobacion.setTipo(tipo);
+        requerimientoAprobacion.setFechaAprobacion(new Date());
+        ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPOS.CODIGO,
+                Constantes.LISTADO.GRUPOS.G1);
+        requerimientoAprobacion.setGrupo(grupo);
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
+        requerimientoAprobacionDao.save(requerimientoAprobacion);
+    }
+
+    private void aprobarG3(RequerimientoInforme requerimientoInforme, Contexto contexto) {
+        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
+        PerfilAprobador perfilAprobador = perfilAprobadorDao
+                .findFirstByPerfilIdListadoDetalle(requerimientoInforme.getRequerimiento().getPerfil().getIdListadoDetalle())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_NO_ENCONTRADO));
+        Usuario aprobadorG3 = perfilAprobador.getAprobadorG3();
+        if (aprobadorG3 == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_G3_NO_ENCONTRADO);
+        }
+        requerimientoAprobacion.setUsuario(aprobadorG3);
+        ListadoDetalle aprobado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                Constantes.LISTADO.ESTADO_APROBACION.APROBADO
+        );
+        if (aprobado == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ASIGNADO_NO_CONFIGURADO_EN_LISTADODETALLE);
+        }
+        ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                Constantes.LISTADO.TIPO_APROBACION.APROBAR);
+        requerimientoAprobacion.setEstado(aprobado);
+        requerimientoAprobacion.setRequerimiento(requerimientoInforme.getRequerimiento());
+        requerimientoAprobacion.setRequerimientoInforme(requerimientoInforme);
+        requerimientoAprobacion.setTipo(tipo);
+        requerimientoAprobacion.setFechaAprobacion(new Date());
+        ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPOS.CODIGO,
+                Constantes.LISTADO.GRUPOS.G1);
+        requerimientoAprobacion.setGrupo(grupo);
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
+        requerimientoAprobacionDao.save(requerimientoAprobacion);
     }
 
     private void validarInformeDetalle(RequerimientoInformeDetalle requerimientoInformeDetalle) {

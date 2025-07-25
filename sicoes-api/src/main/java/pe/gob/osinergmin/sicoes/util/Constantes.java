@@ -1016,6 +1016,7 @@ public class Constantes {
 		public static final String PERFIL_APROBADOR_NO_ENCONTRADO = "V01043";
 		public static final String PERFIL_APROBADOR_G1_NO_ENCONTRADO = "V01044";
 		public static final String PERFIL_APROBADOR_G2_NO_ENCONTRADO = "V01045";
+		public static final String PERFIL_APROBADOR_G3_NO_ENCONTRADO = "V01046";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

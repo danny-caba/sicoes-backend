@@ -34,6 +34,10 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private Requerimiento requerimiento;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REQ_INFORME")
+    private RequerimientoInforme requerimientoInforme;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_TIPO_LD")
     private ListadoDetalle tipo;
 
@@ -116,6 +120,14 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     public void setRequerimiento(Requerimiento requerimiento) {
         this.requerimiento = requerimiento;
+    }
+
+    public RequerimientoInforme getRequerimientoInforme() {
+        return requerimientoInforme;
+    }
+
+    public void setRequerimientoInforme(RequerimientoInforme requerimientoInforme) {
+        this.requerimientoInforme = requerimientoInforme;
     }
 
     public ListadoDetalle getTipo() {
