@@ -23,11 +23,13 @@ public class DocumentoReemplazo extends BaseModel implements Serializable {
     @Column(name = "ID_DOCUMENTO")
     private Long idDocumento;
 
-    @Column(name = "ID_SECCION")
-    private Long idSeccion;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_SECCION")
+    private ListadoDetalle seccion;
 
-    @Column(name = "ID_TIPO_DOCUMENTO")
-    private String idTipoDocumento;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_TIPO_DOCUMENTO")
+    private ListadoDetalle tipoDocumento;
 
     @Column(name = "NU_CORRELATIVO")
     private Long nuCorrelativo;

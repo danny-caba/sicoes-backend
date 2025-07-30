@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +25,10 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class DocumentoReemServiceImpl implements DocumentoReemService {
@@ -112,8 +117,11 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
     }
 
     @Override
-    public DocumentoReemplazo obtener(Long aLong, Contexto contexto) {
-        return null;
+    public DocumentoReemplazo obtener(Long idDocumento, Contexto contexto) {
+        DocumentoReemplazo documento = documentoReemDao.obtener(idDocumento);
+        List<Archivo> archivos = archivoDao.buscarPorDocumentoReemplazo(idDocumento);
+        documento.setArchivo(archivos.get(0));
+        return documento;
     }
 
     @Override
@@ -136,7 +144,17 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
     }
 
     @Override
-    public List<DocumentoReemplazo> buscar(Long idReemplazoPersonal, Contexto contexto) {
-        return documentoReemDao.buscar(idReemplazoPersonal);
+    public Page<DocumentoReemplazo> buscar(Long idReemplazoPersonal, Pageable pageable, Contexto contexto) {
+        Page<DocumentoReemplazo> documentos = documentoReemDao.buscar(idReemplazoPersonal,pageable);
+        List<Long> ids = documentos.getContent()
+                .stream()
+                .map(DocumentoReemplazo::getIdDocumento)
+                .collect(Collectors.toList());
+
+        List<Archivo> archivos = archivoDao.findByIdDocumentoReemIn(ids);
+        Map<Long, Archivo> porDoc = archivos.stream()
+                        .collect(Collectors.toMap(Archivo::getIdDocumentoReem, Function.identity()));
+        documentos.forEach(d -> d.setArchivo(porDoc.get(d.getIdDocumento())));
+        return documentos;
     }
 }

@@ -246,6 +246,8 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+"where a.idDocumentoReem =:idDocumentoReem")
 	public List<Archivo> buscarPorDocumentoReemplazo(Long idDocumentoReem);
 
+	List<Archivo> findByIdDocumentoReemIn(List<Long> ids);
+
 	@Query("select a from Archivo a "
 			+ "where a.idSeccionRequisito IN :requisitosIds ")
 	public List<Archivo> obtenerArchivosPorRequisitos(List<Long> requisitosIds);
