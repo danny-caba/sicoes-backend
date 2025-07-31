@@ -157,10 +157,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
         //Eliminar documentos adjuntos
         Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.SECCION_DOC_REEMPLZO.PERSONAL_PROPUESTO).get(0).getIdListadoDetalle();
+                Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PERSONAL_PROPUESTO).get(0).getIdListadoDetalle();
         logger.info("idSeccion {}:",idSeccion);
 
-        if (!documentoReemDao.existsByIdReemplazoPersonalAndIdSeccion(id,idSeccion)) {
+        if (!documentoReemDao.existsByIdReemplazoPersonalAndSeccion_IdListadoDetalle(id,idSeccion)) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
         }
         List<Long> ids = documentoReemDao.findIdsByReemplazoAndSeccion(id, idSeccion);
@@ -183,73 +183,23 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
 
-        if (personalReemplazo.getIdSolicitud() != null) {
-            existe.setIdSolicitud(personalReemplazo.getIdSolicitud());
-        }
-        if (personalReemplazo.getPersonaPropuesta().getIdSupervisora() != null){
-            existe.setPersonaPropuesta(existe.getPersonaPropuesta());
-        } else {
+        if (existe.getPersonaPropuesta() == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
 
-        if (personalReemplazo.getPerfil() != null) {
-            existe.setPerfil(personalReemplazo.getPerfil());
-        }
-        if (personalReemplazo.getFeFechaRegistro() != null) {
-            existe.setFeFechaRegistro(personalReemplazo.getFeFechaRegistro());
-        }
-        if (personalReemplazo.getFeFechaInicioContractual() != null) {
-            existe.setFeFechaInicioContractual(personalReemplazo.getFeFechaInicioContractual());
-        }
-        if (personalReemplazo.getEstadoReemplazo() != null) {
-            existe.setEstadoReemplazo(personalReemplazo.getEstadoReemplazo());
-        }
-        if (personalReemplazo.getPersonaBaja() != null) {
-            existe.setPersonaBaja(existe.getPersonaBaja());
-        } else {
+        if (existe.getPersonaBaja() == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
-        }
-        if (personalReemplazo.getPerfilBaja() != null) {
-            existe.setPerfilBaja(personalReemplazo.getPerfilBaja());
-        }
-        if (personalReemplazo.getFeFechaBaja() != null) {
-            existe.setFeFechaBaja(personalReemplazo.getFeFechaBaja());
-        }
-        if (personalReemplazo.getFeFechaDesvinculacion() != null) {
-            existe.setFeFechaDesvinculacion(personalReemplazo.getFeFechaDesvinculacion());
-        }
-        if (personalReemplazo.getFeFechaFinalizacionContrato() != null) {
-            existe.setFeFechaFinalizacionContrato(personalReemplazo.getFeFechaFinalizacionContrato());
         }
 
         //Buscamos que este llena la seccion 3.-Solcitud de reemplazo de supervisor
         Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.SECCION_DOC_REEMPLZO.SOLICITUD_REEMPLAZO_SUPERVISOR).get(0).getIdListadoDetalle();
+                Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR).get(0).getIdListadoDetalle();
         logger.info("idSeccion-validar {}:",idSeccion);
-        if (!documentoReemDao.existsByIdReemplazoPersonalAndIdSeccion(id,idSeccion)) {
+        if (!documentoReemDao.existsByIdReemplazoPersonalAndSeccion_IdListadoDetalle(id,idSeccion)) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
         }
         existe.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
-
-        //solicitudHija.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));
-        //solicitudHija.setEstadoRevision(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REVISION.CODIGO, Constantes.LISTADO.ESTADO_REVISION.ARCHIVADO));
-        if (personalReemplazo.getEstadoEvalDoc() != null) {
-            existe.setEstadoEvalDoc(personalReemplazo.getEstadoEvalDoc());
-        }
-        if (personalReemplazo.getEstadoRevisarEval() != null) {
-            existe.setEstadoEvalDoc(personalReemplazo.getEstadoEvalDoc());
-        }
-        if (personalReemplazo.getEstadoAprobacionInforme() != null) {
-            existe.setEstadoAprobacionInforme(personalReemplazo.getEstadoAprobacionInforme());
-        }
-        if (personalReemplazo.getEstadoAprobacionAdenda() != null) {
-            existe.setEstadoAprobacionAdenda(personalReemplazo.getEstadoAprobacionAdenda());
-        }
-        if (personalReemplazo.getEstadoEvalDocIniServ() != null) {
-            existe.setEstadoEvalDocIniServ(personalReemplazo.getEstadoEvalDocIniServ());
-        }
-
         //Actualizamos el estao de movimiento del perfil:
         //SupervisoraMovimiento movi = new SupervisoraMovimiento();
         //supervisoraMovimientoService.guardar(movi,AuditoriaUtil.getContextoJob());

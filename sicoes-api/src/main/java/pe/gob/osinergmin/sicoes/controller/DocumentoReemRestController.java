@@ -1,6 +1,8 @@
 package pe.gob.osinergmin.sicoes.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +12,8 @@ import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.util.Raml;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/documentosreemplazo")
@@ -21,7 +25,7 @@ public class DocumentoReemRestController extends BaseRestController{
     private Logger logger = LogManager.getLogger(DocumentoReemRestController.class);
 
     @PostMapping
-    @Raml("documentoreemplazo.obtener.properties")
+    @Raml("documentoReemplazo.obtener.properties")
     public DocumentoReemplazo registrar(@ModelAttribute DocumentoReemplazo documento,
                                         @RequestParam("file") MultipartFile file){
         logger.info("registrar documento reemplazo {} ",documento);
@@ -39,4 +43,30 @@ public class DocumentoReemRestController extends BaseRestController{
         logger.info("eliminar documento reemplazo {}",id);
         documentoReemService.eliminar(id,getContexto());
     }
+
+    @GetMapping
+    @Raml("documentoReemplazo.listar.properties")
+    public Page<DocumentoReemplazo> listarPorIdReemplazo(@RequestParam Long idReemplazo,
+                                                         Pageable pageable){
+        logger.info("listar documentos x id reemplazo  {}",idReemplazo);
+        return documentoReemService.buscar(idReemplazo,pageable,getContexto());
+    }
+
+    @GetMapping("/seccion")
+    @Raml("documentoReemplazo.listar.properties")
+    public Page<DocumentoReemplazo> listarPorIdReemplazoSeccion(@RequestParam Long idReemplazo,
+                                                         @RequestParam String seccion, Pageable pageable){
+        logger.info("listar documentos x id reemplazo {} - seccion  {}",idReemplazo,seccion);
+        return documentoReemService.buscarIdReemplazoSeccion(idReemplazo,seccion,pageable);
+    }
+
+    @GetMapping("/{idDocumento}")
+    @Raml("documentoReemplazo.obtener.properties")
+    public DocumentoReemplazo listar(@PathVariable Long idDocumento){
+        logger.info("listar documentos x id {}",idDocumento);
+        return documentoReemService.obtener(idDocumento,getContexto());
+    }
+
+
+
 }

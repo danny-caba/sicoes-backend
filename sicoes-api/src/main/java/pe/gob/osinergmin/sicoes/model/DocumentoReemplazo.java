@@ -1,13 +1,16 @@
 package pe.gob.osinergmin.sicoes.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,11 +26,13 @@ public class DocumentoReemplazo extends BaseModel implements Serializable {
     @Column(name = "ID_DOCUMENTO")
     private Long idDocumento;
 
-    @Column(name = "ID_SECCION")
-    private Long idSeccion;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_SECCION")
+    private ListadoDetalle seccion;
 
-    @Column(name = "ID_TIPO_DOCUMENTO")
-    private String idTipoDocumento;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_TIPO_DOCUMENTO")
+    private ListadoDetalle tipoDocumento;
 
     @Column(name = "NU_CORRELATIVO")
     private Long nuCorrelativo;
@@ -66,4 +71,8 @@ public class DocumentoReemplazo extends BaseModel implements Serializable {
 
     @Transient
     private Archivo archivo;
+
+    @OneToOne(mappedBy = "documento", cascade = CascadeType.ALL,
+            orphanRemoval = true, fetch = FetchType.LAZY)
+    private EvaluarDocuReemplazo evaluacion;
 }

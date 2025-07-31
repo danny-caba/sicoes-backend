@@ -622,11 +622,14 @@ public class Constantes {
 			public static final String MODIFICACION		= "MODIFICACION";
 		}
 
-		public static final class SECCION_DOC_REEMPLZO {
+		public static final String SECCIONES_REEMPLAZO_PERSONAL = "SECCIONES_REEMPLAZO_PERSONAL";
+		public static final class SECCION_DOC_REEMPLAZO {
+			public static final String INFORME = "INFORME";
 			public static final String BAJA_PERSONAL_PROPUESTO = "BAJA_PERSONAL_PROPUESTO";
 			public static final String PERSONAL_PROPUESTO = "PERSONAL_PROPUESTO";
 			public static final String SOLICITUD_REEMPLAZO_SUPERVISOR = "SOLICITUD_REEMPLAZO_SUPERVISOR";
-
+			public static final String PROYECTO_ADENDA = "PROYECTO_ADENDA";
+			public static final String ADENDA_FINAL = "ADENDA_FINAL";
 		}
 
 
@@ -894,6 +897,7 @@ public class Constantes {
 		public static final String REEMPLAZO_PERSONAL_NO_EXISTE="V01022";
 		public static final String ID_PERSONA_BAJA = "V01023";
 		public static final String ID_PERSONA_PROPUESTA = "V01024";
+		public static final String DOCUMENTO_REEMPLAZO_ID_SECCION = "V01025";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
