@@ -1,13 +1,16 @@
 package pe.gob.osinergmin.sicoes.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -68,4 +71,8 @@ public class DocumentoReemplazo extends BaseModel implements Serializable {
 
     @Transient
     private Archivo archivo;
+
+    @OneToOne(mappedBy = "documento", cascade = CascadeType.ALL,
+            orphanRemoval = true, fetch = FetchType.LAZY)
+    private EvaluarDocuReemplazo evaluacion;
 }

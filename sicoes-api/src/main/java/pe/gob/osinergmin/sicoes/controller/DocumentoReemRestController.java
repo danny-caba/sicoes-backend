@@ -52,6 +52,14 @@ public class DocumentoReemRestController extends BaseRestController{
         return documentoReemService.buscar(idReemplazo,pageable,getContexto());
     }
 
+    @GetMapping("/seccion")
+    @Raml("documentoReemplazo.listar.properties")
+    public Page<DocumentoReemplazo> listarPorIdReemplazoSeccion(@RequestParam Long idReemplazo,
+                                                         @RequestParam String seccion, Pageable pageable){
+        logger.info("listar documentos x id reemplazo {} - seccion  {}",idReemplazo,seccion);
+        return documentoReemService.buscarIdReemplazoSeccion(idReemplazo,seccion,pageable);
+    }
+
     @GetMapping("/{idDocumento}")
     @Raml("documentoReemplazo.obtener.properties")
     public DocumentoReemplazo listar(@PathVariable Long idDocumento){

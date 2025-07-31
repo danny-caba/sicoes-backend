@@ -10,23 +10,41 @@ import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DocumentoReemDao extends JpaRepository<DocumentoReemplazo,Long> {
 
-    @Query("select d from DocumentoReemplazo d "
-            + "where d.idDocumento=:idDocumento")
-    DocumentoReemplazo obtener(Long idDocumento);
+    @Query("select d from DocumentoReemplazo d "+
+           "left join fetch d.seccion " +
+           "left join fetch d.tipoDocumento " +
+           "left join fetch d.evaluacion " +
+           "where d.idDocumento=:idDocumento")
+    DocumentoReemplazo obtenerPorIdDocumento(Long idDocumento);
 
-    @Query(value = "select d from DocumentoReemplazo d "
-            + "left join fetch d.seccion s "
-            + "left join fetch d.tipoDocumento t "
-            + "where d.idReemplazoPersonal=:idReemplazoPersonal",
-            countQuery = "select count(d) from DocumentoReemplazo d "
-            + "left join d.seccion s "
-            + "left join d.tipoDocumento t "
-            + "where d.idReemplazoPersonal=:idReemplazoPersonal")
-    Page<DocumentoReemplazo> buscar(Long idReemplazoPersonal, Pageable pageable);
+    @Query("select d from DocumentoReemplazo d "+
+            "left join fetch d.seccion " +
+            "left join fetch d.tipoDocumento " +
+            "left join fetch d.evaluacion " +
+            "where d.idReemplazoPersonal=:idReemplazo "+
+            "and d.seccion.idListadoDetalle=:idSeccion")
+    List<DocumentoReemplazo> obtenerPorIdReemplazoSeccion(Long idReemplazo, Long idSeccion);
+
+    @Query("select d.idDocumento from DocumentoReemplazo d " +
+            "where d.idReemplazoPersonal = :id")
+    Page<Long> findDocumentIds(Long id, Pageable pageable);
+
+    @Query("select d.idDocumento from DocumentoReemplazo d " +
+            "where d.idReemplazoPersonal = :id "+
+            "and d.seccion.idListadoDetalle=:idSeccion")
+    Page<Long> findDocumentSeccionIds(Long id, Long idSeccion,Pageable pageable);
+
+    @Query("select distinct d from DocumentoReemplazo d " +
+            "left join fetch d.seccion " +
+            "left join fetch d.tipoDocumento " +
+            "left join fetch d.evaluacion " +
+            "where d.idDocumento in :ids")
+    List<DocumentoReemplazo> findDocumentosFull(List<Long> ids);
 
     boolean existsByIdReemplazoPersonal(Long idReemplazoPersonal);
 

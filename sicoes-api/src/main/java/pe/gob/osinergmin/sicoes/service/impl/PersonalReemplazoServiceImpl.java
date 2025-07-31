@@ -151,7 +151,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
         //Eliminar documentos adjuntos
         Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.SECCION_DOC_REEMPLZO.PERSONAL_PROPUESTO).get(0).getIdListadoDetalle();
+                Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PERSONAL_PROPUESTO).get(0).getIdListadoDetalle();
         logger.info("idSeccion {}:",idSeccion);
 
         if (!documentoReemDao.existsByIdReemplazoPersonalAndSeccion_IdListadoDetalle(id,idSeccion)) {
@@ -187,7 +187,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         //Buscamos que este llena la seccion 3.-Solcitud de reemplazo de supervisor
         Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.SECCION_DOC_REEMPLZO.SOLICITUD_REEMPLAZO_SUPERVISOR).get(0).getIdListadoDetalle();
+                Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR).get(0).getIdListadoDetalle();
         logger.info("idSeccion-validar {}:",idSeccion);
         if (!documentoReemDao.existsByIdReemplazoPersonalAndSeccion_IdListadoDetalle(id,idSeccion)) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);

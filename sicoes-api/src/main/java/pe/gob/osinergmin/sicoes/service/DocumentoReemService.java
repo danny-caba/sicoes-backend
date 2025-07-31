@@ -10,5 +10,5 @@ import java.util.List;
 public interface DocumentoReemService extends BaseService<DocumentoReemplazo,Long>{
 
     Page<DocumentoReemplazo> buscar(Long idReemplazoPersonal, Pageable pageable, Contexto contexto);
-
+    Page<DocumentoReemplazo> buscarIdReemplazoSeccion(Long idReemplazoPersonal, String seccion, Pageable pageable);
 }

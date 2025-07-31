@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import pe.gob.osinergmin.sicoes.repository.DocumentoReemDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
+import pe.gob.osinergmin.sicoes.service.DocumentoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -24,9 +26,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.persistence.EntityManager;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -118,7 +118,7 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
 
     @Override
     public DocumentoReemplazo obtener(Long idDocumento, Contexto contexto) {
-        DocumentoReemplazo documento = documentoReemDao.obtener(idDocumento);
+        DocumentoReemplazo documento = documentoReemDao.obtenerPorIdDocumento(idDocumento);
         List<Archivo> archivos = archivoDao.buscarPorDocumentoReemplazo(idDocumento);
         documento.setArchivo(archivos.get(0));
         return documento;
@@ -145,9 +145,14 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
 
     @Override
     public Page<DocumentoReemplazo> buscar(Long idReemplazoPersonal, Pageable pageable, Contexto contexto) {
-        Page<DocumentoReemplazo> documentos = documentoReemDao.buscar(idReemplazoPersonal,pageable);
-        List<Long> ids = documentos.getContent()
-                .stream()
+        Page<Long> documentIds = documentoReemDao.findDocumentIds(idReemplazoPersonal, pageable);
+        List<DocumentoReemplazo> documentos = new ArrayList<>();
+        if (!documentIds.isEmpty()) {
+            documentos = documentoReemDao.findDocumentosFull(documentIds.getContent());
+            logger.info("Documentos completos cargados: {}", documentos);
+        }
+
+        List<Long> ids = documentos.stream()
                 .map(DocumentoReemplazo::getIdDocumento)
                 .collect(Collectors.toList());
 
@@ -155,6 +160,41 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
         Map<Long, Archivo> porDoc = archivos.stream()
                         .collect(Collectors.toMap(Archivo::getIdDocumentoReem, Function.identity()));
         documentos.forEach(d -> d.setArchivo(porDoc.get(d.getIdDocumento())));
-        return documentos;
+        return new PageImpl<>(documentos, pageable, documentIds.getTotalElements());
+    }
+
+    @Override
+    public Page<DocumentoReemplazo> buscarIdReemplazoSeccion(Long idReemplazoPersonal, String seccion, Pageable pageable) {
+        String listado = Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL;
+        // Obtener el detalle de listado usando Optional
+        Optional<ListadoDetalle> optionalListadoDetalle = Optional.ofNullable(listadoDetalleDao.obtenerListadoDetalle(listado, seccion));
+        // Verificar si el detalle existe
+        if (!optionalListadoDetalle.isPresent()) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_ID_SECCION);
+        }
+
+        Long idSeccion = optionalListadoDetalle.get().getIdListadoDetalle();
+        Page<Long> documentIds = documentoReemDao.findDocumentSeccionIds(idReemplazoPersonal,idSeccion,pageable);
+
+        if (documentIds.isEmpty()){
+            return new PageImpl<>(new ArrayList<>(),pageable,0);
+        }
+
+        // Obtener el documento usando Optional
+        List<DocumentoReemplazo> documentos = documentoReemDao.findDocumentosFull(documentIds.getContent());
+        if (documentos.isEmpty()) {
+            logger.info("No se encontró el documento para idReemplazo: {} y idSeccion: {}", idReemplazoPersonal, idSeccion);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
+        }
+
+        List<Long> ids = documentos.stream()
+                .map(DocumentoReemplazo::getIdDocumento)
+                .collect(Collectors.toList());
+
+        List<Archivo> archivos = archivoDao.findByIdDocumentoReemIn(ids);
+        Map<Long, Archivo> porDoc = archivos.stream()
+                .collect(Collectors.toMap(Archivo::getIdDocumentoReem, Function.identity()));
+        documentos.forEach(d -> d.setArchivo(porDoc.get(d.getIdDocumento())));
+        return new PageImpl<>(documentos, pageable, documentIds.getTotalElements());
     }
 }
