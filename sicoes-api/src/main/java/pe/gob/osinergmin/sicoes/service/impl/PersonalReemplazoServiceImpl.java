@@ -8,8 +8,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
+import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
 import pe.gob.osinergmin.sicoes.repository.*;
+import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -38,6 +41,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private SupervisoraMovimientoService supervisoraMovimientoService;
+
+    @Autowired
+    private  NotificacionContratoService notificacionContratoService;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto) {
@@ -168,7 +174,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -181,7 +187,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             existe.setIdSolicitud(personalReemplazo.getIdSolicitud());
         }
         if (personalReemplazo.getPersonaPropuesta().getIdSupervisora() != null){
-            existe.setPersonaPropuesta(personalReemplazo.getPersonaPropuesta());
+            existe.setPersonaPropuesta(existe.getPersonaPropuesta());
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
@@ -199,7 +205,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             existe.setEstadoReemplazo(personalReemplazo.getEstadoReemplazo());
         }
         if (personalReemplazo.getPersonaBaja() != null) {
-            existe.setPersonaBaja(personalReemplazo.getPersonaBaja());
+            existe.setPersonaBaja(existe.getPersonaBaja());
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
         }
@@ -248,7 +254,62 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         //SupervisoraMovimiento movi = new SupervisoraMovimiento();
         //supervisoraMovimientoService.guardar(movi,AuditoriaUtil.getContextoJob());
         AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
-        return reemplazoDao.save(existe);
+
+        PersonalReemplazo reemplazoSave = reemplazoDao.save(existe);
+        
+        enviarNotificacionByRolEvaluador(existe,contexto);
+        enviarNotificacionDesvinculacion(existe,contexto);
+
+        return reemplazoSave;
+    }
+    
+    private void enviarNotificacionDesvinculacion(PersonalReemplazo personalReemplazo, Contexto contexto) {
+        if(Boolean.FALSE.equals(existeNumeroExpediente(personalReemplazo))){
+            logger.info("No existe número expediente");
+            return; 
+        }
+        String numeroExpediente = personalReemplazo.getPersonaPropuesta().getNumeroExpediente();
+
+        String razonSocial = personalReemplazo.getPersonaPropuesta().getNombreRazonSocial();
+        String nombreSupervisora = null;
+        if(razonSocial!=null){
+            nombreSupervisora = razonSocial;
+        }else{
+            String apellidoPaterno = personalReemplazo.getPersonaPropuesta().getApellidoPaterno();
+            String apellidoMaterno = personalReemplazo.getPersonaPropuesta().getApellidoMaterno();
+            nombreSupervisora = personalReemplazo.getPersonaPropuesta().getNombres().concat(apellidoPaterno).concat(apellidoMaterno);
+        }
+        logger.info("Empresa supervisora {}",nombreSupervisora);
+        notificacionContratoService.notificarDesvinculacionEmpresa(numeroExpediente, nombreSupervisora,contexto);
+    }
+
+    private void enviarNotificacionByRolEvaluador(PersonalReemplazo personalReemplazo, Contexto contexto) {
+
+        List<Rol> roles = contexto.getUsuario().getRoles();
+        Long idRol = Long.parseLong(Constantes.ROLES.EVALUADOR_TECNICO);
+
+        Rol rolEvaluador = AuditoriaUtil.getRolById(roles, idRol);
+
+        if(Boolean.FALSE.equals(existeNumeroExpediente(personalReemplazo))){
+            logger.info("No existe número expediente");
+            return; 
+        }
+
+        if(rolEvaluador!=null) {
+            String numeroExpediente = personalReemplazo.getPersonaPropuesta().getNumeroExpediente();
+
+            notificacionContratoService.notificarReemplazoPersonalByEmail(
+                numeroExpediente,
+                rolEvaluador.getNombre(),
+                contexto);    
+        }else{
+            logger.info("Este usuario no tiene rol evaluador");
+        }        
+    }    
+
+    private boolean existeNumeroExpediente(PersonalReemplazo personalReemplazo) {
+        Supervisora proposer = personalReemplazo.getPersonaPropuesta();
+        return proposer != null && proposer.getNumeroExpediente() != null;
     }
 
     @Override

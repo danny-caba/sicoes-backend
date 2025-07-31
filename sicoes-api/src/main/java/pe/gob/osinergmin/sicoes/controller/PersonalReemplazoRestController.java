@@ -78,6 +78,6 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo finalizarRegistro(@RequestBody PersonalReemplazo personalReemplazo){
         logger.info("Finalizar registro propuesto {}", personalReemplazo);
-        return personalReemplazoService.registrar(personalReemplazo);
+        return personalReemplazoService.registrar(personalReemplazo,getContexto());
     }
 }
