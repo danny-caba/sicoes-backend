@@ -13,19 +13,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarConformidadRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarConformidadResponseDTO;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.DocumentoReemDao;
+import pe.gob.osinergmin.sicoes.repository.EvaluarDocuReemDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.service.DocumentoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
-import pe.gob.osinergmin.sicoes.util.Constantes;
-import pe.gob.osinergmin.sicoes.util.Contexto;
-import pe.gob.osinergmin.sicoes.util.ValidacionException;
+import pe.gob.osinergmin.sicoes.util.*;
 
 import javax.persistence.EntityManager;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +50,9 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
 
     @Autowired
     private ArchivoDao archivoDao;
+
+    @Autowired
+    private EvaluarDocuReemDao evaluarDocuReemDao;
 
     @Autowired
     private Environment env;
@@ -196,5 +200,54 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
                 .collect(Collectors.toMap(Archivo::getIdDocumentoReem, Function.identity()));
         documentos.forEach(d -> d.setArchivo(porDoc.get(d.getIdDocumento())));
         return new PageImpl<>(documentos, pageable, documentIds.getTotalElements());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public EvaluarConformidadResponseDTO evaluarConformidad(EvaluarConformidadRequestDTO request, Contexto contexto) {
+        Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
+                .findByDocumentoIdDocumento(request.getIdDocumento())
+                .stream()
+                .findFirst();
+
+        if (registroExistente.isPresent()) {
+            registroExistente.get().setFechaEvaluacion(Date.from(Instant.now()));
+            registroExistente.get().setConforme(request.getConformidad());
+            registroExistente.get().setEvaluadoPor(contexto.getUsuario());
+
+            EvaluarDocuReemplazo registroActualizado = evaluarDocuReemDao.save(registroExistente.get());
+            AuditoriaUtil.setAuditoriaActualizacion(registroActualizado, contexto);
+
+            return EvaluarConformidadResponseDTO.builder()
+                    .idEvaluarDocuReemp(registroActualizado.getIdEvalDocumento())
+                    .idDocuReemp(registroActualizado.getDocumento().getIdDocumento())
+                    .fecEvaluacion(DateUtil.getDate(registroActualizado.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
+                    .conformidad(registroActualizado.getConforme())
+                    .evaluador(registroActualizado.getEvaluadoPor().getUsuario())
+                    .build();
+        }
+
+        DocumentoReemplazo documentoReemplazo = new DocumentoReemplazo();
+        documentoReemplazo.setIdDocumento(request.getIdDocumento());
+
+        Rol rol = new Rol();
+        rol.setIdRol(request.getIdRol());
+
+        EvaluarDocuReemplazo registroNuevo = new EvaluarDocuReemplazo();
+        registroNuevo.setDocumento(documentoReemplazo);
+        registroNuevo.setEvaluadoPor(contexto.getUsuario());
+        registroNuevo.setFechaEvaluacion(Date.from(Instant.now()));
+        registroNuevo.setRol(rol);
+        AuditoriaUtil.setAuditoriaRegistro(registroNuevo, contexto);
+
+        EvaluarDocuReemplazo registroInsertado = evaluarDocuReemDao.save(registroNuevo);
+
+        return EvaluarConformidadResponseDTO.builder()
+                .idEvaluarDocuReemp(registroInsertado.getIdEvalDocumento())
+                .idDocuReemp(registroInsertado.getDocumento().getIdDocumento())
+                .fecEvaluacion(DateUtil.getDate(registroInsertado.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
+                .conformidad(registroInsertado.getConforme())
+                .evaluador(registroInsertado.getEvaluadoPor().getUsuario())
+                .build();
     }
 }

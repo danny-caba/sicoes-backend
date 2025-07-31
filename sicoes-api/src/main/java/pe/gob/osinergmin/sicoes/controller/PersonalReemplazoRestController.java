@@ -7,6 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarConformidadRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarConformidadResponseDTO;
+import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
@@ -19,6 +22,9 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @Autowired
     private PersonalReemplazoService personalReemplazoService;
+
+    @Autowired
+    private DocumentoReemService documentoReemService;
 
     @Autowired
     NotificacionService notificacionService;
@@ -79,5 +85,12 @@ public class PersonalReemplazoRestController extends BaseRestController {
     public PersonalReemplazo finalizarRegistro(@RequestBody PersonalReemplazo personalReemplazo){
         logger.info("Finalizar registro propuesto {}", personalReemplazo);
         return personalReemplazoService.registrar(personalReemplazo);
+    }
+
+    @PostMapping("/reemplazo/solicitud/propuesto/revisa")
+    @Raml("evalDocuReemplazo.revisar.properties")
+    public EvaluarConformidadResponseDTO evaluarConformidad(@RequestBody EvaluarConformidadRequestDTO request){
+        logger.info(" Request {}", request);
+        return documentoReemService.evaluarConformidad(request, getContexto());
     }
 }
