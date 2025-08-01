@@ -998,4 +998,9 @@ public class Constantes {
 
 	}
 
+    public static final class ESTADO_REVISION_DOCS_REEMPLAZO {
+        public static final String OK = "OK";
+        public static final String SUBSANAR = "SUBSANAR";
+    }
+
 }

@@ -12,9 +12,7 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
 
     @Query(value = "select p from PersonalReemplazo p"
     + " left join fetch p.personaPropuesta pp"
-    + " left join fetch p.perfil pe"
     + " left join fetch p.personaBaja pb"
-    + " left join fetch p.perfilBaja peb"
     + " left join fetch p.estadoReemplazo e"
     + " left join fetch p.estadoEvalDoc e1"
     + " left join fetch p.estadoRevisarEval e2"
@@ -25,9 +23,7 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
     + " order by p.idReemplazo",
     countQuery = "select count(p) from PersonalReemplazo p"
     + " left join p.personaPropuesta pp"
-    + " left join p.perfil pe"
     + " left join p.personaBaja pb"
-    + " left join p.perfilBaja peb"
     + " left join p.estadoReemplazo e"
     + " left join p.estadoEvalDoc e1"
     + " left join p.estadoRevisarEval e2"
