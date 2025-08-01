@@ -176,7 +176,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
-
         if (existe.getPersonaPropuesta() == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }

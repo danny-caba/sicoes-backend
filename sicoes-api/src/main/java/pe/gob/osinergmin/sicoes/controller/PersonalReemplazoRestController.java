@@ -27,15 +27,10 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @Raml("personalReemplazo.obtener.properties")
     public Page<PersonalReemplazo> listarReemplazoPorIdSolicitud(@PathVariable Long idSolicitud,
                                                                  Pageable pageable){
-        //logger.info("obtener listado reemplazo personal");
-        //return personalReemplazoService.listarPersonalReemplazo(idSolicitud,pageable,getContexto());
-
-        logger.info("[CTRL] pageable={}", pageable);
+        logger.info("obtener listado reemplazo personal");
         Page<PersonalReemplazo> page = personalReemplazoService
                 .listarPersonalReemplazo(idSolicitud, pageable, getContexto());
-        logger.info("[CTRL] page.getContent() size={}", page.getContent().size());
         return page;
-
     }
 
     @DeleteMapping("/externo/reemplazo/solicitud/{idreemplazo}")
