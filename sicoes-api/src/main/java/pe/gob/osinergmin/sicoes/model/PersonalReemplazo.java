@@ -28,9 +28,8 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_PERSONA_PROPUESTA")
     private Supervisora personaPropuesta;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="CO_PERFIL")
-    private ListadoDetalle perfil;
+    @Column(name="CO_PERFIL")
+    private String perfil;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
@@ -50,9 +49,8 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_PERSONA_BAJA")
     private Supervisora personaBaja;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="CO_PERFIL_PER_BAJA")
-    private ListadoDetalle perfilBaja;
+    @Column(name="CO_PERFIL_PER_BAJA")
+    private String perfilBaja;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
