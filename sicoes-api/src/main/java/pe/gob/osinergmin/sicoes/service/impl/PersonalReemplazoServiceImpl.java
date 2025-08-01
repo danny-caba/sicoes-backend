@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
 import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
@@ -214,6 +213,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
     
     private void enviarNotificacionDesvinculacion(PersonalReemplazo personalReemplazo, Contexto contexto) {
+
         if(Boolean.FALSE.equals(existeNumeroExpediente(personalReemplazo))){
             logger.info("No existe número expediente");
             return; 
@@ -227,7 +227,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }else{
             String apellidoPaterno = personalReemplazo.getPersonaPropuesta().getApellidoPaterno();
             String apellidoMaterno = personalReemplazo.getPersonaPropuesta().getApellidoMaterno();
-            nombreSupervisora = personalReemplazo.getPersonaPropuesta().getNombres().concat(apellidoPaterno).concat(apellidoMaterno);
+            nombreSupervisora = personalReemplazo.getPersonaPropuesta().getNombres().concat(" ").concat(apellidoPaterno).concat(" ").concat(apellidoMaterno);
         }
         logger.info("Empresa supervisora {}",nombreSupervisora);
         notificacionContratoService.notificarDesvinculacionEmpresa(numeroExpediente, nombreSupervisora,contexto);
