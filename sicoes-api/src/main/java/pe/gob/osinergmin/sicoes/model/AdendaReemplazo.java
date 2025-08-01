@@ -39,7 +39,7 @@ public class AdendaReemplazo extends BaseModel implements Serializable {
     private ListadoDetalle estadoFirmaJefe;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "CO_ESTADO_FIRMA_GRENCIA")
+    @JoinColumn(name = "CO_ESTADO_FIRMA_GERENCIA")
     private ListadoDetalle estadoFirmaGerencia;
 
     @Column(name = "ID_DOCUMENTO")
