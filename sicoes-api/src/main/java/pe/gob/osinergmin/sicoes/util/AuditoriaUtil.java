@@ -1,8 +1,10 @@
 package pe.gob.osinergmin.sicoes.util;
 
 import java.util.Date;
+import java.util.List;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.Rol;
 
 public class AuditoriaUtil {
 	
@@ -51,4 +53,10 @@ public class AuditoriaUtil {
 		
 	}
 
+	public static Rol getRolById(List<Rol> roles, Long idRol) {
+		return roles.stream()
+				.filter(rol -> rol.getIdRol().equals(idRol))
+				.findFirst()
+				.orElse(null);
+	}
 }

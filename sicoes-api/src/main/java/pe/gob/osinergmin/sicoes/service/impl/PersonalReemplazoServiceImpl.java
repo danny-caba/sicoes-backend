@@ -7,20 +7,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
+import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.model.dto.AprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.*;
+import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.repository.*;
+import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
-import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
-import pe.gob.osinergmin.sicoes.util.Constantes;
-import pe.gob.osinergmin.sicoes.util.Contexto;
-import pe.gob.osinergmin.sicoes.util.ValidacionException;
+import pe.gob.osinergmin.sicoes.util.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
@@ -40,7 +45,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private ListadoDetalleDao listadoDetalleDao;
 
     @Autowired
+    private EvaluarDocuReemDao evaluarDocuReemDao;
+
+    @Autowired
     private SupervisoraMovimientoService supervisoraMovimientoService;
+
+    @Autowired
+    private  NotificacionContratoService notificacionContratoService;
 
     @Autowired
     private ComboDao comboDao;
@@ -190,7 +201,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -219,7 +230,159 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         //SupervisoraMovimiento movi = new SupervisoraMovimiento();
         //supervisoraMovimientoService.guardar(movi,AuditoriaUtil.getContextoJob());
         AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
-        return reemplazoDao.save(existe);
+
+        PersonalReemplazo reemplazoSave = reemplazoDao.save(existe);
+        
+        enviarNotificacionByRolEvaluador(existe,contexto);
+        enviarNotificacionDesvinculacion(existe,contexto);
+
+        return reemplazoSave;
+    }
+    
+    private void enviarNotificacionDesvinculacion(PersonalReemplazo personalReemplazo, Contexto contexto) {
+
+        if(Boolean.FALSE.equals(existeNumeroExpediente(personalReemplazo))){
+            logger.info("No existe número expediente");
+            return; 
+        }
+        String numeroExpediente = personalReemplazo.getPersonaPropuesta().getNumeroExpediente();
+
+        String razonSocial = personalReemplazo.getPersonaPropuesta().getNombreRazonSocial();
+        String nombreSupervisora = null;
+        if(razonSocial!=null){
+            nombreSupervisora = razonSocial;
+        }else{
+            String apellidoPaterno = personalReemplazo.getPersonaPropuesta().getApellidoPaterno();
+            String apellidoMaterno = personalReemplazo.getPersonaPropuesta().getApellidoMaterno();
+            nombreSupervisora = personalReemplazo.getPersonaPropuesta().getNombres().concat(" ").concat(apellidoPaterno).concat(" ").concat(apellidoMaterno);
+        }
+        logger.info("Empresa supervisora {}",nombreSupervisora);
+        notificacionContratoService.notificarDesvinculacionEmpresa(numeroExpediente, nombreSupervisora,contexto);
+    }
+
+    private void enviarNotificacionByRolEvaluador(PersonalReemplazo personalReemplazo, Contexto contexto) {
+
+        List<Rol> roles = contexto.getUsuario().getRoles();
+        Long idRol = Long.parseLong(Constantes.ROLES.EVALUADOR_TECNICO);
+
+        Rol rolEvaluador = AuditoriaUtil.getRolById(roles, idRol);
+
+        if(Boolean.FALSE.equals(existeNumeroExpediente(personalReemplazo))){
+            logger.info("No existe número expediente");
+            return; 
+        }
+
+        if(rolEvaluador!=null) {
+            String numeroExpediente = personalReemplazo.getPersonaPropuesta().getNumeroExpediente();
+
+            notificacionContratoService.notificarReemplazoPersonalByEmail(
+                numeroExpediente,
+                rolEvaluador.getNombre(),
+                contexto);    
+        }else{
+            logger.info("Este usuario no tiene rol evaluador");
+        }        
+    }    
+
+    private boolean existeNumeroExpediente(PersonalReemplazo personalReemplazo) {
+        Supervisora proposer = personalReemplazo.getPersonaPropuesta();
+        return proposer != null && proposer.getNumeroExpediente() != null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public EvaluarConformidadResponseDTO evaluarConformidad(EvaluarConformidadRequestDTO request, Contexto contexto) {
+        Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
+                .findByDocumentoIdDocumento(request.getIdDocumento())
+                .stream()
+                .findFirst();
+
+        if (registroExistente.isPresent()) {
+            registroExistente.get().setFechaEvaluacion(Date.from(Instant.now()));
+            registroExistente.get().setConforme(request.getConformidad());
+            registroExistente.get().setEvaluadoPor(contexto.getUsuario());
+
+            EvaluarDocuReemplazo registroActualizado = evaluarDocuReemDao.save(registroExistente.get());
+            AuditoriaUtil.setAuditoriaActualizacion(registroActualizado, contexto);
+
+            return EvaluarConformidadResponseDTO.builder()
+                    .idEvaluarDocuReemp(registroActualizado.getIdEvalDocumento())
+                    .idDocuReemp(registroActualizado.getDocumento().getIdDocumento())
+                    .fecEvaluacion(DateUtil.getDate(registroActualizado.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
+                    .conformidad(registroActualizado.getConforme())
+                    .evaluador(registroActualizado.getEvaluadoPor().getUsuario())
+                    .build();
+        }
+
+        DocumentoReemplazo documentoReemplazo = new DocumentoReemplazo();
+        documentoReemplazo.setIdDocumento(request.getIdDocumento());
+
+        Rol rol = new Rol();
+        rol.setIdRol(request.getIdRol());
+
+        EvaluarDocuReemplazo registroNuevo = new EvaluarDocuReemplazo();
+        registroNuevo.setDocumento(documentoReemplazo);
+        registroNuevo.setConforme(request.getConformidad());
+        registroNuevo.setEvaluadoPor(contexto.getUsuario());
+        registroNuevo.setFechaEvaluacion(Date.from(Instant.now()));
+        registroNuevo.setRol(rol);
+        AuditoriaUtil.setAuditoriaRegistro(registroNuevo, contexto);
+
+        EvaluarDocuReemplazo registroInsertado = evaluarDocuReemDao.save(registroNuevo);
+
+        return EvaluarConformidadResponseDTO.builder()
+                .idEvaluarDocuReemp(registroInsertado.getIdEvalDocumento())
+                .idDocuReemp(registroInsertado.getDocumento().getIdDocumento())
+                .fecEvaluacion(DateUtil.getDate(registroInsertado.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
+                .conformidad(registroInsertado.getConforme())
+                .evaluador(registroInsertado.getEvaluadoPor().getUsuario())
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public RegistrarRevDocumentosResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request) {
+        PersonalReemplazo personalReemplazoToUpdate = reemplazoDao
+                .findById(request.getIdReemplazo())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+
+        List<DocumentoReemplazo> listDocsAsociados = documentoReemDao
+                .findByIdReemplazoPersonal(request.getIdReemplazo());
+
+        boolean allDocsConforme = !listDocsAsociados.isEmpty()
+                && listDocsAsociados.stream()
+                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
+                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
+
+        if (allDocsConforme) {
+            ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
+                    .stream()
+                    .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
+                    .findFirst()
+                    .orElse(new ListadoDetalle());
+            personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
+
+            reemplazoDao.save(personalReemplazoToUpdate);
+
+            return RegistrarRevDocumentosResponseDTO.builder()
+                    .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK)
+                    .build();
+        } else {
+            ListadoDetalle estadoPreliminar = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                            Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
+                    .stream()
+                    .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
+                    .findFirst()
+                    .orElse(new ListadoDetalle());
+            personalReemplazoToUpdate.setEstadoReemplazo(estadoPreliminar);
+
+            reemplazoDao.save(personalReemplazoToUpdate);
+
+            return RegistrarRevDocumentosResponseDTO.builder()
+                    .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
+                    .build();
+        }
     }
 
     @Override
