@@ -64,7 +64,22 @@ public class Constantes {
 
 	public static final class LISTADO {
 		
-		
+			public static final class ESTADO_APROBACION{
+
+			public static final String CODIGO 		 = "ESTADO_APROBACION_REEMP";
+			public static final String APROBADO      = "APROBADO";
+			public static final String EN_APROBACION = "EN_APROBACION";
+			public static final String  ASIGNADO     = "ASIGNADO";
+			public static final String  DESAPROBADO  = "DESAPROBADO";
+		}
+
+
+		public static final class ESTADO_ADENDA{
+			public static final String CODIGO    = "ESTADO_ADENDA_REEMP";
+			public static final String APROBADO  = "APROBADO";
+			public static final String ASIGNADO  = "ASIGNADO";
+			public static final String RECHAZADO = "RECHAZADO";
+		}
 		public static final class ESTADO_SOLICITUD {
 			public static final String CODIGO 		= "ESTADO_SOLICITUD";
 			public static final String BORRADOR 	= "BORRADOR";		
@@ -73,6 +88,7 @@ public class Constantes {
 			public static final String CONCLUIDO	= "CONCLUIDO";	
 			public static final String ARCHIVADO	= "ARCHIVADO";
 			public static final String EN_EVALUACION = "EN_EVALUACION";
+			public static final String EN_APROBACION  = "EN_APROBACION";
 		}
 		
 		public static final class TIPO_SUSPENSION_CANCELACION {
@@ -968,4 +984,18 @@ public class Constantes {
 		public static final String CONCLUIDO 		= "CONCLUIDO";
 		public static final String ARCHIVADO 		= "ARCHIVADO";
 	}
+
+		public static final class REQUERIMIENTO{
+		public static final String EVAL_INFO_APROB_G2_GER_DIV = "EVAL_INFO_APROB_G2_GER_DIV";
+		public static final String EVAL_INFO_APROB_G3_GER_LIN = "EVAL_INFO_APROB_G3_GER_LIN";
+		public static final String APROB_EVAL_CONTR = "APROB_EVAL_CONTR";
+		public static final String VB_APROB_G2_APROB_ADMIN = "VB_APROB_G2_APROB_ADMIN";
+		public static final String FIRMA_APROB_G3_APROB_ADMIN = "FIRMA_APROB_G3_APROB_ADMIN";
+		public static final String APROB_ADMIN_G4_GAF = "APROB_ADMIN_G4_GAF";
+		public static final String EVAL_DOC_EVAL_TEC_CONT  = "EVAL_DOC_EVAL_TEC_CONT";
+		public static final String  EVAL_INF_APROB_TEC_G2  = "EVAL_INF_APROB_TEC_G2";
+		public static final String  EVAL_INF_APROB_TEC_G3  = "EVAL_INF_APROB_TEC_G3";
+
+	}
+
 }

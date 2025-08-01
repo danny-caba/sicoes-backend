@@ -1,5 +1,7 @@
 package pe.gob.osinergmin.sicoes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
@@ -18,6 +20,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Table(name="SICOES_TM_LISTADO_DETALLE")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ListadoDetalle extends BaseModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 
