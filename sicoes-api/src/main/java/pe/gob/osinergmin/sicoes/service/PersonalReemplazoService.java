@@ -15,7 +15,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo);
     PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo);
     PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo);
-    PersonalReemplazo registrar(PersonalReemplazo personalReemplazo);
+    PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto);
     List<Combo> listarContratistas(String codigo);
     List<AprobacionReemp> buscarAprobacion(String requerimeinto, Long tipoaprob , Long estadoaprob, Long tiposolicitud, Long idcontratista, Long numexpediente);
     Aprobacion updateAprobacion(AprobacionDTO aprobacion) ;
