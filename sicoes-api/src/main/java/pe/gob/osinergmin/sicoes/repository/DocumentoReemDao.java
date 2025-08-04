@@ -59,4 +59,11 @@ public interface DocumentoReemDao extends JpaRepository<DocumentoReemplazo,Long>
     @Query("delete from DocumentoReemplazo d where d.idDocumento in :ids")
     int deleteByIdIn(Collection<Long> ids);
 
+    @Query("select d from DocumentoReemplazo d "+
+            "left join fetch d.seccion " +
+            "left join fetch d.tipoDocumento " +
+            "left join fetch d.evaluacion " +
+            "where d.idReemplazoPersonal=:idReemplazo ")
+    List<DocumentoReemplazo> findByIdReemplazoPersonal(Long idReemplazo);
+
 }

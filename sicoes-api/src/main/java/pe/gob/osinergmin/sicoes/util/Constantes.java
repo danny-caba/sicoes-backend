@@ -64,7 +64,7 @@ public class Constantes {
 
 	public static final class LISTADO {
 		
-			public static final class ESTADO_APROBACION{
+		public static final class ESTADO_APROBACION{
 
 			public static final String CODIGO 		 = "ESTADO_APROBACION_REEMP";
 			public static final String APROBADO      = "APROBADO";
@@ -645,7 +645,7 @@ public class Constantes {
 			public static final String PERSONAL_PROPUESTO = "PERSONAL_PROPUESTO";
 			public static final String SOLICITUD_REEMPLAZO_SUPERVISOR = "SOLICITUD_REEMPLAZO_SUPERVISOR";
 			public static final String PROYECTO_ADENDA = "PROYECTO_ADENDA";
-			public static final String ADENDA_FINAL = "ADENDA_FINAL";
+			public static final String CARGAR_ADENDA = "CARGAR_ADENDA";
 		}
 
 
@@ -997,5 +997,10 @@ public class Constantes {
 		public static final String  EVAL_INF_APROB_TEC_G3  = "EVAL_INF_APROB_TEC_G3";
 
 	}
+
+    public static final class ESTADO_REVISION_DOCS_REEMPLAZO {
+        public static final String OK = "OK";
+        public static final String SUBSANAR = "SUBSANAR";
+    }
 
 }

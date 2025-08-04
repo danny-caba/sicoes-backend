@@ -9,20 +9,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.model.dto.AprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.*;
+import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
-import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
-import pe.gob.osinergmin.sicoes.util.Constantes;
-import pe.gob.osinergmin.sicoes.util.Contexto;
-import pe.gob.osinergmin.sicoes.util.ValidacionException;
+import pe.gob.osinergmin.sicoes.util.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
@@ -40,6 +42,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private ListadoDetalleDao listadoDetalleDao;
+
+    @Autowired
+    private EvaluarDocuReemDao evaluarDocuReemDao;
 
     @Autowired
     private SupervisoraMovimientoService supervisoraMovimientoService;
@@ -203,7 +208,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
-
         if (existe.getPersonaPropuesta() == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
@@ -282,6 +286,129 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private boolean existeNumeroExpediente(PersonalReemplazo personalReemplazo) {
         Supervisora proposer = personalReemplazo.getPersonaPropuesta();
         return proposer != null && proposer.getNumeroExpediente() != null;
+    }
+
+    @Override
+    public PersonalReemplazo obtenerPersonalReemplazo(Long idReemplazo) {
+        logger.info("obtenerPersonalReemplazo");
+        return reemplazoDao.obtenerxIdReemplazo(idReemplazo)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto) {
+        if (!Objects.isNull(request.getObservacion())) {
+            logger.info("registrar observacion");
+
+            return mapEvalDocuResponse(insertNuevoEvalDocuReemplazo(request, contexto));
+        }
+
+        Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
+                .findByIdDocumentoIdRol(request.getIdDocumento(), request.getIdRol());
+
+        if (registroExistente.isPresent()) {
+            logger.info("existe registro -> update conformidad");
+
+            registroExistente.get().setFechaEvaluacion(Date.from(Instant.now()));
+            registroExistente.get().setConforme(request.getConformidad());
+            AuditoriaUtil.setAuditoriaActualizacion(registroExistente.get(), contexto);
+
+            return mapEvalDocuResponse(evaluarDocuReemDao.save(registroExistente.get()));
+        }
+
+        logger.info("no existe registro -> se inserta nuevo");
+
+        return mapEvalDocuResponse(insertNuevoEvalDocuReemplazo(request, contexto));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto) {
+        List<EvaluarDocuResponseDTO> response = request.stream()
+                .map(obs -> insertNuevoEvalDocuReemplazo(obs, contexto))
+                .map(this::mapEvalDocuResponse)
+                .collect(Collectors.toList());
+
+        return GenericResponseDTO.<List<EvaluarDocuResponseDTO>>builder()
+                .resultado(response)
+                .build();
+    }
+
+    private EvaluarDocuReemplazo insertNuevoEvalDocuReemplazo(EvaluarDocuRequestDTO request, Contexto contexto){
+        DocumentoReemplazo documentoReemplazo = new DocumentoReemplazo();
+        documentoReemplazo.setIdDocumento(request.getIdDocumento());
+
+        Rol rol = new Rol();
+        rol.setIdRol(request.getIdRol());
+
+        EvaluarDocuReemplazo registroNuevo = new EvaluarDocuReemplazo();
+        registroNuevo.setDocumento(documentoReemplazo);
+        registroNuevo.setEvaluadoPor(contexto.getUsuario());
+        registroNuevo.setFechaEvaluacion(Date.from(Instant.now()));
+        registroNuevo.setConforme(request.getConformidad());
+        registroNuevo.setObservacion(request.getObservacion());
+        registroNuevo.setRol(rol);
+        AuditoriaUtil.setAuditoriaRegistro(registroNuevo, contexto);
+
+        return evaluarDocuReemDao.save(registroNuevo);
+    }
+
+    private EvaluarDocuResponseDTO mapEvalDocuResponse(EvaluarDocuReemplazo evalDocuReemplazo) {
+        return EvaluarDocuResponseDTO.builder()
+                .idEvaluarDocuReemp(evalDocuReemplazo.getIdEvalDocumento())
+                .idDocuReemp(evalDocuReemplazo.getDocumento().getIdDocumento())
+                .fecEvaluacion(DateUtil.getDate(evalDocuReemplazo.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
+                .conformidad(evalDocuReemplazo.getConforme())
+                .evaluador(evalDocuReemplazo.getEvaluadoPor().getUsuario())
+                .observacion(evalDocuReemplazo.getObservacion())
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GenericResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request) {
+        PersonalReemplazo personalReemplazoToUpdate = reemplazoDao
+                .findById(request.getIdReemplazo())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+
+        List<DocumentoReemplazo> listDocsAsociados = documentoReemDao
+                .findByIdReemplazoPersonal(request.getIdReemplazo());
+
+        boolean allDocsConforme = !listDocsAsociados.isEmpty()
+                && listDocsAsociados.stream()
+                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
+                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
+
+        if (allDocsConforme) {
+            ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
+                    .stream()
+                    .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
+                    .findFirst()
+                    .orElse(new ListadoDetalle());
+            personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
+
+            reemplazoDao.save(personalReemplazoToUpdate);
+
+            return GenericResponseDTO.builder()
+                    .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK)
+                    .build();
+        } else {
+            ListadoDetalle estadoPreliminar = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                            Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
+                    .stream()
+                    .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
+                    .findFirst()
+                    .orElse(new ListadoDetalle());
+            personalReemplazoToUpdate.setEstadoReemplazo(estadoPreliminar);
+
+            reemplazoDao.save(personalReemplazoToUpdate);
+
+            return GenericResponseDTO.builder()
+                    .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
+                    .build();
+        }
     }
 
     @Override
