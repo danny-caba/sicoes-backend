@@ -7,6 +7,8 @@ public class AccessRequestInFirmaDigital implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private String action;
+
+	private String finalizarAction;
 	
 	private String loginUsuario;
 	
@@ -18,8 +20,16 @@ public class AccessRequestInFirmaDigital implements Serializable {
 		return action;
 	}
 
+	public String getFinalizarAction(){
+		return  finalizarAction;
+	}
+
 	public void setAction(String action) {
 		this.action = action;
+	}
+
+	public void setFinalizarAction(String finalizarAction){
+		this.finalizarAction = finalizarAction;
 	}
 
 	public String getLoginUsuario() {
@@ -48,7 +58,7 @@ public class AccessRequestInFirmaDigital implements Serializable {
 
 	@Override
 	public String toString() {
-		return "AccessRequestInFirmaDigital [action=" + action + ", loginUsuario=" + loginUsuario + ", passwordUsuario="
+		return "AccessRequestInFirmaDigital [action=" + action + ", finalizarAction=" + finalizarAction + ", loginUsuario=" + loginUsuario + ", passwordUsuario="
 				+ passwordUsuario + ", archivosFirmar=" + archivosFirmar + "]";
 	}
 }

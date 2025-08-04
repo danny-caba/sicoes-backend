@@ -74,6 +74,9 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	@Value("${siged.ws.path.firma.digital}")
 	private String SIGED_PATH_FIRMA_DIGITAL;
+
+	@Value("${siged.ws.path.finalizar.firma.digital}")
+	private String SIGED_PATH_FINALIZAR_FIRMA_DIGITAL;
 	
 	@Value("${siged.ws.usuario.firma.digital}")
 	private String SIGED_USER_FIRMA_DIGITAL;
@@ -350,6 +353,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		AccessRequestInFirmaDigital parametros = new AccessRequestInFirmaDigital();
 		
 		parametros.setAction(SIGED_PATH_FIRMA_DIGITAL);
+		parametros.setFinalizarAction(SIGED_PATH_FINALIZAR_FIRMA_DIGITAL);
 		parametros.setLoginUsuario(SIGED_USER_FIRMA_DIGITAL);
 		parametros.setPasswordUsuario(SIGED_PASSWORD_FIRMA_DIGITAL);
 		

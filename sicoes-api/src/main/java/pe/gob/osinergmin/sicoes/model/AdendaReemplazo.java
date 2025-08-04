@@ -44,4 +44,13 @@ public class AdendaReemplazo extends BaseModel implements Serializable {
 
     @Column(name = "ID_DOCUMENTO")
     private Long idDocumento;
+
+    @Column(name = "DE_OBSER_VISTO")
+    private String observacionVb;
+
+    @Column(name = "DE_OBSER_FIRMA_JEFE")
+    private String observacionFirmaJefe;
+
+    @Column(name = "DE_OBSER_FIRMA_GERENCIA")
+    private String observacionFirmaGerencia;
 }
