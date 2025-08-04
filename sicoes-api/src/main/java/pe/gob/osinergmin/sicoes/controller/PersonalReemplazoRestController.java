@@ -115,7 +115,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 	@PostMapping("/interno/reemplazo/solicitud/aprobacion")
 	public Aprobacion updateAprobacion(@RequestBody AprobacionDTO aprobacion) {
 		logger.info("Actualizar Estado aprobacion {} ", aprobacion);
-		return personalReemplazoService.updateAprobacion(aprobacion);
+		return personalReemplazoService.updateAprobacion(aprobacion,getContexto());
 	}
 
     @GetMapping("/interno/reemplazo/solicitud/documentos")
