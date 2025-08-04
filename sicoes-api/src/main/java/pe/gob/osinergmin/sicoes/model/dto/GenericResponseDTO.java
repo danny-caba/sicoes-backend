@@ -9,6 +9,6 @@ import lombok.*;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RegistrarRevDocumentosResponseDTO {
-    private String resultado;
+public class GenericResponseDTO<T>{
+    private T resultado;
 }

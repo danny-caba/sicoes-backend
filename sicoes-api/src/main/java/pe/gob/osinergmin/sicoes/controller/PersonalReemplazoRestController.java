@@ -8,10 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.AprobacionDTO;
-import pe.gob.osinergmin.sicoes.model.dto.EvaluarConformidadRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.EvaluarConformidadResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuResponseDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RegistrarRevDocumentosRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RegistrarRevDocumentosResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.GenericResponseDTO;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
@@ -89,9 +89,16 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PostMapping("/reemplazo/solicitud/propuesto/revisa")
     @Raml("evalDocuReemplazo.revisar.properties")
-    public EvaluarConformidadResponseDTO evaluarConformidad(@RequestBody EvaluarConformidadRequestDTO request){
+    public EvaluarDocuResponseDTO evaluarConformidad(@RequestBody EvaluarDocuRequestDTO request){
         logger.info(" Request {}", request);
         return personalReemplazoService.evaluarConformidad(request, getContexto());
+    }
+
+    @PostMapping("/reemplazo/solicitud/propuesto/observaciones")
+    @Raml("generic.response.properties")
+    public GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(@RequestBody List<EvaluarDocuRequestDTO> request){
+        logger.info(" Request {}", request);
+        return personalReemplazoService.registrarObservaciones(request, getContexto());
     }
 
     @GetMapping("/interno/reemplazo/solicitud/aprobaciones/{requerimiento}")
@@ -128,10 +135,17 @@ public class PersonalReemplazoRestController extends BaseRestController {
     }
 
     @PostMapping("/reemplazo/solicitud/registra/propuesto/revision")
-    @Raml("evalDocuReemplazo.registro.properties")
-    public RegistrarRevDocumentosResponseDTO registroRevisarDocumentacion(
+    @Raml("generic.response.properties")
+    public GenericResponseDTO<String> registroRevisarDocumentacion(
             @RequestBody RegistrarRevDocumentosRequestDTO request){
         logger.info(" Request {}", request);
         return personalReemplazoService.registrarRevDocumentos(request);
+    }
+
+    @GetMapping("/reemplazo/{idReemplazo}")
+    @Raml("personalReemplazo.listar.properties")
+    public PersonalReemplazo obtenerPersonalReemplazo(@PathVariable Long idReemplazo){
+        logger.info(" Request {}", request);
+        return personalReemplazoService.obtenerPersonalReemplazo(idReemplazo);
     }
 }

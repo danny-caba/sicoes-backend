@@ -22,6 +22,8 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     Aprobacion updateAprobacion(AprobacionDTO aprobacion) ;
     EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol);
     EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol);
-    EvaluarConformidadResponseDTO evaluarConformidad(EvaluarConformidadRequestDTO request, Contexto contexto);
-    RegistrarRevDocumentosResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request);
+    PersonalReemplazo obtenerPersonalReemplazo(Long idReemplazo);
+    EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
+    GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto);
+    GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request);
 }

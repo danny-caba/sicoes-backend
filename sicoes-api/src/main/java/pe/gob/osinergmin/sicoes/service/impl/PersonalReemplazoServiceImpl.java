@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
@@ -290,30 +291,53 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
+    public PersonalReemplazo obtenerPersonalReemplazo(Long idReemplazo) {
+        logger.info("obtenerPersonalReemplazo");
+        return reemplazoDao.obtenerxIdReemplazo(idReemplazo)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public EvaluarConformidadResponseDTO evaluarConformidad(EvaluarConformidadRequestDTO request, Contexto contexto) {
-        Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
-                .findByDocumentoIdDocumento(request.getIdDocumento())
-                .stream()
-                .findFirst();
+    public EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto) {
+        if (!Objects.isNull(request.getObservacion())) {
+            logger.info("registrar observacion");
 
-        if (registroExistente.isPresent()) {
-            registroExistente.get().setFechaEvaluacion(Date.from(Instant.now()));
-            registroExistente.get().setConforme(request.getConformidad());
-            registroExistente.get().setEvaluadoPor(contexto.getUsuario());
-
-            EvaluarDocuReemplazo registroActualizado = evaluarDocuReemDao.save(registroExistente.get());
-            AuditoriaUtil.setAuditoriaActualizacion(registroActualizado, contexto);
-
-            return EvaluarConformidadResponseDTO.builder()
-                    .idEvaluarDocuReemp(registroActualizado.getIdEvalDocumento())
-                    .idDocuReemp(registroActualizado.getDocumento().getIdDocumento())
-                    .fecEvaluacion(DateUtil.getDate(registroActualizado.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
-                    .conformidad(registroActualizado.getConforme())
-                    .evaluador(registroActualizado.getEvaluadoPor().getUsuario())
-                    .build();
+            return mapEvalDocuResponse(insertNuevoEvalDocuReemplazo(request, contexto));
         }
 
+        Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
+                .findByIdDocumentoIdRol(request.getIdDocumento(), request.getIdRol());
+
+        if (registroExistente.isPresent()) {
+            logger.info("existe registro -> update conformidad");
+
+            registroExistente.get().setFechaEvaluacion(Date.from(Instant.now()));
+            registroExistente.get().setConforme(request.getConformidad());
+            AuditoriaUtil.setAuditoriaActualizacion(registroExistente.get(), contexto);
+
+            return mapEvalDocuResponse(evaluarDocuReemDao.save(registroExistente.get()));
+        }
+
+        logger.info("no existe registro -> se inserta nuevo");
+
+        return mapEvalDocuResponse(insertNuevoEvalDocuReemplazo(request, contexto));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto) {
+        List<EvaluarDocuResponseDTO> response = request.stream()
+                .map(obs -> insertNuevoEvalDocuReemplazo(obs, contexto))
+                .map(this::mapEvalDocuResponse)
+                .collect(Collectors.toList());
+
+        return GenericResponseDTO.<List<EvaluarDocuResponseDTO>>builder()
+                .resultado(response)
+                .build();
+    }
+
+    private EvaluarDocuReemplazo insertNuevoEvalDocuReemplazo(EvaluarDocuRequestDTO request, Contexto contexto){
         DocumentoReemplazo documentoReemplazo = new DocumentoReemplazo();
         documentoReemplazo.setIdDocumento(request.getIdDocumento());
 
@@ -322,26 +346,30 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         EvaluarDocuReemplazo registroNuevo = new EvaluarDocuReemplazo();
         registroNuevo.setDocumento(documentoReemplazo);
-        registroNuevo.setConforme(request.getConformidad());
         registroNuevo.setEvaluadoPor(contexto.getUsuario());
         registroNuevo.setFechaEvaluacion(Date.from(Instant.now()));
+        registroNuevo.setConforme(request.getConformidad());
+        registroNuevo.setObservacion(request.getObservacion());
         registroNuevo.setRol(rol);
         AuditoriaUtil.setAuditoriaRegistro(registroNuevo, contexto);
 
-        EvaluarDocuReemplazo registroInsertado = evaluarDocuReemDao.save(registroNuevo);
+        return evaluarDocuReemDao.save(registroNuevo);
+    }
 
-        return EvaluarConformidadResponseDTO.builder()
-                .idEvaluarDocuReemp(registroInsertado.getIdEvalDocumento())
-                .idDocuReemp(registroInsertado.getDocumento().getIdDocumento())
-                .fecEvaluacion(DateUtil.getDate(registroInsertado.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
-                .conformidad(registroInsertado.getConforme())
-                .evaluador(registroInsertado.getEvaluadoPor().getUsuario())
+    private EvaluarDocuResponseDTO mapEvalDocuResponse(EvaluarDocuReemplazo evalDocuReemplazo) {
+        return EvaluarDocuResponseDTO.builder()
+                .idEvaluarDocuReemp(evalDocuReemplazo.getIdEvalDocumento())
+                .idDocuReemp(evalDocuReemplazo.getDocumento().getIdDocumento())
+                .fecEvaluacion(DateUtil.getDate(evalDocuReemplazo.getFechaEvaluacion(),"dd/MM/yyyy HH:mm:ss"))
+                .conformidad(evalDocuReemplazo.getConforme())
+                .evaluador(evalDocuReemplazo.getEvaluadoPor().getUsuario())
+                .observacion(evalDocuReemplazo.getObservacion())
                 .build();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public RegistrarRevDocumentosResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request) {
+    public GenericResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request) {
         PersonalReemplazo personalReemplazoToUpdate = reemplazoDao
                 .findById(request.getIdReemplazo())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -365,7 +393,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
             reemplazoDao.save(personalReemplazoToUpdate);
 
-            return RegistrarRevDocumentosResponseDTO.builder()
+            return GenericResponseDTO.builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK)
                     .build();
         } else {
@@ -379,7 +407,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
             reemplazoDao.save(personalReemplazoToUpdate);
 
-            return RegistrarRevDocumentosResponseDTO.builder()
+            return GenericResponseDTO.builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
                     .build();
         }
