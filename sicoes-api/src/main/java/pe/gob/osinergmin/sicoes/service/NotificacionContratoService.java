@@ -10,6 +10,6 @@ public interface NotificacionContratoService {
 
     void notificarSubsanacionDocumentos(String nombreSupervisora,Contexto contexto);
 
-    void notifcarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto);
+    void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto);
 
 }

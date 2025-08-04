@@ -26,10 +26,10 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL ="26-notificacion-desvinculacion-personal.html";
 
     private static final String ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO = "SUBASANAR DOCUMENTOS DE INICIO DE SERVICIO";
-    private static final String NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO ="28-notificacion-subsanar-documento.htm";
+    private static final String NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO ="28-notificacion-subsanar-documento.html";
 
     private static final String ASUNTO_NOTIFICACION_CARGAR_DOCUMENTOS_INICIO_SERVICIO = "PENDIENTE EN CARGAR DOCUMENTOS DE INICIO DE SERVICIO";
-    private static final String NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO ="29-notificacion-cargar-documento-servicio.htm";
+    private static final String NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO ="29-notificacion-cargar-documento-servicio.html";
 
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
@@ -129,7 +129,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
 
     @Override
-    public void notifcarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto ) {
+    public void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto ) {
         
         Notificacion notificacion = new Notificacion();
 
