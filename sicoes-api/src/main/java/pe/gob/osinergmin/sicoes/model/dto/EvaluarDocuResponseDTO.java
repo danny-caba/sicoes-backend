@@ -11,10 +11,11 @@ import java.io.Serializable;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EvaluarConformidadResponseDTO implements Serializable {
+public class EvaluarDocuResponseDTO implements Serializable {
     private Long idEvaluarDocuReemp;
     private Long idDocuReemp;
     private String fecEvaluacion;
     private String evaluador;
     private String conformidad;
+    private String observacion;
 }
