@@ -914,6 +914,12 @@ public class Constantes {
 		public static final String ID_PERSONA_BAJA = "V01023";
 		public static final String ID_PERSONA_PROPUESTA = "V01024";
 		public static final String DOCUMENTO_REEMPLAZO_ID_SECCION = "V01025";
+		public static final String ID_ARCHIVO_SIGED_NO_ENCONTRADO = "V0126";
+		public static final String ERROR_COMUNICACION_FIRMA = "V0127";
+		public static final String ERROR_INESPERADO_FIRMA = "V0128";
+		public static final String ADENDA_NO_EXISTE = "V0129";
+		public static final String VISTO_BUENO_APROBADO = "V0130";
+		public static final String FIRMA_APROBADA = "V0131";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
