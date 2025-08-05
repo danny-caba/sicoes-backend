@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.python.parser.ast.Str;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
-import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
@@ -513,7 +512,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         if (aprobacion.getDeObservacion() != null) {
                    aprobacionFinal.setDeObservacion(aprobacion.getDeObservacion());
-               }
+        }
+        String numeroExpediente = obtenerNumeroExpediente(persoReempFinal);       
 
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_DOC_EVAL_TEC_CONT)){ //Evaluar la documentación Rol Evaluador Técnico del Contrato
             if(aprobacion.getAccion().equals("A")) {
@@ -551,8 +551,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
                persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar
                
-               String numeroExpediente = persoReempFinal.getPersonaPropuesta().getNumeroExpediente();
-
                notificacionContratoService.notificarRevisarDocumentacionPendiente( numeroExpediente,contexto);
 
            }else{
@@ -571,6 +569,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
                persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)); //concluido
+
+               notificacionContratoService.notificarRevisarDocumentacionPendiente( numeroExpediente,contexto);
            }else{
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //desaprobado
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
@@ -608,6 +608,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return  aprobacionDao.save(aprobacionFinal) ;
 
 	}
+
+    private String obtenerNumeroExpediente(PersonalReemplazo personalReemplazo) {
+        if (personalReemplazo == null) {
+            return "";
+        }
+            
+        Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
+        return personaPropuesta != null ? 
+               Optional.ofNullable(personaPropuesta.getNumeroExpediente())
+                .orElse("") : 
+                "";
+    }
 
 
     @Override
