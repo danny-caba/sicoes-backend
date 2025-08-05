@@ -7,9 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
-import pe.gob.osinergmin.sicoes.model.Rol;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
+
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
@@ -483,9 +481,25 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return resultado;
     }
 
+    private String obtenerNombreSupervisora(PersonalReemplazo persoReemplazo) {
+        
+        String razonSocial = persoReemplazo.getPersonaPropuesta().getNombreRazonSocial();
+        this.logger.info("razon social juridica {} ", razonSocial);
+        String nombreSupervisora = null;
+        if(razonSocial!=null){
+            nombreSupervisora = razonSocial;
+        }else{
+            String apellidoPaterno = persoReemplazo.getPersonaPropuesta().getApellidoPaterno();
+            String apellidoMaterno = persoReemplazo.getPersonaPropuesta().getApellidoMaterno();
+            nombreSupervisora = persoReemplazo.getPersonaPropuesta().getNombres().concat(" ").concat(apellidoPaterno).concat(" ").concat(apellidoMaterno);
+            this.logger.info("razon social personal natural {} ", razonSocial);
+        }
+        return nombreSupervisora;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-	public Aprobacion updateAprobacion(AprobacionDTO aprobacion) {
+	public Aprobacion updateAprobacion(AprobacionDTO aprobacion, Contexto contexto) {
 
 
 
@@ -495,7 +509,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
             Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(aprobacionFinal.getRemplazoPersonal().getIdReemplazo());
             PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()
-                    -> new RuntimeException("reemplazo personal no encontrada"));
+                    -> new RuntimeException("reemplazo personal no encontrada"));        
 
 
         if (aprobacion.getDeObservacion() != null) {
@@ -504,15 +518,21 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_DOC_EVAL_TEC_CONT)){ //Evaluar la documentación Rol Evaluador Técnico del Contrato
             if(aprobacion.getAccion().equals("A")) {
+
+                String nombreSupervisora = obtenerNombreSupervisora(persoReempFinal);
+
                 if (aprobacion.getConforme()) {
                    ListadoDetalle x =  listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
                 persoReempFinal.setEstadoReemplazo(x); //en proceso  ---ok
                 persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
                 persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
                 persoReempFinal.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
+
+                    notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
                 } else {
                 persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
-                    // enviar notificacion x email
+                    // enviar notificacion x email            
+                    notificacionContratoService.notificarSubsanacionDocumentos( nombreSupervisora,contexto);
                 }
             }else{
                 persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
