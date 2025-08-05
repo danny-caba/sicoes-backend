@@ -31,6 +31,9 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String ASUNTO_NOTIFICACION_CARGAR_DOCUMENTOS_INICIO_SERVICIO = "PENDIENTE EN CARGAR DOCUMENTOS DE INICIO DE SERVICIO";
     private static final String NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO ="29-notificacion-cargar-documento-servicio.html";
 
+    private static final String ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_PENDIENTE = "DOCUMENTACION PENDIENTE POR REVISAR (REEMPLAZO DE PERSONAL PROPUESTO)";
+    private static final String NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_PENDIENTE = "30-notificacion-revisar-documento-pendiente.html";
+    
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
     private final TemplateEngine templateEngine;
@@ -47,6 +50,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         this.notificacionDao = notificacionDao;
     }
 	
+    private void saveNotificacion(Notificacion notificacion) {
+
+        ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
+            Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+            Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+        
+        notificacion.setEstado(pendiente);
+        notificacionDao.save(notificacion);
+    }
 
     @Override
     public void notificarReemplazoPersonalByEmail(String expedienteId,String nombreRol, Contexto contexto) {
@@ -63,17 +75,11 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_NOTIFICACION_REEMPLAZO_PERSONAL, ctx);
 
         notificacion.setMensaje(htmlContent);
+
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
-        ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
-        
-        notificacion.setEstado(pendiente);
-        notificacionDao.save(notificacion);
-
+        saveNotificacion(notificacion);    
     }
-
 
     @Override
     public void notificarDesvinculacionEmpresa(String numeroExpediente, String nombreSupervisora, Contexto contexto) {
@@ -93,12 +99,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         notificacion.setMensaje(htmlContent);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
-        ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
-        
-        notificacion.setEstado(pendiente);
-        notificacionDao.save(notificacion);
+        saveNotificacion(notificacion);
     }
 
 
@@ -119,12 +120,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         notificacion.setMensaje(htmlContent);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
-        ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
-        
-        notificacion.setEstado(pendiente);
-        notificacionDao.save(notificacion);
+        saveNotificacion(notificacion);
     }
 
 
@@ -146,12 +142,29 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         notificacion.setMensaje(htmlContent);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
-        ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
-            Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+        saveNotificacion(notificacion);
+    }
+
+
+    @Override
+    public void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto) {
         
-        notificacion.setEstado(pendiente);
-        notificacionDao.save(notificacion);
+        Notificacion notificacion = new Notificacion();
+
+        logger.info(" notificarRevisarDocumentacionPendiente para email: {} ",contexto.getUsuario().getCorreo());
+        notificacion.setCorreo(contexto.getUsuario().getCorreo());
+        notificacion.setAsunto(ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_PENDIENTE);
+
+        Context ctx = new Context();
+        
+        ctx.setVariable("numExpediente", numExpediente);
+        
+        String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_PENDIENTE, ctx);
+
+        notificacion.setMensaje(htmlContent);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        
+        saveNotificacion(notificacion);
     }
     
 }
