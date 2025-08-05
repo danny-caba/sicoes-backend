@@ -314,12 +314,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto) {
-        if (!Objects.isNull(request.getObservacion())) {
-            logger.info("registrar observacion");
-
-            return mapEvalDocuResponse(insertNuevoEvalDocuReemplazo(request, contexto));
-        }
-
         Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
                 .findByIdDocumentoIdRol(request.getIdDocumento(), request.getIdRol());
 
@@ -383,7 +377,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GenericResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request) {
+    public GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto) {
         PersonalReemplazo personalReemplazoToUpdate = reemplazoDao
                 .findById(request.getIdReemplazo())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -404,10 +398,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .findFirst()
                     .orElse(new ListadoDetalle());
             personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
+            AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
 
             reemplazoDao.save(personalReemplazoToUpdate);
 
-            return GenericResponseDTO.builder()
+            return GenericResponseDTO.<String>builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK)
                     .build();
         } else {
@@ -418,10 +413,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .findFirst()
                     .orElse(new ListadoDetalle());
             personalReemplazoToUpdate.setEstadoReemplazo(estadoPreliminar);
+            AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
 
             reemplazoDao.save(personalReemplazoToUpdate);
 
-            return GenericResponseDTO.builder()
+            return GenericResponseDTO.<String>builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
                     .build();
         }

@@ -141,7 +141,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
     public GenericResponseDTO<String> registroRevisarDocumentacion(
             @RequestBody RegistrarRevDocumentosRequestDTO request){
         logger.info(" Request {}", request);
-        return personalReemplazoService.registrarRevDocumentos(request);
+        return personalReemplazoService.registrarRevDocumentos(request, getContexto());
     }
 
     @GetMapping("/reemplazo/{idReemplazo}")
