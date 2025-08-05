@@ -150,4 +150,11 @@ public class PersonalReemplazoRestController extends BaseRestController {
         logger.info(" Request {}", request);
         return personalReemplazoService.obtenerPersonalReemplazo(idReemplazo);
     }
+
+    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/historial/{idReemplazo}")
+    public Page<HistorialAprobReemp> listarHistorialAprobaciones(@PathVariable Long idReemplazo,
+                                                                 Pageable pageable){
+        logger.info("obtener listado reemplazo personal");
+        return personalReemplazoService.listarHistorialReemp(idReemplazo, pageable );
+    }
 }

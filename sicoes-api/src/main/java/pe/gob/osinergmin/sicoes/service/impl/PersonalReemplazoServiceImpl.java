@@ -70,6 +70,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private EvaluacionPPDao evaluacionPPDao;
 
+    @Autowired
+    private HistorialAprobReempDao historialAprobReempDao;
+
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -621,5 +624,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol) {
        return evaluacionPPDao.obtenerListadoPP(id, idsol)
                .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
+    }
+
+     public Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable ) {
+        logger.info("listarPersonalReemplazo");
+        return historialAprobReempDao.buscarHistorial(idReemplazo,pageable);
     }
 }

@@ -27,4 +27,5 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
     GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto);
     GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request);
+    Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable );
 }
