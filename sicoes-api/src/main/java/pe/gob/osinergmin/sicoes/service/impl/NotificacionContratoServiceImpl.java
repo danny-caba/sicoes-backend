@@ -55,26 +55,39 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
             Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
             Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
-        
+        if (pendiente == null) {
+            throw  new RuntimeException("Estado 'Pendiente' no encontrado en listado detalle");
+        }
         notificacion.setEstado(pendiente);
         notificacionDao.save(notificacion);
     }
 
+    private Notificacion buildNotification (String email, String subject, String template,Context context){
+        Notificacion notificacion = new Notificacion();
+        notificacion.setCorreo(email);
+        notificacion.setAsunto(subject);
+
+        String htmlContent = templateEngine.process(template, context);
+        notificacion.setMensaje(htmlContent);
+        return notificacion;
+    }
+
+
     @Override
     public void notificarReemplazoPersonalByEmail(String expedienteId,String nombreRol, Contexto contexto) {
-        Notificacion notificacion = new Notificacion();
-        logger.info(" notificarReemplazoPersonalByEmail para email: {} ",contexto.getUsuario().getCorreo());
-        notificacion.setCorreo(contexto.getUsuario().getCorreo());
-        notificacion.setAsunto(ASUNTO_NOTIFICACION_REEMPLAZO_PERSONAL);
-        
+
+        String email = contexto.getUsuario().getCorreo();
+        logger.info(" notificarReemplazoPersonalByEmail para email: {} ",email);
+
         Context ctx = new Context();
-        
         ctx.setVariable("nombreRol", nombreRol);
         ctx.setVariable("numeroExpediente", expedienteId);
-        
-        String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_NOTIFICACION_REEMPLAZO_PERSONAL, ctx);
 
-        notificacion.setMensaje(htmlContent);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REEMPLAZO_PERSONAL,
+                NOMBRE_TEMPLATE_NOTIFICACION_REEMPLAZO_PERSONAL,
+                ctx);
 
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
@@ -83,20 +96,21 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     @Override
     public void notificarDesvinculacionEmpresa(String numeroExpediente, String nombreSupervisora, Contexto contexto) {
-        Notificacion notificacion = new Notificacion();
 
-        logger.info(" notificarDesvinculacionEmpresa para email: {} ",contexto.getUsuario().getCorreo());
-        notificacion.setCorreo(contexto.getUsuario().getCorreo());
-        notificacion.setAsunto(ASUNTO_NOTIFICACION_DESVINCULACION_PERSONAL);
-        
+        String email = contexto.getUsuario().getCorreo();
+        logger.info(" notificarDesvinculacionEmpresa para email: {} ",email);
+
         Context ctx = new Context();
         
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
         ctx.setVariable("numeroExpediente", numeroExpediente);
-        
-        String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL, ctx);
 
-        notificacion.setMensaje(htmlContent);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_DESVINCULACION_PERSONAL,
+                NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
+                ctx);
+
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
         saveNotificacion(notificacion);
@@ -104,20 +118,19 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
 
     @Override
-    public void notificarSubsanacionDocumentos(String nombreSupervisora,Contexto contexto) {       
-         Notificacion notificacion = new Notificacion();
+    public void notificarSubsanacionDocumentos(String nombreSupervisora,Contexto contexto) {
 
-        logger.info(" notificarSubsanacionDocumentos para email: {} ",contexto.getUsuario().getCorreo());
-        notificacion.setCorreo(contexto.getUsuario().getCorreo());
-        notificacion.setAsunto(ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO);
+        String email = contexto.getUsuario().getCorreo();
+        logger.info(" notificarSubsanacionDocumentos para email: {} ",email);
 
         Context ctx = new Context();
-        
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
-        
-        String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO, ctx);
 
-        notificacion.setMensaje(htmlContent);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO,
+                NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO,
+                ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
         saveNotificacion(notificacion);
@@ -126,20 +139,18 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     @Override
     public void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto ) {
-        
-        Notificacion notificacion = new Notificacion();
 
+        String email = contexto.getUsuario().getCorreo();
         logger.info(" notifcarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
-        notificacion.setCorreo(contexto.getUsuario().getCorreo());
-        notificacion.setAsunto(ASUNTO_NOTIFICACION_CARGAR_DOCUMENTOS_INICIO_SERVICIO);
 
         Context ctx = new Context();
-        
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
-        
-        String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO, ctx);
 
-        notificacion.setMensaje(htmlContent);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_CARGAR_DOCUMENTOS_INICIO_SERVICIO,
+                NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO,
+                ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
         saveNotificacion(notificacion);
@@ -148,20 +159,19 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     @Override
     public void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto) {
-        
-        Notificacion notificacion = new Notificacion();
 
+        String email = contexto.getUsuario().getCorreo();
         logger.info(" notificarRevisarDocumentacionPendiente para email: {} ",contexto.getUsuario().getCorreo());
-        notificacion.setCorreo(contexto.getUsuario().getCorreo());
-        notificacion.setAsunto(ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_PENDIENTE);
 
         Context ctx = new Context();
-        
         ctx.setVariable("numExpediente", numExpediente);
-        
-        String htmlContent = templateEngine.process(NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_PENDIENTE, ctx);
 
-        notificacion.setMensaje(htmlContent);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_PENDIENTE,
+                NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_PENDIENTE,
+                ctx);
+
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
         saveNotificacion(notificacion);
