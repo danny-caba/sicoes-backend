@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Context antiJARLocking="true" path="/sicoes-api">
+    <ResourceLink global="jdbc/APP_SICOES" name="jdbc/APP_SICOES" type="javax.sql.DataSource"/>
+    <ResourceLink global="jdbc/APP_EMPSAN" name="jdbc/APP_EMPSAN" type="javax.sql.DataSource"/>
+</Context>

@@ -66,4 +66,6 @@ public class AprobacionReemp {
     private Long idEstadoFirmaGerencia;
     @Column(name = "ESTADO_FIRMA_GERENCIA")
     private String estadoFirmaGerencia;
+    @Column(name = "ID_ARCHIVO")
+    private String idArchivo;
 }
