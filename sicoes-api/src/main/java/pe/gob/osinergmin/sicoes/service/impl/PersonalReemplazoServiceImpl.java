@@ -74,10 +74,23 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
 
     @Override
-    public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto) {
+    public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
+                                                           Pageable pageable, Contexto contexto) {
         logger.info("listarPersonalReemplazo");
         Pageable pageRequest = pageable == null ? Pageable.unpaged() : pageable;
-        return reemplazoDao.obtenerxIdSolicitud(idSolicitud,pageRequest);
+
+        String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+        Long idAprobacion = null;
+        Long idEvalDocIniServ = null;
+        if (!descAprobacion.isEmpty()){
+            ListadoDetalle listadoAprobacion = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descAprobacion);
+            idAprobacion = listadoAprobacion.getIdListadoDetalle();
+        }
+        if (!descAprobacion.isEmpty()){
+            ListadoDetalle listadoEvalDocIniServ = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descEvalDocIniServ);
+            idEvalDocIniServ = listadoEvalDocIniServ.getIdListadoDetalle();
+        }
+        return reemplazoDao.obtenerxIdSolicitud(idSolicitud,idAprobacion,idEvalDocIniServ,pageRequest);
     }
 
     @Override

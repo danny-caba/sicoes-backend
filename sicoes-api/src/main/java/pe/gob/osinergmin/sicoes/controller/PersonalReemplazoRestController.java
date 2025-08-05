@@ -37,10 +37,12 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @GetMapping("/externo/reemplazo/solicitud/obtener/{idSolicitud}")
     @Raml("personalReemplazo.obtener.properties")
     public Page<PersonalReemplazo> listarReemplazoPorIdSolicitud(@PathVariable Long idSolicitud,
+                                                                 @RequestParam(required = false) String descAprobacion,
+                                                                 @RequestParam(required = false) String descEvalDocIniServ,
                                                                  Pageable pageable){
         logger.info("obtener listado reemplazo personal");
         Page<PersonalReemplazo> page = personalReemplazoService
-                .listarPersonalReemplazo(idSolicitud, pageable, getContexto());
+                .listarPersonalReemplazo(idSolicitud, descAprobacion, descEvalDocIniServ, pageable, getContexto());
         return page;
     }
 

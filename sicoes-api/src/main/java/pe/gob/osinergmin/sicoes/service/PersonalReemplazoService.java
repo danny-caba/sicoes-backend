@@ -11,7 +11,8 @@ import java.util.List;
 
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 
-    Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, Pageable pageable, Contexto contexto);
+    Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
+                                                    Pageable pageable, Contexto contexto);
     PersonalReemplazo guardar(PersonalReemplazo personalReemplazo);
     PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo);
     PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo);
