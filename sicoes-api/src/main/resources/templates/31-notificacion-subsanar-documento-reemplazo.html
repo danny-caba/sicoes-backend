@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"></meta>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+	<style>
+		table {
+			border-collapse: collapse;
+			width: 300px;
+		}
+	</style>
+</head>
+<body style="background: #efeeed;font-family: Arial, Verdana, Helvetica, sans-serif;margin: 0;padding: 0; ">
+<div style="max-width: 600px;width: 100%;margin: 0 auto;min-width:320px;">
+	<div style="font-family: Arial, Verdana, Helvetica, sans-serif;font-weight: normal;font-size: 11px;line-height: 12px;color: #6e6e6e;text-align: center;margin: 0;padding: 5px 0 0px;">
+	</div>
+	<div style="background-color: #fff;padding: 25px 18px 5px 18px;">
+		<div style="color: #121212;font-family: Helvetica,Arial,sans-serif;font-size: 14px;font-weight: 400;line-height: 1.3;margin: 0;padding: 10px 0px 0px 0px;text-align: left;">
+			<p style="margin: 0;margin-bottom: 0;margin-left: 32px;margin-right: 32px;color: inherit;font-family: Helvetica,Arial,sans-serif;font-size: 34px;font-weight: 700;line-height: 25px!important;padding: 0;text-align: left;word-wrap: normal;">
+				<span style="color: #104971;font-size: 14px;font-family: Arial, sans-serif;font-weight: bold">Estimado(a):</span>
+			</p>
+		</div>
+		<div style="font-size: 13px;color: #0984C2;font-family: Arial, sans-serif;font-weight: 400;line-height: 19px;margin: 0;margin-bottom: 0px;margin-left: 32px;margin-right: 32px;padding: 0;padding-top: 17px;text-align: justify;">
+			<p>[[${nombreSupervisora}]], se informa que tiene por subsanar la siguiente documentación.</p>
+			<p>
+
+			<table aria-hidden="true" style="font-size: 13px;color: #0984C2">
+				<tr>
+					<td colspan="2" style="border: 2px solid #0984C2; padding: 8px; text-align: center;">PERSONAL PROPUESTO</td>
+				</tr>
+				<tr>
+					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${nombrePersonal}]]</td>
+					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${nombrePerfil}]]</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="border: 2px solid #0984C2; padding: 8px; text-align: center;">DOCUMENTOS ADICIONALES</td>
+				</tr>
+				<tr th:each="doc : ${listDocsAsociados}">
+					<td colspan="2" style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${doc.deNombreDocumento}]]</td>
+				</tr>
+
+			</table>
+
+			<br>
+			<h3>Por favor no responda el correo, es sólo informativa</h3>
+
+			<span style="font-weight: bold"></span><br>
+			Atentamente,<br>
+			Sistema de Registro y Contratación de Empresas Supervisoras<br>
+			Gerencia de Administración y Finanzas<br>
+			Osinergmin
+
+		</div>
+	</div>
+
+	<div style="font-family: Arial, Verdana, Helvetica, sans-serif;font-weight: normal;font-size: 11px;line-height: 12px;color: #6e6e6e;text-align: center;margin: 0;padding: 5px 0 0px;">
+	</div>
+</div>
+</body>
+</html>
