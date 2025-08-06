@@ -56,30 +56,28 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo registrar(@RequestBody PersonalReemplazo personalReemplazo) {
         logger.info(" registrar reemplazo {}", personalReemplazo);
-        return personalReemplazoService.guardar(personalReemplazo);
+        return personalReemplazoService.guardar(personalReemplazo, getContexto());
     }
 
     @PutMapping("/externo/reemplazo/solicitud/baja/elimina/propuesto")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo eliminaBajaPropuesto(@RequestBody PersonalReemplazo personalReemplazo) {
         logger.info("eliminar baja {}", personalReemplazo);
-        return personalReemplazoService.eliminarBaja(personalReemplazo);
+        return personalReemplazoService.eliminarBaja(personalReemplazo, getContexto());
     }
 
     @PutMapping("/externo/reemplazo/solicitud/propuesta/inserta/propuesto")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo registrarPropuesto(@RequestBody PersonalReemplazo personalReemplazo) {
         logger.info(" registrar propuesto {}", personalReemplazo);
-        PersonalReemplazo p = personalReemplazoService.actualizar(personalReemplazo);
-        logger.info("p:{}", p);
-        return personalReemplazoService.actualizar(personalReemplazo);
+        return personalReemplazoService.actualizar(personalReemplazo,getContexto());
     }
 
     @PutMapping("/externo/reemplazo/solicitud/propuesta/elimina/propuesto")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo eliminaPropuesto(@RequestBody PersonalReemplazo personalReemplazo) {
         logger.info(" eliminar propuesto {}", personalReemplazo);
-        return personalReemplazoService.eliminarPropuesta(personalReemplazo);
+        return personalReemplazoService.eliminarPropuesta(personalReemplazo,getContexto());
     }
 
     @PutMapping("/externo/reemplazo/inserta")
@@ -149,5 +147,12 @@ public class PersonalReemplazoRestController extends BaseRestController {
     public PersonalReemplazo obtenerPersonalReemplazo(@PathVariable Long idReemplazo){
         logger.info(" Request {}", request);
         return personalReemplazoService.obtenerPersonalReemplazo(idReemplazo);
+    }
+
+    @PutMapping("/reemplazo/solicitud/registra/inicio-servicio")
+    @Raml("personalReemplazo.listar.properties")
+    public PersonalReemplazo registroInicioServicio(@RequestBody PersonalReemplazo personalReemplazo) {
+        logger.info("Registro inicio servicio {}", personalReemplazo);
+        return personalReemplazoService.registrarDocIniServ(personalReemplazo,getContexto());
     }
 }

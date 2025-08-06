@@ -13,6 +13,7 @@ import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.repository.*;
+import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
@@ -70,6 +71,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private EvaluacionPPDao evaluacionPPDao;
 
+    @Autowired
+    private PropuestaProfesionalDao propuestaProfesionalDao;
+
+    @Autowired
+    private ListadoDetalleService listadoDetalleService;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -93,14 +99,14 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo guardar(PersonalReemplazo personalReemplazo) {
-        AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,AuditoriaUtil.getContextoJob());
+    public PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto) {
+        AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);
         return reemplazoDao.save(personalReemplazo);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -112,13 +118,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         entity.setPerfilBaja(null);
         entity.setPersonaBaja(null);
         entity.setFeFechaDesvinculacion(null);
-        AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
+        AuditoriaUtil.setAuditoriaRegistro(entity,contexto);
         return reemplazoDao.save(entity);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo, Contexto contexto) {
         if (personalReemplazo.getIdReemplazo() == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
@@ -181,13 +187,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         logger.info("actualizando_Ex {}:",existe);
 
-        AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
+        AuditoriaUtil.setAuditoriaActualizacion(existe,contexto);
         return reemplazoDao.save(existe);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -208,7 +214,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         //Quitar personal
         entity.setPerfil(null);
         entity.setPersonaPropuesta(null);
-        AuditoriaUtil.setAuditoriaRegistro(entity,AuditoriaUtil.getContextoJob());
+        AuditoriaUtil.setAuditoriaRegistro(entity,contexto);
         return reemplazoDao.save(entity);
     }
 
@@ -238,10 +244,29 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         existe.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
-        //Actualizamos el estao de movimiento del perfil:
-        //SupervisoraMovimiento movi = new SupervisoraMovimiento();
-        //supervisoraMovimientoService.guardar(movi,AuditoriaUtil.getContextoJob());
-        AuditoriaUtil.setAuditoriaActualizacion(existe,AuditoriaUtil.getContextoJob());
+
+        //Actualizamos el estado de Personal propuesto:
+        SupervisoraMovimiento movi = new SupervisoraMovimiento();
+        Supervisora personalPropuesto = existe.getPersonaPropuesta();
+        logger.info("id solicitud : {}",existe.getIdSolicitud());
+        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(existe.getIdSolicitud());
+        logger.info("profesional: {}",profesional);
+        profesional.setSupervisora(personalPropuesto);
+
+        movi.setSector(profesional.getSector());
+        movi.setSubsector(profesional.getSubsector());
+        movi.setSupervisora(personalPropuesto); //Asignando codigo de personal propuesto
+        movi.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO));
+        movi.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
+        movi.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
+        movi.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
+        movi.setPropuestaProfesional(profesional);
+        movi.setFechaRegistro(new Date());
+
+        logger.info("movi: {}",movi);
+
+        supervisoraMovimientoService.guardar(movi,contexto);
+        AuditoriaUtil.setAuditoriaActualizacion(existe,contexto);
 
         PersonalReemplazo reemplazoSave = reemplazoDao.save(existe);
         
@@ -425,8 +450,28 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public PersonalReemplazo guardar(PersonalReemplazo model, Contexto contexto) {
-        return null;
+    public PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto) {
+        Long id = personalReemplazo.getIdReemplazo();
+        if (id == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
+        }
+
+        PersonalReemplazo existe = reemplazoDao.findById(id)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
+        if (existe.getPersonaPropuesta() == null){
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
+        }
+
+        if (existe.getPersonaBaja() == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
+        }
+
+        existe.setEstadoEvalDoc(listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
+        existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR).get(0));
+
+        return reemplazoDao.save(existe);
     }
 
     @Override

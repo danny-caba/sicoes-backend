@@ -18,7 +18,9 @@ import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.AdendaReemplazoService;
+import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -42,6 +44,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     private PersonalReemplazoService personalReemplazoService;
 
     @Autowired
+    private SupervisoraMovimientoService supervisoraMovimientoService;
+
+    @Autowired
     private ListadoDetalleDao listadoDetalleDao;
 
     @Autowired
@@ -52,6 +57,13 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     @Autowired
     private SigedOldConsumer sigedOldConsumer;
+
+    @Autowired
+    private PropuestaProfesionalDao propuestaProfesionalDao;
+
+    @Autowired
+    private ListadoDetalleService listadoDetalleService;
+
 
     @Override
     @Transactional
@@ -82,10 +94,10 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         ListadoDetalle estadoAsignado = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
 
         personalReemplazo.setEstadoAprobacionAdenda(estadoApro);
-        personalReemplazoService.actualizar(personalReemplazo);
+        personalReemplazoService.actualizar(personalReemplazo,contexto);
         adenda.setEstadoAprobacion(estadoAsignado);
         adenda.setEstadoAprLogistica(estadoAsignado);
-        AuditoriaUtil.setAuditoriaRegistro(adenda,AuditoriaUtil.getContextoJob());
+        AuditoriaUtil.setAuditoriaRegistro(adenda,contexto);
         return adendaReemplazoDao.save(adenda);
     }
 
@@ -232,7 +244,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     @Override
     @Transactional
-    public Map<String, Object> finalizarFirma(FirmaRequestDTO firmaRequestDTO) {
+    public Map<String, Object> finalizarFirma(FirmaRequestDTO firmaRequestDTO, Contexto contexto) {
         logger.info("Inicio proceso finalizar firma para adenda con ID: {}",firmaRequestDTO.getIdAdenda());
         Optional<AdendaReemplazo> adendaReemplazo = adendaReemplazoDao.findById(firmaRequestDTO.getIdAdenda());
         if (!adendaReemplazo.isPresent()){
@@ -287,8 +299,26 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                         }
                         PersonalReemplazo personalExiste = personalReemplazo.get();
                         personalExiste.setEstadoRevisarEval(estadoConcluido);
-                        personalExiste.setFeFechaBaja(new Date());
-                        personalReemplazoService.actualizar(personalExiste);
+                        personalExiste.setFeFechaBaja(new Date()); //Verificar
+                        //Guardando cambio historico de estado
+                        Supervisora personalBaja = personalExiste.getPersonaBaja();
+                        SupervisoraMovimiento movi = new SupervisoraMovimiento();
+
+                        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(personalExiste.getIdSolicitud());
+                        profesional.setSupervisora(personalBaja);
+
+                        movi.setSector(profesional.getSector());
+                        movi.setSubsector(profesional.getSubsector());
+                        movi.setSupervisora(personalBaja); //Asignando codigo de personal baja
+                        movi.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
+                        movi.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
+                        movi.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
+                        movi.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.DESBLOQUEO));
+                        movi.setPropuestaProfesional(profesional);
+                        movi.setFechaRegistro(new Date());
+
+                        supervisoraMovimientoService.guardar(movi,contexto);
+                        personalReemplazoService.actualizar(personalExiste,contexto);
 
                         adenda.setEstadoFirmaGerencia(estadoApro);
                         adenda.setEstadoAprobacion(estadoConcluido);
@@ -296,7 +326,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     }
 
                 }
-                actualizar(adenda);
+                actualizar(adenda,contexto);
             }
 
             Map<String, Object> responseBody = new HashMap<>();
@@ -315,7 +345,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     @Override
     @Transactional
-    public AdendaReemplazo actualizar(AdendaReemplazo adendaReemplazo) {
+    public AdendaReemplazo actualizar(AdendaReemplazo adendaReemplazo, Contexto contexto) {
         logger.info("Iniciando actualizacion de adenda con ID: {}",adendaReemplazo.getIdAdenda());
         Optional<AdendaReemplazo> adendaExiste = adendaReemplazoDao.findById(adendaReemplazo.getIdAdenda());
         if (!adendaExiste.isPresent()){
@@ -354,22 +384,23 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             adenda.setObservacionFirmaGerencia(adendaReemplazo.getObservacionFirmaGerencia());
         }
 
-        AuditoriaUtil.setAuditoriaActualizacion(adenda,AuditoriaUtil.getContextoJob());
+        AuditoriaUtil.setAuditoriaActualizacion(adenda,contexto);
         return adendaReemplazoDao.save(adenda);
     }
 
     @Override
-    public AdendaReemplazo rechazarVisto(AdendaReemplazo adendaReemplazo) {
+    public AdendaReemplazo rechazarVisto(AdendaReemplazo adendaReemplazo,Contexto contexto) {
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO;
         ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
         adendaReemplazo.setEstadoAprobacion(estadoApro);
         adendaReemplazo.setEstadoVbGaf(estadoApro);
-        return actualizar(adendaReemplazo);
+        return actualizar(adendaReemplazo,contexto);
     }
 
     @Override
-    public AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, Boolean firmaJefe, Boolean firmaGerente) {
+    public AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, Boolean firmaJefe, Boolean firmaGerente,
+                                         Contexto contexto) {
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO;
         ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
@@ -381,7 +412,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             adendaReemplazo.setEstadoAprobacion(estadoApro);
             adendaReemplazo.setEstadoFirmaGerencia(estadoApro);
         }
-        return actualizar(adendaReemplazo);
+        return actualizar(adendaReemplazo,contexto);
     }
 
     private ResponseEntity<String> enviarSolicitudExterna(String url, HttpHeaders headers) {

@@ -281,7 +281,18 @@ public interface PropuestaProfesionalDao extends JpaRepository<PropuestaProfesio
     nativeQuery = true)
 	List<Object[]> findPersonalPropuesto(@Param("idSoliPerfCont") Long idSoliPerfCont);
 
-
+	@Query("select p from PropuestaProfesional p "
+			+ "left join fetch p.propuesta pp "
+			+ "left join fetch p.supervisora s "
+			+ "left join fetch p.estado e "
+			+ "left join fetch p.sector se "
+			+ "left join fetch p.subsector su "
+			+ "left join fetch p.perfil pe "
+			+ "left join fetch pp.procesoItem pi "
+			+ "left join fetch pp.ganador g "
+			+ "left join fetch SicoesSolicitud ss on ss.propuesta = pp "
+			+ "where ss.idSolicitud = :idSolicitud ")
+	PropuestaProfesional listarXSolicitud(Long idSolicitud);
 
 
 }

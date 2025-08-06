@@ -569,7 +569,7 @@ public class Constantes {
 			public static final String PROCESO_CANCELADO 		= "PROCESO_CANCELADO";
 			public static final String POSTOR_GANADOR 			= "POSTOR_GANADOR";
 			public static final String POSTOR_NO_GANADOR 		= "POSTOR_NO_GANADOR";
-			
+			public static final String REEMPLAZO_PERSONAL		= "REEMPLAZO_PERSONAL";
 		}
 		
 		public static final class ACCION_BLOQUEO_DESBLOQUEO {

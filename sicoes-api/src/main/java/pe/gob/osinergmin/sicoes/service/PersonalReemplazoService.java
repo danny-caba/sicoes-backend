@@ -13,10 +13,10 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
 
     Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
                                                     Pageable pageable, Contexto contexto);
-    PersonalReemplazo guardar(PersonalReemplazo personalReemplazo);
-    PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo);
-    PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo);
-    PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo);
+    PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto);
+    PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo, Contexto contexto);
+    PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo, Contexto contexto);
+    PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo, Contexto contexto);
     PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto);
     List<Combo> listarContratistas(String codigo);
     List<AprobacionReemp> buscarAprobacion(String requerimeinto, Long tipoaprob , Long estadoaprob, Long tiposolicitud, Long idcontratista, Long numexpediente);
@@ -27,4 +27,5 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
     GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto);
     GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request);
+    PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto);
 }

@@ -42,14 +42,14 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PostMapping("/reemplazo/solicitud/finalizar-visto/")
     public Map<String,Object> finalizarvistoBueno(@RequestBody FirmaRequestDTO firmaRequestDTO){
         logger.info("visto bueno finalizar {}");
-        return adendaReemplazoService.finalizarFirma(firmaRequestDTO);
+        return adendaReemplazoService.finalizarFirma(firmaRequestDTO,getContexto());
     }
 
     @PutMapping("/reemplazo/solicitud/rechazar-visto")
     @Raml("adendaReemplazo.listar.properties")
     public AdendaReemplazo rechazarVisto(@RequestBody AdendaReemplazo adendaReemplazo){
         logger.info(" rechazar visto adenda {}", adendaReemplazo);
-        return adendaReemplazoService.rechazarVisto(adendaReemplazo);
+        return adendaReemplazoService.rechazarVisto(adendaReemplazo,getContexto());
     }
 
     @PostMapping("/reemplazo/solicitud/firmar/")
@@ -62,7 +62,7 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PostMapping("/reemplazo/solicitud/finalizar-firma/")
     public Map<String,Object> finalizarFirma(@RequestBody FirmaRequestDTO firmaRequestDTO){
         logger.info("firma finalizar {}");
-        return adendaReemplazoService.finalizarFirma(firmaRequestDTO);
+        return adendaReemplazoService.finalizarFirma(firmaRequestDTO,getContexto());
     }
 
     @PutMapping("/reemplazo/solicitud/rechazar-firma")
@@ -71,7 +71,7 @@ public class AdendaReemplazoRestController extends BaseRestController {
                                          @RequestParam(required = false) Boolean firmaJefe,
                                          @RequestParam(required = false) Boolean firmaGerente){
         logger.info(" rechazar firma {}", adendaReemplazo);
-        return adendaReemplazoService.rechazarFirma(adendaReemplazo,firmaJefe,firmaGerente);
+        return adendaReemplazoService.rechazarFirma(adendaReemplazo,firmaJefe,firmaGerente,getContexto());
     }
 
 
