@@ -930,6 +930,7 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
+		public static final String EVALUADOR_CONTRATOS			= "12";
 	}
 	
 	public static final class OPCIONES_EXTERNO {
