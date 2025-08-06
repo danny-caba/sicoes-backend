@@ -10,6 +10,7 @@ import org.thymeleaf.context.Context;
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
@@ -186,13 +187,13 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarSubsanacionDocumentosReemplazo(String nombreSupervisora, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto) {
+    public void notificarSubsanacionDocumentosReemplazo(Usuario usuario, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto) {
 
-        String email = contexto.getUsuario().getCorreo();
+        String email = usuario.getCorreo();
         logger.info(" notificarSubsanacionDocumentosReemplazo para email: {} ",email);
 
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("nombreSupervisora", usuario.getNombreUsuario());
         ctx.setVariable("nombrePersonal", nombrePersonal);
         ctx.setVariable("nombrePerfil", nombrePerfil);
         ctx.setVariable("listDocsAsociados", listDocsAsociados);
@@ -207,13 +208,13 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarRevisionDocumentosReemplazo(String nombreSupervisora, String numeroExpediente, Contexto contexto) {
+    public void notificarRevisionDocumentosReemplazo(Usuario usuario, String numeroExpediente, Contexto contexto) {
 
-        String email = contexto.getUsuario().getCorreo();
+        String email = usuario.getCorreo();
         logger.info(" notificarRevisionDocumentosReemplazo para email: {} ",email);
 
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("nombreSupervisora", usuario.getNombreUsuario());
         ctx.setVariable("numeroExpediente", numeroExpediente);
         Notificacion notificacion = buildNotification(
                 email,

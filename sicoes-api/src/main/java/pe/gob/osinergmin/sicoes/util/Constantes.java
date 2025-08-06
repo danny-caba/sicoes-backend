@@ -920,6 +920,8 @@ public class Constantes {
 		public static final String ADENDA_NO_EXISTE = "V0129";
 		public static final String VISTO_BUENO_APROBADO = "V0130";
 		public static final String FIRMA_APROBADA = "V0131";
+		public static final String USUARIO_EXTERNO_NO_EXISTE="V01032";
+		public static final String EVALUADOR_CONTRATOS_NO_EXISTE="V01033";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -930,6 +932,7 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
+		public static final String EVALUADOR_CONTRATOS 			= "12";
 		public static final String INVITADO		                = "15";
 	}
 	

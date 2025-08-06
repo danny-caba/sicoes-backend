@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.service;
 
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.List;
@@ -17,8 +18,8 @@ public interface NotificacionContratoService {
 
     void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto);
 
-    void notificarSubsanacionDocumentosReemplazo(String nombreSupervisora, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
+    void notificarSubsanacionDocumentosReemplazo(Usuario usuario, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
 
-    void notificarRevisionDocumentosReemplazo(String nombreSupervisora, String numeroExpediente, Contexto contexto);
+    void notificarRevisionDocumentosReemplazo(Usuario usuario, String numeroExpediente, Contexto contexto);
 
 }
