@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.python.parser.ast.Str;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
-import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
@@ -76,6 +75,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private ListadoDetalleService listadoDetalleService;
+    @Autowired
+    private HistorialAprobReempDao historialAprobReempDao;
+
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -336,12 +338,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto) {
-        if (!Objects.isNull(request.getObservacion())) {
-            logger.info("registrar observacion");
-
-            return mapEvalDocuResponse(insertNuevoEvalDocuReemplazo(request, contexto));
-        }
-
         Optional<EvaluarDocuReemplazo> registroExistente = evaluarDocuReemDao
                 .findByIdDocumentoIdRol(request.getIdDocumento(), request.getIdRol());
 
@@ -405,7 +401,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GenericResponseDTO registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request) {
+    public GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto) {
         PersonalReemplazo personalReemplazoToUpdate = reemplazoDao
                 .findById(request.getIdReemplazo())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -426,10 +422,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .findFirst()
                     .orElse(new ListadoDetalle());
             personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
+            AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
 
             reemplazoDao.save(personalReemplazoToUpdate);
 
-            return GenericResponseDTO.builder()
+            return GenericResponseDTO.<String>builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK)
                     .build();
         } else {
@@ -440,10 +437,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .findFirst()
                     .orElse(new ListadoDetalle());
             personalReemplazoToUpdate.setEstadoReemplazo(estadoPreliminar);
+            AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
 
             reemplazoDao.save(personalReemplazoToUpdate);
 
-            return GenericResponseDTO.builder()
+            return GenericResponseDTO.<String>builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
                     .build();
         }
@@ -559,7 +557,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         if (aprobacion.getDeObservacion() != null) {
                    aprobacionFinal.setDeObservacion(aprobacion.getDeObservacion());
-               }
+        }
+        String numeroExpediente = obtenerNumeroExpediente(persoReempFinal);
 
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_DOC_EVAL_TEC_CONT)){ //Evaluar la documentación Rol Evaluador Técnico del Contrato
             if(aprobacion.getAccion().equals("A")) {
@@ -596,6 +595,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
            if(aprobacion.getAccion().equals("A")) {
                aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
                persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar
+
+               notificacionContratoService.notificarRevisarDocumentacionPendiente( numeroExpediente,contexto);
+
            }else{
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));  //desaprobado
                aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
@@ -612,6 +614,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
                persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)); //concluido
+
+               notificacionContratoService.notificarRevisarDocumentacionPendiente( numeroExpediente,contexto);
            }else{
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //desaprobado
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
@@ -650,6 +654,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
 	}
 
+    private String obtenerNumeroExpediente(PersonalReemplazo personalReemplazo) {
+        if (personalReemplazo == null) {
+            return "";
+        }
+
+        Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
+        return personaPropuesta != null ?
+               Optional.ofNullable(personaPropuesta.getNumeroExpediente())
+                .orElse("") :
+                "";
+    }
+
 
     @Override
     public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol) {
@@ -661,5 +677,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol) {
        return evaluacionPPDao.obtenerListadoPP(id, idsol)
                .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
+    }
+
+     public Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable ) {
+        logger.info("listarPersonalReemplazo");
+        return historialAprobReempDao.buscarHistorial(idReemplazo,pageable);
     }
 }

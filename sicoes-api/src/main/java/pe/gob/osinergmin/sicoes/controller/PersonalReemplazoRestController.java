@@ -139,7 +139,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
     public GenericResponseDTO<String> registroRevisarDocumentacion(
             @RequestBody RegistrarRevDocumentosRequestDTO request){
         logger.info(" Request {}", request);
-        return personalReemplazoService.registrarRevDocumentos(request);
+        return personalReemplazoService.registrarRevDocumentos(request, getContexto());
     }
 
     @GetMapping("/reemplazo/{idReemplazo}")
@@ -154,5 +154,12 @@ public class PersonalReemplazoRestController extends BaseRestController {
     public PersonalReemplazo registroInicioServicio(@RequestBody PersonalReemplazo personalReemplazo) {
         logger.info("Registro inicio servicio {}", personalReemplazo);
         return personalReemplazoService.registrarDocIniServ(personalReemplazo,getContexto());
+    }
+
+    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/historial/{idReemplazo}")
+    public Page<HistorialAprobReemp> listarHistorialAprobaciones(@PathVariable Long idReemplazo,
+                                                                 Pageable pageable){
+        logger.info("obtener listado reemplazo personal");
+        return personalReemplazoService.listarHistorialReemp(idReemplazo, pageable );
     }
 }

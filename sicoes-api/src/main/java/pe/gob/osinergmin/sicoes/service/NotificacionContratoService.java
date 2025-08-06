@@ -12,4 +12,6 @@ public interface NotificacionContratoService {
 
     void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto);
 
+    void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto);
+
 }
