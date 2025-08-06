@@ -7,7 +7,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 
-
+import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
@@ -16,6 +16,8 @@ import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+
+import java.util.List;
 
 @Service
 public class NotificacionContratoServiceImpl implements NotificacionContratoService{
@@ -33,7 +35,13 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     private static final String ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_PENDIENTE = "DOCUMENTACION PENDIENTE POR REVISAR (REEMPLAZO DE PERSONAL PROPUESTO)";
     private static final String NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_PENDIENTE = "30-notificacion-revisar-documento-pendiente.html";
-    
+
+    private static final String ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_REEMPLAZO = "SUBASANAR DOCUMENTOS DE INICIO DE SERVICIO";
+    private static final String NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_REEMPLAZO = "31-notificacion-subsanar-documento-reemplazo.html";
+
+    private static final String ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_REEMPLAZO = "DOCUMENTACION REVISADA";
+    private static final String NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_REEMPLAZO = "32-notificacion-revisar-documento-reemplazo.html";
+
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
     private final TemplateEngine templateEngine;
@@ -174,6 +182,46 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarSubsanacionDocumentosReemplazo(String nombreSupervisora, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto) {
+
+        String email = contexto.getUsuario().getCorreo();
+        logger.info(" notificarSubsanacionDocumentosReemplazo para email: {} ",email);
+
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("nombrePersonal", nombrePersonal);
+        ctx.setVariable("nombrePerfil", nombrePerfil);
+        ctx.setVariable("listDocsAsociados", listDocsAsociados);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_REEMPLAZO,
+                NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_REEMPLAZO,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarRevisionDocumentosReemplazo(String nombreSupervisora, String numeroExpediente, Contexto contexto) {
+
+        String email = contexto.getUsuario().getCorreo();
+        logger.info(" notificarRevisionDocumentosReemplazo para email: {} ",email);
+
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_REEMPLAZO,
+                NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_REEMPLAZO,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+
         saveNotificacion(notificacion);
     }
     

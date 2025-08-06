@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.repository.*;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
-import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
-import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
+import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.*;
 
 import java.time.Instant;
@@ -77,6 +74,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private ListadoDetalleService listadoDetalleService;
     @Autowired
     private HistorialAprobReempDao historialAprobReempDao;
+
+    @Autowired
+    private SupervisoraDao supervisoraDao;
+
+    @Autowired
+    private SolicitudDao solicitudDao;
 
 
     @Override
@@ -440,10 +443,59 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
 
             reemplazoDao.save(personalReemplazoToUpdate);
+            String nombreSupervisora = nombreSupervisora(supervisoraDao.obtenerSupervisoraXRUC(contexto.getUsuario().getCodigoRuc()));
+            if (contexto.getUsuario().isRol(Constantes.ROLES.RESPONSABLE_TECNICO)) {
+                String nombrePersonal = nombrePersonal(personalReemplazoToUpdate);
+                String nombrePerfil = personalReemplazoToUpdate.getPerfil().getNombre();
+                notificacionContratoService.notificarSubsanacionDocumentosReemplazo(nombreSupervisora, nombrePersonal, nombrePerfil, listDocsAsociados, contexto);
+            } else if (contexto.getUsuario().isRol(Constantes.ROLES.INVITADO)) {
+                Solicitud solicitud = solicitudDao.obtener(personalReemplazoToUpdate.getIdSolicitud());
+                String numeroExpediente = solicitud.getNumeroExpediente();
+                notificacionContratoService.notificarRevisionDocumentosReemplazo(nombreSupervisora, numeroExpediente, contexto);
+            }
 
             return GenericResponseDTO.<String>builder()
                     .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
                     .build();
+        }
+    }
+
+    private String nombreSupervisora(Supervisora supervisora) {
+        ListadoDetalle tipoDocumento = supervisora.getTipoDocumento();
+        if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
+            String nombres = supervisora.getNombres();
+            String apellidoPaterno = supervisora.getApellidoPaterno();
+            String apellidoMaterno = supervisora.getApellidoMaterno();
+            return String.format("%s %s %s",
+                    nombres != null ? nombres.trim() : "",
+                    apellidoPaterno != null ? apellidoPaterno.trim() : "",
+                    apellidoMaterno != null ? apellidoMaterno.trim() : ""
+            ).trim();
+        } else if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)) {
+            String nombreRazonSocial = supervisora.getNombreRazonSocial();
+            return nombreRazonSocial != null ? nombreRazonSocial.trim() : "";
+        } else{
+            return null;
+        }
+    }
+
+    private String nombrePersonal(PersonalReemplazo personalReemplazo) {
+        Supervisora supervisora = personalReemplazo.getPersonaPropuesta();
+        ListadoDetalle tipoDocumento = supervisora.getTipoDocumento();
+        if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
+            String nombres = supervisora.getNombres();
+            String apellidoPaterno = supervisora.getApellidoPaterno();
+            String apellidoMaterno = supervisora.getApellidoMaterno();
+            return String.format("%s %s %s",
+                    nombres != null ? nombres.trim() : "",
+                    apellidoPaterno != null ? apellidoPaterno.trim() : "",
+                    apellidoMaterno != null ? apellidoMaterno.trim() : ""
+            ).trim();
+        } else if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)) {
+            String nombreRazonSocial = supervisora.getNombreRazonSocial();
+            return nombreRazonSocial != null ? nombreRazonSocial.trim() : "";
+        } else{
+            return null;
         }
     }
 
