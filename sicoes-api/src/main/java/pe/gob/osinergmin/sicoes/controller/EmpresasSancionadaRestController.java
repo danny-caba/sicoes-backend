@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -138,6 +139,44 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 
 		valor.put("respuesta", "2");
 
+		}
+
+		return valor;
+	}
+
+	@GetMapping("/vinculo-laboral")
+	public Map<String,String> ValidarVinculoLaboral(@RequestParam String numeroDocumento){
+		Map<String,String> valor=new HashMap<>();
+
+		boolean esRuc = false;
+		esRuc = Objects.equals(numeroDocumento.trim().length(), 10) ? true : false;
+		numeroDocumento = numeroDocumento.trim();
+
+		if (esRuc) {
+			numeroDocumento = numeroDocumento.substring(2, 10);
+		}
+
+		String rpt = empresasSancionadaService.validarVinculoLaboral(numeroDocumento);
+
+		if (rpt != null) {
+
+			if(!rpt.equalsIgnoreCase("2")) {
+
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+				LocalDate fechaCese = LocalDate.parse(rpt, formatter);
+
+				LocalDate fechaLimite = LocalDate.now().minusDays(1);
+				if (fechaCese.isAfter(fechaLimite)) {
+					valor.put("respuesta","1");
+				}else {
+					valor.put("respuesta","2");
+				}
+			}else {
+				valor.put("respuesta","2");
+			}
+		}else {
+			// Si fechaCese es null
+			valor.put("respuesta","2");
 		}
 
 		return valor;

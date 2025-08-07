@@ -486,5 +486,77 @@ public class EmpresasSancionadaServiceImpl implements EmpresasSancionadaService 
 
 		return resultados;
 	}
+
+	@Override
+	public String validarVinculoLaboral(String numeroDocumento) {
+		String valor = "2";
+		String fechaCeseStr = null;
+		try {
+			// Define la URL base y los parámetros
+			String dni = numeroDocumento;
+			String baseUrl = urlSancionVigentePN;
+			String document = dni;
+			String codigoAplicativo = "SICOES";
+			String codigoConsulta = "A50";
+
+			// Construir la URL con parámetros
+			String urlWithParams = String.format(
+					"%s?documento=%s&codigoAplicativo=%s&codigoConsulta=%s",
+					baseUrl,
+					URLEncoder.encode(document, StandardCharsets.UTF_8.toString()),
+					URLEncoder.encode(codigoAplicativo, StandardCharsets.UTF_8.toString()),
+					URLEncoder.encode(codigoConsulta, StandardCharsets.UTF_8.toString())
+			);
+			System.out.println("Valor de urlWithParams: " + urlWithParams);
+			// Crear una URL y abrir una conexión
+			URL url = new URL(urlWithParams);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+
+			// Leer la respuesta
+			int responseCode = con.getResponseCode();
+			System.out.println("Response Code: " + responseCode);
+			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				System.out.println("Error 404: Recurso no encontrado.");
+				// Aquí puedes manejar el caso cuando la respuesta es 404
+				fechaCeseStr = "2"; // O cualquier lógica que desees aplicar en caso de un 404
+			} else if (responseCode == HttpURLConnection.HTTP_OK) {
+				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+				String inputLine;
+				StringBuilder response = new StringBuilder();
+
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				in.close();
+
+
+				// Convertir la respuesta a JSON y extraer el campo `status`
+				JSONObject jsonResponse = new JSONObject(response.toString());
+				String status = jsonResponse.getString("status");
+
+				if(status.equalsIgnoreCase("success")) {
+					JSONObject result = jsonResponse.getJSONObject("result");
+					String descripcionPuesto = result.optString("descripcionPuesto", null);
+
+					if (descripcionPuesto != null && !descripcionPuesto.isEmpty()) {
+						if (descripcionPuesto.toUpperCase().contains("PRACTICANTE") || descripcionPuesto.toUpperCase().contains("CONSEJO DIRECTIVO") ) {
+							fechaCeseStr = "2"; // Si la descripción contiene 'PRACTICANTE'
+						} else {
+							fechaCeseStr = result.optString("fechaCese", null); // Extraer fecha de cese si no es practicante
+						}
+					} else {
+						fechaCeseStr = result.optString("fechaCese", null); // Extraer fecha de cese si no hay puesto
+					}
+
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return fechaCeseStr;
+	}
+
 }
 

@@ -1,6 +1,5 @@
 package pe.gob.osinergmin.sicoes.service;
 
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -9,11 +8,16 @@ import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+
+import java.util.List;
 
 public interface NotificacionService extends BaseService<Notificacion, Long> {
 
@@ -44,10 +48,16 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajeAsignacionEvaluacion04(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeSolicitudRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
-	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean estado, Contexto contexto);
+	void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, List<String> correos, boolean estado, Contexto contexto);
 	void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario usuario, Requerimiento requerimiento, Contexto contexto);
 	void enviarRequerimientoInvitacion(Supervisora supervisoraPN, RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
-	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto);
-	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto);
+	void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Usuario usuario, Contexto contexto);
+	void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Usuario usuario, String rol, Contexto contexto);
 	void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto);
+	void enviarRequerimientoEvaluacion(Supervisora supervisoraPN, RequerimientoDocumento requerimientoDocumento, Contexto contexto);
+	void enviarMensajeVistoBuenoCoordinador(String correo, Contexto contexto);
+	void enviarMensajeVistoBuenoSupervisor(Supervisora supervisoraPN, List<RequerimientoDocumentoDetalle> listaReqDocDetalle, Contexto contexto);
+	void enviarMensajeFinalizacionContratacion(Supervisora supervisoraPN, Contexto contexto);
+	void enviarMensajeArchivarRequerimiento(RequerimientoAprobacion aprobacion, Contexto contexto);
+	void enviarMensajeAprobacionInforme(RequerimientoAprobacion aprobacion, Long usuarioANotificar, Contexto contexto);
 }

@@ -18,6 +18,12 @@ public class Constantes {
 	public static final class FLAG {
 		public static final Long ACTIVO = 1L;
 		public static final Long INACTIVO = 0L;
+
+		public static final String PRESENTADO = "1";
+		public static final String NO_PRESENTADO = "0";
+
+		public static final String ACTIVO_STR = "1";
+		public static final String INACTIVO_STR = "0";
 	}
 
 	public static final class UBIGEO{
@@ -170,10 +176,11 @@ public class Constantes {
 			public static final String ARCHIVO_REQUERIMIENTO = "TA26";
 			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
 			public static final String INFORME_REQUERIMIENTO = "TA28";
-
 			public static final String REQUERIMIENTO = "TA26";
 			public static final String APROBACION_REQUERIMIENTO = "TA27";
 			public static final String DOCUMENTO_REQUERIMIENTO = "TA29";
+			public static final String CONTRATO_REQUERIMIENTO = "TA30";
+			public static final String ARCHIVO_ARCHIVAR_REQUERIMIENTO = "TA31";
 
 		}
 		
@@ -208,6 +215,7 @@ public class Constantes {
 			public static final String CODIGO 		= "GRUPOS";
 			public static final String G1 			= "G1";
 			public static final String G2 			= "G2";
+			public static final String G3 			= "G3";
 		}
 		
 		public static final class ESTADO_ARCHIVO {
@@ -640,7 +648,7 @@ public class Constantes {
 			public static final String PRELIMINAR 					= "PRELIMINAR";
 			public static final String EN_APROBACION 				= "EN_APROBACION";
 			public static final String EN_PROCESO 					= "EN_PROCESO";
-			public static final String CONCLUIDO 					= "EN_PROCESO";
+			public static final String CONCLUIDO 					= "CONCLUIDO";
 			public static final String ARCHIVADO 					= "ARCHIVADO";
 			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
@@ -680,28 +688,58 @@ public class Constantes {
 			public static final String FIRMADO = "FIRMADO";
 		}
 
-		public static final class TIPO_ROL_APROBACION {
-			public static final String CODIGO 						= "TIPO_ROL_APROBACION";
-			public static final String APROBADOR_TECNICO 			= "APROBADOR_TECNICO";
-		}
-
-		public static final class GRUPO_ROL_APROBACION {
-			public static final String CODIGO 						= "GRUPO_ROL_APROBACION";
-			public static final String GRUPO_1 						= "GRUPO_1";
-		}
-
 		public static final class ESTADO_REQ_DOCUMENTO {
-			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO";
-			public static final String EN_PROCESO	= "EN_PROCESO";
-
+			public static final String CODIGO 		                = "ESTADO_REQ_DOCUMENTO";
+            public static final String EN_PROCESO	                = "EN_PROCESO";
+			public static final String CONCLUIDO	                = "CONCLUIDO";
+			public static final String SOLICITUD_PRELIMINAR 	    = "SOLICITUD_PRELIMINAR";
+			public static final String OBSERVADO	                = "OBSERVADO";
 		}
 
 		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
-			public static final String CODIGO 		= "ESTADO_REQ_DOCUMENTO_DETALLE";
-			public static final String OBSERVADO	= "OBSERVADO";
-
+			public static final String CODIGO 		                = "ESTADO_REQ_DOCUMENTO_DETALLE";
+			public static final String CUMPLE		                = "CUMPLE";
+			public static final String OBSERVADO	                = "OBSERVADO";
 		}
 
+		public static final class TIPO_REQ_DOCUMENTO {
+			public static final String CODIGO 		= "TIPO_REQ_DOCUMENTO";
+			public static final String REGISTRO		= "REGISTRO";
+			public static final String SUBSANACION	= "SUBSANACION";
+		}
+
+        public static final class ESTADO_REQ_CONTRATO {
+            public static final String CODIGO 						= "ESTADO_REQ_CONTRATO";
+            public static final String EN_PROCESO					= "EN_PROCESO";
+            public static final String CONCLUIDO					= "CONCLUIDO";
+        }
+
+        public static final class TIPO_REQ_CONTRATO {
+            public static final String CODIGO 						= "TIPO_REQ_CONTRATO";
+            public static final String PRIMIGENIO					= "PRIMIGENIO";
+        }
+
+        public static final class ORIGEN_REQUISITO {
+            public static final String CODIGO 						= "ORIGEN_REQUISITO";
+            public static final String EXTERNO						= "EXTERNO";
+            public static final String REQUERIMIENTO				= "REQUERIMIENTO";
+        }
+
+		public static final class REVISION_DOCUMENTO {
+			public static final String CODIGO 						= "REVISION_DOCUMENTO";
+			public static final String PENDIENTE					= "PENDIENTE";
+			public static final String EVALUADO						= "EVALUADO";
+			public static final String REVISADO						= "REVISADO";
+		}
+
+		public static final class REQUISITO_REQ_DOCUMENTO {
+			public static final String CODIGO 		                = "REQUISITO_REQ_DOCUMENTO";
+			public static final String COPIA_DOCUMENTO	            = "COPIA_DOCUMENTO";
+			public static final String RUC_PERSONA	                = "RUC_PERSONA";
+			public static final String DJ_IMPEDIMENTO 	    		= "DJ_IMPEDIMENTO";
+			public static final String DJ_VINCULO_OSINERGMIN 	    = "DJ_VINCULO_OSINERGMIN";
+			public static final String INFORME_REQUERIMIENTO 	    = "INFORME_REQUERIMIENTO";
+		}
 	}
 	
 
@@ -976,6 +1014,27 @@ public class Constantes {
 		public static final String REQUERIMIENTO_EN_PROCESO = "V01024";
     	public static final String ERROR_LISTA_DIVISIONES = "V01025";
 		public static final String REQUERIMIENTO_DOCUMENTO_DETALLE_NO_ENCONTRADO = "V01026";
+		public static final String OBSERVACION_AUSENTE = "V01027";
+		public static final String EVALUACION_AUSENTE = "V01028";
+		public static final String REQUERIMIENTO_CONTRATO_NO_ENCONTRADO = "V01029";
+		public static final String USUARIO_ROL_GPPM_NO_ENCONTRADO = "V01030";
+		public static final String USUARIO_ROL_GSE_NO_ENCONTRADO = "V01031";
+        public static final String REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO = "V01032";
+		public static final String NUMERO_CONTRATO_NO_ENCONTRADO = "V01033";
+		public static final String FECHA_SUSCRIPCION_NO_ENCONTRADO = "V01034";
+		public static final String ARCHIVAR_ESTADO_EN_PROCESO = "V01035";
+		public static final String DOCUMENTOS_SIN_CARGAR_EVALUAR = "V01036";
+		public static final String ESTADO_CONCLUIDO_NO_CONFIGURADO_EN_LISTADODETALLE = "V01037";
+		public static final String ESTADO_SOLICITUD_PRELIMINAR_NO_CONFIGURADO_EN_LISTADODETALLE = "V01038";
+		public static final String ESTADO_ASIGNADO_NO_CONFIGURADO_EN_LISTADODETALLE = "V01039";
+		public static final String ESTADO_EN_APROBACION_NO_CONFIGURADO_EN_LISTADODETALLE = "V01040";
+		public static final String ESTADO_ELIMINADO_NO_CONFIGURADO_EN_LISTADODETALLE = "V01041";
+		public static final String TIPO_SUBSANACION_NO_CONFIGURADO_EN_LISTADODETALLE = "V01042";
+		public static final String PERFIL_APROBADOR_NO_ENCONTRADO = "V01043";
+		public static final String PERFIL_APROBADOR_G1_NO_ENCONTRADO = "V01044";
+		public static final String PERFIL_APROBADOR_G2_NO_ENCONTRADO = "V01045";
+		public static final String PERFIL_APROBADOR_G3_NO_ENCONTRADO = "V01046";
+		public static final String ESTADO_APROBACION_INCORRECTO = "V01047";
 
 	}
 	public static final class ROLES {
@@ -987,7 +1046,9 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
-		public static final String COORDINADOR_GESTION = "13";
+		public static final String EVALUADOR_CONTRATOS 			= "12";
+		public static final String APROBADOR_GPPM 				= "13";
+		public static final String APROBADOR_GSE 				= "14";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"></meta>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+</head>
+<body style="background: #efeeed;font-family: Arial, Verdana, Helvetica, sans-serif;margin: 0;padding: 0; ">
+	<div style="max-width: 600px;width: 100%;margin: 0 auto;min-width:320px;">
+		<div style="font-family: Arial, Verdana, Helvetica, sans-serif;font-weight: normal;font-size: 11px;line-height: 12px;color: #6e6e6e;text-align: center;margin: 0;padding: 5px 0 0px;">
+		</div>
+		<div style="background-color: #fff;padding: 25px 18px 5px 18px;">
+			<div style="color: #121212;font-family: Helvetica,Arial,sans-serif;font-size: 14px;font-weight: 400;line-height: 1.3;margin: 0;padding: 10px 0px 0px 0px;text-align: left;">
+				<p style="margin: 0;margin-bottom: 0;margin-left: 32px;margin-right: 32px;color: inherit;font-family: Helvetica,Arial,sans-serif;font-size: 34px;font-weight: 700;line-height: 25px!important;padding: 0;text-align: left;word-wrap: normal;">			
+					<span style="color: #104971;font-size: 14px;font-family: Arial;font-weight: bold">Estimado(a): </span>
+				</p>
+			</div>
+			<div style="font-size: 13px;color: #0984C2;font-family: Arial;font-weight: 400;line-height: 19px;margin: 0;margin-bottom: 0px;margin-left: 32px;margin-right: 32px;padding: 0;padding-top: 17px;text-align: justify;">
+				<p>[[${nombre}]], se informa que tiene por subsanar documentos cargados.</p>
+				<br>
+				<table style="font-size: 13px;color: #0984C2">
+					<tr th:each= "detalle: ${documentos}"><td>Documento</td><td>:</td><td th:text="${detalle.descripcionRequisito}" /></tr>
+<!--					<tr th:if= "${codigoRuc != null}"><td>Número de RUC</td><td>:</td><td>&nbsp;[[${codigoRuc}]]</td></tr>-->
+<!--					<tr th:if= "${razonSocial != null}"><td>Razón Social / Apellidos y Nombres</td><td>:</td><td>&nbsp;[[${razonSocial}]]</td></tr>-->
+<!--					<tr><td>Fecha de Ingreso</td><td>:</td><td>&nbsp;[[${fechaIngreso}]]</td></tr>-->
+<!--					<tr><td>Perfil</td><td>:</td><td>&nbsp;[[${perfil}]]</td></tr>-->
+<!--					<tr><td>Plazo máximo para concluir evaluación</td><td>:</td><td>&nbsp;[[${plazo}]]</td></tr>-->
+				</table>
+				<p><span style="color: #104971;font-size: 16px;font-family: Arial;font-weight: bold">Por favor no responda este correo, es sólo informativo.</span></p>
+				<p>
+					<br>
+					<span style="font-weight: bold"></span><br>	
+					Atentamente,<br>
+					Sistema de Registro y Contratación de Empresas Supervisoras<br>
+					Gerencia de Administración y Finanzas<br>
+					Osinergmin 
+				</p>
+			</div>
+		</div>
+<!--		<div style="background-color: #fff;padding: 0px 18px 5px 18px;">-->
+<!--			<div style="font-size: 11px;color: #0984C2;font-family: Arial;font-weight: 400;line-height: 19px;margin: 0;margin-bottom: 20px;margin-left: 32px;margin-right: 32px;padding: 0;padding-top: 17px;text-align: justify;">-->
+<!--				<p style="text-align:justify;">-->
+<!--					El sistema de correo de Osinergmin está destinado únicamente para fines informativos y/o laborales,-->
+<!--					cualquier otro uso contraviene las políticas de la Institución.-->
+<!--					Toda información contenida en este mensaje es confidencial y de uso exclusivo de Osinergmin.-->
+<!--					Su divulgación, copia y/o adulteración están prohibidas y sólo debe ser conocida por la persona a quien se dirige este mensaje.-->
+<!--					Si usted ha recibido este mensaje por error por favor proceda a eliminarlo y notificar al remitente.-->
+<!--				</p>-->
+<!--			</div>-->
+<!--		</div>-->
+		<div style="font-family: Arial, Verdana, Helvetica, sans-serif;font-weight: normal;font-size: 11px;line-height: 12px;color: #6e6e6e;text-align: center;margin: 0;padding: 5px 0 0px;">
+		</div>
+	</div>
+</body>
+</html>

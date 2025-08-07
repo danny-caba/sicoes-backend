@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.Documento;
 import pe.gob.osinergmin.sicoes.model.dto.InfoSectorActividadDTO;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 @Repository
 public interface DocumentoDao extends JpaRepository<Documento, Long> {
@@ -107,6 +108,12 @@ public interface DocumentoDao extends JpaRepository<Documento, Long> {
 			+ "left join  d.solicitud s "	
 			+ "where s.idSolicitud=:idSolicitud and d.montoContratoSol is not null ")
 	public Double sumarMontoTotal(Long idSolicitud);
+
+	@Query(value="select sum(d.montoContratoSol) from Documento d "
+			+ "left join  d.evaluacion e "
+			+ "left join  d.solicitud s "
+			+ "where s.idSolicitud=:idSolicitud and d.montoContratoSol is not null and e.codigo <> '"+ Constantes.LISTADO.RESULTADO_EVALUACION.POR_EVALUAR +"' ")
+	Double sumarMontoTotalEvaluado(Long idSolicitud);
 	
 	@Query("select d from Documento d "	
 			+ "left join fetch d.tipo t "

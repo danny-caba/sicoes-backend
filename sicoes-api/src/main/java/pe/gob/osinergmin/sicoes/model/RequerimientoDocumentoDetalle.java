@@ -52,7 +52,7 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     private Usuario usuario;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name="FE_EVALUACION")
     private Date fechaEvaluacion;
 
@@ -61,6 +61,13 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
 
     @Column(name="FL_PRESENTADO")
     private String presentado;
+
+    @Column(name="FL_VISTO_BUENO")
+    private String flagVistoBueno;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_ORIGEN_LD")
+    private ListadoDetalle origenRequisito;
 
     @Transient
     private Archivo archivo;
@@ -72,6 +79,7 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
     public void setPresentado(String presentado) {
         this.presentado = presentado;
     }
+
 
     public Long getIdRequerimientoDocumentoDetalle() {
         return idRequerimientoDocumentoDetalle;
@@ -153,4 +161,20 @@ public class RequerimientoDocumentoDetalle extends BaseModel implements Serializ
         this.archivo = archivo;
     }
 
+
+    public String getFlagVistoBueno() {
+        return flagVistoBueno;
+    }
+
+    public void setFlagVistoBueno(String flagVistoBueno) {
+        this.flagVistoBueno = flagVistoBueno;
+    }
+
+    public ListadoDetalle getOrigenRequisito() {
+        return origenRequisito;
+    }
+
+    public void setOrigenRequisito(ListadoDetalle origenRequisito) {
+        this.origenRequisito = origenRequisito;
+    }
 }

@@ -24,11 +24,12 @@
 	<field name="requerimiento.nuExpediente" class="java.lang.String"/>
 	<field name="fechaIngreso" class="java.util.Date"/>
 	<field name="requerimientosDocumentosDetalles" class="java.util.List"/>
-	<field name="supervisora.nombreRazonSocial" class="java.lang.String"/>
-	<field name="supervisora.tipoDocumento.nombre" class="java.lang.String"/>
-	<field name="supervisora.numeroDocumento" class="java.lang.String"/>
-	<field name="division" class="pe.gob.osinergmin.sicoes.model.Division"/>
-	<field name="perfil" class="pe.gob.osinergmin.sicoes.model.ListadoDetalle"/>
+	<field name="requerimiento.division.deDivision" class="java.lang.String"/>
+	<field name="requerimiento.perfil.nombre" class="java.lang.String"/>
+	<field name="requerimiento.supervisora.nombres" class="java.lang.String"/>
+	<field name="requerimiento.supervisora.tipoDocumento.nombre" class="java.lang.String"/>
+	<field name="requerimiento.supervisora.numeroDocumento" class="java.lang.String"/>
+	<field name="fechaInvitacion" class="java.sql.Date"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -109,7 +110,7 @@
 					<font size="8"/>
 					<paragraph firstLineIndent="0" leftIndent="5"/>
 				</textElement>
-				<text><![CDATA[Fecha y hora de archivo: ]]></text>
+				<text><![CDATA[Fecha y hora de presentación: ]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy h:mm a" isBlankWhenNull="true">
 				<reportElement x="310" y="60" width="114" height="15" uuid="442659cf-232a-4f6a-8e8a-40d7780f35c7">
@@ -144,7 +145,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="339">
+		<band height="222">
 			<staticText>
 				<reportElement x="0" y="0" width="425" height="18" uuid="a10b99b8-5c4c-494e-b4e2-77682b42db8a"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -197,7 +198,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supervisora.nombreRazonSocial}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{requerimiento.supervisora.nombres}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="54" width="200" height="14" uuid="bc3b0a5a-0c29-4485-881a-699d0757bdfe">
@@ -232,7 +233,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supervisora.tipoDocumento.nombre}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{requerimiento.supervisora.tipoDocumento.nombre}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="68" width="200" height="14" uuid="28af5111-ef05-4498-8283-13e5cdddb0fa">
@@ -267,7 +268,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supervisora.tipoDocumento.numeroDocumento}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{requerimiento.supervisora.numeroDocumento}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="90" width="425" height="18" uuid="fd103e75-146d-4028-9cee-37e56d025971"/>
@@ -345,7 +346,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{fechaIngreso}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{fechaInvitacion}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="138" width="200" height="14" uuid="d1d2d25e-b853-4507-83b5-3ccded2eae28">
@@ -380,7 +381,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{division}.getDeDivision()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{requerimiento.division.deDivision}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="152" width="200" height="14" uuid="d28a1c50-5475-40e2-82fc-30055a8814da">
@@ -415,7 +416,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{perfil}.getNombre()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{requerimiento.perfil.nombre}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="180" width="425" height="18" uuid="817d2836-5698-476d-8762-87e7a7e6510e"/>
@@ -425,19 +426,10 @@
 				<text><![CDATA[3. DOCUMENTOS PRESENTADOS]]></text>
 			</staticText>
 			<subreport>
-				<reportElement x="0" y="200" width="425" height="110" uuid="917d2836-5698-476d-8762-87e7a7e6510e"/>
+				<reportElement x="0" y="200" width="425" height="22" uuid="917d2836-5698-476d-8762-87e7a7e6510e"/>
 				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{requerimientosDocumentosDetalles})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR}+"Formato_04_Requerimiento_Documento_Presentados.jasper"]]></subreportExpression>
 			</subreport>
-			<textField>
-				<reportElement x="150" y="215" width="170" height="14" uuid="595ede38-23fd-4427-94f1-f1070d9d70c7"/>
-			</textField>
-			<textField>
-				<reportElement x="320" y="215" width="50" height="14" uuid="37882174-161c-47e5-8554-138b7bae0df5"/>
-			</textField>
-			<textField>
-				<reportElement x="370" y="215" width="55" height="14" uuid="37245a61-aa7a-4639-8250-8ef62fadc33b"/>
-			</textField>
 		</band>
 	</detail>
 	<summary>

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +36,12 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
             "LEFT JOIN FETCH r.perfil p " +
             "LEFT JOIN FETCH r.supervisora s " +
             "LEFT JOIN FETCH r.estado e " +
+            "LEFT JOIN FETCH r.estadoRevision er " +
             "LEFT JOIN FETCH ra.usuario u " +
             "LEFT JOIN FETCH ra.tipo t " +
-            "WHERE (:expediente IS NULL OR r.nuExpediente = :expediente) " +
+            "LEFT JOIN FETCH ra.estado rae " +
+            "WHERE rae.codigo = '" + Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO + "' " +
+            "AND (:expediente IS NULL OR r.nuExpediente = :expediente) " +
             "AND (:idDivision IS NULL OR d.idDivision = :idDivision) " +
             "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
             "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +
@@ -50,9 +54,12 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                     "LEFT JOIN r.perfil p " +
                     "LEFT JOIN r.supervisora s " +
                     "LEFT JOIN r.estado e " +
+                    "LEFT JOIN r.estadoRevision er " +
                     "LEFT JOIN ra.usuario u " +
                     "LEFT JOIN ra.tipo t " +
-                    "WHERE (:expediente IS NULL OR r.nuExpediente = :expediente) " +
+                    "LEFT JOIN ra.estado rae " +
+                    "WHERE rae.codigo = '" + Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO + "' " +
+                    "AND (:expediente IS NULL OR r.nuExpediente = :expediente) " +
                     "AND (:idDivision IS NULL OR d.idDivision = :idDivision) " +
                     "AND (:idPerfil IS NULL OR p.idListadoDetalle = :idPerfil) " +
                     "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +

@@ -1,11 +1,13 @@
 package pe.gob.osinergmin.sicoes.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
 
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -13,12 +15,17 @@ import java.util.Date;
 public class RequerimientoAprobacionResponseDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @JsonProperty("idRequerimientoAprobacion")
+    private Long idRequerimientoAprobacion;
+
     @JsonProperty("requerimiento")
     private RequerimientoDTO requerimiento;
 
     @JsonProperty("tipo")
     private ListadoDetalle tipo;
 
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @JsonProperty("fechaAsignacion")
     private Date fechaAsignacion;
 
@@ -40,11 +47,22 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
     @JsonProperty("accionAprobar")
     private boolean accionAprobar;
 
+    @JsonProperty("responsableSIAF")
+    private boolean responsableSIAF;
+
     public RequerimientoAprobacionResponseDTO() {
         this.estadoFirmaJefeUnidad = null;
         this.estadoFirmaGerente = null;
         this.estadoAprobacionGPPM = null;
         this.estadoAprobacionGSE = null;
+    }
+
+    public Long getIdRequerimientoAprobacion() {
+        return idRequerimientoAprobacion;
+    }
+
+    public void setIdRequerimientoAprobacion(Long idRequerimientoAprobacion) {
+        this.idRequerimientoAprobacion = idRequerimientoAprobacion;
     }
 
     public RequerimientoDTO getRequerimiento() {
@@ -119,6 +137,14 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
         this.accionAprobar = accionAprobar;
     }
 
+    public boolean isResponsableSIAF() {
+        return responsableSIAF;
+    }
+
+    public void setResponsableSIAF(boolean responsableSIAF) {
+        this.responsableSIAF = responsableSIAF;
+    }
+
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public static class RequerimientoDTO implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -132,11 +158,14 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
         @JsonProperty("estado")
         private ListadoDetalle estado;
 
+        @JsonProperty("estadoAprobacion")
+        private ListadoDetalle estadoAprobacion;
+
         @JsonProperty("division")
         private DivisionDTO division;
 
         @JsonProperty("supervisora")
-        private Supervisora supervisora;
+        private SupervisoraDTO supervisora;
 
         public RequerimientoDTO() {
             this.supervisora = null;
@@ -166,6 +195,14 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
             this.estado = estado;
         }
 
+        public ListadoDetalle getEstadoAprobacion() {
+            return estadoAprobacion;
+        }
+
+        public void setEstadoAprobacion(ListadoDetalle estadoAprobacion) {
+            this.estadoAprobacion = estadoAprobacion;
+        }
+
         public DivisionDTO getDivision() {
             return division;
         }
@@ -174,12 +211,72 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
             this.division = division;
         }
 
-        public Supervisora getSupervisora() {
+        public SupervisoraDTO getSupervisora() {
             return supervisora;
         }
 
-        public void setSupervisora(Supervisora supervisora) {
+        public void setSupervisora(SupervisoraDTO supervisora) {
             this.supervisora = supervisora;
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public static class SupervisoraDTO implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @JsonProperty("tipoDocumento")
+        private String tipoDocumento;
+
+        @JsonProperty("nombreRazonSocial")
+        private String nombreRazonSocial;
+
+        @JsonProperty("nombres")
+        private String nombres;
+
+        @JsonProperty("apellidoMaterno")
+        private String apellidoMaterno;
+
+        @JsonProperty("apellidoPaterno")
+        private String apellidoPaterno;
+
+        public String getTipoDocumento() {
+            return tipoDocumento;
+        }
+
+        public void setTipoDocumento(String tipoDocumento) {
+            this.tipoDocumento = tipoDocumento;
+        }
+
+        public String getNombreRazonSocial() {
+            return nombreRazonSocial;
+        }
+
+        public void setNombreRazonSocial(String nombreRazonSocial) {
+            this.nombreRazonSocial = nombreRazonSocial;
+        }
+
+        public String getNombres() {
+            return nombres;
+        }
+
+        public void setNombres(String nombres) {
+            this.nombres = nombres;
+        }
+
+        public String getApellidoMaterno() {
+            return apellidoMaterno;
+        }
+
+        public void setApellidoMaterno(String apellidoMaterno) {
+            this.apellidoMaterno = apellidoMaterno;
+        }
+
+        public String getApellidoPaterno() {
+            return apellidoPaterno;
+        }
+
+        public void setApellidoPaterno(String apellidoPaterno) {
+            this.apellidoPaterno = apellidoPaterno;
         }
     }
 }

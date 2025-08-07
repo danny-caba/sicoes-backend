@@ -11,6 +11,8 @@ import java.util.Optional;
 @Repository
 public interface SaldoSupervisoraDao extends JpaRepository<SaldoSupervisora, Long> {
 
-    @Query("SELECT s FROM SaldoSupervisora s WHERE s.id = :id")
+    @Query("SELECT ss FROM SaldoSupervisora ss " +
+            "LEFT JOIN FETCH ss.supervisora s " +
+            "WHERE s.idSupervisora = :id")
     Optional<SaldoSupervisora> buscarPorId(@Param("id") Long id);
 }

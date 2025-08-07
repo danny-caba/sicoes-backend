@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import javax.mail.internet.MimeMessage;
 
@@ -14,7 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,27 +27,31 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
+import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.Proceso;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
-import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
 import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
 import pe.gob.osinergmin.sicoes.repository.ConfBandejaDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
-import pe.gob.osinergmin.sicoes.service.AsignacionService;
+import pe.gob.osinergmin.sicoes.service.DivisionService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.ProcesoService;
@@ -112,8 +116,14 @@ public class NotificacionServiceImpl implements NotificacionService{
 	
 	@Autowired
 	private UsuarioService usuarioService;
+
 	@Autowired
 	private RequerimientoDao requerimientoDao;
+
+	@Autowired
+	private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
+    @Autowired
+    private DivisionService divisionService;
 
 	@Override
 	public Notificacion obtener(Long idNotificacion, Contexto contexto) {
@@ -1045,13 +1055,8 @@ public class NotificacionServiceImpl implements NotificacionService{
 	}
 
 	@Override
-	public void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, boolean esAprobacion, Contexto contexto) {
+	public void enviarMensajeAprobacionRechazoReqInvitacion(RequerimientoInvitacion invitacion, List<String> correos, boolean esAprobacion, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
-//		String correos = invitacion.getSupervisora().getCorreo()
-//								.concat(";")
-//								.concat("correo coordinador");
-		String correos = "yamir.monroe@dlwlatam.com";
-		notificacion.setCorreo(correos);// gestor y supervisor
 		notificacion.setAsunto((esAprobacion ? "ACEPTACIÓN" : "RECHAZO") + " DE INVITACIÓN SUPERVISOR PERSONA NATURAL");
 		final Context ctx = new Context();
 		ctx.setVariable("esAprobacion", esAprobacion);
@@ -1062,31 +1067,25 @@ public class NotificacionServiceImpl implements NotificacionService{
 		ctx.setVariable("fechaAceptacion", DateUtil.getDate(invitacion.getFechaAceptacion(), "dd/MM/yyyy"));
 		String htmlContent = templateEngine.process("26-aprobacion-invitacion.html", ctx);
 		notificacion.setMensaje(htmlContent);
-		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
 				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
 		notificacion.setEstado(estadoPendiente);
-		notificacionDao.save(notificacion);
-	}
-
-	public void enviarMensajeAsignacionRequerimiento(Requerimiento requerimiento, Contexto contexto) {
-
-	}
-
-	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Contexto contexto) {
-
+		for(String correo: correos) {
+			notificacion.setCorreo(correo);
+			AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+			notificacionDao.save(notificacion);
+		}
 	}
 
 	@Override
-	public void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Contexto contexto) {
+	public void enviarMensajeRequerimientoPorAprobar(Requerimiento requerimiento, Usuario usuario, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
-		String correos = "yamir.monroe@dlwlatam.com";
-		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setCorreo(usuario.getCorreo());
 		notificacion.setAsunto("NOTIFICACIÓN PARA APROBAR");
 		final Context ctx = new Context();
-		ctx.setVariable("nombre", "Nombre del rol GPPM o GSE");//TODO: buscar nombre del rol
+		ctx.setVariable("nombre", usuario.getNombreUsuario());
 		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
-		String htmlContent = templateEngine.process("27-requerimiento-por-aprobar.html", ctx);
+		String htmlContent = templateEngine.process("30-requerimiento-por-aprobar.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
@@ -1096,16 +1095,16 @@ public class NotificacionServiceImpl implements NotificacionService{
 	}
 
 	@Override
-	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, String rol, Contexto contexto) {
+	public void enviarMensajeRechazoRequerimiento(Requerimiento requerimiento, Usuario usuario, String rol, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
-		String correos = "yamir.monroe@dlwlatam.com";
-		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setCorreo(usuario.getCorreo());
 		notificacion.setAsunto("NOTIFICACIÓN DE RECHAZAR APROBACIÓN");
 		final Context ctx = new Context();
-		ctx.setVariable("nombre", "Nombre del rol Coordinador de Gestión");//TODO: buscar nombre del rol
+		ctx.setVariable("nombre", usuario.getNombreUsuario());
+		ctx.setVariable("nombreRol", contexto.getUsuario().getNombreUsuario());
 		ctx.setVariable("rol", rol);
 		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
-		String htmlContent = templateEngine.process("28-requerimiento-rechazado.html", ctx);
+		String htmlContent = templateEngine.process("31-requerimiento-rechazado.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
@@ -1116,12 +1115,17 @@ public class NotificacionServiceImpl implements NotificacionService{
 
 	@Override
 	public void enviarMensajeCargarDocumentosRequerimiento(Requerimiento requerimiento, Contexto contexto) {
+		Supervisora supervisora = requerimiento.getSupervisora();
+		String tipoDocumento = supervisora.getTipoDocumento().getCodigo();
 		Notificacion notificacion = new Notificacion();
-		String correos = "yamir.monroe@dlwlatam.com";
-		notificacion.setCorreo(correos);// gestor y supervisor
+		notificacion.setCorreo(supervisora.getCorreo());
 		notificacion.setAsunto("NOTIFICACIÓN CARGAR DOCUMENTOS");
 		final Context ctx = new Context();
-		ctx.setVariable("nombre", "Nombre del rol Supervisor");//TODO: buscar nombre del rol
+		if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
+			ctx.setVariable("nombre", supervisora.getNombreRazonSocial());
+		} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
+			ctx.setVariable("nombre", supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
+		}
 		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
 		String htmlContent = templateEngine.process("29-requerimiento-cargar-documentos.html", ctx);
 		notificacion.setMensaje(htmlContent);
@@ -1136,6 +1140,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario aprobadorG2, Requerimiento requerimiento, Contexto contexto) {
 			Notificacion notificacion = new Notificacion();
 			String correos = aprobadorG2.getCorreo();
+//			correos = "tripalovski5@gmail.com";
 			notificacion.setCorreo(correos);
 			notificacion.setAsunto("NOTIFICACIÓN PARA FIRMAR ARCHIVAMIENTO DE REQUERIMIENTO");
 			final Context ctx = new Context();
@@ -1161,10 +1166,10 @@ public class NotificacionServiceImpl implements NotificacionService{
 			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
 			Requerimiento requerimiento = requerimientoDao.obtener(requerimientoInvitacion.getRequerimiento().getIdRequerimiento())
 				.orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
-			Long tipoDocumento = supervisoraPN.getTipoDocumento().getIdListadoDetalle();
-			if (tipoDocumento == 2){
+			String tipoDocumento = supervisoraPN.getTipoDocumento().getCodigo();
+			if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
 				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
-			} else if (tipoDocumento == 3) {
+			} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
 				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
 			}
 			ctx.setVariable("division", requerimiento.getDivision().getDeDivision());
@@ -1180,5 +1185,173 @@ public class NotificacionServiceImpl implements NotificacionService{
 			notificacionDao.save(notificacion);
 	}
 
+	@Override
+	public void enviarRequerimientoEvaluacion(Supervisora supervisoraPN, RequerimientoDocumento requerimientoDocumento, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		String correos = supervisoraPN.getCorreo();
+		notificacion.setCorreo(correos);
+		notificacion.setAsunto("SUBSANAR CARGA DE DOCUMENTOS");
+		final Context ctx = new Context();
+		ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
+		Long tipoDocumento = supervisoraPN.getTipoDocumento().getIdListadoDetalle();
+		if (tipoDocumento == 2){
+			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
+		} else if (tipoDocumento == 3) {
+			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
+		}
+		ctx.setVariable("detalles", requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoDocumento.getRequerimientoDocumentoUuid(), null));
+		String htmlContent = templateEngine.process("31-evaluacion-requerimiento-documento.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+		ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeVistoBuenoCoordinador(String correo, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		notificacion.setCorreo(correo);
+		notificacion.setAsunto("OBSERVACIÓN INFORME");
+		final Context ctx = new Context();
+		String htmlContent = templateEngine.process("32-documento-sin-visto-bueno-coordinador.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeVistoBuenoSupervisor(Supervisora supervisora, List<RequerimientoDocumentoDetalle> listaReqDocDetalle, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		notificacion.setCorreo(supervisora.getCorreo());
+		notificacion.setAsunto("NOTIFICACIÓN CARGAR DOCUMENTOS");
+		final Context ctx = new Context();
+		String tipoDocumento = supervisora.getTipoDocumento().getCodigo();
+		if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
+			ctx.setVariable("nombre", supervisora.getNombreRazonSocial());
+		} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
+			ctx.setVariable("nombre", supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
+		}
+		ctx.setVariable("documentos", listaReqDocDetalle);
+		String htmlContent = templateEngine.process("33-documento-sin-visto-bueno-supervisor.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeFinalizacionContratacion(Supervisora supervisora, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		notificacion.setCorreo(supervisora.getCorreo());
+		notificacion.setAsunto("FINALIZACIÓN DEL PROCESO DE CONTRATACIÓN");
+		final Context ctx = new Context();
+		String tipoDocumento = supervisora.getTipoDocumento().getCodigo();
+		if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
+			ctx.setVariable("nombre", supervisora.getNombreRazonSocial());
+		} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
+			ctx.setVariable("nombre", supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
+		}
+		String htmlContent = templateEngine.process("34-fin-contratacion.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeArchivarRequerimiento(RequerimientoAprobacion aprobacion, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+
+		String asunto = Objects.equals(aprobacion.getEstado().getCodigo(), Constantes.LISTADO.RESULTADO_APROBACION.APROBADO)
+				? "NOTIFICACIÓN DE APROBACIÓN"
+				: "NOTIFICACIÓN DE RECHAZAR APROBACIÓN";
+
+		String accion = Objects.equals(aprobacion.getEstado().getCodigo(), Constantes.LISTADO.RESULTADO_APROBACION.APROBADO)
+				? "aprobó"
+				: "rechazó";
+
+		// Obtener al coordinador actual
+		Long idDivision = aprobacion.getRequerimiento().getDivision().getIdDivision();
+		Division division = divisionService.obtener(idDivision, contexto);
+		Usuario usuario = usuarioService.obtener(division.getUsuario().getIdUsuario());
+
+		// Obtener rol del aprobador
+		ListadoDetalle rol = listadoDetalleService.obtener(aprobacion.getGrupoAprobador().getIdListadoDetalle(), contexto);
+
+		// Obtener aprobador
+		Usuario aprobador = usuarioDao.obtener(aprobacion.getUsuario().getIdUsuario());
+
+		notificacion.setCorreo(usuario.getCorreo());
+		notificacion.setCorreo("tripalovski5@gmail.com");
+		notificacion.setAsunto(asunto);
+		final Context ctx = new Context();
+		ctx.setVariable("nombre", usuario.getNombreUsuario());
+		ctx.setVariable("rol", rol.getNombre());
+		ctx.setVariable("nombre_aprobador", aprobador.getNombreUsuario());
+		ctx.setVariable("nuExpediente", aprobacion.getRequerimiento().getNuExpediente());
+		ctx.setVariable("accion", accion);
+		String htmlContent = templateEngine.process("35-requerimiento-archivamiento.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeAprobacionInforme(RequerimientoAprobacion aprobacion, Long usuarioANotificar, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		final Context ctx = new Context();
+		String asunto = null;
+		String template = null;
+		Usuario usuario = usuarioService.obtener(usuarioANotificar);
+		notificacion.setCorreo(usuario.getCorreo());
+		notificacion.setCorreo("tripalovski5@gmail.com");
+
+		if (Objects.equals(aprobacion.getEstado().getCodigo(), Constantes.LISTADO.RESULTADO_APROBACION.APROBADO)) {
+			if (Objects.equals(aprobacion.getGrupo().getCodigo(), Constantes.LISTADO.GRUPOS.G3)) {
+				asunto = "NOTIFICACIÓN CARGAR DOCUMENTOS";
+				template = "29-requerimiento-cargar-documentos.html";
+			} else {
+				asunto = "NOTIFICACIÓN PARA APROBAR";
+				template = "30-requerimiento-por-aprobar.html";
+			}
+		} else {
+			asunto = "NOTIFICACIÓN DE RECHAZAR APROBACIÓN";
+			template = "35-requerimiento-archivamiento.html";
+
+			// Obtener rol del aprobador
+			ListadoDetalle rol = listadoDetalleService.obtener(aprobacion.getGrupoAprobador().getIdListadoDetalle(), contexto);
+
+			// Obtener aprobador
+			Usuario aprobador = usuarioDao.obtener(aprobacion.getUsuario().getIdUsuario());
+
+			ctx.setVariable("rol", rol.getNombre());
+			ctx.setVariable("nombre_aprobador", aprobador.getNombreUsuario());
+			ctx.setVariable("accion", "rechazó");
+		}
+
+		ctx.setVariable("nombre", usuario.getNombreUsuario());
+		ctx.setVariable("nuExpediente", aprobacion.getRequerimiento().getNuExpediente());
+		String htmlContent = templateEngine.process(template, ctx);
+		notificacion.setAsunto(asunto);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
 
 }

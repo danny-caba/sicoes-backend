@@ -4,10 +4,19 @@ import java.io.Serializable;
 
 public class RequerimientoAprobacionDTO  implements Serializable {
     private static final long serialVersionUID = 1L;
+    private Long idReqAprobacion;
     private ListadoDetalleDTO estado;
     private String nuSiaf;
     private String deObservacion;
     private String rol;
+
+    public Long getIdReqAprobacion() {
+        return idReqAprobacion;
+    }
+
+    public void setIdReqAprobacion(Long idReqAprobacion) {
+        this.idReqAprobacion = idReqAprobacion;
+    }
 
     public ListadoDetalleDTO getEstado() {
         return estado;

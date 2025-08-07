@@ -26,12 +26,14 @@ public class RequerimientoAprobacionRestController extends BaseRestController  {
     @GetMapping
 //    @Raml("requerimientoAprobacion.listar.properties")
     public Page<RequerimientoAprobacionResponseDTO> getRequerimientoAprobacion(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable) {
+        logger.info("getRequerimientoAprobacion");
         return requerimientoAprobacionService.buscar(filtroRequerimientoDTO, pageable, getContexto());
     }
 
     @GetMapping("/{uuid}/historial")
     @Raml("requerimientoAprobacion.historial.properties")
     public Page<RequerimientoAprobacion> obtenerHistorial(@PathVariable String  uuid, Pageable pageable) {
+        logger.info("obtenerHistorial {}", uuid);
         return requerimientoAprobacionService.obtenerHistorial(uuid, getContexto(), pageable);
     }
 }

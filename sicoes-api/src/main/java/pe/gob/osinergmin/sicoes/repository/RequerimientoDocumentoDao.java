@@ -23,6 +23,7 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
             "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
+            "AND rd.flagActivo = '1' " +
             "ORDER BY r.nuExpediente ASC",
             countQuery = "SELECT COUNT(rd) FROM RequerimientoDocumento rd " +
                     "LEFT JOIN rd.requerimiento r " +
@@ -32,7 +33,8 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
                     "WHERE s.idSupervisora = :idSupervisora " +
                     "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
-                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
+                    "AND rd.flagActivo = '1' ")
     Page<RequerimientoDocumento> listarRequerimientosDocumentos(Long idSupervisora, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT rd FROM RequerimientoDocumento rd " +
@@ -50,6 +52,7 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
             "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
             "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
             "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
+            "AND rd.flagActivo = '1' " +
             "ORDER BY r.nuExpediente ASC",
             countQuery = "SELECT COUNT(DISTINCT rd) FROM RequerimientoDocumento rd " +
                     "LEFT JOIN rd.requerimiento r " +
@@ -65,10 +68,11 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
                     "AND (:idSupervisora IS NULL OR s.idSupervisora = :idSupervisora) " +
                     "AND (:idEstado IS NULL OR e.idListadoDetalle = :idEstado) " +
                     "AND (:fechaInicio IS NULL OR r.feRegistro >= :fechaInicio) " +
-                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) ")
+                    "AND (:fechaFin IS NULL OR r.feRegistro <= :fechaFin) " +
+                    "AND rd.flagActivo = '1' ")
     Page<RequerimientoDocumento> listarRequerimientosDocumentosCoordinador(Long usuario, Long idDivision, Long idPerfil, Long idSupervisora, Long idEstado, Date fechaInicio, Date fechaFin, Pageable pageable);
 
-    @Query("select rd.idRequerimientoDocumento from RequerimientoDocumento rd where rd.requerimientoDocumentoUuid=:requerimientoDocumentoUuid")
-    Long obtenerId(String requerimientoDocumentoUuid);
-
+    @Query("SELECT rd FROM RequerimientoDocumento rd " +
+            "WHERE rd.requerimientoDocumentoUuid = :uuid")
+    Optional<RequerimientoDocumento> obtenerPorUuid(@Param("uuid") String uuid);
 }

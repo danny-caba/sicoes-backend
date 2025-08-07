@@ -6,6 +6,6 @@ import java.util.Optional;
 
 public interface SaldoSupervisoraService {
 
-    Optional<SaldoSupervisora> obtenerPorId(Long id);
+    Optional<SaldoSupervisora> obtenerPorSupervisoraId(Long id);
 
 }

@@ -13,11 +13,18 @@ public interface RequerimientoDocumentoDetalleDao extends JpaRepository<Requerim
 
     @Query("SELECT rdd FROM RequerimientoDocumentoDetalle rdd " +
             "JOIN rdd.requerimientoDocumento rd " +
-            "WHERE rd.requerimientoDocumentoUuid = :uuid")
-    List<RequerimientoDocumentoDetalle> listarPorUuid(@Param("uuid") String uuid);
+            "WHERE rd.requerimientoDocumentoUuid = :uuid " +
+            "AND (:idOrigen IS NULL OR rdd.origenRequisito.idListadoDetalle = :idOrigen)")
+    List<RequerimientoDocumentoDetalle> listarPorUuid(
+            @Param("uuid") String uuid,
+            @Param("idOrigen") Long idOrigen);
 
     @Query("SELECT rdd FROM RequerimientoDocumentoDetalle rdd " +
-            "JOIN rdd.requerimientoDocumento rd " +
             "WHERE rdd.requerimientoDocumentoDetalleUuid = :uuid")
     RequerimientoDocumentoDetalle buscarPorUuid(String uuid);
+
+    @Query("SELECT rd.requerimientoDocumentoUuid FROM RequerimientoDocumentoDetalle rdd " +
+            "JOIN rdd.requerimientoDocumento rd " +
+            "WHERE rdd.requerimientoDocumentoDetalleUuid = :detalleUuid ")
+    String obtenerRequerimientoDocumentoUuidPorDetalleUuid(@Param("detalleUuid") String detalleUuid);
 }

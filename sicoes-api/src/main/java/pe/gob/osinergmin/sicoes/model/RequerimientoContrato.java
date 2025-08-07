@@ -53,6 +53,14 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
     @Column(name="FE_FIN")
     private Date fechaFin;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_TIPO_LD")
+    private ListadoDetalle tipo;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ID_ESTADO_LD")
+    private ListadoDetalle estado;
+
     public Long getIdRequerimientoContrato() {
         return idRequerimientoContrato;
     }
@@ -107,5 +115,21 @@ public class RequerimientoContrato extends BaseModel implements Serializable {
 
     public void setFechaFin(Date fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    public ListadoDetalle getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(ListadoDetalle tipo) {
+        this.tipo = tipo;
+    }
+
+    public ListadoDetalle getEstado() {
+        return estado;
+    }
+
+    public void setEstado(ListadoDetalle estado) {
+        this.estado = estado;
     }
 }

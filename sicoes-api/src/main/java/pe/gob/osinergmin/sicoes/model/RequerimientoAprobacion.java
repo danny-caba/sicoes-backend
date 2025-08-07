@@ -34,6 +34,10 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private Requerimiento requerimiento;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REQ_INFORME")
+    private RequerimientoInforme requerimientoInforme;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_TIPO_LD")
     private ListadoDetalle tipo;
 
@@ -52,6 +56,14 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_FIRMADO_LD")
     private ListadoDetalle firmado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_TIPO_APROBADOR_LD")
+    private ListadoDetalle tipoAprobador;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_GRUPO_APROBADOR_LD")
+    private ListadoDetalle grupoAprobador;
 
     @Column(name = "DE_OBSERVACION")
     private String observacion;
@@ -72,7 +84,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private Date fechaFirma;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name = "FE_ASIGNACION")
     private Date fechaAsignacion;
 
@@ -92,16 +104,10 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private String estadoAprobacionGSE;
 
     @Transient
-    private Boolean accionAprobar;
+    private boolean accionAprobar;
 
     @Transient
-    private ListadoDetalle tipoRolAprobador;
-
-    @Transient
-    private ListadoDetalle grupoRolAprobador;
-
-    @Transient
-    private String nombreRolAprobador;
+    private boolean responsableSIAF;
 
     public Long getIdRequerimientoAprobacion() {
         return idRequerimientoAprobacion;
@@ -117,6 +123,14 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     public void setRequerimiento(Requerimiento requerimiento) {
         this.requerimiento = requerimiento;
+    }
+
+    public RequerimientoInforme getRequerimientoInforme() {
+        return requerimientoInforme;
+    }
+
+    public void setRequerimientoInforme(RequerimientoInforme requerimientoInforme) {
+        this.requerimientoInforme = requerimientoInforme;
     }
 
     public ListadoDetalle getTipo() {
@@ -159,6 +173,22 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.firmado = firmado;
     }
 
+    public ListadoDetalle getTipoAprobador() {
+        return tipoAprobador;
+    }
+
+    public void setTipoAprobador(ListadoDetalle tipoAprobador) {
+        this.tipoAprobador = tipoAprobador;
+    }
+
+    public ListadoDetalle getGrupoAprobador() {
+        return grupoAprobador;
+    }
+
+    public void setGrupoAprobador(ListadoDetalle grupoAprobador) {
+        this.grupoAprobador = grupoAprobador;
+    }
+
     public String getObservacion() {
         return observacion;
     }
@@ -191,38 +221,20 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.fechaFirma = fechaFirma;
     }
 
-    public ListadoDetalle getTipoRolAprobador() {
-        return tipoRolAprobador;
-    }
-
-    public void setTipoRolAprobador(ListadoDetalle tipoRolAprobador) {
-        this.tipoRolAprobador = tipoRolAprobador;
-    }
-
-    public ListadoDetalle getGrupoRolAprobador() {
-        return grupoRolAprobador;
-    }
-
-    public void setGrupoRolAprobador(ListadoDetalle grupoRolAprobador) {
-        this.grupoRolAprobador = grupoRolAprobador;
-    }
-
-    public String getNombreRolAprobador() {
-        return nombreRolAprobador;
-    }
-
-    public void setNombreRolAprobador(String nombreRolAprobador) {
-        this.nombreRolAprobador = nombreRolAprobador;
-    }
-
-
-
-    public Boolean getAccionAprobar() {
+    public boolean getAccionAprobar() {
         return accionAprobar;
     }
 
-    public void setAccionAprobar(Boolean accionAprobar) {
+    public void setAccionAprobar(boolean accionAprobar) {
         this.accionAprobar = accionAprobar;
+    }
+
+    public boolean isResponsableSIAF() {
+        return responsableSIAF;
+    }
+
+    public void setResponsableSIAF(boolean responsableSIAF) {
+        this.responsableSIAF = responsableSIAF;
     }
 
     public Archivo getArchivoInforme() {
@@ -271,5 +283,31 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     public void setFechaAsignacion(Date fechaAsignacion) {
         this.fechaAsignacion = fechaAsignacion;
+    }
+
+    @Override
+    public String toString() {
+        return "RequerimientoAprobacion{" +
+                "idRequerimientoAprobacion=" + idRequerimientoAprobacion +
+                ", requerimiento=" + requerimiento +
+                ", tipo=" + tipo +
+                ", grupo=" + grupo +
+                ", usuario=" + usuario +
+                ", estado=" + estado +
+                ", firmado=" + firmado +
+                ", tipoAprobador=" + tipoAprobador +
+                ", grupoAprobador=" + grupoAprobador +
+                ", observacion='" + observacion + '\'' +
+                ", fechaAprobacion=" + fechaAprobacion +
+                ", fechaRechazo=" + fechaRechazo +
+                ", fechaFirma=" + fechaFirma +
+                ", fechaAsignacion=" + fechaAsignacion +
+                ", archivoInforme=" + archivoInforme +
+                ", estadoFirmaJefeUnidad='" + estadoFirmaJefeUnidad + '\'' +
+                ", estadoFirmaGerente='" + estadoFirmaGerente + '\'' +
+                ", estadoAprobacionGPPM='" + estadoAprobacionGPPM + '\'' +
+                ", estadoAprobacionGSE='" + estadoAprobacionGSE + '\'' +
+                ", accionAprobar=" + accionAprobar +
+                '}';
     }
 }

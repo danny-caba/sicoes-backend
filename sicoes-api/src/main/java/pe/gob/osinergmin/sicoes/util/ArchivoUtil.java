@@ -6,6 +6,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +29,28 @@ public class ArchivoUtil {
     public JasperReport getJasperCompilado(File path) throws JRException, FileNotFoundException {
         FileInputStream employeeReportStream = new FileInputStream(path);
         return JasperCompileManager.compileReport(employeeReportStream);
+    }
+
+    public static String obtenerNombreArchivo(ListadoDetalle tipo) {
+        switch (tipo.getCodigo()) {
+            case Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_REQUERIMIENTO:
+                return "Solicitud_Requerimiento_PN.pdf";
+            case Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_ARCHIVAR_REQUERIMIENTO:
+                return "Solicitud_Archivamiento_Requerimiento_PN.pdf";
+            default:
+                return "Solicitud_Requerimiento_PN.pdf";
+        }
+    }
+
+    public static String obtenerNombreJasper(ListadoDetalle tipo) {
+        switch (tipo.getCodigo()) {
+            case Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_REQUERIMIENTO:
+                return "Formato_04_Requerimiento.jrxml";
+            case Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_ARCHIVAR_REQUERIMIENTO:
+                return "Formato_04_Requerimiento_Aprobacion.jrxml";
+            default:
+                return "Formato_04_Requerimiento.jrxml";
+        }
     }
 
 }
