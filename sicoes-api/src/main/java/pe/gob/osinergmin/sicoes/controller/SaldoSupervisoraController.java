@@ -22,10 +22,10 @@ public class SaldoSupervisoraController extends BaseRestController {
     @Autowired
     private SaldoSupervisoraService saldoSupervisoraService;
 
-    @GetMapping("/{uid}")
+    @GetMapping("/supervisora")
     @Raml("saldoSupervisora.obtener.properties")
-    public SaldoSupervisora obtenerSaldoSupervisora(@PathVariable("uid") Long id) {
-        return saldoSupervisoraService.obtenerPorId(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parámetros inválidos"));
+    public SaldoSupervisora obtenerSaldoSupervisora(@RequestParam Long idSupervisora) {
+        return saldoSupervisoraService.obtenerPorSupervisoraId(idSupervisora).orElse(null);
     }
 
 }

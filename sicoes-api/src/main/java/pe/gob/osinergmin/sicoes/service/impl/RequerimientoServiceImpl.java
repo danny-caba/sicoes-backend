@@ -38,10 +38,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
+import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
+import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
+import pe.gob.osinergmin.sicoes.model.RequerimientoInforme;
 import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
@@ -60,6 +63,7 @@ import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DivisionService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
+import pe.gob.osinergmin.sicoes.service.RequerimientoInformeService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.service.RolService;
 import pe.gob.osinergmin.sicoes.service.UsuarioRolService;
@@ -156,6 +160,10 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Value("${siged.ws.cliente.osinergmin.numero.documento}")
     private String OSI_DOCUMENTO;
+    @Autowired
+    private SigedOldConsumer sigedOldConsumer;
+    @Autowired
+    private RequerimientoInformeService requerimientoInformeService;
 
     @Override
     @Transactional
@@ -181,6 +189,11 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         String nuExpediente = generarArchivoSiged(requerimientoDB, tipoArchivo, contexto);
         requerimientoDB.setNuExpediente(nuExpediente);
         return requerimientoDao.save(requerimientoDB);
+    }
+
+    @Override
+    public Long obtenerIdInforme(String expediente, Contexto contexto) throws Exception {
+        return sigedOldConsumer.obtenerIdInformeSiged(expediente, contexto);
     }
 
     @Override
@@ -321,132 +334,148 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         requerimientoAprobacion.setGrupoAprobador(grupoAprobador);
         requerimientoAprobacion.setTipo(tipo);
         requerimientoAprobacion.setTipoAprobador(tipoAprobador);
+        requerimientoAprobacion.setFechaAsignacion(new Date());
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
         return requerimientoAprobacionDao.save(requerimientoAprobacion);
     }
 
     @Transactional
-    public Requerimiento aprobar(String uuid, RequerimientoAprobacionDTO aprobacion, Contexto contexto) {
+    public Requerimiento aprobar(String uuid, RequerimientoAprobacion aprobacion, Contexto contexto) {
         Requerimiento requerimientoBD = requerimientoDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
-        RequerimientoAprobacion reqAprobacion = aprobacionDao.findById(aprobacion.getIdReqAprobacion())
-                .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
-        if(!reqAprobacion.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
-            throw new ValidacionException(ESTADO_APROBACION_INCORRECTO);
-        }
 
-        if(isAprobacionArchivamiento(requerimientoBD)) {
-            return aprobarArchivamiento(requerimientoBD, contexto);
-        }
+        RequerimientoAprobacion aprobacionBD = requerimientoAprobacionDao.findById(aprobacion.getIdRequerimientoAprobacion())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.APROBACION_NO_ENCONTRADA));
 
-        boolean esGppm = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GPPM));
-        boolean esGse = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GSE));
+        aprobacionBD.setEstado(aprobacion.getEstado());
+        aprobacionBD.setObservacion(aprobacion.getObservacion());
 
-        if(esGppm) {
-            //Aprobado o Rechazado
-            if(aprobacion.getEstado().getCodigo()
-                    .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
-                //Registrar Asignado GSE
-                ListadoDetalle tipoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.APROBAR);
-                ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
-                ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
-                ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
-                RequerimientoAprobacion aprobacionGse = new RequerimientoAprobacion();
-                aprobacionGse.setRequerimiento(requerimientoBD);
-                aprobacionGse.setTipo(tipoAprobacion);
-                aprobacionGse.setGrupoAprobador(grupoAprobador);
-                aprobacionGse.setUsuario(contexto.getUsuario());
-                aprobacionGse.setTipoAprobador(tipoAprobador);
-                aprobacionGse.setEstado(estadoAprobacion);
-                AuditoriaUtil.setAuditoriaRegistro(aprobacionGse, contexto);
-                aprobacionDao.save(aprobacionGse);
-
-                //Actualizar NuSiaf Requerimiento
-                if(Objects.isNull(aprobacion.getNuSiaf()) || aprobacion.getNuSiaf().isEmpty()) {
-                    throw new ValidacionException(SIAF_NO_ENVIADO);
-                }
-                requerimientoBD.setNuSiaf(aprobacion.getNuSiaf());
-
-                //Actualizar Fecha de Aprobacion
-                reqAprobacion.setFechaAprobacion(new Date());
-
-                //Enviar por aprobar a GSE
-                Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GSE);
-                List<UsuarioRol> usuario = usuarioRolService.obtenerUsuarioRolPorRol(rol);
-                if(usuario.isEmpty()) {
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_ROL_GSE_NO_ENCONTRADO);
-                }
-                notificacionService.enviarMensajeRequerimientoPorAprobar(requerimientoBD, usuario.get(0).getUsuario(), contexto);
-            } else if(aprobacion.getEstado().getCodigo()
-                    .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
-                //Actualizar Estado Requerimiento
-                ListadoDetalle estadoReqDesaprobado = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
-                requerimientoBD.setEstado(estadoReqDesaprobado);
-
-                //Actualizar Fecha de Rechazo
-                reqAprobacion.setFechaRechazo(new Date());
-
-                //Enviar que GPPM rechazo
-                Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GPPM);
-                Usuario usuarioCoordinador = requerimientoBD.getDivision().getUsuario();
-                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, usuarioCoordinador, rol.getNombre(), contexto);
-            } else {
-                throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
-            }
-        } else if(esGse) {
-            //Aprobado o Rechazado
-            if(aprobacion.getEstado().getCodigo()
-                    .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
-                //Actualizar Fecha de Aprobacion
-                reqAprobacion.setFechaAprobacion(new Date());
-
-                //Enviar para cargar docs
-                notificacionService.enviarMensajeCargarDocumentosRequerimiento(requerimientoBD, contexto);
-
-                //Crear Documento y Detalle
-                this.crearDocumento(requerimientoBD, contexto);
-            } else if(aprobacion.getEstado().getCodigo()
-                .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
-                //Actualizar Fecha de Rechazo
-                reqAprobacion.setFechaRechazo(new Date());
-
-                //Actualizar Requerimiento
-                ListadoDetalle estadoReqDesaprobado = listadoDetalleService.obtenerListadoDetalle(
-                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
-                requerimientoBD.setEstado(estadoReqDesaprobado);
-
-                //Enviar que GSE rechazo
-                Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GSE);
-                Usuario usuarioCoordinador = requerimientoBD.getDivision().getUsuario();
-                notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, usuarioCoordinador, rol.getNombre(), contexto);
-            } else {
-                throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
-            }
+        if (isAprobacionArchivamiento(requerimientoBD)) {
+            return aprobarArchivamiento(requerimientoBD, aprobacionBD, contexto);
+        } else if (isAprobacionInforme(aprobacionBD)) {
+            return aprobarInforme(requerimientoBD, aprobacionBD, contexto);
         } else {
-            throw new ValidacionException(ACCESO_NO_AUTORIZADO);
+//        Requerimiento requerimientoBD = requerimientoDao.obtenerPorUuid(uuid)
+//                .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
+//        RequerimientoAprobacion reqAprobacion = aprobacionDao.findById(aprobacion.getIdReqAprobacion())
+//                .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
+
+//            if (!aprobacionBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
+//                throw new ValidacionException(ESTADO_APROBACION_INCORRECTO);
+//            }
+
+            boolean esGppm = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GPPM));
+            boolean esGse = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GSE));
+
+            if (esGppm) {
+                //Aprobado o Rechazado
+                if (aprobacion.getEstado().getCodigo()
+                        .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
+                    //Registrar Asignado GSE
+                    ListadoDetalle tipoAprobacion = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.APROBAR);
+                    ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
+                    ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+                    ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+                    RequerimientoAprobacion aprobacionGse = new RequerimientoAprobacion();
+                    aprobacionGse.setRequerimiento(requerimientoBD);
+                    aprobacionGse.setTipo(tipoAprobacion);
+                    aprobacionGse.setGrupoAprobador(grupoAprobador);
+                    aprobacionGse.setUsuario(contexto.getUsuario());
+                    aprobacionGse.setTipoAprobador(tipoAprobador);
+                    aprobacionGse.setEstado(estadoAprobacion);
+
+                    //Actualizar NuSiaf Requerimiento
+                    if (Objects.isNull(aprobacion.getRequerimiento().getNuSiaf()) || aprobacion.getRequerimiento().getNuSiaf().isEmpty()) {
+                        throw new ValidacionException(SIAF_NO_ENVIADO);
+                    }
+                    requerimientoBD.setNuSiaf(aprobacion.getRequerimiento().getNuSiaf());
+
+                    //Actualizar Fecha de Aprobacion
+                    aprobacionBD.setFechaAprobacion(new Date());
+
+                    //Enviar por aprobar a GSE
+                    Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GSE);
+                    List<UsuarioRol> usuario = usuarioRolService.obtenerUsuarioRolPorRol(rol);
+                    if (usuario.isEmpty()) {
+                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_ROL_GSE_NO_ENCONTRADO);
+                    }
+                    aprobacionGse.setUsuario(usuario.get(0).getUsuario());
+                    aprobacionGse.setFechaAsignacion(new Date());
+                    AuditoriaUtil.setAuditoriaRegistro(aprobacionGse, contexto);
+                    aprobacionDao.save(aprobacionGse);
+
+                    notificacionService.enviarMensajeRequerimientoPorAprobar(requerimientoBD, usuario.get(0).getUsuario(), contexto);
+                } else if (aprobacion.getEstado().getCodigo()
+                        .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
+                    //Actualizar Estado Requerimiento
+                    ListadoDetalle estadoReqDesaprobado = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
+                    requerimientoBD.setEstado(estadoReqDesaprobado);
+
+                    //Actualizar Fecha de Rechazo
+                    aprobacionBD.setFechaRechazo(new Date());
+
+                    //Enviar que GPPM rechazo
+                    Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GPPM);
+                    Usuario usuarioCoordinador = requerimientoBD.getDivision().getUsuario();
+                    notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, usuarioCoordinador, rol.getNombre(), contexto);
+                } else {
+                    throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
+                }
+            } else if (esGse) {
+                //Aprobado o Rechazado
+                if (aprobacion.getEstado().getCodigo()
+                        .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.APROBADO)) {
+                    //Actualizar Fecha de Aprobacion
+                    aprobacionBD.setFechaAprobacion(new Date());
+
+                    //Enviar para cargar docs
+                    notificacionService.enviarMensajeCargarDocumentosRequerimiento(requerimientoBD, contexto);
+
+                    //Crear Documento y Detalle
+                    this.crearDocumento(requerimientoBD, contexto);
+                } else if (aprobacion.getEstado().getCodigo()
+                        .equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)) {
+                    //Actualizar Fecha de Rechazo
+                    aprobacionBD.setFechaRechazo(new Date());
+
+                    //Actualizar Requerimiento
+                    ListadoDetalle estadoReqDesaprobado = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
+                    requerimientoBD.setEstado(estadoReqDesaprobado);
+
+                    //Enviar que GSE rechazo
+                    Rol rol = rolService.obtenerCodigo(Constantes.ROLES.APROBADOR_GSE);
+                    Usuario usuarioCoordinador = requerimientoBD.getDivision().getUsuario();
+                    notificacionService.enviarMensajeRechazoRequerimiento(requerimientoBD, usuarioCoordinador, rol.getNombre(), contexto);
+                } else {
+                    throw new ValidacionException(ESTADO_APROBACION_NO_ENVIADO);
+                }
+            } else {
+                throw new ValidacionException(ACCESO_NO_AUTORIZADO);
+            }
+
+            //Actualizar Aprobacion a Aprobado o Desaprobado
+//            ListadoDetalle estadoAprobacionRequest = listadoDetalleService.obtenerListadoDetalle(
+//                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO, aprobacion.getEstado().getCodigo());
+//            aprobacionBD.setEstado(estadoAprobacionRequest);
+            AuditoriaUtil.setAuditoriaRegistro(aprobacionBD, contexto);
+            aprobacionDao.save(aprobacionBD);
+
+            //Actualizar Requerimiento
+//            requerimientoBD.setDeObservacion(aprobacion.getObservacion());
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
+            return requerimientoDao.save(requerimientoBD);
         }
-
-        //Actualizar Aprobacion a Aprobado o Desaprobado
-        ListadoDetalle estadoAprobacionRequest = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, aprobacion.getEstado().getCodigo());
-        reqAprobacion.setEstado(estadoAprobacionRequest);
-        AuditoriaUtil.setAuditoriaRegistro(reqAprobacion, contexto);
-        aprobacionDao.save(reqAprobacion);
-
-        //Actualizar Requerimiento
-        requerimientoBD.setDeObservacion(aprobacion.getDeObservacion());
-        AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
-        return requerimientoDao.save(requerimientoBD);
     }
 
     private void crearDocumento(Requerimiento requerimiento, Contexto contexto) {
         ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.EN_PROCESO);
+                Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO, Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR);
         ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.TIPO_REQ_DOCUMENTO.CODIGO, Constantes.LISTADO.TIPO_REQ_DOCUMENTO.REGISTRO);
         ListadoDetalle revision = listadoDetalleService.obtenerListadoDetalle(
@@ -702,11 +731,16 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
                 Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_APROBACION);
 
-        return StringUtils.isEmpty(requerimiento.getDeObservacion().trim())
+        return !StringUtils.isEmpty(requerimiento.getDeObservacion())
                 && Objects.equals(requerimiento.getEstado().getIdListadoDetalle(), enAprobacion.getIdListadoDetalle());
     }
 
-    private Requerimiento aprobarArchivamiento(Requerimiento requerimiento, Contexto contexto) {
+    private boolean isAprobacionInforme(RequerimientoAprobacion aprobacion) {
+        return aprobacion.getRequerimientoInforme() != null;
+    }
+
+    private Requerimiento aprobarArchivamiento(Requerimiento requerimiento, RequerimientoAprobacion aprobacion, Contexto contexto) {
+        ListadoDetalle revision = null;
         boolean isAprobTecnico = contexto.getUsuario().getRoles()
                 .stream()
                 .anyMatch(rol -> rol.getCodigo().equals(APROBADOR_TECNICO));
@@ -714,40 +748,132 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         if (!isAprobTecnico)
             throw new ValidacionException(ACCESO_NO_AUTORIZADO);
 
-        // Obtenemos grupo de aprobacion (G2)
-        ListadoDetalle g2 = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.GRUPOS.CODIGO,
-                Constantes.LISTADO.GRUPOS.G2);
+        if (Objects.equals(Constantes.LISTADO.ESTADO_APROBACION.APROBADO,
+                aprobacion.getEstado().getCodigo())) {
 
-        // Obtenemos la aprobacion de archivamiento
-        RequerimientoAprobacion aprobArchivamiento = requerimientoAprobacionDao.obtenerPorRequerimientoYGrupo(
-                        requerimiento.getIdRequerimiento(), g2.getIdListadoDetalle(), Constantes.LISTADO.RESULTADO_APROBACION.ASIGNADO)
-                .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
+            // Obtenemos estado Archivado
+            ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
+                    Constantes.LISTADO.ESTADO_REQUERIMIENTO.ARCHIVADO);
 
-        // Obtenemos estado Archivado
-        ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
-                Constantes.LISTADO.ESTADO_REQUERIMIENTO.ARCHIVADO);
+            // Obtenemos revisison Aprobado
+            revision = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_APROBACION.APROBADO);
 
-        // Obtenemos revisison Aprobado
-        ListadoDetalle revisionAprobado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
-                Constantes.LISTADO.ESTADO_APROBACION.APROBADO);
+            requerimiento.setEstado(estadoArchivado);
+            aprobacion.setFechaAprobacion(new Date());
+        } else {
+            // Obtenemos revisison Desaprobado
+            revision = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
 
-        requerimiento.setEstadoRevision(revisionAprobado);
-        requerimiento.setEstado(estadoArchivado);
+            aprobacion.setFechaRechazo(new Date());
+        }
 
-        // Obtenemos estado Aprobado
-        ListadoDetalle estadoAprobado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.RESULTADO_APROBACION.CODIGO,
-                Constantes.LISTADO.RESULTADO_APROBACION.APROBADO);
-        aprobArchivamiento.setEstado(estadoAprobado);
+        requerimiento.setEstadoRevision(revision);
+        AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
+        requerimientoAprobacionDao.save(aprobacion);
 
-        AuditoriaUtil.setAuditoriaRegistro(aprobArchivamiento, contexto);
-        requerimientoAprobacionDao.save(aprobArchivamiento);
+        notificacionService.enviarMensajeArchivarRequerimiento(aprobacion, contexto);
 
         AuditoriaUtil.setAuditoriaRegistro(requerimiento, contexto);
         return requerimientoDao.save(requerimiento);
     }
 
+    private Requerimiento aprobarInforme(Requerimiento requerimiento, RequerimientoAprobacion aprobacion, Contexto contexto) {
+        Long usuarioANotificar = null;
+        ListadoDetalle revision = null;
+        boolean isAprobTecnico = contexto.getUsuario().getRoles()
+                .stream()
+                .anyMatch(rol -> rol.getCodigo().equals(APROBADOR_TECNICO));
+
+        if (!isAprobTecnico)
+            throw new ValidacionException(ACCESO_NO_AUTORIZADO);
+
+        // Si es aprobacion de Jefe de Unidad G1
+        if (Objects.equals(aprobacion.getGrupo().getCodigo(), Constantes.LISTADO.GRUPOS.G1)) {
+            if (Objects.equals(Constantes.LISTADO.ESTADO_APROBACION.APROBADO,
+                    aprobacion.getEstado().getCodigo())) {
+                aprobacion.setFechaAprobacion(new Date());
+                RequerimientoAprobacion aprobacionG3 = asignarAprobadorG3(requerimiento, aprobacion, contexto);
+                usuarioANotificar = aprobacionG3.getUsuario().getIdUsuario();
+            } else {
+                revision = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                        Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
+
+                aprobacion.setFechaRechazo(new Date());
+                requerimiento.setEstadoRevision(revision);
+                Division division = divisionService.obtener(requerimiento.getDivision().getIdDivision(), contexto);
+                usuarioANotificar = division.getUsuario().getIdUsuario();
+            }
+
+        } else { // Si es aprobacion de Gerente G3
+            if (Objects.equals(Constantes.LISTADO.ESTADO_APROBACION.APROBADO,
+                    aprobacion.getEstado().getCodigo())) {
+                ListadoDetalle estadoEnProceso = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
+                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO);
+                requerimiento.setEstado(estadoEnProceso);
+            } else {
+                revision = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                        Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
+                aprobacion.setFechaRechazo(new Date());
+                requerimiento.setEstadoRevision(revision);
+            }
+
+            Division division = divisionService.obtener(requerimiento.getDivision().getIdDivision(), contexto);
+            usuarioANotificar = division.getUsuario().getIdUsuario();
+        }
+
+        notificacionService.enviarMensajeAprobacionInforme(aprobacion, usuarioANotificar, contexto);
+        AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
+        requerimientoAprobacionDao.save(aprobacion);
+        AuditoriaUtil.setAuditoriaRegistro(requerimiento, contexto);
+        return requerimientoDao.save(requerimiento);
+    }
+
+    private RequerimientoAprobacion asignarAprobadorG3(Requerimiento requerimiento, RequerimientoAprobacion aprobacion, Contexto contexto) {
+        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
+        PerfilAprobador perfilAprobador = perfilAprobadorDao
+                .findFirstByPerfilIdListadoDetalle(requerimiento.getPerfil().getIdListadoDetalle())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_NO_ENCONTRADO));
+        Usuario aprobadorG3 = perfilAprobador.getAprobadorG3();
+        if (aprobadorG3 == null)
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_G1_NO_ENCONTRADO);
+
+        requerimientoAprobacion.setUsuario(aprobadorG3);
+        ListadoDetalle asignado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO
+        );
+        if (asignado == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ASIGNADO_NO_CONFIGURADO_EN_LISTADODETALLE);
+        }
+        ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                Constantes.LISTADO.TIPO_APROBACION.FIRMAR);
+        requerimientoAprobacion.setEstado(asignado);
+        requerimientoAprobacion.setRequerimiento(requerimiento);
+        requerimientoAprobacion.setTipo(tipo);
+        ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPOS.CODIGO,
+                Constantes.LISTADO.GRUPOS.G3);
+        requerimientoAprobacion.setGrupo(grupo);
+        ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                Constantes.LISTADO.GRUPO_APROBACION.GERENTE);
+        requerimientoAprobacion.setGrupoAprobador(grupoAprobador);
+        ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+        requerimientoAprobacion.setTipoAprobador(tipoAprobador);
+        requerimientoAprobacion.setRequerimientoInforme(aprobacion.getRequerimientoInforme());
+        requerimientoAprobacion.setFechaAsignacion(new Date());
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
+        return requerimientoAprobacionDao.save(requerimientoAprobacion);
+    }
 }

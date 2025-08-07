@@ -83,8 +83,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         Page<RequerimientoAprobacion> aprobacionesPageMapeado =  mapearAprobacionesPorRequerimiento(aprobacionesPage);
 
         // Mapear DTO
-        return aprobacionesPageMapeado.map(reqAprobacion ->
-                convertirResponseDTO(reqAprobacion));
+        return aprobacionesPageMapeado.map(this::convertirResponseDTO);
     }
 
     private RequerimientoAprobacionResponseDTO convertirResponseDTO(RequerimientoAprobacion requerimientoAprobacion) {
@@ -93,6 +92,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         logger.info("RequerimientoAprobacion obtenido: {}", requerimientoAprobacion);
 
         // Mapear RequerimientoAprobacion
+        responseDTO.setIdRequerimientoAprobacion(requerimientoAprobacion.getIdRequerimientoAprobacion());
         responseDTO.setTipo(requerimientoAprobacion.getTipo());
         responseDTO.setFechaAsignacion(requerimientoAprobacion.getFechaAsignacion());
         responseDTO.setArchivoInforme(requerimientoAprobacion.getArchivoInforme());
@@ -101,12 +101,14 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         responseDTO.setEstadoAprobacionGPPM(requerimientoAprobacion.getEstadoAprobacionGPPM());
         responseDTO.setEstadoAprobacionGSE(requerimientoAprobacion.getEstadoAprobacionGSE());
         responseDTO.setAccionAprobar(requerimientoAprobacion.getAccionAprobar());
+        responseDTO.setResponsableSIAF(requerimientoAprobacion.isResponsableSIAF());
 
         // Mapear Requerimiento
         RequerimientoAprobacionResponseDTO.RequerimientoDTO requerimientoDTO = new RequerimientoAprobacionResponseDTO.RequerimientoDTO();
         requerimientoDTO.setNuExpediente(requerimientoAprobacion.getRequerimiento().getNuExpediente());
         requerimientoDTO.setEstado(requerimientoAprobacion.getRequerimiento().getEstado());
         requerimientoDTO.setRequerimientoUuid(requerimientoAprobacion.getRequerimiento().getRequerimientoUuid());
+        requerimientoDTO.setEstadoAprobacion(requerimientoAprobacion.getRequerimiento().getEstadoRevision());
 
         // Mapear Supervisora
         RequerimientoAprobacionResponseDTO.SupervisoraDTO supervisoraDTO = new RequerimientoAprobacionResponseDTO.SupervisoraDTO();
@@ -136,7 +138,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
             return aprobacionesPage;
         }
 
-        // Seteamos la accion aprobar si corresponde
+        // Seteamos la accion aprobar y resp siaf si corresponde
         Page<RequerimientoAprobacion> aprobacionesConAccionPage = aprobacionesPage
                 .map(this::setearAccionAprobar);
 
@@ -162,7 +164,13 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
 
         boolean esAsignado = requerimientoAprobacion.getEstado().getCodigo().equals(
                 Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+
+        boolean esEncargadoSIAF = requerimientoAprobacion.getGrupoAprobador().getCodigo().equals(
+                Constantes.LISTADO.GRUPO_APROBACION.GPPM);
+
         requerimientoAprobacion.setAccionAprobar(esAsignado);
+        requerimientoAprobacion.setResponsableSIAF(esEncargadoSIAF);
+
 
         return requerimientoAprobacion;
     }

@@ -16,4 +16,6 @@ public interface EmpresasSancionadaService {
 	public String validadSancionPersonNaturalFec(String documento);
 
 	public Map<String, String> validadSancionPersonNaturalV2(String documento);
+
+	String validarVinculoLaboral (String numeroDocumento);
 }

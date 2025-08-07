@@ -132,7 +132,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                     Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
             );
             List<File> archivosAlfresco = new ArrayList<>();
-            firmarG1(requerimiento, contexto);
+            asignarAprobadorG1(requerimiento, requerimientoInformeDB, contexto);
             Archivo archivo = archivoRequerimientoInforme(requerimientoInformeDetalle, contexto);
             archivoService.guardarXRequerimientoInforme(archivo, contexto);
             File file = fileRequerimiento(archivo, requerimiento.getIdRequerimiento());
@@ -142,8 +142,8 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
             if (documentoOutRO.getResultCode() != 1) {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, documentoOutRO.getMessage());
             }
-            aprobarG1(requerimientoInformeDB, contexto);
-            aprobarG3(requerimientoInformeDB, contexto);
+//            aprobarG1(requerimientoInformeDB, contexto);
+//            aprobarG3(requerimientoInformeDB, contexto);
             return requerimientoInformeDB;
         } catch (Exception ex) {
             logger.error("Error al guardar el informe. Contexto: {}, Entidad: {}", contexto, requerimientoInformeDetalle, ex);
@@ -203,9 +203,13 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         Archivo archivo = new Archivo();
         Long idRequerimiento = requerimientoInformeDetalle.getRequerimientoInforme().getRequerimiento().getIdRequerimiento();
         archivo.setIdRequerimiento(idRequerimiento);
-        archivo.setNombre("Requerimiento_Informe_" + idRequerimiento + ".pdf");
-        archivo.setNombreReal("Requerimiento_Informe_" + idRequerimiento + ".pdf");
+        archivo.setNombre("Requerimiento_Informe_" + contexto.getUsuario().getUsuario() + ".pdf");
+        archivo.setNombreReal("Requerimiento_Informe_" + contexto.getUsuario().getUsuario() + ".pdf");
         archivo.setTipo("application/pdf");
+        ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+                Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO);
+        archivo.setTipoArchivo(tipoArchivo);
         ByteArrayOutputStream output;
         JasperPrint print;
         InputStream appLogo = null;
@@ -259,7 +263,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
         }
     }
 
-    private void firmarG1(Requerimiento requerimiento, Contexto contexto) {
+    private void asignarAprobadorG1(Requerimiento requerimiento, RequerimientoInforme informe, Contexto contexto) {
         RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
         PerfilAprobador perfilAprobador = perfilAprobadorDao
                 .findFirstByPerfilIdListadoDetalle(requerimiento.getPerfil().getIdListadoDetalle())
@@ -286,6 +290,15 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                 Constantes.LISTADO.GRUPOS.CODIGO,
                 Constantes.LISTADO.GRUPOS.G1);
         requerimientoAprobacion.setGrupo(grupo);
+        ListadoDetalle grupoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD);
+        requerimientoAprobacion.setGrupoAprobador(grupoAprobador);
+        ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+        requerimientoAprobacion.setTipoAprobador(tipoAprobador);
+        requerimientoAprobacion.setRequerimientoInforme(informe);
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
         requerimientoAprobacionDao.save(requerimientoAprobacion);
     }

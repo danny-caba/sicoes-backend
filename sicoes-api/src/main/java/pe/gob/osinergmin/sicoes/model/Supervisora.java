@@ -162,7 +162,7 @@ public class Supervisora extends BaseModel implements Serializable {
 	private SupervisoraPerfil perfil;
 
 	@Transient
-	public String nombreCompleto;
+	private String nombreCompleto;
 
 	public String getNombreCompleto() {
 		if (tipoDocumento != null && tipoDocumento.getCodigo().equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {

@@ -19,7 +19,7 @@ public class SaldoSupervisoraServiceImpl implements SaldoSupervisoraService {
     private SaldoSupervisoraDao saldoSupervisoraDao;
 
     @Override
-    public Optional<SaldoSupervisora> obtenerPorId(Long id) {
+    public Optional<SaldoSupervisora> obtenerPorSupervisoraId(Long id) {
         return saldoSupervisoraDao.buscarPorId(id);
     }
 

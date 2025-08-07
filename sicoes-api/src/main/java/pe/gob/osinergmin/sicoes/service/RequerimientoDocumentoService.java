@@ -14,7 +14,7 @@ public interface RequerimientoDocumentoService extends BaseService<Requerimiento
 
     Page<RequerimientoDocumento> listarRequerimientosDocumentos(FiltroRequerimientoDocumentoDTO filtroRequerimientoDocumentoDTO, Pageable pageable, Contexto contexto);
 
-    List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(String documentoUuid);
+    List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(String documentoUuid, Contexto contexto);
 
     List<RequerimientoDocumentoDetalle> actualizarRequerimientosDocumentosDetalle(List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Contexto contexto);
 

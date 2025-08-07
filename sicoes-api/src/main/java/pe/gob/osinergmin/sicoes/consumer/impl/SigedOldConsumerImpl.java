@@ -38,6 +38,7 @@ import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Ubigeo;
 import pe.gob.osinergmin.sicoes.util.Constantes;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.bean.AlfrescoFileOut;
 import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
@@ -412,4 +413,82 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_SUBIR_ALFRESCO,e);
 		}
 	}
+
+	@Override
+	public Long obtenerIdInformeSiged(String expediente, Contexto contexto) throws Exception {
+		logger.info("obtenerIdInformeSiged() inicio...");
+
+		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + expediente + "/1";
+		Long idArchivo = 0L;
+		Date fechaCreacion = null;
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			logger.info("url [{}].", url);
+
+			String response = restTemplate.getForObject(url, String.class);
+
+			logger.info("response [{}].", response);
+
+			while (true) {
+				Integer indexRequerimientoInforme = response.indexOf("Requerimiento_Informe_" + contexto.getUsuario().getUsuario());
+
+				if (indexRequerimientoInforme > 0) {
+
+					Integer indexInforme = indexRequerimientoInforme;
+
+					//Obtener los campos del informe
+					String partialResponse = response.substring(0, indexInforme);
+					Integer indexInicioArchivo = partialResponse.lastIndexOf("<archivo>") + "<archivo>".length();
+					partialResponse = response.substring(indexInforme);
+					Integer indexFinalArchivo = partialResponse.indexOf("</archivo>");
+
+					//En caso exista más de informe a firmar
+					String afterResponse = response.substring(indexInforme + indexFinalArchivo + "</archivo>".length());
+					response = response.substring(indexInicioArchivo, indexInforme + indexFinalArchivo).trim();
+
+					//Obtener la fecha de creación
+					Integer indexFechaCreacionArchivo = response.indexOf("<fechaCreacion>") + "<fechaCreacion>".length();
+					String fechaCreacionResponse = response.substring(indexFechaCreacionArchivo);
+					fechaCreacionResponse = fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf("</fechaCreacion>"));
+					Date fechaCreacionArchivo = formatter.parse(fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf("T")) + " " +
+							fechaCreacionResponse.substring(fechaCreacionResponse.indexOf("T") + 1, fechaCreacionResponse.indexOf("T") + 9));
+
+					//Obtener el idArchivo del informe
+					Integer indexIdArchivo = response.indexOf("<idArchivo>") + "<idArchivo>".length();
+					response = response.substring(indexIdArchivo);
+					response = response.substring(0, response.indexOf("</idArchivo>"));
+					Long idArchivoTemp = Long.parseLong(response.trim());
+
+					response = afterResponse;
+
+					if (fechaCreacion == null) {
+						idArchivo = idArchivoTemp;
+						fechaCreacion = fechaCreacionArchivo;
+					}
+					else if (fechaCreacionArchivo.compareTo(fechaCreacion) > 0) {
+						idArchivo = idArchivoTemp;
+						fechaCreacion = fechaCreacionArchivo;
+					}
+				}
+				else {
+					break;
+				}
+			}
+			logger.info("idInforme: " + idArchivo);
+		}
+		catch (HttpClientErrorException ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
+		}
+		catch (Exception ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw ex;
+		}
+
+		logger.info("obtenerIdInformeSiged() fin...");
+
+		return idArchivo;
+	}
+
 }

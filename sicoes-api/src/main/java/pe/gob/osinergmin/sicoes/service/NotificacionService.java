@@ -8,6 +8,7 @@ import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
@@ -57,4 +58,6 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	void enviarMensajeVistoBuenoCoordinador(String correo, Contexto contexto);
 	void enviarMensajeVistoBuenoSupervisor(Supervisora supervisoraPN, List<RequerimientoDocumentoDetalle> listaReqDocDetalle, Contexto contexto);
 	void enviarMensajeFinalizacionContratacion(Supervisora supervisoraPN, Contexto contexto);
+	void enviarMensajeArchivarRequerimiento(RequerimientoAprobacion aprobacion, Contexto contexto);
+	void enviarMensajeAprobacionInforme(RequerimientoAprobacion aprobacion, Long usuarioANotificar, Contexto contexto);
 }

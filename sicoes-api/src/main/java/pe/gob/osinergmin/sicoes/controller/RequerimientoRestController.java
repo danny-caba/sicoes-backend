@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
+import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
@@ -67,7 +68,7 @@ public class RequerimientoRestController extends BaseRestController {
 
     @PatchMapping("/{uuid}/aprobar")
     @Raml("requerimiento.obtener.properties")
-    public Requerimiento aprobar(@PathVariable("uuid") String uuid, @RequestBody RequerimientoAprobacionDTO aprobacion) {
+    public Requerimiento aprobar(@PathVariable("uuid") String uuid, @RequestBody RequerimientoAprobacion aprobacion) {
         logger.info("Aprobar requerimiento {}", uuid);
         return requerimientoService.aprobar(uuid, aprobacion, getContexto());
     }
@@ -77,5 +78,11 @@ public class RequerimientoRestController extends BaseRestController {
     public Page<Requerimiento> listarRequerimientosPorAprobar(@ModelAttribute FiltroRequerimientoDTO filtros, Pageable pageable) {
         logger.info("Listar requerimientos por aprobar");
         return requerimientoService.listarPorAprobar(filtros, pageable, getContexto());
+    }
+
+    @GetMapping("/{expediente}/obtenerIdInformeSiged")
+    public Long obtenerIdInformeSiged(@PathVariable("expediente") String expediente) throws Exception {
+        logger.info("Obtener ID de informe SIGED del expediente: {}", expediente);
+        return requerimientoService.obtenerIdInforme(expediente, getContexto());
     }
 }

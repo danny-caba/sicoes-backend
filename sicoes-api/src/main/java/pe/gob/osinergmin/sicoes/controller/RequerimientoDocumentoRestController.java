@@ -46,7 +46,7 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
     @Raml("requerimientoDocumentoDetalle.listar.properties")
     public List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(@PathVariable("documentoUuid") String documentoUuid) {
         logger.info("Listando detalles de requerimientos documentos para el UUID: {}", documentoUuid);
-        return requerimientoDocumentoService.listarRequerimientosDocumentosDetalle(documentoUuid);
+        return requerimientoDocumentoService.listarRequerimientosDocumentosDetalle(documentoUuid, getContexto());
     }
 
     @PostMapping("/detalle")

@@ -1,10 +1,13 @@
 package pe.gob.osinergmin.sicoes.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -12,12 +15,17 @@ import java.util.Date;
 public class RequerimientoAprobacionResponseDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @JsonProperty("idRequerimientoAprobacion")
+    private Long idRequerimientoAprobacion;
+
     @JsonProperty("requerimiento")
     private RequerimientoDTO requerimiento;
 
     @JsonProperty("tipo")
     private ListadoDetalle tipo;
 
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @JsonProperty("fechaAsignacion")
     private Date fechaAsignacion;
 
@@ -39,11 +47,22 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
     @JsonProperty("accionAprobar")
     private boolean accionAprobar;
 
+    @JsonProperty("responsableSIAF")
+    private boolean responsableSIAF;
+
     public RequerimientoAprobacionResponseDTO() {
         this.estadoFirmaJefeUnidad = null;
         this.estadoFirmaGerente = null;
         this.estadoAprobacionGPPM = null;
         this.estadoAprobacionGSE = null;
+    }
+
+    public Long getIdRequerimientoAprobacion() {
+        return idRequerimientoAprobacion;
+    }
+
+    public void setIdRequerimientoAprobacion(Long idRequerimientoAprobacion) {
+        this.idRequerimientoAprobacion = idRequerimientoAprobacion;
     }
 
     public RequerimientoDTO getRequerimiento() {
@@ -118,6 +137,14 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
         this.accionAprobar = accionAprobar;
     }
 
+    public boolean isResponsableSIAF() {
+        return responsableSIAF;
+    }
+
+    public void setResponsableSIAF(boolean responsableSIAF) {
+        this.responsableSIAF = responsableSIAF;
+    }
+
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public static class RequerimientoDTO implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -130,6 +157,9 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
 
         @JsonProperty("estado")
         private ListadoDetalle estado;
+
+        @JsonProperty("estadoAprobacion")
+        private ListadoDetalle estadoAprobacion;
 
         @JsonProperty("division")
         private DivisionDTO division;
@@ -163,6 +193,14 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
 
         public void setEstado(ListadoDetalle estado) {
             this.estado = estado;
+        }
+
+        public ListadoDetalle getEstadoAprobacion() {
+            return estadoAprobacion;
+        }
+
+        public void setEstadoAprobacion(ListadoDetalle estadoAprobacion) {
+            this.estadoAprobacion = estadoAprobacion;
         }
 
         public DivisionDTO getDivision() {

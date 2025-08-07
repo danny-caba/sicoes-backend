@@ -21,6 +21,9 @@ public class Constantes {
 
 		public static final String PRESENTADO = "1";
 		public static final String NO_PRESENTADO = "0";
+
+		public static final String ACTIVO_STR = "1";
+		public static final String INACTIVO_STR = "0";
 	}
 
 	public static final class UBIGEO{
@@ -690,6 +693,7 @@ public class Constantes {
             public static final String EN_PROCESO	                = "EN_PROCESO";
 			public static final String CONCLUIDO	                = "CONCLUIDO";
 			public static final String SOLICITUD_PRELIMINAR 	    = "SOLICITUD_PRELIMINAR";
+			public static final String OBSERVADO	                = "OBSERVADO";
 		}
 
 		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
@@ -1043,9 +1047,8 @@ public class Constantes {
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
 		public static final String EVALUADOR_CONTRATOS 			= "12";
-		public static final String COORDINADOR_GESTION 			= "13";
-		public static final String APROBADOR_GPPM 				= "16";
-		public static final String APROBADOR_GSE 				= "17";
+		public static final String APROBADOR_GPPM 				= "13";
+		public static final String APROBADOR_GSE 				= "14";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

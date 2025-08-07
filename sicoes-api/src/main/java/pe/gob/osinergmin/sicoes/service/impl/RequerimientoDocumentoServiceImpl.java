@@ -60,6 +60,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -146,17 +147,39 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     }
 
     @Override
-    public List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(String requerimientoUuid) {
-        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoUuid);
-        return listaDetalle.stream().map(this::cargarArchivo).collect(Collectors.toList());
+    public List<RequerimientoDocumentoDetalle> listarRequerimientosDocumentosDetalle(String requerimientoUuid, Contexto contexto) {
+        Long idOrigenRequisito = null;
+        if (contexto.getUsuario().getCodigoUsuarioInterno() == null) {
+            ListadoDetalle origenRequisito = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ORIGEN_REQUISITO.CODIGO,
+                    Constantes.LISTADO.ORIGEN_REQUISITO.EXTERNO);
+            idOrigenRequisito = origenRequisito.getIdListadoDetalle();
+        }
+        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoUuid, idOrigenRequisito);
+
+        if (listaDetalle == null) {
+            return Collections.emptyList();
+        }
+
+        return listaDetalle.stream()
+                .filter(Objects::nonNull)
+                .map(this::cargarArchivo)
+                .collect(Collectors.toList());
     }
 
-    private RequerimientoDocumentoDetalle cargarArchivo(RequerimientoDocumentoDetalle requerimientoDocumentoDetalle) {
-        List<Archivo> list = archivoService.buscarPorReqDocDetalle(requerimientoDocumentoDetalle.getIdRequerimientoDocumentoDetalle());
-        if (!list.isEmpty()) {
-            requerimientoDocumentoDetalle.setArchivo(list.get(0));
+    private RequerimientoDocumentoDetalle cargarArchivo(RequerimientoDocumentoDetalle detalle) {
+        if (Objects.equals(detalle.getOrigenRequisito().getCodigo(), Constantes.LISTADO.ORIGEN_REQUISITO.REQUERIMIENTO)) {
+            Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(
+                    detalle.getRequerimientoDocumento().getRequerimiento().getIdRequerimiento(),
+                    Constantes.LISTADO.TIPO_ARCHIVO.INFORME_REQUERIMIENTO);
+            detalle.setArchivo(informe);
+        } else {
+            List<Archivo> list = archivoService.buscarPorReqDocDetalle(detalle.getIdRequerimientoDocumentoDetalle());
+            if (!list.isEmpty()) {
+                detalle.setArchivo(list.get(0));
+            }
         }
-        return requerimientoDocumentoDetalle;
+        return detalle;
     }
 
     @Override
@@ -185,8 +208,12 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             if (documentoOutRO.getResultCode() != 1) {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, documentoOutRO.getMessage());
             }
+        } catch (ValidacionException e) {
+            logger.error("ERROR 2 {} ", e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error al agregar documento en SIGED", e);
+            logger.error("ERROR {} ", e.getMessage(), e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE, e.getMessage());
         }
         return lstDetalleDB;
     }
@@ -207,6 +234,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
     private RequerimientoDocumentoDetalle guardarFlagPresentado(RequerimientoDocumentoDetalle detalle, RequerimientoDocumento documento, Contexto contexto) {
         RequerimientoDocumentoDetalle detalleDB = requerimientoDocumentoDetalleDao.buscarPorUuid(detalle.getRequerimientoDocumentoDetalleUuid());
+        detalleDB.setArchivo(detalle.getArchivo());
         detalleDB.setRequerimientoDocumento(documento);
         if (detalleDB.getArchivo() != null) {
             detalleDB.setPresentado(Constantes.FLAG.PRESENTADO);
@@ -274,8 +302,11 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
             Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO);
         archivo.setTipoArchivo(tipoArchivo);
-        archivo.setNombre("Requerimiento_Documento_" + idRequerimiento + ".pdf");
-        archivo.setNombreReal("Requerimiento_Documento_" + idRequerimiento + ".pdf");
+        String nombreArchivo = requerimientoDocumento.getTipo().getCodigo().equals(Constantes.LISTADO.TIPO_REQ_DOCUMENTO.REGISTRO)
+                ? "Presentacion_Documentos_RN.pdf"
+                : "Subsanacion_Documentos_PN.pdf";
+        archivo.setNombre(nombreArchivo);
+        archivo.setNombreReal(nombreArchivo);
         archivo.setTipo("application/pdf");
         ByteArrayOutputStream output;
         RequerimientoInvitacion invitacion = requerimientoInvitacionDao
@@ -387,7 +418,10 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
     @Override
     @Transactional
     public RequerimientoDocumento evaluarRequerimientosDocumento(String uuid, Contexto contexto) {
-        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(uuid);
+        ListadoDetalle origenRequisito = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ORIGEN_REQUISITO.CODIGO,
+                Constantes.LISTADO.ORIGEN_REQUISITO.EXTERNO);
+        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(uuid, origenRequisito.getIdListadoDetalle());
         boolean todosCargadosYEvaluados = true;
         for (RequerimientoDocumentoDetalle detalle : listaDetalle) {
             String presentado = detalle.getPresentado();
@@ -413,6 +447,11 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Supervisora supervisoraPN = supervisoraService.obtener(requerimientoDocumento.getRequerimiento().getSupervisora().getIdSupervisora(), contexto);
                 notificacionService.enviarRequerimientoEvaluacion(supervisoraPN, requerimientoDocumento, contexto);
                 logger.info("Al menos un documento está observado.");
+                ListadoDetalle estadoObservado = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
+                        Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.OBSERVADO);
+                requerimientoDocumento.setEstado(estadoObservado);
+                requerimientoDocumento.setFlagActivo(Constantes.FLAG.NO_PRESENTADO);
                 return requerimientoDocumentoClon;
             }
         } else {
@@ -510,8 +549,9 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
                 Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
                 Constantes.LISTADO.TIPO_ARCHIVO.DOCUMENTO_REQUERIMIENTO);
         archivo.setTipoArchivo(tipoArchivo);
-        archivo.setNombre("Evaluacion_Req_Doc_" + idRequerimiento + ".pdf");
-        archivo.setNombreReal("Evaluacion_Req_Doc_" + idRequerimiento + ".pdf");
+        String nombreArchivo = "Resultado_Evaluacion_Documentos_PN.pdf";
+        archivo.setNombre(nombreArchivo);
+        archivo.setNombreReal(nombreArchivo);
         archivo.setTipo("application/pdf");
         ByteArrayOutputStream output;
         List<RequerimientoDocumentoDetalle> lstDetalleFormated = lstDetalle.stream().map(detalle -> {
@@ -567,7 +607,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_SOLICITUD_PRELIMINAR_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
         requerimientoDocumentoNuevo.setEstado(estadoSolicitudPreliminar);
-        requerimientoDocumentoNuevo.setFlagActivo(requerimientoDocumentoBD.getFlagActivo());
+        requerimientoDocumentoNuevo.setFlagActivo(Constantes.FLAG.ACTIVO_STR);
         requerimientoDocumentoNuevo.setFechaIngreso(new Date());
         ListadoDetalle tipoSubsanacion = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.TIPO_REQ_DOCUMENTO.CODIGO,
@@ -585,22 +625,31 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
         requerimientoDocumentoNuevo.setRequerimientosDocumentoUuidPadre(requerimientoDocumentoBD.getRequerimientoDocumentoUuid());
         AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoNuevo, contexto);
         RequerimientoDocumento clonRequerimientoDocumento = requerimientoDocumentoDao.save(requerimientoDocumentoNuevo);
-        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoDocumentoBD.getRequerimientoDocumentoUuid());
+        List<RequerimientoDocumentoDetalle> listaDetalle = requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoDocumentoBD.getRequerimientoDocumentoUuid(), null);
         for (RequerimientoDocumentoDetalle requerimientoDocumentoDetalleBD : listaDetalle) {
             RequerimientoDocumentoDetalle requerimientoDocumentoDetalleNuevo = new RequerimientoDocumentoDetalle();
             requerimientoDocumentoDetalleNuevo.setRequerimientoDocumentoDetalleUuid(UUID.randomUUID().toString());
             requerimientoDocumentoDetalleNuevo.setRequerimientoDocumento(clonRequerimientoDocumento);
             requerimientoDocumentoDetalleNuevo.setDescripcionRequisito(requerimientoDocumentoDetalleBD.getDescripcionRequisito());
             requerimientoDocumentoDetalleNuevo.setRequisito(requerimientoDocumentoDetalleBD.getRequisito());
-            requerimientoDocumentoDetalleNuevo.setObservacion(requerimientoDocumentoDetalleBD.getObservacion());
-            requerimientoDocumentoDetalleNuevo.setPresentado(requerimientoDocumentoDetalleBD.getPresentado());
-            if(!Constantes.LISTADO.ESTADO_REQ_DOCUMENTO_DETALLE.OBSERVADO.equals(requerimientoDocumentoDetalleBD.getEvaluacion().getCodigo())){
+            requerimientoDocumentoDetalleNuevo.setPresentado(Constantes.FLAG.NO_PRESENTADO);
+            requerimientoDocumentoDetalleNuevo.setOrigenRequisito(requerimientoDocumentoDetalleBD.getOrigenRequisito());
+
+            if(requerimientoDocumentoDetalleBD.getOrigenRequisito().getCodigo().equals(Constantes.LISTADO.ORIGEN_REQUISITO.EXTERNO) &&
+                    !Constantes.LISTADO.ESTADO_REQ_DOCUMENTO_DETALLE.OBSERVADO.equals(requerimientoDocumentoDetalleBD.getEvaluacion().getCodigo())){
                 requerimientoDocumentoDetalleNuevo.setEvaluacion(requerimientoDocumentoDetalleBD.getEvaluacion());
                 requerimientoDocumentoDetalleNuevo.setUsuario(requerimientoDocumentoDetalleBD.getUsuario());
                 requerimientoDocumentoDetalleNuevo.setFechaEvaluacion(requerimientoDocumentoDetalleBD.getFechaEvaluacion());
+                requerimientoDocumentoDetalleNuevo.setObservacion(requerimientoDocumentoDetalleBD.getObservacion());
+                requerimientoDocumentoDetalleNuevo.setPresentado(requerimientoDocumentoDetalleBD.getPresentado());
             }
+
             AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumentoDetalleNuevo, contexto);
             requerimientoDocumentoDetalleDao.save(requerimientoDocumentoDetalleNuevo);
+            // Clonar archivo asociado al detalle (solo externos)
+            if (!requerimientoDocumentoDetalleBD.getOrigenRequisito().getCodigo().equals(Constantes.LISTADO.ORIGEN_REQUISITO.EXTERNO)) {
+                continue;
+            }
             Archivo archivoBD = archivoService.obtenerArchivoPorReqDocumentoDetalle(requerimientoDocumentoDetalleBD.getRequerimientoDocumentoDetalleUuid(), contexto);
             Archivo archivoNuevo = getArchivoNuevo(archivoBD, requerimientoDocumentoNuevo, requerimientoDocumentoDetalleNuevo);
             AuditoriaUtil.setAuditoriaRegistro(archivoNuevo, contexto);
@@ -643,7 +692,7 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
         List<RequerimientoDocumentoDetalle> detalleDocumentoSinVistoBueno = detallesBD
                 .stream()
-                .filter(det -> det.getFlagVistoBueno().equals(Constantes.ESTADO.INACTIVO))
+                .filter(det -> det.getFlagVistoBueno().equals(Constantes.FLAG.NO_PRESENTADO))
                 .collect(Collectors.toList());
         List<RequerimientoDocumentoDetalle> detalleDocumentoExterno = detalleDocumentoSinVistoBueno
                 .stream()

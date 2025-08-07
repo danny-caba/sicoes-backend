@@ -40,8 +40,7 @@ public class DivisionServiceImpl implements DivisionService {
 
 	@Override
 	public Division obtener(Long id, Contexto contexto) {
-		// TODO Auto-generated method stub
-		return null;
+		return divisionDao.findById(id).orElse(null);
 	}
 
 	@Override

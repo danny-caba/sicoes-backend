@@ -84,7 +84,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private Date fechaFirma;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name = "FE_ASIGNACION")
     private Date fechaAsignacion;
 
@@ -104,7 +104,10 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private String estadoAprobacionGSE;
 
     @Transient
-    private Boolean accionAprobar;
+    private boolean accionAprobar;
+
+    @Transient
+    private boolean responsableSIAF;
 
     public Long getIdRequerimientoAprobacion() {
         return idRequerimientoAprobacion;
@@ -218,12 +221,20 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.fechaFirma = fechaFirma;
     }
 
-    public Boolean getAccionAprobar() {
+    public boolean getAccionAprobar() {
         return accionAprobar;
     }
 
-    public void setAccionAprobar(Boolean accionAprobar) {
+    public void setAccionAprobar(boolean accionAprobar) {
         this.accionAprobar = accionAprobar;
+    }
+
+    public boolean isResponsableSIAF() {
+        return responsableSIAF;
+    }
+
+    public void setResponsableSIAF(boolean responsableSIAF) {
+        this.responsableSIAF = responsableSIAF;
     }
 
     public Archivo getArchivoInforme() {

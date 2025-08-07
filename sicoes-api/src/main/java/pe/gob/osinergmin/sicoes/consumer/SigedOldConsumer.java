@@ -4,6 +4,7 @@ import java.util.List;
 
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Ubigeo;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
 public interface SigedOldConsumer {
@@ -30,4 +31,7 @@ public interface SigedOldConsumer {
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital();
 
 	public String subirArchivosAlfrescoRequerimiento(Long idRequerimiento,Archivo archivo);
+
+	Long obtenerIdInformeSiged(String expediente, Contexto contexto) throws Exception;
+
 }

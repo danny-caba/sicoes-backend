@@ -174,6 +174,9 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         ListadoDetalle estadoInvitacion = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, estado.getCodigo());
         if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
+            //Obtener Supervisora
+            Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
+
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaAceptacion(new Date());
@@ -184,6 +187,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             ListadoDetalle estadoRequerimiento = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO, Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_APROBACION);
             requerimiento.setEstado(estadoRequerimiento);
+            requerimiento.setSupervisora(supervisora);
             AuditoriaUtil.setAuditoriaRegistro(requerimiento, contexto);
             requerimiento = requerimientoDao.save(requerimiento);
 
@@ -228,7 +232,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
 
         //Obtener correos
-        correosNotificacion.add(requerimiento.getSupervisora().getCorreo());
+        correosNotificacion.add(invitacion.getSupervisora().getCorreo());
         correosNotificacion.add(requerimiento.getDivision().getUsuario().getCorreo());
 
         //Enviar notificacion
