@@ -43,6 +43,9 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_REEMPLAZO = "DOCUMENTACION REVISADA";
     private static final String NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_REEMPLAZO = "32-notificacion-revisar-documento-reemplazo.html";
 
+    private static final String ASUNTO_NOTIFICACION_APROBACION_PENDIENTE = "DOCUMENTACION REVISADA";
+    private static final String NOMBRE_TEMPLATE_APROBACION_PENDIENTE = "33-notificacion-aprobacion-pendiente.html";
+
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
     private final TemplateEngine templateEngine;
@@ -225,5 +228,23 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
         saveNotificacion(notificacion);
     }
-    
+
+    @Override
+    public void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarAprobacionPendiente para email: {} ",email);
+
+        Context ctx = new Context();
+        ctx.setVariable("nombreAprobador", usuario.getNombreUsuario());
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_APROBACION_PENDIENTE,
+                NOMBRE_TEMPLATE_APROBACION_PENDIENTE,
+                ctx);
+
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
 }

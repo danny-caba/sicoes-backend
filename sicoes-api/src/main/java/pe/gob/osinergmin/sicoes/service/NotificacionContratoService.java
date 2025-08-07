@@ -22,4 +22,5 @@ public interface NotificacionContratoService {
 
     void notificarRevisionDocumentosReemplazo(Usuario usuario, String numeroExpediente, Contexto contexto);
 
+    void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
 }

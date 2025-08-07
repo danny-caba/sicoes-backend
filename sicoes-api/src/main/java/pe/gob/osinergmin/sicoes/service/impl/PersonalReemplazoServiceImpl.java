@@ -87,6 +87,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private UsuarioDao usuarioDao;
 
+    @Autowired
+    private PerfilAprobadorDao perfilAprobadorDao;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -690,14 +692,17 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                reemplazoDao.save(persoReempFinal);
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){ //Aprobación Rol Evaluador de contratos
-
-
             Optional<Adenda> adendaOpt = adendaDao.findById(persoReempFinal.getIdReemplazo());
             Adenda adendaFinal = adendaOpt.orElseThrow(() -> new RuntimeException("adenda no encontrada"));
 
             if(aprobacion.getAccion().equals("A")) {
                 adendaFinal.setEstadoAprobacionLogistica(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.APROBADO));  //aprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO)); //asignado
+
+                List<PerfilAprobador> perfilesAprobador = perfilAprobadorDao.obtenerPerfilAprobadorPorIdPerfil(
+                        adendaFinal.getRemplazoPersonal().getPerfil().getIdListadoDetalle());
+                notificacionContratoService.notificarAprobacionPendiente(
+                        perfilesAprobador.get(0).getAprobadorG2(), numeroExpediente, contexto);
             }else{
                 aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //desaprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO)); //rechazado

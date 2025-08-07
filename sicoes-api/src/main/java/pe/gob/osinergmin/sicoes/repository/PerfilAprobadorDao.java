@@ -17,6 +17,7 @@ public interface PerfilAprobadorDao extends JpaRepository<PerfilAprobador, Long>
 			+ "left join fetch pa.perfil p "
 			+ "left join fetch pa.aprobadorG1 apg1 "
 			+ "left join fetch pa.aprobadorG2 apg2 "
+			+ "left join fetch pa.aprobadorG3 apg3 "
 			+ "left join fetch pa.evaluador evd "
 			+ "left join fetch pa.evaluador2 evd2 "
 			+ "left join fetch pa.evaluador3 evd3 "

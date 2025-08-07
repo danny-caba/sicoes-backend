@@ -19,6 +19,7 @@ import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.AdendaReemplazoService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -64,6 +65,20 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     @Autowired
     private ListadoDetalleService listadoDetalleService;
 
+    @Autowired
+    private UsuarioRolDao usuarioRolDao;
+
+    @Autowired
+    private UsuarioDao usuarioDao;
+
+    @Autowired
+    private SolicitudDao solicitudDao;
+
+    @Autowired
+    private PerfilAprobadorDao perfilAprobadorDao;
+
+    @Autowired
+    private NotificacionContratoService notificacionContratoService;
 
     @Override
     @Transactional
@@ -98,7 +113,23 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         adenda.setEstadoAprobacion(estadoAsignado);
         adenda.setEstadoAprLogistica(estadoAsignado);
         AuditoriaUtil.setAuditoriaRegistro(adenda,contexto);
-        return adendaReemplazoDao.save(adenda);
+        AdendaReemplazo adendaReemplazo = adendaReemplazoDao.save(adenda);
+
+        //Notificacion
+        Optional<Usuario> evaluadorContratos = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS)
+                .stream()
+                .findFirst()
+                .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+
+        if (evaluadorContratos.isPresent()) {
+            Solicitud solicitud = solicitudDao.obtener(personalReemplazo.getIdSolicitud());
+            String numeroExpediente = solicitud.getNumeroExpediente();
+            notificacionContratoService.notificarAprobacionPendiente(evaluadorContratos.get(), numeroExpediente, contexto);
+        } else {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
+        }
+
+        return adendaReemplazo;
     }
 
     @Override
@@ -285,6 +316,16 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     adenda.setEstadoVbGaf(estadoApro);
                     adenda.setEstadoFirmaJefe(estadoAsig);
                     adenda.setObservacionVb(firmaRequestDTO.getObservacion());
+                    //Notificacion
+                    PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
+                            .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+                    List<PerfilAprobador> perfilesAprobador = perfilAprobadorDao.obtenerPerfilAprobadorPorIdPerfil(
+                            personalReemplazo.getPerfil().getIdListadoDetalle());
+
+                    Solicitud solicitud = solicitudDao.obtener(personalReemplazo.getIdSolicitud());
+                    String numeroExpediente = solicitud.getNumeroExpediente();
+                    notificacionContratoService.notificarAprobacionPendiente(
+                            perfilesAprobador.get(0).getAprobadorG3(), numeroExpediente, contexto);
                 } else { //Firma
                     if (firmaRequestDTO.getFirmaJefe()){
                         adenda.setEstadoFirmaJefe(estadoApro);

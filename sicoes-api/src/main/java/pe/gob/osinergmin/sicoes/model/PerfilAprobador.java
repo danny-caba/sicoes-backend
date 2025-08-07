@@ -35,7 +35,11 @@ public class PerfilAprobador extends BaseModel implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_APROBADOR_G2")
 	private Usuario aprobadorG2;
-	
+
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_APROBADOR_G3")
+	private Usuario aprobadorG3;
+
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_EVALUADOR")
 	private Usuario evaluador;
@@ -98,6 +102,14 @@ public class PerfilAprobador extends BaseModel implements Serializable {
 
 	public void setAprobadorG2(Usuario aprobadorG2) {
 		this.aprobadorG2 = aprobadorG2;
+	}
+
+	public Usuario getAprobadorG3() {
+		return aprobadorG3;
+	}
+
+	public void setAprobadorG3(Usuario aprobadorG3) {
+		this.aprobadorG3 = aprobadorG3;
 	}
 
 	public Usuario getEvaluador() {
