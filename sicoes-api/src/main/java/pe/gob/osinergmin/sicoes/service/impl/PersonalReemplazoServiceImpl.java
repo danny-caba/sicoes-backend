@@ -437,7 +437,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 if (evaluadorContratos.isPresent()) {
                     Solicitud solicitud = solicitudDao.obtener(personalReemplazoToUpdate.getIdSolicitud());
                     String numeroExpediente = solicitud.getNumeroExpediente();
-                    notificacionContratoService.notificarRevisionDocumentosReemplazo(evaluadorContratos.get(), numeroExpediente, contexto);
+                    notificacionContratoService.notificarRevDocumentos15(evaluadorContratos.get(), numeroExpediente, contexto);
                 } else {
                     throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
                 }
@@ -457,7 +457,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             personalReemplazoToUpdate.setEstadoReemplazo(estadoPreliminar);
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
             reemplazoDao.save(personalReemplazoToUpdate);
-            if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.INVITADO) || rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO))) {
+            if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO) || rol.getCodigo().equals(Constantes.ROLES.INVITADO) || rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
                 if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO))) {
                     Optional<Usuario> usuarioExterno = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.USUARIO_EXTERNO).stream()
                             .findFirst()
@@ -465,7 +465,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     if (usuarioExterno.isPresent()) {
                         String nombrePersonal = nombrePersonal(personalReemplazoToUpdate);
                         String nombrePerfil = personalReemplazoToUpdate.getPerfil().getNombre();
-                        notificacionContratoService.notificarSubsanacionDocumentosReemplazo(usuarioExterno.get(), nombrePersonal, nombrePerfil, listDocsAsociados, contexto);
+                        notificacionContratoService.notificarRevDocumentos2(usuarioExterno.get(), nombrePersonal, nombrePerfil, listDocsAsociados, contexto);
                     } else {
                         throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_EXTERNO_NO_EXISTE);
                     }
@@ -476,7 +476,27 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     if (evaluadorContratos.isPresent()) {
                         Solicitud solicitud = solicitudDao.obtener(personalReemplazoToUpdate.getIdSolicitud());
                         String numeroExpediente = solicitud.getNumeroExpediente();
-                        notificacionContratoService.notificarRevisionDocumentosReemplazo(evaluadorContratos.get(), numeroExpediente, contexto);
+                        notificacionContratoService.notificarRevDocumentos15(evaluadorContratos.get(), numeroExpediente, contexto);
+                    } else {
+                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
+                    }
+                } else if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
+                    Optional<Usuario> evaluadorContratos = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS).stream()
+                            .findFirst()
+                            .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                    if (evaluadorContratos.isPresent()) {
+                        notificacionContratoService.notificarRevDocumentos12(evaluadorContratos.get(), contexto);
+                        Optional<Usuario> usuarioExterno = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.USUARIO_EXTERNO).stream()
+                                .findFirst()
+                                .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                        if (usuarioExterno.isPresent()) {
+                            String nombrePersonal = nombrePersonal(personalReemplazoToUpdate);
+                            String nombrePerfil = personalReemplazoToUpdate.getPerfil().getNombre();
+                            notificacionContratoService.notificarRevDocumentos2(usuarioExterno.get(), nombrePersonal, nombrePerfil, listDocsAsociados, contexto);
+                        } else {
+                            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_EXTERNO_NO_EXISTE);
+                        }
+                        notificacionContratoService.notificarRevDocumentos122(usuarioExterno.get(), contexto);
                     } else {
                         throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
                     }
