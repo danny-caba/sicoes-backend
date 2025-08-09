@@ -101,8 +101,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private ListadoDetalleService listadoDetalleService;
+
     @Autowired
     private HistorialAprobReempDao historialAprobReempDao;
+
+    @Autowired
+    private EvaluacionDocInicioServDao evaluacionDocInicioServDao;
+
+    @Autowired
+    private  DocumentoInicioServDao documentoInicioServDao;
+
+    @Autowired
+    private ListadoDao listadoDao;
 
 
     @Override
@@ -684,7 +694,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         reemplazoDao.deleteById(id);
     }
 
-     @Override
+    @Override
     public List<Combo> listarContratistas(String codigo){
       return   comboDao.listarContratistas(codigo);
     }
@@ -865,20 +875,51 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
 
-    @Override
+      @Override
     public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol) {
-       return evaluacionDocumentacionDao.obtenerListado(id, idsol)
+         logger.info("obtenerEvaluacionDocumentacion");
+         return evaluacionDocumentacionDao.obtenerListado(id, idsol)
                .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
     }
 
     @Override
     public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol) {
-       return evaluacionPPDao.obtenerListadoPP(id, idsol)
+         logger.info("obtenerEvaluacionDocumentacionBPP");
+         return evaluacionPPDao.obtenerListadoPP(id, idsol)
                .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
     }
 
-     public Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable ) {
-        logger.info("listarPersonalReemplazo");
+    @Override
+    public Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable ) {
+        logger.info("listarHistorialReemp");
         return historialAprobReempDao.buscarHistorial(idReemplazo,pageable);
+    }
+
+    @Override
+    public EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(Long id) {
+        logger.info("obtenerEvaluacionDocInicioServicio");
+        return evaluacionDocInicioServDao.buscarEvalDocInicioServ(id);
+    }
+
+    @Override
+    public List<DocumentoInicioServ> obtenerDocumentosInicioServicio( Long id, String seccion){
+        logger.info("ObtenerDocumentosInicioServicio");
+        List<DocumentoInicioServ>  resultado = new ArrayList<>();
+        if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO)){
+
+            resultado = documentoInicioServDao.documentosInicioServicio(id, listadoDao
+                    .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO).getIdListado());
+        }
+        if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ADICIONAL)){
+
+            resultado = documentoInicioServDao.documentosInicioServicio(id, listadoDao
+                    .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ADICIONAL).getIdListado());
+        }
+        if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO)){
+
+            resultado = documentoInicioServDao.documentosInicioServicio(id, listadoDao
+                    .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO).getIdListado());
+        }
+        return resultado;
     }
 }
