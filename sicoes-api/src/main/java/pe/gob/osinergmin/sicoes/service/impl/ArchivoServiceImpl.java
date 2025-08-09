@@ -163,7 +163,14 @@ public class ArchivoServiceImpl implements ArchivoService {
 			}	
 		}
 
-		if(archivo.getIdReqDocumentoDetalle()!=null) {
+		if(archivo.getIdReqDocumentoDetalle() != null) {
+//			todo: cuanto peso como maximo se debe considerar?
+//			if(tamanioMB>pesoAcreditacion) {
+//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
+//			}
+		}
+
+		if(archivo.getIdRequerimientoContrato() != null) {
 //			todo: cuanto peso como maximo se debe considerar?
 //			if(tamanioMB>pesoAcreditacion) {
 //				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
@@ -215,7 +222,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					archivoBD.getIdProceso(),
 					archivoBD.getIdSeccionRequisito(),
 					archivoBD.getIdReqDocumentoDetalle(),
-					null,null , archivo);
+					archivoBD.getIdRequerimientoContrato(),null , archivo);
 
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);

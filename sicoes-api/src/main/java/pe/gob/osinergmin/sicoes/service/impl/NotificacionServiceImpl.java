@@ -1140,7 +1140,6 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeSolicitudFirmaArchivamientoRequerimiento(Usuario aprobadorG2, Requerimiento requerimiento, Contexto contexto) {
 			Notificacion notificacion = new Notificacion();
 			String correos = aprobadorG2.getCorreo();
-//			correos = "tripalovski5@gmail.com";
 			notificacion.setCorreo(correos);
 			notificacion.setAsunto("NOTIFICACIÓN PARA FIRMAR ARCHIVAMIENTO DE REQUERIMIENTO");
 			final Context ctx = new Context();
@@ -1292,7 +1291,6 @@ public class NotificacionServiceImpl implements NotificacionService{
 		Usuario aprobador = usuarioDao.obtener(aprobacion.getUsuario().getIdUsuario());
 
 		notificacion.setCorreo(usuario.getCorreo());
-		notificacion.setCorreo("tripalovski5@gmail.com");
 		notificacion.setAsunto(asunto);
 		final Context ctx = new Context();
 		ctx.setVariable("nombre", usuario.getNombreUsuario());
@@ -1317,7 +1315,6 @@ public class NotificacionServiceImpl implements NotificacionService{
 		String template = null;
 		Usuario usuario = usuarioService.obtener(usuarioANotificar);
 		notificacion.setCorreo(usuario.getCorreo());
-		notificacion.setCorreo("tripalovski5@gmail.com");
 
 		if (Objects.equals(aprobacion.getEstado().getCodigo(), Constantes.LISTADO.RESULTADO_APROBACION.APROBADO)) {
 			if (Objects.equals(aprobacion.getGrupo().getCodigo(), Constantes.LISTADO.GRUPOS.G3)) {

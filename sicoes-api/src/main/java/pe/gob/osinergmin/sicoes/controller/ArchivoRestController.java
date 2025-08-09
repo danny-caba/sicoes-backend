@@ -108,7 +108,8 @@ public class ArchivoRestController extends BaseRestController {
 			@RequestParam(value = "idArchivo", required = false) Long idArchivo,
 			@RequestParam(value = "idProceso", required = false) Long idProceso,
 		    @RequestParam(value = "idSolicitudSeccion", required = false) Long idSolicitudSeccion,
-			@RequestParam(value = "idReqDocumentoDetalle", required = false) Long idReqDocumentoDetalle) {
+			@RequestParam(value = "idReqDocumentoDetalle", required = false) Long idReqDocumentoDetalle,
+			@RequestParam(value = "idRequerimientoContrato", required = false) Long idRequerimientoContrato) {
 
 		Archivo archivo = new Archivo();
 
@@ -144,6 +145,7 @@ public class ArchivoRestController extends BaseRestController {
 		archivo.setIdProceso(idProceso);
 		archivo.setIdSeccionRequisito(idSolicitudSeccion);
 		archivo.setIdReqDocumentoDetalle(idReqDocumentoDetalle);
+		archivo.setIdRequerimientoContrato(idRequerimientoContrato);
 		Archivo value = archivoService.guardar(archivo, getContexto());
 		value.setFile(null);
 

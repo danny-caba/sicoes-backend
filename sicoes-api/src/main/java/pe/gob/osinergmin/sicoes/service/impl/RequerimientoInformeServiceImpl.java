@@ -299,6 +299,7 @@ public class RequerimientoInformeServiceImpl implements RequerimientoInformeServ
                 Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
         requerimientoAprobacion.setTipoAprobador(tipoAprobador);
         requerimientoAprobacion.setRequerimientoInforme(informe);
+        requerimientoAprobacion.setFechaAsignacion(new Date());
         AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
         requerimientoAprobacionDao.save(requerimientoAprobacion);
     }
