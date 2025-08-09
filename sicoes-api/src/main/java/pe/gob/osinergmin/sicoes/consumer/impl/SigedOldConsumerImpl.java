@@ -133,7 +133,9 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        }else if(archivo.getIdSeccionRequisito()!=null) {
 	        	path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/PERFECCIONAMIENTO_REQUISITO/"+idSeccionRequisito;
 			}else if(archivo.getIdReqDocumentoDetalle()!=null) {
-				path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO_DOCUMENTO_DETALLE/"+idReqDocumentoDetalle;
+				path = SIGED_WS_URL + SIGED_PATH_SUBIR_ARCHIVO + SIGED_USER + SIGED_PATH_BASE + "/REQUERIMIENTO_DOCUMENTO_DETALLE/" + idReqDocumentoDetalle;
+			}else if(archivo.getIdRequerimientoContrato()!=null) {
+				path = SIGED_WS_URL + SIGED_PATH_SUBIR_ARCHIVO + SIGED_USER + SIGED_PATH_BASE + "/CONTRATO_PN/" + idContrato;
 			}else {
 	        	logger.info("Sin path enviar idSolicitud o idPropuesta "+path);
 	        }
