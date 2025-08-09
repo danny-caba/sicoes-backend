@@ -1218,6 +1218,55 @@ public class ArchivoServiceImpl implements ArchivoService {
 					   .collect(Collectors.toList());
 	}
 
+	@Override
+	public List<File> obtenerArchivosPorIdDocumentoReem(Long idDocumentoReem, Contexto contexto) {
+		List<Archivo> archivos = archivoDao.findByIdDocumentoReem(idDocumentoReem);
+		List<File> files = new ArrayList<>();
+		// Crear directorio temporal si no existe
+		String dirPath = path + File.separator + "temporales" + File.separator + idDocumentoReem;
+		File dir = new File(dirPath);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+
+		// Verificar si hay archivos _v2
+		boolean tieneV2 = archivos.stream()
+				.anyMatch(a -> a.getNombre() != null &&
+						a.getNombre().matches(".*_v2\\.pdf$"));
+
+		for (Archivo archivo : archivos) {
+			// Si hay _v2, solo procesamos los _v2. Si no hay _v2, procesamos todos
+			if (!tieneV2 || (tieneV2 && archivo.getNombre() != null &&
+					archivo.getNombre().matches(".*_v2\\.pdf$"))) {
+
+				try {
+					byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
+					if (contenido == null || contenido.length == 0) {
+						logger.warn("Archivo {} sin contenido", archivo.getNombre());
+						continue;
+					}
+
+					String rutaCompleta = dirPath + File.separator + archivo.getNombre();
+					File file = new File(rutaCompleta);
+
+					FileUtils.writeByteArrayToFile(file, contenido);
+					files.add(file);
+					logger.info("Archivo descargado: {}", file.getAbsolutePath());
+
+				} catch (IOException e) {
+					logger.error("Error al descargar/guardar archivo {}: {}",
+							archivo.getNombre(), e.getMessage(), e);
+					throw new ValidacionException(
+							Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+				}
+			} else {
+				logger.debug("Archivo {} omitido por regla de versiones", archivo.getNombre());
+			}
+		}
+
+		return files;
+	}
+
 	@Transactional
 	public void eliminarArchivo(Long idArchivo) {
 		Optional<Archivo> archivoOptional = archivoDao.findById(idArchivo); // Asumiendo findById
