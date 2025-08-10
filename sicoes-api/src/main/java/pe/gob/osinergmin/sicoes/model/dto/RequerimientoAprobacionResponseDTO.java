@@ -47,6 +47,9 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
     @JsonProperty("accionAprobar")
     private boolean accionAprobar;
 
+    @JsonProperty("accionFirmar")
+    private boolean accionFirmar;
+
     @JsonProperty("responsableSIAF")
     private boolean responsableSIAF;
 
@@ -135,6 +138,14 @@ public class RequerimientoAprobacionResponseDTO implements Serializable {
 
     public void setAccionAprobar(boolean accionAprobar) {
         this.accionAprobar = accionAprobar;
+    }
+
+    public boolean getAccionFirmar() {
+        return accionFirmar;
+    }
+
+    public void setAccionFirmar(boolean accionFirmar) {
+        this.accionFirmar = accionFirmar;
     }
 
     public boolean isResponsableSIAF() {

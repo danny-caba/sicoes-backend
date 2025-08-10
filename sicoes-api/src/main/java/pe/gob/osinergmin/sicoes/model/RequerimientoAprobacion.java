@@ -107,6 +107,9 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private boolean accionAprobar;
 
     @Transient
+    private boolean accionFirmar;
+
+    @Transient
     private boolean responsableSIAF;
 
     public Long getIdRequerimientoAprobacion() {
@@ -227,6 +230,14 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     public void setAccionAprobar(boolean accionAprobar) {
         this.accionAprobar = accionAprobar;
+    }
+
+    public boolean getAccionFirmar() {
+        return accionFirmar;
+    }
+
+    public void setAccionFirmar(boolean accionFirmar) {
+        this.accionFirmar = accionFirmar;
     }
 
     public boolean isResponsableSIAF() {

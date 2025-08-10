@@ -101,6 +101,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         responseDTO.setEstadoAprobacionGPPM(requerimientoAprobacion.getEstadoAprobacionGPPM());
         responseDTO.setEstadoAprobacionGSE(requerimientoAprobacion.getEstadoAprobacionGSE());
         responseDTO.setAccionAprobar(requerimientoAprobacion.getAccionAprobar());
+        responseDTO.setAccionFirmar(requerimientoAprobacion.getAccionFirmar());
         responseDTO.setResponsableSIAF(requerimientoAprobacion.isResponsableSIAF());
 
         // Mapear Requerimiento
@@ -168,8 +169,17 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
         boolean esEncargadoSIAF = requerimientoAprobacion.getGrupoAprobador().getCodigo().equals(
                 Constantes.LISTADO.GRUPO_APROBACION.GPPM);
 
+        boolean tieneFirma = requerimientoAprobacion.getGrupoAprobador().getCodigo().equals(
+                Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD) ||
+                (requerimientoAprobacion.getGrupoAprobador().getCodigo().equals(
+                        Constantes.LISTADO.GRUPO_APROBACION.GERENTE) &&
+                    requerimientoAprobacion.getGrupo().getCodigo().equals(
+                            Constantes.LISTADO.GRUPOS.G2
+                    ));
+
         requerimientoAprobacion.setAccionAprobar(esAsignado);
         requerimientoAprobacion.setResponsableSIAF(esEncargadoSIAF);
+        requerimientoAprobacion.setAccionFirmar(tieneFirma);
 
 
         return requerimientoAprobacion;
