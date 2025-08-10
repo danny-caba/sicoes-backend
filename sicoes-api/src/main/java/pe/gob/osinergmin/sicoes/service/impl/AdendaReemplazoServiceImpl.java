@@ -120,15 +120,12 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 .stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
-
         if (evaluadorContratos.isPresent()) {
-            Solicitud solicitud = solicitudDao.obtener(personalReemplazo.getIdSolicitud());
-            String numeroExpediente = solicitud.getNumeroExpediente();
+            String numeroExpediente = this.obtenerNumeroExpediente(personalReemplazo);
             notificacionContratoService.notificarAprobacionPendiente(evaluadorContratos.get(), numeroExpediente, contexto);
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
         }
-
         return adendaReemplazo;
     }
 
@@ -316,16 +313,20 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     adenda.setEstadoVbGaf(estadoApro);
                     adenda.setEstadoFirmaJefe(estadoAsig);
                     adenda.setObservacionVb(firmaRequestDTO.getObservacion());
+
                     //Notificacion
                     PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
                             .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
-                    List<PerfilAprobador> perfilesAprobador = perfilAprobadorDao.obtenerPerfilAprobadorPorIdPerfil(
-                            personalReemplazo.getPerfil().getIdListadoDetalle());
-
-                    Solicitud solicitud = solicitudDao.obtener(personalReemplazo.getIdSolicitud());
-                    String numeroExpediente = solicitud.getNumeroExpediente();
-                    notificacionContratoService.notificarAprobacionPendiente(
-                            perfilesAprobador.get(0).getAprobadorG3(), numeroExpediente, contexto);
+                    Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G3_APROBADOR_ADMINISTRATIVO)
+                            .stream()
+                            .findFirst()
+                            .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                    if (usuario.isPresent()) {
+                        String numeroExpediente = this.obtenerNumeroExpediente(personalReemplazo);
+                        notificacionContratoService.notificarAprobacionPendiente(usuario.get(), numeroExpediente, contexto);
+                    } else {
+                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G3_NO_EXISTE);
+                    }
                 } else { //Firma
                     if (firmaRequestDTO.getFirmaJefe()){
                         adenda.setEstadoFirmaJefe(estadoApro);
@@ -507,5 +508,15 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         headers.add(HttpHeaders.COOKIE, cookieFinal);
         logger.info("Encabezados configurados: {}", headers);
         return headers;
+    }
+
+    private String obtenerNumeroExpediente(PersonalReemplazo personalReemplazo) {
+        if (personalReemplazo == null) {
+            return "";
+        }
+        Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
+        return personaPropuesta != null ?
+                Optional.ofNullable(personaPropuesta.getNumeroExpediente())
+                        .orElse("") : "";
     }
 }

@@ -699,10 +699,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 adendaFinal.setEstadoAprobacionLogistica(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.APROBADO));  //aprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO)); //asignado
 
-                List<PerfilAprobador> perfilesAprobador = perfilAprobadorDao.obtenerPerfilAprobadorPorIdPerfil(
-                        adendaFinal.getRemplazoPersonal().getPerfil().getIdListadoDetalle());
-                notificacionContratoService.notificarAprobacionPendiente(
-                        perfilesAprobador.get(0).getAprobadorG2(), numeroExpediente, contexto);
+                Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO)
+                        .stream()
+                        .findFirst()
+                        .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                if (usuario.isPresent()) {
+                    notificacionContratoService.notificarAprobacionPendiente(usuario.get(), numeroExpediente, contexto);
+                } else {
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G2_NO_EXISTE);
+                }
             }else{
                 aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //desaprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO)); //rechazado

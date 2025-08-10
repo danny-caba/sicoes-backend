@@ -922,6 +922,8 @@ public class Constantes {
 		public static final String FIRMA_APROBADA = "V0131";
 		public static final String USUARIO_EXTERNO_NO_EXISTE="V01032";
 		public static final String EVALUADOR_CONTRATOS_NO_EXISTE="V01033";
+		public static final String USUARIO_G2_NO_EXISTE="V01034";
+		public static final String USUARIO_G3_NO_EXISTE="V01035";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -934,6 +936,8 @@ public class Constantes {
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
 		public static final String EVALUADOR_CONTRATOS 			= "12";
 		public static final String INVITADO		                = "15";
+		public static final String G2_APROBADOR_ADMINISTRATIVO	= "18";
+		public static final String G3_APROBADOR_ADMINISTRATIVO	= "17";
 	}
 	
 	public static final class OPCIONES_EXTERNO {
