@@ -10,4 +10,5 @@ public interface DocumentoReemService extends BaseService<DocumentoReemplazo,Lon
 
     Page<DocumentoReemplazo> buscar(Long idReemplazoPersonal, Pageable pageable, Contexto contexto);
     Page<DocumentoReemplazo> buscarIdReemplazoSeccion(Long idReemplazoPersonal, String seccion, Pageable pageable);
+    DocumentoReemplazo actualizar(DocumentoReemplazo documento,Contexto contexto);
 }
