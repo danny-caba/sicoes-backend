@@ -203,4 +203,70 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
         documentos.forEach(d -> d.setArchivo(porDoc.get(d.getIdDocumento())));
         return new PageImpl<>(documentos, pageable, documentIds.getTotalElements());
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public DocumentoReemplazo actualizar(DocumentoReemplazo documento, Contexto contexto) {
+        if (documento.getIdDocumento()==null){
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_DOCUMENTO_REEMPLAZO);
+        }
+        if (documento.getIdReemplazoPersonal() == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
+        }
+        DocumentoReemplazo existe = documentoReemDao.findById(documento.getIdDocumento())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE));
+
+        // Verifica y actualiza el campo de seccion
+        if (documento.getSeccion() != null) {
+            existe.setSeccion(documento.getSeccion());
+        }
+
+        // Verifica y actualiza el campo de tipoDocumento
+        if (documento.getTipoDocumento() != null) {
+            existe.setTipoDocumento(documento.getTipoDocumento());
+        }
+
+        // Verifica y actualiza el correlativo
+        if (documento.getNuCorrelativo() != null) {
+            existe.setNuCorrelativo(documento.getNuCorrelativo());
+        }
+
+        // Verifica y actualiza el nombre del documento
+        if (documento.getDeNombreDocumento() != null) {
+            existe.setDeNombreDocumento(documento.getDeNombreDocumento());
+        }
+
+        // Verifica y actualiza el ID del documento en SIGED
+        if (documento.getIdDocumentoSiged() != null) {
+            existe.setIdDocumentoSiged(documento.getIdDocumentoSiged());
+        }
+
+        // Verifica y actualiza el ID del archivo en SIGED
+        if (documento.getIdArchivoSiged() != null) {
+            existe.setIdArchivoSiged(documento.getIdArchivoSiged());
+        }
+
+        // Verifica y actualiza la fecha de inicio de validez
+        if (documento.getFeFechaInicioValidez() != null) {
+            existe.setFeFechaInicioValidez(documento.getFeFechaInicioValidez());
+        }
+
+        // Verifica y actualiza la fecha de fin de validez
+        if (documento.getFeFechaFinValidez() != null) {
+            existe.setFeFechaFinValidez(documento.getFeFechaFinValidez());
+        }
+
+        // Verifica y actualiza la fecha de registro
+        if (documento.getFeFechaRegistro() != null) {
+            existe.setFeFechaRegistro(documento.getFeFechaRegistro());
+        }
+
+        // Verifica y actualiza la fecha de inicio de contrato
+        if (documento.getFeFechaIniContrato() != null) {
+            existe.setFeFechaIniContrato(documento.getFeFechaIniContrato());
+        }
+
+        AuditoriaUtil.setAuditoriaActualizacion(existe, contexto);
+        return documentoReemDao.save(existe);
+    }
 }
