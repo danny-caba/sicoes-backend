@@ -101,6 +101,13 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.registrarObservaciones(request, getContexto());
     }
 
+
+    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/contratistas")
+    public List<Combo> listarContratistas(@RequestParam(required = false)  String filtro){
+        logger.info("obtener listado de contratistas");
+        return personalReemplazoService.listarContratistas(filtro);
+    }
+
     @GetMapping("/interno/reemplazo/solicitud/aprobaciones/{requerimiento}")
     public List<AprobacionReemp> buscarAprobacion(
             @PathVariable String requerimiento,
@@ -162,4 +169,17 @@ public class PersonalReemplazoRestController extends BaseRestController {
         logger.info("obtener listado reemplazo personal");
         return personalReemplazoService.listarHistorialReemp(idReemplazo, pageable );
     }
+
+        @GetMapping("/interno/reemplazo/solicitud/documentos/{id}")
+    public EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(@PathVariable Long id){
+        logger.info("obtener evaluacion de documento de inicio de servicio");
+        return personalReemplazoService.obtenerEvaluacionDocInicioServicio(id);
+    }
+
+    @GetMapping("/interno/reemplazo/solicitud/{id}/propuestos/{seccion}")
+    public List<DocumentoInicioServ> obtenerDocumentosInicioServicio(@PathVariable Long id, @PathVariable String seccion){
+        logger.info("obtener documentos de inicio de servicio");
+        return personalReemplazoService.obtenerDocumentosInicioServicio(id, seccion);
+    }
+
 }

@@ -1013,4 +1013,10 @@ public class Constantes {
         public static final String SUBSANAR = "SUBSANAR";
     }
 
+
+	public static final class DOCUMENTOS_INICIO_SERVICIO{
+		public static final String DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO = "DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO";
+		public static final String DOCUMENTO_EVAL_INI_SERV_ADICIONAL = "DOCUMENTO_EVAL_INI_SERV_ADICIONAL";
+		public static final String DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO = "DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO";
+	}
 }

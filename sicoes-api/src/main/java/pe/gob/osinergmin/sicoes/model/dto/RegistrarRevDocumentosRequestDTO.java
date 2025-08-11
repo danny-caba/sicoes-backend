@@ -11,4 +11,5 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RegistrarRevDocumentosRequestDTO implements Serializable {
     private Long idReemplazo;
+    private String codRol;
 }

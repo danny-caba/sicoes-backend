@@ -2,7 +2,6 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.python.parser.ast.Str;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -72,6 +71,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private ListadoDetalleService listadoDetalleService;
+
     @Autowired
     private HistorialAprobReempDao historialAprobReempDao;
 
@@ -86,6 +86,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private UsuarioDao usuarioDao;
+
+    @Autowired
+    private EvaluacionDocInicioServDao evaluacionDocInicioServDao;
+
+    @Autowired
+    private  DocumentoInicioServDao documentoInicioServDao;
+
+    @Autowired
+    private ListadoDao listadoDao;
 
 
     @Override
@@ -416,13 +425,29 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
         List<DocumentoReemplazo> listDocsAsociados = documentoReemDao
                 .findByIdReemplazoPersonal(request.getIdReemplazo());
+        if (Constantes.ROLES.RESPONSABLE_TECNICO.equals(request.getCodRol())) {
+            return GenericResponseDTO.<String>builder()
+                    .resultado(flujoRevisionResponsableTecnico(
+                            contexto, personalReemplazoToUpdate, listDocsAsociados))
+                    .build();
+        } else {
+            return GenericResponseDTO.<String>builder()
+                    .resultado(flujoRevisionEvaluadorContratos(
+                            contexto, personalReemplazoToUpdate, listDocsAsociados))
+                    .build();
+        }
+    }
+
+    private String flujoRevisionResponsableTecnico(Contexto contexto,
+                                                   PersonalReemplazo personalReemplazoToUpdate,
+                                                   List<DocumentoReemplazo> listDocsAsociados) {
         boolean allDocsConforme = !listDocsAsociados.isEmpty()
                 && listDocsAsociados.stream()
                 .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
                         && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
         if (allDocsConforme) {
             ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
-                    Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
+                            Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
                     .stream()
                     .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
                     .findFirst()
@@ -444,9 +469,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
             }
-            return GenericResponseDTO.<String>builder()
-                    .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK)
-                    .build();
+            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK;
         } else {
             ListadoDetalle estadoPreliminar = listadoDetalleDao.listarListadoDetallePorCoodigo(
                             Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
@@ -504,9 +527,64 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
             }
-            return GenericResponseDTO.<String>builder()
-                    .resultado(Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR)
-                    .build();
+            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR;
+        }
+    }
+
+    private String flujoRevisionEvaluadorContratos(Contexto contexto,
+                                                   PersonalReemplazo personalReemplazoToUpdate,
+                                                   List<DocumentoReemplazo> listDocsAsociados) {
+
+        List<DocumentoReemplazo> listDocumentosInforme = listDocsAsociados.stream()
+                .filter(doc -> Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME.equals(doc.getSeccion().getCodigo()))
+                .collect(Collectors.toList());
+        List<DocumentoReemplazo> listDocumentosPersPropuestoSolSuperv = listDocsAsociados.stream()
+                .filter(doc -> (doc.getSeccion().getIdListado().compareTo(97L) == 0)
+                || doc.getSeccion().getIdListado().compareTo(104L) == 0)
+                .collect(Collectors.toList());
+
+        boolean allDocsConformeInforme = !listDocumentosInforme.isEmpty()
+                && listDocumentosInforme.stream()
+                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
+                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
+        boolean allDocsConformePersPropuestoSolSuperv = !listDocumentosPersPropuestoSolSuperv.isEmpty()
+                && listDocumentosPersPropuestoSolSuperv.stream()
+                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
+                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
+
+        if (!(allDocsConformeInforme && allDocsConformePersPropuestoSolSuperv)) {
+
+            ListadoDetalle estadoPreliminar = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                            Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
+                    .stream()
+                    .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
+                    .findFirst()
+                    .orElse(new ListadoDetalle());
+
+            if (!allDocsConformeInforme) {
+                personalReemplazoToUpdate.setEstadoRevisarEval(estadoPreliminar);
+            }
+
+            if (!allDocsConformePersPropuestoSolSuperv) {
+                personalReemplazoToUpdate.setEstadoReemplazo(estadoPreliminar);
+            }
+
+            AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
+            reemplazoDao.save(personalReemplazoToUpdate);
+
+            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR;
+
+        } else {
+            ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
+                            Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
+                    .stream()
+                    .filter(resultado -> resultado.getOrden().compareTo(1L) == 0)
+                    .findFirst()
+                    .orElse(new ListadoDetalle());
+            personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
+            AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
+
+            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK;
         }
     }
 
@@ -569,7 +647,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         reemplazoDao.deleteById(id);
     }
 
-     @Override
+    @Override
     public List<Combo> listarContratistas(String codigo){
       return   comboDao.listarContratistas(codigo);
     }
@@ -750,20 +828,51 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
 
-    @Override
+      @Override
     public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol) {
-       return evaluacionDocumentacionDao.obtenerListado(id, idsol)
+         logger.info("obtenerEvaluacionDocumentacion");
+         return evaluacionDocumentacionDao.obtenerListado(id, idsol)
                .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
     }
 
     @Override
     public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol) {
-       return evaluacionPPDao.obtenerListadoPP(id, idsol)
+         logger.info("obtenerEvaluacionDocumentacionBPP");
+         return evaluacionPPDao.obtenerListadoPP(id, idsol)
                .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
     }
 
-     public Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable ) {
-        logger.info("listarPersonalReemplazo");
+    @Override
+    public Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable ) {
+        logger.info("listarHistorialReemp");
         return historialAprobReempDao.buscarHistorial(idReemplazo,pageable);
+    }
+
+    @Override
+    public EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(Long id) {
+        logger.info("obtenerEvaluacionDocInicioServicio");
+        return evaluacionDocInicioServDao.buscarEvalDocInicioServ(id);
+    }
+
+    @Override
+    public List<DocumentoInicioServ> obtenerDocumentosInicioServicio( Long id, String seccion){
+        logger.info("ObtenerDocumentosInicioServicio");
+        List<DocumentoInicioServ>  resultado = new ArrayList<>();
+        if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO)){
+
+            resultado = documentoInicioServDao.documentosInicioServicio(id, listadoDao
+                    .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO).getIdListado());
+        }
+        if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ADICIONAL)){
+
+            resultado = documentoInicioServDao.documentosInicioServicio(id, listadoDao
+                    .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ADICIONAL).getIdListado());
+        }
+        if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO)){
+
+            resultado = documentoInicioServDao.documentosInicioServicio(id, listadoDao
+                    .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO).getIdListado());
+        }
+        return resultado;
     }
 }
