@@ -289,7 +289,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         AuditoriaUtil.setAuditoriaActualizacion(existe,contexto);
 
         PersonalReemplazo reemplazoSave = reemplazoDao.save(existe);
-        
+        logger.info("GENPDF:USUARIO EXTERNO - Reemplazar Personal Propuesto");
         enviarNotificacionByRolEvaluador(existe,contexto);
         enviarNotificacionDesvinculacion(existe,contexto);
 
@@ -455,16 +455,22 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
             reemplazoDao.save(personalReemplazoToUpdate);
-            if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.INVITADO))) {
-                Optional<Usuario> evaluadorContratos = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS).stream()
-                        .findFirst()
-                        .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
-                if (evaluadorContratos.isPresent()) {
-                    Solicitud solicitud = solicitudDao.obtener(personalReemplazoToUpdate.getIdSolicitud());
-                    String numeroExpediente = solicitud.getNumeroExpediente();
-                    notificacionContratoService.notificarRevDocumentos15(evaluadorContratos.get(), numeroExpediente, contexto);
-                } else {
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
+            if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO) || rol.getCodigo().equals(Constantes.ROLES.INVITADO) || rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
+                if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO))) {
+                    logger.info("GENPDF:Revisar la documentación (Rol Responsable Técnico)");
+                } else if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.INVITADO))) {
+                    Optional<Usuario> evaluadorContratos = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS).stream()
+                            .findFirst()
+                            .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                    if (evaluadorContratos.isPresent()) {
+                        Solicitud solicitud = solicitudDao.obtener(personalReemplazoToUpdate.getIdSolicitud());
+                        String numeroExpediente = solicitud.getNumeroExpediente();
+                        notificacionContratoService.notificarRevDocumentos15(evaluadorContratos.get(), numeroExpediente, contexto);
+                    } else {
+                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
+                    }
+                } else if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
+                    logger.info("GENPDF:Revisar Documentación (Rol Evaluador de Contratos)");
                 }
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
@@ -629,7 +635,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
         existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR).get(0));
-
+        if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.USUARIO_EXTERNO))) {
+           logger.info("GENPDF:USUARIO EXTERNO - Registrar documentación inicio de servicio (Rol Empresa Supervisora)");
+        } else {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
+        }
         return reemplazoDao.save(existe);
     }
 
@@ -734,6 +744,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 persoReempFinal.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
 
                     notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
+                    logger.info("GENPDF:USUARIO INTERNO - Evaluar la documentación (Rol Evaluador Técnico del Contrato)");
                 } else {
                 persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
                     // enviar notificacion x email            
