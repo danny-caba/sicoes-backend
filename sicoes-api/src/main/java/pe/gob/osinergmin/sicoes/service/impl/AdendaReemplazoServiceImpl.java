@@ -304,7 +304,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                         Supervisora personalBaja = personalExiste.getPersonaBaja();
                         SupervisoraMovimiento movi = new SupervisoraMovimiento();
 
-                        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(personalExiste.getIdSolicitud());
+                        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
+                                personalExiste.getIdSolicitud(),personalBaja.getIdSupervisora());
                         profesional.setSupervisora(personalBaja);
 
                         movi.setSector(profesional.getSector());

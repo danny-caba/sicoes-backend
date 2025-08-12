@@ -283,7 +283,7 @@ public interface PropuestaProfesionalDao extends JpaRepository<PropuestaProfesio
     nativeQuery = true)
 	List<Object[]> findPersonalPropuesto(@Param("idSoliPerfCont") Long idSoliPerfCont);
 
-	/*@Query("select p from PropuestaProfesional p "
+	@Query("select p from PropuestaProfesional p "
 			+ "left join fetch p.propuesta pp "
 			+ "left join fetch p.supervisora s "
 			+ "left join fetch p.estado e "
@@ -293,35 +293,8 @@ public interface PropuestaProfesionalDao extends JpaRepository<PropuestaProfesio
 			+ "left join fetch pp.procesoItem pi "
 			+ "left join fetch pp.ganador g "
 			+ "left join fetch SicoesSolicitud ss on ss.propuesta = pp "
-			+ "where ss.idSolicitud = :idSolicitud ")
-	PropuestaProfesional listarXSolicitud(Long idSolicitud);*/
-
-	@Query("select p from PropuestaProfesional p " +
-			"left join fetch p.propuesta pp " +
-			"left join fetch p.supervisora " +
-			"left join fetch p.estado " +
-			"left join fetch p.sector " +
-			"left join fetch p.subsector " +
-			"left join fetch p.perfil " +
-			"left join fetch pp.ganador " +
-			"left join fetch pp.procesoItem " +
-			"where exists (" +
-			"  select 1 from SicoesSolicitud ss " +
-			"  where ss.propuesta = pp and ss.idSolicitud = :idSolicitud" +
-			") " +
-			"and p.fecCreacion = (" +
-			"  select max(p3.fecCreacion) from PropuestaProfesional p3 " +
-			"  join p3.propuesta pp3 " +
-			"  where exists (" +
-			"    select 1 from SicoesSolicitud ss3 " +
-			"    where ss3.propuesta = pp3 and ss3.idSolicitud = :idSolicitud" +
-			"  )" +
-			") " +
-			"and p.id = (" +
-			"  select max(p4.id) from PropuestaProfesional p4 " +
-			"  where p4.fecCreacion = p.fecCreacion" +
-			")")
-	PropuestaProfesional listarXSolicitud(@Param("idSolicitud") Long idSolicitud);
-
+			+ "where ss.idSolicitud = :idSolicitud "
+			+ "and s.idSupervisora = :idSupervisora")
+	PropuestaProfesional listarXSolicitud(Long idSolicitud,Long idSupervisora);
 
 }

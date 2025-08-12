@@ -18,4 +18,8 @@ public interface EvaluarDocuReemDao extends JpaRepository<EvaluarDocuReemplazo,L
             + " where e.documento.idDocumento = :idDocumento"
             + " and e.rol.idRol = :idRol")
     Optional<EvaluarDocuReemplazo> findByIdDocumentoIdRol(@Param("idDocumento") Long idDocumento, @Param("idRol") Long idRol);
+
+     @Query("select e from EvaluarDocuReemplazo e"
+        + " where e.documento.idDocumento = :idDocumento")
+    Optional<EvaluarDocuReemplazo> findByIdDocumentoId(@Param("idDocumento") Long idDocumento);
 }

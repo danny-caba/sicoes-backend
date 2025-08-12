@@ -10,34 +10,27 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-public class DocumentoInicioServ {
+public class DocumentoPP {
     @Id
     @Column(name = "ID")
     private Long id;
+    @Column(name = "ID_EVAL_DOCUMENTO")
+    private Long idReemplazo;
     @Column(name = "ID_TIPO_DOCUMENTO")
     private Long idTipoDocumento;
     @Column(name = "TIPO_DOCUMENTO")
     private String tipoDocumento;
-    @Column(name = "NUMERO_CORRELATIVO")
-    private String numeroCorrelativo;
     @Column(name = "NOMBRE_DOCUMENTO")
     private String nombreDocumento;
-    @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name = "FECHA_INICIO_VALIDEZ")
-    private Date fechaInicioValidez;
-    @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    @Column(name = "FECHA_FIN_VALIDEZ")
-    private Date fechaFinValidez;
     @Column(name = "CONFORMIDAD")
     private String conformidad;
-    @Column(name = "ID_USUARIO")
-    private Long idUsuario;
-    @Column(name = "USUARIO")
-    private String usuario;
+    @Column(name = "ID_USUARIO_EVALUACION")
+    private Long idUsuarioEvaluacion;
+    @Column(name = "USUARIO_EVALUACION")
+    private String usuarioEvaluacion;
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name = "FECHA_EVALUACION")
-    private Date fecha;
+    private Date fechaEvaluacion;
+
 }

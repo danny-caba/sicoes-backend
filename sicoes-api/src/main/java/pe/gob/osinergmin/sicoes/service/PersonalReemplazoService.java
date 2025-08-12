@@ -7,6 +7,7 @@ import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
+import java.util.Date;
 import java.util.List;
 
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
@@ -31,4 +32,9 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable );
     EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(Long id);
     List<DocumentoInicioServ> obtenerDocumentosInicioServicio( Long id, String seccion);
+    Boolean evaluarFechaDesvinculacion (Long id, Date fecha);
+    PersonalReemplazo evaluarDocumentoInforme(Long id, Date fecha);
+    List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String idseccion);
+    Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion);
+
 }
