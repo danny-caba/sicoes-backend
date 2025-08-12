@@ -12,7 +12,12 @@ import java.util.List;
 
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 
-    Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
+    Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
+                                                    String descEvalDoc,
+                                                    String descRevisarEval,
+                                                    String descAprobacionInforme,
+                                                    String descAprobacionAdenda,
+                                                    String descEvalDocIniServ,
                                                     Pageable pageable, Contexto contexto);
     PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto);
     PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo, Contexto contexto);

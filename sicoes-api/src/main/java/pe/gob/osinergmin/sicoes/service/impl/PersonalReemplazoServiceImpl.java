@@ -122,28 +122,61 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
 
     @Override
-    public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
+    public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
+                                                           String descEvalDoc,
+                                                           String descRevisarEval,
+                                                           String descAprobacionInforme,
+                                                           String descAprobacionAdenda,
+                                                           String descEvalDocIniServ,
                                                            Pageable pageable, Contexto contexto) {
         logger.info("listarPersonalReemplazo");
         Pageable pageRequest = pageable == null ? Pageable.unpaged() : pageable;
 
         String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+        String listadoEstadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         Long idAprobacion = null;
+        Long idEvalDoc = null;
+        Long idRevisarEval = null;
+        Long idAprobacionInforme = null;
+        Long idAprobacionAdenda = null;
         Long idEvalDocIniServ = null;
 
         if (descAprobacion != null && !descAprobacion.isEmpty()) {
-            ListadoDetalle listadoAprobacion = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descAprobacion);
-            if (listadoAprobacion != null) {
-                idAprobacion = listadoAprobacion.getIdListadoDetalle();
-            }
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descAprobacion.trim());
+            if (ld != null) idAprobacion = ld.getIdListadoDetalle();
         }
-        if (descEvalDocIniServ != null && !descEvalDocIniServ.isEmpty()) { // corregido: se valida el parámetro correcto
-            ListadoDetalle listadoEvalDoc = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDocIniServ);
-            if (listadoEvalDoc != null) {
-                idEvalDocIniServ = listadoEvalDoc.getIdListadoDetalle();
-            }
+
+        // Estado evaluación de documentos
+        if (descEvalDoc != null && !descEvalDoc.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDoc.trim());
+            if (ld != null) idEvalDoc = ld.getIdListadoDetalle();
         }
-        return reemplazoDao.obtenerxIdSolicitud(idSolicitud,idAprobacion,idEvalDocIniServ,pageRequest);
+
+        // Estado revisar evaluación documentos
+        if (descRevisarEval != null && !descRevisarEval.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descRevisarEval.trim());
+            if (ld != null) idRevisarEval = ld.getIdListadoDetalle();
+        }
+
+        // Estado aprobación informe
+        if (descAprobacionInforme != null && !descAprobacionInforme.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoAprobacion, descAprobacionInforme.trim());
+            if (ld != null) idAprobacionInforme = ld.getIdListadoDetalle();
+        }
+
+        // Estado aprobación adenda
+        if (descAprobacionAdenda != null && !descAprobacionAdenda.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoAprobacion, descAprobacionAdenda.trim());
+            if (ld != null) idAprobacionAdenda = ld.getIdListadoDetalle();
+        }
+
+        if (descEvalDocIniServ != null && !descEvalDocIniServ.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDocIniServ);
+            if (ld != null) idEvalDocIniServ = ld.getIdListadoDetalle();
+        }
+        return reemplazoDao.obtenerxIdSolicitud(
+                idSolicitud,idAprobacion,idEvalDoc,idRevisarEval,idAprobacionInforme,
+                idAprobacionAdenda,idEvalDocIniServ,pageRequest);
     }
 
     @Override
