@@ -291,8 +291,9 @@ public interface PropuestaProfesionalDao extends JpaRepository<PropuestaProfesio
 			+ "left join fetch pp.procesoItem pi "
 			+ "left join fetch pp.ganador g "
 			+ "left join fetch SicoesSolicitud ss on ss.propuesta = pp "
-			+ "where ss.idSolicitud = :idSolicitud ")
-	PropuestaProfesional listarXSolicitud(Long idSolicitud);
+			+ "where ss.idSolicitud = :idSolicitud "
+			+ "and s.idSupervisora = :idSupervisora")
+	PropuestaProfesional listarXSolicitud(Long idSolicitud,Long idSupervisora);
 
 
 }

@@ -298,13 +298,16 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                                     Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE);
                         }
                         PersonalReemplazo personalExiste = personalReemplazo.get();
+                        Supervisora personalPropuesto = personalExiste.getPersonaPropuesta();
+
                         personalExiste.setEstadoRevisarEval(estadoConcluido);
                         personalExiste.setFeFechaBaja(new Date()); //Verificar
                         //Guardando cambio historico de estado
                         Supervisora personalBaja = personalExiste.getPersonaBaja();
                         SupervisoraMovimiento movi = new SupervisoraMovimiento();
 
-                        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(personalExiste.getIdSolicitud());
+                        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
+                                personalExiste.getIdSolicitud(),personalPropuesto.getIdSupervisora());
                         profesional.setSupervisora(personalBaja);
 
                         movi.setSector(profesional.getSector());

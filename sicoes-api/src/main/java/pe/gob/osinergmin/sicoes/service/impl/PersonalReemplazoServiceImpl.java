@@ -292,7 +292,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         SupervisoraMovimiento movi = new SupervisoraMovimiento();
         Supervisora personalPropuesto = existe.getPersonaPropuesta();
         logger.info("id solicitud : {}",existe.getIdSolicitud());
-        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(existe.getIdSolicitud());
+        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
+                existe.getIdSolicitud(),personalPropuesto.getIdSupervisora());
         logger.info("profesional: {}",profesional);
         profesional.setSupervisora(personalPropuesto);
 
