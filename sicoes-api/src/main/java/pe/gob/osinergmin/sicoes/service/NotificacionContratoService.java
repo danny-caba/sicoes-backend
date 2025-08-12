@@ -17,6 +17,8 @@ public interface NotificacionContratoService {
 
     void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto);
 
+    void notificarRechazoPersonalPropuesto(Supervisora personaPropuesta, Contexto contexto);
+
     void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto);
 
     void notificarRevDocumentos2(Usuario usuario, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
@@ -27,6 +29,7 @@ public interface NotificacionContratoService {
 
     void notificarRevDocumentos122(Usuario usuario, Contexto contexto);
 
-
     void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
+
+    void notificarEvaluacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
 }

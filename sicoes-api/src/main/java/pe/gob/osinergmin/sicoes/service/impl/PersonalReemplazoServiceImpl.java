@@ -65,7 +65,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private SupervisoraMovimientoService supervisoraMovimientoService;
 
     @Autowired
-    private  NotificacionContratoService notificacionContratoService;
+    private NotificacionContratoService notificacionContratoService;
 
     @Autowired
     private ComboDao comboDao;
@@ -129,9 +129,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private UsuarioDao usuarioDao;
-
-    @Autowired
-    private PerfilAprobadorDao perfilAprobadorDao;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -636,6 +633,17 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
             }
         }
+        //Notificacion
+        String numeroExpediente = this.obtenerNumeroExpediente(existe);
+        Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.RESPONSABLE_TECNICO)
+                .stream()
+                .findFirst()
+                .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+        if (usuario.isPresent()) {
+            notificacionContratoService.notificarEvaluacionPendiente(usuario.get(), numeroExpediente, contexto);
+        } else {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
+        }
         return reemplazoDao.save(existe);
     }
 
@@ -786,12 +794,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             aprobacionFinal.setDeObservacion(aprobacion.getDeObservacion());
         }
         String numeroExpediente = obtenerNumeroExpediente(persoReempFinal);
+        Supervisora personaPropuesta = persoReempFinal.getPersonaPropuesta();
 
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_DOC_EVAL_TEC_CONT)){ //Evaluar la documentación Rol Evaluador Técnico del Contrato
             if(aprobacion.getAccion().equals("A")) {
-//                String nombreSupervisora = obtenerNombreSupervisora(persoReempFinal);
-                Supervisora personaPropuesta = persoReempFinal.getPersonaPropuesta();
-
                 if (aprobacion.getConforme()) {
                    ListadoDetalle x =  listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
                     persoReempFinal.setEstadoReemplazo(x); //en proceso  ---ok
@@ -803,7 +809,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 } else {
                     persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
                     // enviar notificacion x email            
-                    notificacionContratoService.notificarSubsanacionDocumentos( personaPropuesta, contexto);
+                    notificacionContratoService.notificarSubsanacionDocumentos(personaPropuesta, contexto);
                 }
             }else{
                 persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,
@@ -814,6 +820,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
                 // buscar campo Estado personal y cambiarle el estado a propuesto
 
+                notificacionContratoService.notificarRechazoPersonalPropuesto(personaPropuesta, contexto);
 
             }
             persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());

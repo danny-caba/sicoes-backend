@@ -924,7 +924,8 @@ public class Constantes {
 		public static final String EVALUADOR_CONTRATOS_NO_EXISTE="V01033";
 		public static final String USUARIO_G2_NO_EXISTE="V01034";
 		public static final String USUARIO_G3_NO_EXISTE="V01035";
-        public static final String USUARIO_EXTERNO_NO_EXISTE="V01036";
+		public static final String USUARIO_EXTERNO_NO_EXISTE="V01036";
+		public static final String USUARIO_RESPONSABLE_TECNICO_NO_EXISTE="V01037";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

@@ -53,6 +53,12 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String ASUNTO_NOTIFICACION_APROBACION_PENDIENTE = "DOCUMENTACION REVISADA";
     private static final String NOMBRE_TEMPLATE_APROBACION_PENDIENTE = "35-notificacion-aprobacion-pendiente.html";
 
+    private static final String ASUNTO_NOTIFICACION_RECHAZO_PERSONAL = "RECHAZAR EL REEMPLAZO DE PERSONAL PROPUESTO";
+    private static final String NOMBRE_TEMPLATE_RECHAZO_PERSONAL = "36-notificacion-rechazo-personal.html";
+
+    private static final String ASUNTO_NOTIFICACION_EVALUACION_PENDIENTE = "TIENE UN PENDIENTE POR EVALUAR";
+    private static final String NOMBRE_TEMPLATE_EVALUACION_PENDIENTE = "37-notificacion-evaluacion-pendiente.html";
+
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
     private final TemplateEngine templateEngine;
@@ -165,6 +171,25 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
+    public void notificarRechazoPersonalPropuesto(Supervisora personaPropuesta, Contexto contexto ) {
+        String email = personaPropuesta.getCorreo();
+        logger.info(" notifcarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
+        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
+
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("numeroExpediente", personaPropuesta.getNumeroExpediente());
+
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_RECHAZO_PERSONAL,
+                NOMBRE_TEMPLATE_RECHAZO_PERSONAL,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
     public void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto) {
         String email = contexto.getUsuario().getCorreo();
         logger.info(" notificarRevisarDocumentacionPendiente para email: {} ",contexto.getUsuario().getCorreo());
@@ -257,6 +282,23 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 email,
                 ASUNTO_NOTIFICACION_APROBACION_PENDIENTE,
                 NOMBRE_TEMPLATE_APROBACION_PENDIENTE,
+                ctx);
+
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarEvaluacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarEvaluacionPendiente para email: {} ",email);
+
+        Context ctx = new Context();
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_EVALUACION_PENDIENTE,
+                NOMBRE_TEMPLATE_EVALUACION_PENDIENTE,
                 ctx);
 
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
