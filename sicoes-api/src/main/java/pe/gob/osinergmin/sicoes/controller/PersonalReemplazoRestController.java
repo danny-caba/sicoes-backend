@@ -40,6 +40,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
         logger.info("obtener listado reemplazo personal");
         Page<PersonalReemplazo> page = personalReemplazoService
                 .listarPersonalReemplazo(idSolicitud, descAprobacion, descEvalDocIniServ, pageable, getContexto());
+        logger.info("page:p {}",page);
         return page;
     }
 

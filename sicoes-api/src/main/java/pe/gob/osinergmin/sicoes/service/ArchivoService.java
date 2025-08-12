@@ -59,6 +59,7 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto);
 	public Archivo guardarArchivoContrato(Long idProceso, String tipoRequisito, MultipartFile file, Contexto contexto);
 	public List<Archivo> obtenerArchivosPorContrato(Long idProceso);
+	List<File> obtenerArchivosPorIdDocumentoReem(Long idDocumentoReem, Contexto contexto);
 	public void eliminarArchivo(Long idArchivo);
 	public Archivo guardarArchivoPerfContrato(Long idSoliPerfCont, String tipoRequisito, MultipartFile file, Contexto contexto);
 	public List<Archivo> obtenerArchivosPorPerfContrato(Long idSoliPerfCont);

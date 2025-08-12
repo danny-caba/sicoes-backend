@@ -66,4 +66,13 @@ public interface DocumentoReemDao extends JpaRepository<DocumentoReemplazo,Long>
             "where d.idReemplazoPersonal=:idReemplazo ")
     List<DocumentoReemplazo> findByIdReemplazoPersonal(Long idReemplazo);
 
+    @Query("select distinct d from DocumentoReemplazo d "+
+       "left join fetch d.seccion s "+
+       "left join fetch d.tipoDocumento td "+
+       "left join fetch d.evaluacion e "+
+       "where d.idReemplazoPersonal = :idReemplazo "+
+       "and s.idListadoDetalle in :idsSeccion ")
+    List<DocumentoReemplazo> obtenerPorIdReemplazoSecciones(
+            Long idReemplazo, Collection<Long> idsSeccion);
+
 }

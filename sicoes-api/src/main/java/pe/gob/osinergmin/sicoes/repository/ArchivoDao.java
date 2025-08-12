@@ -266,6 +266,11 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 			+ "where a.idSoliPerfCont=:idSoliPerfCont")	
 		public List<Archivo> findByIdSoliPerfCont(Long idSoliPerfCont);
 
+	@Query("select a from Archivo a "
+			+"left join fetch a.estado e "
+			+"where a.idDocumentoReem=:idDocumentoReem")
+	List<Archivo> findByIdDocumentoReem(Long idDocumentoReem);
+
 	@Modifying
 	@Query(value="delete from Archivo a where a.idDocumentoReem=:idDocumentoReemplazo")
 	public void eliminarIdDocumentoReemplazo(Long idDocumentoReemplazo);
