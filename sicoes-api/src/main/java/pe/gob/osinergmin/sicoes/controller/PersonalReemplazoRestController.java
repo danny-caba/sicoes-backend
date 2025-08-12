@@ -7,16 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.model.dto.AprobacionDTO;
-import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuResponseDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RegistrarRevDocumentosRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.GenericResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -135,11 +132,6 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return  personalReemplazoService.obtenerEvaluacionDocumentacion (id, idsol);
     }
 
-    @GetMapping("/interno/reemplazo/solicitud/baja/propuestos")
-    public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionPP(@RequestParam Long id, @RequestParam(required = false)  Long idsol) {
-        logger.info("obtener evaluacion documentacion propuesto");
-        return  personalReemplazoService.obtenerEvaluacionDocumentacionBPP (id, idsol);
-    }
 
     @PostMapping("/reemplazo/solicitud/registra/propuesto/revision")
     @Raml("generic.response.properties")
@@ -170,7 +162,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.listarHistorialReemp(idReemplazo, pageable );
     }
 
-        @GetMapping("/interno/reemplazo/solicitud/documentos/{id}")
+    @GetMapping("/interno/reemplazo/solicitud/documentos/{id}")
     public EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(@PathVariable Long id){
         logger.info("obtener evaluacion de documento de inicio de servicio");
         return personalReemplazoService.obtenerEvaluacionDocInicioServicio(id);
@@ -182,4 +174,35 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.obtenerDocumentosInicioServicio(id, seccion);
     }
 
+
+    @GetMapping("/interno/reemplazo/solicitud/propuesto/evalua/fecha")
+    public Boolean listarContratistas(@RequestParam Long id, @RequestParam Date fecha){
+        logger.info("evaluar fecha desvinculacion");
+        return personalReemplazoService.evaluarFechaDesvinculacion(id,fecha);
+    }
+
+
+    @PostMapping("/interno/reemplazo/solicitud/propuesto/evalua/informe")
+    public PersonalReemplazo actualizzarEvaluarInforme(@RequestParam Long id, @RequestParam Date fecha){
+        logger.info("evaluar fecha desvinculacion");
+        return personalReemplazoService.evaluarDocumentoInforme(id, fecha);
+    }
+
+    @GetMapping("/interno/reemplazo/solicitud/baja/propuestos")
+    public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionPP(@RequestParam Long id, @RequestParam(required = false)  Long idsol) {
+        logger.info("obtener evaluacion documentacion propuesto");
+        return  personalReemplazoService.obtenerEvaluacionDocumentacionBPP (id, idsol);
+    }
+
+    @GetMapping("/interno/reemplazo/solicitud/propuesto/documentos")
+    public List<DocumentoPP> listarDocumentacionPPxSeccion(@RequestParam Long id,@RequestParam String seccion) {
+        logger.info("obtener evaluacion documentacion propuesto");
+        return  personalReemplazoService.obtenerDocumentoPPxSeccion(id, seccion);
+    }
+
+    @PostMapping("/interno/reemplazo/solicitud/propuesto/evalua")
+    public Boolean evaluarConformidad(@RequestBody EvaluarDocuDTO evaluacion){
+        logger.info("evaluar conformidad");
+        return personalReemplazoService.evaluarDocumReemplazo(evaluacion);
+    }
 }

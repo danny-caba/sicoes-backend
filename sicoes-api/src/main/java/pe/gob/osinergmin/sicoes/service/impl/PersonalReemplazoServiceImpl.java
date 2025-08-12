@@ -88,6 +88,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private ListadoDao listadoDao;
 
+    @Autowired
+    private DocumentoPPDao documentoPPDao;
+
+    @Autowired
+    private UsuarioDao usuarioDao;
+
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -793,5 +799,99 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO).getIdListado());
         }
         return resultado;
+    }
+
+
+    @Override
+    public Boolean evaluarFechaDesvinculacion (Long id, Date fecha) {
+        logger.info("evaluarFechaDesvinculacion");
+
+        Boolean resultado =false;
+        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
+            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            if(fecha.before(persoReempFinal.getFeFechaFinalizacionContrato()) || fecha.equals(persoReempFinal.getFeFechaFinalizacionContrato())){
+              if (!fecha.equals(persoReempFinal.getFeFechaDesvinculacion())){
+                  resultado = true;
+              }
+            }
+        return resultado;
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+	public PersonalReemplazo evaluarDocumentoInforme(Long id, Date fecha) {
+       logger.info("evaluarDocumentoInforme");
+
+       Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
+            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            persoReempFinal.setFeFechaDesvinculacion(fecha);
+            reemplazoDao.save(persoReempFinal);
+        return persoReempFinal;
+        }
+
+    @Override
+	public List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String seccion) {
+       logger.info("obtenerDocumentoPPxSeccion");
+       Long idseccion = 0L;
+       if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.INFORME)){
+
+            idseccion = listadoDetalleDao
+                    .obtenerListadoDetalle(Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO, Constantes.SECCION_EVALUAR_DOCUMENTOS.INFORME).getIdListadoDetalle();
+        }
+        if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.BAJA_PERSONAL_PROPUESTO)){
+
+            idseccion =listadoDetalleDao
+                    .obtenerListadoDetalle(Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO, Constantes.SECCION_EVALUAR_DOCUMENTOS.BAJA_PERSONAL_PROPUESTO).getIdListadoDetalle();
+        }
+        if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.PERSONAL_PROPUESTO)){
+
+            idseccion =listadoDetalleDao
+                    .obtenerListadoDetalle(Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO,  Constantes.SECCION_EVALUAR_DOCUMENTOS.PERSONAL_PROPUESTO).getIdListadoDetalle();
+        }
+        if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.SOLICITUD_REEMPLAZO_SUPERVISOR)){
+
+            idseccion =listadoDetalleDao
+                    .obtenerListadoDetalle( Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO, Constantes.SECCION_EVALUAR_DOCUMENTOS.SOLICITUD_REEMPLAZO_SUPERVISOR).getIdListadoDetalle();
+        }
+
+        return documentoPPDao.buscarDocumentoPP(id,idseccion);
+        }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+	public Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion) {
+       logger.info("evaluarDocumReemplazo");
+           Boolean result = false;
+           Usuario usu = usuarioDao.obtener(evaluacion.getIdEvaluadoPor());
+
+           DocumentoReemplazo doc = documentoReemDao.findById(evaluacion.getIdDocumento())
+                   .orElseThrow(()  -> new RuntimeException("documento no encontrado"));
+
+       if(evaluacion.getIdEvalDocumento()!=null){
+        Optional<EvaluarDocuReemplazo> evalOpt = evaluarDocuReemDao.findByIdDocumentoId(evaluacion.getIdEvalDocumento());
+           EvaluarDocuReemplazo evalFinal = evalOpt.orElseThrow(()  -> new RuntimeException("evaluación no encontrada"));
+           evalFinal.setDocumento(doc);
+           evalFinal.setConforme(evaluacion.getConforme());
+           evalFinal.setFechaEvaluacion(evaluacion.getFechaEvaluacion());
+           evalFinal.setEvaluadoPor(usu);
+           evalFinal.setFecActualizacion(new Date());
+           evalFinal.setIpActualizacion(evaluacion.getIpActualizacion());
+           evalFinal.setUsuActualizacion(evaluacion.getUsuActualizacion());
+           evaluarDocuReemDao.save(evalFinal);
+           result = true;
+       }else{
+           EvaluarDocuReemplazo evalNuevo = new EvaluarDocuReemplazo();
+           evalNuevo.setConforme(evaluacion.getConforme());
+           evalNuevo.setFechaEvaluacion(evaluacion.getFechaEvaluacion());
+           evalNuevo.setEvaluadoPor(usu);
+           evalNuevo.setFecActualizacion(new Date());
+           evalNuevo.setIpActualizacion(evaluacion.getIpActualizacion());
+           evalNuevo.setUsuActualizacion(evaluacion.getUsuActualizacion());
+           evaluarDocuReemDao.save(evalNuevo);
+           result = true;
+       }
+        return result;
     }
 }
