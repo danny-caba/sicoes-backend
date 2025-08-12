@@ -21,12 +21,13 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.repository.*;
+import pe.gob.osinergmin.sicoes.service.ArchivoService;
+import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
 import pe.gob.osinergmin.sicoes.util.*;
-
 
 import java.io.File;
 import java.time.Instant;
@@ -754,16 +755,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     private String obtenerNombreSupervisora(PersonalReemplazo persoReemplazo) {
-        
-        String razonSocial = persoReemplazo.getPersonaPropuesta().getNombreRazonSocial();
+        Supervisora personaPropuesta = persoReemplazo.getPersonaPropuesta();
+        String razonSocial = personaPropuesta.getNombreRazonSocial();
         this.logger.info("razon social juridica {} ", razonSocial);
         String nombreSupervisora = null;
         if(razonSocial!=null){
             nombreSupervisora = razonSocial;
         }else{
-            String apellidoPaterno = persoReemplazo.getPersonaPropuesta().getApellidoPaterno();
-            String apellidoMaterno = persoReemplazo.getPersonaPropuesta().getApellidoMaterno();
-            nombreSupervisora = persoReemplazo.getPersonaPropuesta().getNombres().concat(" ").concat(apellidoPaterno).concat(" ").concat(apellidoMaterno);
+            String apellidoPaterno = personaPropuesta.getApellidoPaterno();
+            String apellidoMaterno = personaPropuesta.getApellidoMaterno();
+            nombreSupervisora = personaPropuesta.getNombres()
+                    .concat(" ").concat(apellidoPaterno)
+                    .concat(" ").concat(apellidoMaterno);
             this.logger.info("razon social personal natural {} ", razonSocial);
         }
         return nombreSupervisora;
@@ -772,52 +775,51 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
 	public Aprobacion updateAprobacion(AprobacionDTO aprobacion, Contexto contexto) {
-
-
-
             Optional<Aprobacion> aprobOpt = aprobacionDao.findById(aprobacion.getIdAprobacion());
             Aprobacion aprobacionFinal = aprobOpt.orElseThrow(() -> new RuntimeException("aprobacion no encontrada"));
 
-
             Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(aprobacionFinal.getRemplazoPersonal().getIdReemplazo());
             PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()
-                    -> new RuntimeException("reemplazo personal no encontrada"));        
-
+                    -> new RuntimeException("reemplazo personal no encontrada"));
 
         if (aprobacion.getDeObservacion() != null) {
-                   aprobacionFinal.setDeObservacion(aprobacion.getDeObservacion());
+            aprobacionFinal.setDeObservacion(aprobacion.getDeObservacion());
         }
         String numeroExpediente = obtenerNumeroExpediente(persoReempFinal);
 
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_DOC_EVAL_TEC_CONT)){ //Evaluar la documentación Rol Evaluador Técnico del Contrato
             if(aprobacion.getAccion().equals("A")) {
-
-                String nombreSupervisora = obtenerNombreSupervisora(persoReempFinal);
+//                String nombreSupervisora = obtenerNombreSupervisora(persoReempFinal);
+                Supervisora personaPropuesta = persoReempFinal.getPersonaPropuesta();
 
                 if (aprobacion.getConforme()) {
                    ListadoDetalle x =  listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
-                persoReempFinal.setEstadoReemplazo(x); //en proceso  ---ok
-                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
-                persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
-                persoReempFinal.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
+                    persoReempFinal.setEstadoReemplazo(x); //en proceso  ---ok
+                    persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
+                    persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
+                    persoReempFinal.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
 
-                    notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
+                    notificacionContratoService.notificarCargarDocumentosInicioServicio(personaPropuesta, contexto);
                 } else {
-                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
+                    persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
                     // enviar notificacion x email            
-                    notificacionContratoService.notificarSubsanacionDocumentos( nombreSupervisora,contexto);
+                    notificacionContratoService.notificarSubsanacionDocumentos( personaPropuesta, contexto);
                 }
             }else{
-                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
-                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
-                //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS
+                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,
+                        Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
+                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,
+                        Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
+                //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS (Activo)
                 //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
                 // buscar campo Estado personal y cambiarle el estado a propuesto
+
+
             }
-               persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-               persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
-               persoReempFinal.setFecActualizacion(new Date());
-               reemplazoDao.save(persoReempFinal);
+            persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
+            persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
+            persoReempFinal.setFecActualizacion(new Date());
+            reemplazoDao.save(persoReempFinal);
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_INF_APROB_TEC_G2)){ //Evaluar Informe Rol Aprobador Técnico (G2 - Gerente de Division)
 
@@ -882,13 +884,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             adendaDao.save(adendaFinal);
         }
 
-
         aprobacionFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
         aprobacionFinal.setIpActualizacion(aprobacion.getIpActualizacion());
         aprobacionFinal.setFecActualizacion(new Date());
 
         return  aprobacionDao.save(aprobacionFinal) ;
-
 	}
 
     private String obtenerNumeroExpediente(PersonalReemplazo personalReemplazo) {

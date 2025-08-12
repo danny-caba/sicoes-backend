@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.service;
 
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
@@ -12,9 +13,9 @@ public interface NotificacionContratoService {
 
     void notificarDesvinculacionEmpresa(String nummeroExpediente, String nombreSupervisora, Contexto contexto);
 
-    void notificarSubsanacionDocumentos(String nombreSupervisora,Contexto contexto);
+    void notificarSubsanacionDocumentos(Supervisora personaPropuesta, Contexto contexto);
 
-    void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto);
+    void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto);
 
     void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto);
 

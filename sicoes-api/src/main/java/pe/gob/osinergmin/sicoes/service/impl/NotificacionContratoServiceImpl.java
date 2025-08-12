@@ -10,6 +10,7 @@ import org.thymeleaf.context.Context;
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -93,7 +94,6 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     @Override
     public void notificarReemplazoPersonalByEmail(String expedienteId,String nombreRol, Contexto contexto) {
-
         String email = contexto.getUsuario().getCorreo();
         logger.info(" notificarReemplazoPersonalByEmail para email: {} ",email);
 
@@ -106,20 +106,16 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 ASUNTO_NOTIFICACION_REEMPLAZO_PERSONAL,
                 NOMBRE_TEMPLATE_NOTIFICACION_REEMPLAZO_PERSONAL,
                 ctx);
-
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);    
     }
 
     @Override
     public void notificarDesvinculacionEmpresa(String numeroExpediente, String nombreSupervisora, Contexto contexto) {
-
         String email = contexto.getUsuario().getCorreo();
         logger.info(" notificarDesvinculacionEmpresa para email: {} ",email);
 
         Context ctx = new Context();
-        
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
         ctx.setVariable("numeroExpediente", numeroExpediente);
 
@@ -128,18 +124,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 ASUNTO_NOTIFICACION_DESVINCULACION_PERSONAL,
                 NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
                 ctx);
-
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
-
     @Override
-    public void notificarSubsanacionDocumentos(String nombreSupervisora,Contexto contexto) {
-
-        String email = contexto.getUsuario().getCorreo();
+    public void notificarSubsanacionDocumentos(Supervisora personaPropuesta,Contexto contexto) {
+        String email = personaPropuesta.getCorreo();
         logger.info(" notificarSubsanacionDocumentos para email: {} ",email);
+        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
@@ -150,16 +143,14 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
-
     @Override
-    public void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto ) {
-
-        String email = contexto.getUsuario().getCorreo();
+    public void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto ) {
+        String email = personaPropuesta.getCorreo();
         logger.info(" notifcarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
+        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
@@ -170,14 +161,11 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
-
     @Override
     public void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto) {
-
         String email = contexto.getUsuario().getCorreo();
         logger.info(" notificarRevisarDocumentacionPendiente para email: {} ",contexto.getUsuario().getCorreo());
 
@@ -191,7 +179,6 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 ctx);
 
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
@@ -276,4 +263,20 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         saveNotificacion(notificacion);
     }
 
+    private String obtenerNombreSupervisora(Supervisora personaPropuesta) {
+        String razonSocial = personaPropuesta.getNombreRazonSocial();
+        this.logger.info("razon social juridica {} ", razonSocial);
+        String nombreSupervisora = null;
+        if(razonSocial!=null){
+            nombreSupervisora = razonSocial;
+        }else{
+            String apellidoPaterno = personaPropuesta.getApellidoPaterno();
+            String apellidoMaterno = personaPropuesta.getApellidoMaterno();
+            nombreSupervisora = personaPropuesta.getNombres()
+                    .concat(" ").concat(apellidoPaterno)
+                    .concat(" ").concat(apellidoMaterno);
+            this.logger.info("razon social personal natural {} ", razonSocial);
+        }
+        return nombreSupervisora;
+    }
 }
