@@ -1381,4 +1381,100 @@ public class ArchivoServiceImpl implements ArchivoService {
 					   .collect(Collectors.toList());
 	}
 
+	@Transactional(rollbackFor = Exception.class)
+	public Archivo guardarPorSolicitud (Archivo archivo, Contexto contexto) {
+		return archivo.getIdArchivo() == null
+				? registrarSolicitud(archivo, contexto)
+				: modificarSolicitud(archivo, contexto);
+	}
+
+	private Archivo registrarSolicitud(Archivo archivo, Contexto contexto) {
+		Archivo archivoBD;
+		int tamanioByte;
+		Double tamanioMB;
+		try {
+			if(archivo.getFile()!=null) {
+				tamanioByte=archivo.getFile().getBytes().length;
+			}else {
+				tamanioByte=archivo.getContenido().length;
+			}
+			tamanioMB=tamanioByte/(1024.0*1024.0);
+			logger.info("tamanio bytes : "+tamanioByte);
+			logger.info("tamanio : "+tamanioMB);
+		} catch (IOException e) {
+			logger.info(e.getMessage(),e);
+		}
+		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
+		if (archivo.getCodigo() == null) {
+			archivo.setCodigo(UUID.randomUUID().toString());
+		}
+		if (archivo.getFile() != null) {
+			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
+			archivo.setTipo(archivo.getFile().getContentType());
+			PdfReader reader;
+			try {
+				if ("application/pdf".equals(archivo.getFile().getContentType())) {
+					reader = new PdfReader(archivo.getFile().getBytes());
+					int count = reader.getNumberOfPages();
+					archivo.setNroFolio(count * 1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				} else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(archivo.getFile().getContentType()) ||
+						"application/vnd.ms-excel".equals(archivo.getFile().getContentType())) {
+					archivo.setNroFolio(1L);
+					archivo.setPeso(archivo.getFile().getSize());
+				}
+			} catch (Exception e) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+			}
+		}
+		archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		archivoBD = archivoDao.save(archivo);
+		if (archivo.getFile() != null || archivo.getContenido() != null) {
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, archivoBD.getIdSoliPerfCont(), null, archivo);
+			archivo.setNombreAlFresco(nombre);
+			archivoBD = archivoDao.save(archivo);
+		}
+		return archivoBD;
+	}
+
+	private Archivo modificarSolicitud(Archivo archivo, Contexto contexto) {
+		Archivo archivoBD;
+		archivoBD = archivoDao.obtener(archivo.getIdArchivo());
+		AuditoriaUtil.setAuditoriaRegistro(archivoBD, contexto);
+		archivoBD.setDescripcion(archivo.getDescripcion());
+		archivoBD.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
+		if (archivo.getFile() != null) {
+			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
+			archivoBD.setNombreReal(archivo.getNombreReal());
+			archivoBD.setTipo(archivo.getFile().getContentType());
+			if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
+				SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+				String hora = sdf2.format(new Date());
+				String nombre = reemplazarCaracteres(archivo.getNombreReal());
+				nombre=nombre.replace(".pdf", "");
+				archivoBD.setNombreReal(nombre+"-"+hora+".pdf");
+			}
+			PdfReader reader;
+			try {
+				reader = new PdfReader(archivo.getFile().getBytes());
+				int count = reader.getNumberOfPages();
+				archivoBD.setNroFolio(count * 1L);
+				archivoBD.setPeso(archivo.getFile().getSize());
+				if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
+					SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+					String hora = sdf2.format(new Date());
+					String nombre = reemplazarCaracteres(archivo.getNombreReal());
+					nombre=nombre.replace(".pdf", "");
+					archivo.setNombreReal(nombre+"-"+hora+".pdf");
+				}
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, archivoBD.getIdSoliPerfCont(), null, archivo);
+				archivoBD.setNombreAlFresco(nombre);
+			} catch (Exception e) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
+			}
+		}
+		archivoDao.save(archivoBD);
+		return archivoBD;
+	}
+
 }

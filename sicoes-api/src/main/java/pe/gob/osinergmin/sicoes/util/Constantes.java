@@ -177,6 +177,9 @@ public class Constantes {
 			public static final String PERFECCIONAMIENTO_CONTRATO = "ARCHIVO_PERFECCIONAMIENTO";
 
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
+			public static final String CONSOLIDADO_DOCUMENTOS = "TA32";
+			public static final String FINALIZACION_EVALUACION = "TA33";
+			public static final String CARGA_DOCUMENTOS = "TA34";
 
 		}
 		
@@ -923,6 +926,9 @@ public class Constantes {
 		public static final String ID_DOCUMENTO_REEMPLAZO = "V01032";
 		public static final String USUARIO_EXTERNO_NO_EXISTE="V01033";
 		public static final String EVALUADOR_CONTRATOS_NO_EXISTE="V01034";
+		public static final String SOLICITUD_NO_ENCONTRADA= "V01035";
+		public static final String SICOES_SOLICITUD_GUARDAR_FORMATO_04 = "V01036";
+		public static final String TIPO_ARCHIVO_NO_EXISTE = "V01037";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

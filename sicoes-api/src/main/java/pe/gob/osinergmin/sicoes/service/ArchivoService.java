@@ -67,5 +67,6 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 
 	public void asociarArchivo(DocumentoReemplazo documentoBD, Archivo archivo, Contexto contexto);
 	public void eliminarIdDocumentoReem(Long idDocumentoReem, Contexto contexto);
+	Archivo guardarPorSolicitud(Archivo archivo, Contexto contexto);
 
 }

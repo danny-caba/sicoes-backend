@@ -7,6 +7,13 @@ import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.ClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
+import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +32,13 @@ import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.*;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -126,6 +133,23 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private ListadoDao listadoDao;
 
+    @Autowired
+    private ArchivoUtil archivoUtil;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Value("${path.jasper}")
+    private String pathJasper;
+
+    @Value("${siged.ws.cliente.osinergmin.numero.documento}")
+    private String OSI_DOCUMENTO;
+
+    @Value("${consolidado.documentos}")
+    private String CONSOLIDADO_DOCUMENTOS;
+
+    @Value("${path.temporal}")
+    private String pathTemporal;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
@@ -279,27 +303,16 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
-
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
         if (existe.getPersonaPropuesta() == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
-
         if (existe.getPersonaBaja() == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
         }
-
-        //Buscamos que este llena la seccion 3.-Solcitud de reemplazo de supervisor
-        Long idSeccion = listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR).get(0).getIdListadoDetalle();
-        logger.info("idSeccion-validar {}:",idSeccion);
-        if (!documentoReemDao.existsByIdReemplazoPersonalAndSeccion_IdListadoDetalle(id,idSeccion)) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
-        }
         existe.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
-
         //Actualizamos el estado de Personal propuesto:
         SupervisoraMovimiento movi = new SupervisoraMovimiento();
         Supervisora personalPropuesto = existe.getPersonaPropuesta();
@@ -307,7 +320,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(existe.getIdSolicitud());
         logger.info("profesional: {}",profesional);
         profesional.setSupervisora(personalPropuesto);
-
         movi.setSector(profesional.getSector());
         movi.setSubsector(profesional.getSubsector());
         movi.setSupervisora(personalPropuesto); //Asignando codigo de personal propuesto
@@ -317,20 +329,186 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         movi.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
         movi.setPropuestaProfesional(profesional);
         movi.setFechaRegistro(new Date());
-
         logger.info("movi: {}",movi);
-
         supervisoraMovimientoService.guardar(movi,contexto);
         AuditoriaUtil.setAuditoriaActualizacion(existe,contexto);
-
         PersonalReemplazo reemplazoSave = reemplazoDao.save(existe);
         logger.info("GENPDF:USUARIO EXTERNO - Reemplazar Personal Propuesto");
+        ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+                Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS);
+        if (tipoArchivo == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
+        }
+        SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(reemplazoSave.getIdSolicitud())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+        generarArchivoSiged(sicoesSolicitud, tipoArchivo, contexto);
         enviarNotificacionByRolEvaluador(existe,contexto);
         enviarNotificacionDesvinculacion(existe,contexto);
-
         return reemplazoSave;
     }
-    
+
+    private Archivo generarReporte(SicoesSolicitud sicoesSolicitud, String nombreArchivo, String nombreJasper) {
+        Archivo archivo = new Archivo();
+        archivo.setNombre(nombreArchivo);
+        archivo.setNombreReal(nombreArchivo);
+        archivo.setTipo("application/pdf");
+        ByteArrayOutputStream output;
+        JasperPrint print;
+        InputStream appLogo = null;
+        InputStream osinermingLogo = null;
+        try {
+            File jrxml = new File(pathJasper + nombreJasper);
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("SUBREPORT_DIR", pathJasper);
+            appLogo = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
+            osinermingLogo = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
+            parameters.put("P_LOGO_APP", appLogo);
+            parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
+            List<SicoesSolicitud> solicitudes = new ArrayList<>();
+            solicitudes.add(sicoesSolicitud);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
+            JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
+            print = JasperFillManager.fillReport(jasperReport, parameters, ds);
+            output = new ByteArrayOutputStream();
+            JasperExportManager.exportReportToPdfStream(print, output);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SICOES_SOLICITUD_GUARDAR_FORMATO_04, e);
+        } finally {
+            archivoUtil.close(appLogo);
+            archivoUtil.close(osinermingLogo);
+        }
+        byte[] bytesSalida = output.toByteArray();
+        archivo.setPeso((long) bytesSalida.length);
+        archivo.setNroFolio(1L);
+        archivo.setContenido(bytesSalida);
+        return archivo;
+    }
+
+    private String generarArchivoSiged(SicoesSolicitud sicoesSolicitud, ListadoDetalle tipoArchivo, Contexto contexto) {
+        String nombreArchivo = ArchivoUtil.obtenerNombreArchivo(tipoArchivo);
+        String nombreJasper = ArchivoUtil.obtenerNombreJasper(tipoArchivo);
+        Archivo archivo = generarReporte(sicoesSolicitud, nombreArchivo, nombreJasper);
+        archivo.setIdSolicitud(sicoesSolicitud.getIdSolicitud());
+        archivo.setTipoArchivo(tipoArchivo);
+        Archivo archivoDB = archivoService.guardarPorSolicitud(archivo, contexto);
+        return Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)
+                ? registrarExpedienteSiged(archivoDB, sicoesSolicitud)
+                : adjuntarDocumentoSiged(archivoDB, sicoesSolicitud);
+    }
+
+    private String registrarExpedienteSiged(Archivo archivo, SicoesSolicitud sicoesSolicitud) {
+        List<File> archivosAlfresco = new ArrayList<>();
+        ExpedienteInRO expedienteInRO = crearExpediente(
+                sicoesSolicitud,
+                Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
+        );
+        File file = fileRequerimiento(archivo, sicoesSolicitud.getIdSolicitud());
+        archivosAlfresco.add(file);
+        ExpedienteOutRO expedienteOutRO = null;
+        try {
+            expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
+            logger.info("SIGED RESULT: {}", expedienteOutRO.getMessage());
+            if (expedienteOutRO.getResultCode() != 1) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, expedienteOutRO.getMessage());
+            } else {
+                return expedienteOutRO.getCodigoExpediente();
+            }
+        } catch (Exception e) {
+            logger.error("Error al agregar documento en SIGED", e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, expedienteOutRO.getMessage());
+        }
+    }
+
+    private String adjuntarDocumentoSiged(Archivo archivo, SicoesSolicitud sicoesSolicitud) {
+        List<File> archivosAlfresco = new ArrayList<>();
+        ExpedienteInRO expedienteInRO = crearExpediente(
+                sicoesSolicitud,
+                Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
+        );
+        File file = fileRequerimiento(archivo, sicoesSolicitud.getIdSolicitud());
+        archivosAlfresco.add(file);
+        try {
+            DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+            logger.info("SIGED RESULT: {}", documentoOutRO.getMessage());
+            if (documentoOutRO.getResultCode() != 1) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, documentoOutRO.getMessage());
+            }
+        } catch (Exception e) {
+            logger.error("Error al agregar documento en SIGED", e);
+        }
+        return null;
+    }
+
+    private ExpedienteInRO crearExpediente(SicoesSolicitud sicoesSolicitud, Integer codigoTipoDocumento) {
+        ExpedienteInRO expediente = new ExpedienteInRO();
+        DocumentoInRO documento = new DocumentoInRO();
+        ClienteListInRO clientes = new ClienteListInRO();
+        ClienteInRO cs = new ClienteInRO();
+        List<ClienteInRO> cliente = new ArrayList<>();
+        DireccionxClienteListInRO direcciones = new DireccionxClienteListInRO();
+        DireccionxClienteInRO d = new DireccionxClienteInRO();
+        List<DireccionxClienteInRO> direccion = new ArrayList<>();
+        expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
+        expediente.setDocumento(documento);
+        if (sicoesSolicitud.getNumeroExpediente() != null) {
+            expediente.setNroExpediente(sicoesSolicitud.getNumeroExpediente());
+        }
+        documento.setAsunto(CONSOLIDADO_DOCUMENTOS);
+        documento.setAppNameInvokes(SIGLA_PROYECTO);
+        documento.setCodTipoDocumento(codigoTipoDocumento);
+        documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
+        documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
+        if (Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.informe.respuesta.solicitud.pn")) == codigoTipoDocumento) {
+            documento.setFirmante(Integer.parseInt(env.getProperty("siged.firmante.informe.respuesta.id.usuario")));
+        }
+        cs.setCodigoTipoIdentificacion(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
+        cs.setNombre("OSINERGMIN");
+        cs.setApellidoPaterno("-");
+        cs.setApellidoMaterno("-");
+        cs.setRazonSocial("OSINERGMIN");
+        cs.setNroIdentificacion(OSI_DOCUMENTO);
+        cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
+        cliente.add(cs);
+        d.setDireccion("-");
+        d.setDireccionPrincipal(true);
+        d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
+        d.setTelefono("-");
+        d.setUbigeo(Integer.parseInt(env.getProperty("siged.ws.cliente.osinergmin.ubigeo")));
+        direccion.add(d);
+        direcciones.setDireccion(direccion);
+        cs.setDirecciones(direcciones);
+        clientes.setCliente(cliente);
+        documento.setClientes(clientes);
+        documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
+        documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
+        documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
+        documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente").charAt(0));
+        documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
+        return expediente;
+    }
+
+    private File fileRequerimiento(Archivo archivo, Long idRequerimiento) {
+        try {
+            String dirPath = pathTemporal + File.separator + "temporales" + File.separator + idRequerimiento;
+            File dir = new File(dirPath);
+            if (!dir.exists()) {
+                boolean creado = dir.mkdirs();
+                if (!creado) {
+                    logger.warn("No se pudo crear el directorio temporal: {}", dirPath);
+                }
+            }
+            File file = new File(dirPath + File.separator + archivo.getNombre());
+            FileUtils.writeByteArrayToFile(file, archivo.getContenido());
+            archivo.setContenido(Files.readAllBytes(file.toPath()));
+            return file;
+        } catch (Exception e) {
+            logger.error("Error al escribir archivo temporal", e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO);
+        }
+    }
+
     private void enviarNotificacionDesvinculacion(PersonalReemplazo personalReemplazo, Contexto contexto) {
 
         if(Boolean.FALSE.equals(existeNumeroExpediente(personalReemplazo))){
