@@ -783,12 +783,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
 	public Aprobacion updateAprobacion(AprobacionDTO aprobacion, Contexto contexto) {
-            Optional<Aprobacion> aprobOpt = aprobacionDao.findById(aprobacion.getIdAprobacion());
-            Aprobacion aprobacionFinal = aprobOpt.orElseThrow(() -> new RuntimeException("aprobacion no encontrada"));
+        Optional<Aprobacion> aprobOpt = aprobacionDao.findById(aprobacion.getIdAprobacion());
+        Aprobacion aprobacionFinal = aprobOpt.orElseThrow(() -> new RuntimeException("aprobacion no encontrada"));
 
-            Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(aprobacionFinal.getRemplazoPersonal().getIdReemplazo());
-            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()
-                    -> new RuntimeException("reemplazo personal no encontrada"));
+        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(aprobacionFinal.getRemplazoPersonal().getIdReemplazo());
+        PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()
+                -> new RuntimeException("reemplazo personal no encontrada"));
 
         if (aprobacion.getDeObservacion() != null) {
             aprobacionFinal.setDeObservacion(aprobacion.getDeObservacion());
@@ -841,10 +841,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));  //preliminar
            }
-               persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-               persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
-               persoReempFinal.setFecActualizacion(new Date());
-               reemplazoDao.save(persoReempFinal);
+           persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
+           persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
+           persoReempFinal.setFecActualizacion(new Date());
+           reemplazoDao.save(persoReempFinal);
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_INF_APROB_TEC_G3)){ //Evaluar Informe Rol Aprobador Técnico (G3 - Gerente de Línea)
 
@@ -859,10 +859,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
                persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar
            }
-               persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-               persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
-               persoReempFinal.setFecActualizacion(new Date());
-               reemplazoDao.save(persoReempFinal);
+           persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
+           persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
+           persoReempFinal.setFecActualizacion(new Date());
+           reemplazoDao.save(persoReempFinal);
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){ //Aprobación Rol Evaluador de contratos
             Optional<Adenda> adendaOpt = adendaDao.findById(persoReempFinal.getIdReemplazo());
