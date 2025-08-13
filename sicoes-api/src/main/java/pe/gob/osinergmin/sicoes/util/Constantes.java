@@ -929,6 +929,8 @@ public class Constantes {
 		public static final String SOLICITUD_NO_ENCONTRADA= "V01035";
 		public static final String SICOES_SOLICITUD_GUARDAR_FORMATO_04 = "V01036";
 		public static final String TIPO_ARCHIVO_NO_EXISTE = "V01037";
+		public static final String PROFESIONAL_NO_EXISTE = "V01038";
+		public static final String PERSONAL_REEMPLAZO_NO_EXISTE = "V01039";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

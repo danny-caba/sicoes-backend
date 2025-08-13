@@ -1,5 +1,8 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.DireccionxClienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.DocumentoInRO;
@@ -16,6 +19,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -334,56 +338,116 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto) {
-        Long id = personalReemplazo.getIdReemplazo();
-        if (id == null) {
+    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazoIN, Contexto contexto) {
+        Long idReemplazo = personalReemplazoIN.getIdReemplazo();
+        if (idReemplazo == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
-        PersonalReemplazo existe = reemplazoDao.findById(id)
-                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
-        if (existe.getPersonaPropuesta() == null){
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
+        logger.info("idReemplazo: {}", idReemplazo);
+        PersonalReemplazo personalReemplazo = reemplazoDao.findById(idReemplazo)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERSONAL_REEMPLAZO_NO_EXISTE));
+        personalReemplazo.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
+                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
+        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        try {
+            logger.info("personalReemplazo: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(personalReemplazo)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
         }
-        if (existe.getPersonaBaja() == null) {
+        Long idSolicitud = personalReemplazo.getIdSolicitud();
+        if (idSolicitud == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+        }
+        logger.info("idSolicitud: {}", idSolicitud);
+        Supervisora personalBaja = personalReemplazo.getPersonaBaja();
+        if (personalBaja == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
         }
-        existe.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
-        //Actualizamos el estado de Personal propuesto:
-        SupervisoraMovimiento movi = new SupervisoraMovimiento();
-        Supervisora personalPropuesto = existe.getPersonaPropuesta();
-        Supervisora personalBaja = existe.getPersonaBaja();
-        logger.info("id solicitud : {}",existe.getIdSolicitud());
-        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
-                existe.getIdSolicitud(),personalBaja.getIdSupervisora());
-        logger.info("profesional: {}",profesional);
-        profesional.setSupervisora(personalPropuesto);
-        movi.setSector(profesional.getSector());
-        movi.setSubsector(profesional.getSubsector());
-        movi.setSupervisora(personalPropuesto); //Asignando codigo de personal propuesto
-        movi.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO));
-        movi.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
-        movi.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
-        movi.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
-        movi.setPropuestaProfesional(profesional);
-        movi.setFechaRegistro(new Date());
-        logger.info("movi: {}",movi);
-        supervisoraMovimientoService.guardar(movi,contexto);
-        AuditoriaUtil.setAuditoriaActualizacion(existe,contexto);
-        PersonalReemplazo reemplazoSave = reemplazoDao.save(existe);
-        logger.info("GENPDF:USUARIO EXTERNO - Reemplazar Personal Propuesto");
+        try {
+            logger.info("personalBaja: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(personalBaja)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
+        PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
+        if (propuestaProfesional == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
+        }
+        try {
+            logger.info("propuestaProfesional: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(propuestaProfesional)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
+        Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
+        if (personaPropuesta == null){
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
+        }
+        try {
+            logger.info("personaPropuesta: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(personaPropuesta)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
+        propuestaProfesional.setSupervisora(personaPropuesta);
+        SupervisoraMovimiento supervisoraMovimiento = new SupervisoraMovimiento();
+        supervisoraMovimiento.setSector(propuestaProfesional.getSector());
+        supervisoraMovimiento.setSubsector(propuestaProfesional.getSubsector());
+        supervisoraMovimiento.setSupervisora(personaPropuesta);
+        supervisoraMovimiento.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO));
+        supervisoraMovimiento.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
+        supervisoraMovimiento.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
+        supervisoraMovimiento.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
+        supervisoraMovimiento.setPropuestaProfesional(propuestaProfesional);
+        supervisoraMovimiento.setFechaRegistro(new Date());
+        try {
+            logger.info("supervisoraMovimiento: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(supervisoraMovimiento)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
+        supervisoraMovimientoService.guardar(supervisoraMovimiento,contexto);
+        AuditoriaUtil.setAuditoriaActualizacion(personalReemplazo,contexto);
+        PersonalReemplazo personalReemplazoOUT = reemplazoDao.save(personalReemplazo);
+        SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+        try {
+            logger.info("sicoesSolicitud: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(sicoesSolicitud)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
         ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
                 Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS);
         if (tipoArchivo == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
         }
-        SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(reemplazoSave.getIdSolicitud())
-                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+        logger.info("tipoArchivo: {}", tipoArchivo);
+        try {
+            logger.info("contexto: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(contexto)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
         generarArchivoSiged(sicoesSolicitud, tipoArchivo, contexto);
-        enviarNotificacionByRolEvaluador(existe,contexto);
-        enviarNotificacionDesvinculacion(existe,contexto);
-        return reemplazoSave;
+        enviarNotificacionByRolEvaluador(personalReemplazo,contexto);
+        enviarNotificacionDesvinculacion(personalReemplazo,contexto);
+        return personalReemplazoOUT;
+    }
+
+    private String generarArchivoSiged(SicoesSolicitud sicoesSolicitud, ListadoDetalle tipoArchivo, Contexto contexto) {
+        String nombreArchivo = ArchivoUtil.obtenerNombreArchivo(tipoArchivo);
+        String nombreJasper = ArchivoUtil.obtenerNombreJasper(tipoArchivo);
+        Archivo archivo = generarReporte(sicoesSolicitud, nombreArchivo, nombreJasper);
+        archivo.setIdSolicitud(sicoesSolicitud.getIdSolicitud());
+        archivo.setTipoArchivo(tipoArchivo);
+        Archivo archivoDB = archivoService.guardarPorSolicitud(archivo, contexto);
+        return Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)
+                ? registrarExpedienteSiged(archivoDB, sicoesSolicitud)
+                : adjuntarDocumentoSiged(archivoDB, sicoesSolicitud);
     }
 
     private Archivo generarReporte(SicoesSolicitud sicoesSolicitud, String nombreArchivo, String nombreJasper) {
@@ -422,18 +486,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         archivo.setNroFolio(1L);
         archivo.setContenido(bytesSalida);
         return archivo;
-    }
-
-    private String generarArchivoSiged(SicoesSolicitud sicoesSolicitud, ListadoDetalle tipoArchivo, Contexto contexto) {
-        String nombreArchivo = ArchivoUtil.obtenerNombreArchivo(tipoArchivo);
-        String nombreJasper = ArchivoUtil.obtenerNombreJasper(tipoArchivo);
-        Archivo archivo = generarReporte(sicoesSolicitud, nombreArchivo, nombreJasper);
-        archivo.setIdSolicitud(sicoesSolicitud.getIdSolicitud());
-        archivo.setTipoArchivo(tipoArchivo);
-        Archivo archivoDB = archivoService.guardarPorSolicitud(archivo, contexto);
-        return Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)
-                ? registrarExpedienteSiged(archivoDB, sicoesSolicitud)
-                : adjuntarDocumentoSiged(archivoDB, sicoesSolicitud);
     }
 
     private String registrarExpedienteSiged(Archivo archivo, SicoesSolicitud sicoesSolicitud) {

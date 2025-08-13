@@ -21,27 +21,12 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="perfiles" class="java.util.List"/>
-	<field name="academicos" class="java.util.List"/>
-	<field name="persona.numeroDocumento" class="java.lang.String"/>
-	<field name="persona.tipoDocumento.nombre" class="java.lang.String"/>
-	<field name="persona.direccion" class="java.lang.String"/>
 	<field name="numeroExpediente" class="java.lang.String"/>
-	<field name="fechaPresentacion" class="java.util.Date"/>
-	<field name="persona.nombreDistrito" class="java.lang.String"/>
-	<field name="persona.nombres" class="java.lang.String"/>
-	<field name="persona.apellidoPaterno" class="java.lang.String"/>
-	<field name="persona.apellidoMaterno" class="java.lang.String"/>
-	<field name="persona.codigoRuc" class="java.lang.String"/>
-	<field name="persona.nombreProvincia" class="java.lang.String"/>
-	<field name="persona.nombreDepartamento" class="java.lang.String"/>
-	<field name="persona.telefono1" class="java.lang.String"/>
-	<field name="persona.correo" class="java.lang.String"/>
-	<field name="capacitaciones" class="java.util.List"/>
-	<field name="documentos" class="java.util.List"/>
+	<field name="fechaHoraPresentacion" class="java.util.Date"/>
+	<field name="supervisora.nombreRazonSocial" class="java.lang.String"/>
+	<field name="supervisora.tipoDocumento.nombre" class="java.lang.String"/>
+	<field name="supervisora.numeroDocumento" class="java.lang.String"/>
 	<field name="archivos" class="java.util.List"/>
-	<field name="otrosRequisitos" class="java.util.List"/>
-	<field name="persona.tipoPersona.valor" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -151,7 +136,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{fechaPresentacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{fechaHoraPresentacion}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="125" width="425" height="18" uuid="6561baa9-8dfa-45b1-a659-36f320f83426"/>
@@ -205,7 +190,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{persona.tipoDocumento.nombre}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supervisora.nombreRazonSocial}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="177" width="200" height="14" uuid="f8a11d5b-bc64-4e01-94e9-67f687858159">
@@ -240,7 +225,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{persona.numeroDocumento}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supervisora.tipoDocumento.nombre}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="191" width="200" height="14" uuid="3a172214-341d-42f7-aa17-1b4f7ff64e83">
@@ -275,7 +260,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{persona.nombres}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supervisora.numeroDocumento}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
