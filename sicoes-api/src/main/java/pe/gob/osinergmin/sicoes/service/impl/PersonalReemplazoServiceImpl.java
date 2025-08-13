@@ -18,16 +18,66 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
-import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.model.dto.*;
-import pe.gob.osinergmin.sicoes.repository.*;
+import pe.gob.osinergmin.sicoes.model.Adenda;
+import pe.gob.osinergmin.sicoes.model.Aprobacion;
+import pe.gob.osinergmin.sicoes.model.AprobacionReemp;
+import pe.gob.osinergmin.sicoes.model.Combo;
+import pe.gob.osinergmin.sicoes.model.DocumentoInicioServ;
+import pe.gob.osinergmin.sicoes.model.DocumentoPP;
+import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
+import pe.gob.osinergmin.sicoes.model.EvaluacionDocInicioServ;
+import pe.gob.osinergmin.sicoes.model.EvaluacionDocumentacion;
+import pe.gob.osinergmin.sicoes.model.EvaluacionDocumentacionPP;
+import pe.gob.osinergmin.sicoes.model.EvaluarDocuReemplazo;
+import pe.gob.osinergmin.sicoes.model.HistorialAprobReemp;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
+import pe.gob.osinergmin.sicoes.model.PropuestaProfesional;
+import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
+import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
+import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
+import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.model.dto.AprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.EvaluarDocuResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.GenericResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.RegistrarRevDocumentosRequestDTO;
+import pe.gob.osinergmin.sicoes.repository.AdendaDao;
+import pe.gob.osinergmin.sicoes.repository.AprobacionDao;
+import pe.gob.osinergmin.sicoes.repository.AprobacionReempDao;
+import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.ComboDao;
+import pe.gob.osinergmin.sicoes.repository.DocumentoInicioServDao;
+import pe.gob.osinergmin.sicoes.repository.DocumentoPPDao;
+import pe.gob.osinergmin.sicoes.repository.DocumentoReemDao;
+import pe.gob.osinergmin.sicoes.repository.EvaluacionDocInicioServDao;
+import pe.gob.osinergmin.sicoes.repository.EvaluacionDocumentacionDao;
+import pe.gob.osinergmin.sicoes.repository.EvaluacionPPDao;
+import pe.gob.osinergmin.sicoes.repository.EvaluarDocuReemDao;
+import pe.gob.osinergmin.sicoes.repository.HistorialAprobReempDao;
+import pe.gob.osinergmin.sicoes.repository.ListadoDao;
+import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
+import pe.gob.osinergmin.sicoes.repository.PersonalReemplazoDao;
+import pe.gob.osinergmin.sicoes.repository.PropuestaProfesionalDao;
+import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
+import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
+import pe.gob.osinergmin.sicoes.repository.SupervisoraDao;
+import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
+import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
-import pe.gob.osinergmin.sicoes.util.*;
+import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
+import pe.gob.osinergmin.sicoes.util.Constantes;
+import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.DateUtil;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.io.File;
 import java.time.Instant;
@@ -113,7 +163,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private EvaluacionDocInicioServDao evaluacionDocInicioServDao;
 
     @Autowired
-    private  DocumentoInicioServDao documentoInicioServDao;
+    private DocumentoInicioServDao documentoInicioServDao;
 
     @Autowired
     private ListadoDao listadoDao;
@@ -974,7 +1024,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public List<DocumentoInicioServ> obtenerDocumentosInicioServicio( Long id, String seccion){
+    public List<DocumentoInicioServ> obtenerDocumentosInicioServicio(Long id, String seccion){
         logger.info("ObtenerDocumentosInicioServicio");
         List<DocumentoInicioServ>  resultado = new ArrayList<>();
         if (seccion.equals(Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO)){
