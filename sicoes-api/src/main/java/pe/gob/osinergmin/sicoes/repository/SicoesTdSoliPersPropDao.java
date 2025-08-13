@@ -35,5 +35,16 @@ public interface SicoesTdSoliPersPropDao extends JpaRepository<SicoesTdSoliPersP
                     + "inner join stp.sicoesTdSolPerConSec stsp "
                     + "where stsp.idSolPerConSec=:idSeccionPerConSec ")
     Page<SicoesTdSoliPersProp> personasPorSeccion(Long idSeccionPerConSec, Pageable pageable);
+
+    @Query(value = "select stp from SicoesTdSoliPersProp stp "
+            + "inner join fetch stp.supervisora sup "
+            + "inner join fetch stp.sicoesTdSolPerConSec stsp "
+            + "where stsp.idSoliPerfCont=:idSolicitud "
+            + "order by stp.idSoliPersProp ",
+            countQuery = "select count(stp) from SicoesTdSoliPersProp stp "
+                    + "inner join stp.supervisora sup "
+                    + "inner join stp.sicoesTdSolPerConSec stsp "
+                    + "where stsp.idSoliPerfCont=:idSolicitud ")
+    Page<SicoesTdSoliPersProp> personasPorSolicitud(Long idSolicitud, Pageable pageable);
  
 }

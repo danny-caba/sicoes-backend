@@ -55,6 +55,13 @@ public class SolicitudTdSolPersPropController extends BaseRestController{
 		return sicoesTdSolPersPropService.personasPorSeccion(idSeccionPerConSec, pageable, getContexto());
 	}
 
+	@GetMapping("/supervisora-perfiles/profesionales/propuesto/baja")
+	@Raml("persona.listar.properties")
+	public Page<SicoesTdSoliPersProp> personasPorSolicitud(@RequestParam Long idSolicitud, Pageable pageable){
+		logger.info("personasPorSolicitud");
+		return sicoesTdSolPersPropService.personasPorIdSolicitud(idSolicitud, pageable);
+	}
+
 	@PostMapping("/personas/validar-trabajador")
 	public Map<String,String> validarTrabajadorOsi(@RequestBody String codigoRuc) {
 		logger.info("validarTrabajadorOsi {} ",codigoRuc);

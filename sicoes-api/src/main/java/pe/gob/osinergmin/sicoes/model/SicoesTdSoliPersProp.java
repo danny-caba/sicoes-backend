@@ -40,7 +40,11 @@ public class SicoesTdSoliPersProp extends BaseModel implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_SOL_PER_CON_SEC")
 	private SicoesTdSolPerConSec sicoesTdSolPerConSec;
-	 
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_PERFIL_LD")
+	private ListadoDetalle perfil;
+
 	@Column(name="DE_PERFIL_PROFESIONAL")	
 	private String dePerfilProfesional;
 
@@ -80,6 +84,14 @@ public class SicoesTdSoliPersProp extends BaseModel implements Serializable {
 
 	public void setSicoesTdSolPerConSec(SicoesTdSolPerConSec sicoesTdSolPerConSec) {
 		this.sicoesTdSolPerConSec = sicoesTdSolPerConSec;
+	}
+
+	public ListadoDetalle getPerfil(){
+		return perfil;
+	}
+
+	public void setPerfil(ListadoDetalle perfil){
+		this.perfil = perfil;
 	}
 
 	public String getDePerfilProfesional() {
