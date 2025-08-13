@@ -119,6 +119,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private ListadoDao listadoDao;
 
     @Autowired
+    private DocumentoPPDao documentoPPDao;
+
+    @Autowired
+    private UsuarioDao usuarioDao;
+
+    @Autowired
     private SupervisoraDao supervisoraDao;
 
     @Autowired
@@ -127,32 +133,62 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private UsuarioRolDao usuarioRolDao;
 
-    @Autowired
-    private UsuarioDao usuarioDao;
-
     @Override
-    public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion, String descEvalDocIniServ,
+    public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
+                                                           String descEvalDoc,
+                                                           String descRevisarEval,
+                                                           String descAprobacionInforme,
+                                                           String descAprobacionAdenda,
+                                                           String descEvalDocIniServ,
                                                            Pageable pageable, Contexto contexto) {
         logger.info("listarPersonalReemplazo");
         Pageable pageRequest = pageable == null ? Pageable.unpaged() : pageable;
 
         String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+        String listadoEstadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         Long idAprobacion = null;
+        Long idEvalDoc = null;
+        Long idRevisarEval = null;
+        Long idAprobacionInforme = null;
+        Long idAprobacionAdenda = null;
         Long idEvalDocIniServ = null;
 
         if (descAprobacion != null && !descAprobacion.isEmpty()) {
-            ListadoDetalle listadoAprobacion = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descAprobacion);
-            if (listadoAprobacion != null) {
-                idAprobacion = listadoAprobacion.getIdListadoDetalle();
-            }
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descAprobacion.trim());
+            if (ld != null) idAprobacion = ld.getIdListadoDetalle();
         }
-        if (descEvalDocIniServ != null && !descEvalDocIniServ.isEmpty()) { // corregido: se valida el parámetro correcto
-            ListadoDetalle listadoEvalDoc = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDocIniServ);
-            if (listadoEvalDoc != null) {
-                idEvalDocIniServ = listadoEvalDoc.getIdListadoDetalle();
-            }
+
+        // Estado evaluación de documentos
+        if (descEvalDoc != null && !descEvalDoc.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDoc.trim());
+            if (ld != null) idEvalDoc = ld.getIdListadoDetalle();
         }
-        return reemplazoDao.obtenerxIdSolicitud(idSolicitud,idAprobacion,idEvalDocIniServ,pageRequest);
+
+        // Estado revisar evaluación documentos
+        if (descRevisarEval != null && !descRevisarEval.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descRevisarEval.trim());
+            if (ld != null) idRevisarEval = ld.getIdListadoDetalle();
+        }
+
+        // Estado aprobación informe
+        if (descAprobacionInforme != null && !descAprobacionInforme.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoAprobacion, descAprobacionInforme.trim());
+            if (ld != null) idAprobacionInforme = ld.getIdListadoDetalle();
+        }
+
+        // Estado aprobación adenda
+        if (descAprobacionAdenda != null && !descAprobacionAdenda.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoAprobacion, descAprobacionAdenda.trim());
+            if (ld != null) idAprobacionAdenda = ld.getIdListadoDetalle();
+        }
+
+        if (descEvalDocIniServ != null && !descEvalDocIniServ.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDocIniServ);
+            if (ld != null) idEvalDocIniServ = ld.getIdListadoDetalle();
+        }
+        return reemplazoDao.obtenerxIdSolicitud(
+                idSolicitud,idAprobacion,idEvalDoc,idRevisarEval,idAprobacionInforme,
+                idAprobacionAdenda,idEvalDocIniServ,pageRequest);
     }
 
     @Override
@@ -306,8 +342,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         //Actualizamos el estado de Personal propuesto:
         SupervisoraMovimiento movi = new SupervisoraMovimiento();
         Supervisora personalPropuesto = existe.getPersonaPropuesta();
+        Supervisora personalBaja = existe.getPersonaBaja();
         logger.info("id solicitud : {}",existe.getIdSolicitud());
-        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(existe.getIdSolicitud());
+        PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
+                existe.getIdSolicitud(),personalBaja.getIdSupervisora());
         logger.info("profesional: {}",profesional);
         profesional.setSupervisora(personalPropuesto);
 
@@ -812,11 +850,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     notificacionContratoService.notificarSubsanacionDocumentos(personaPropuesta, contexto);
                 }
             }else{
-                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,
-                        Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
-                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,
-                        Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
-                //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS (Activo)
+                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
+                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
+                //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS
                 //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
                 // buscar campo Estado personal y cambiarle el estado a propuesto
 
@@ -957,5 +993,99 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .obtenerPorCodigo( Constantes.DOCUMENTOS_INICIO_SERVICIO.DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO).getIdListado());
         }
         return resultado;
+    }
+
+
+    @Override
+    public Boolean evaluarFechaDesvinculacion (Long id, Date fecha) {
+        logger.info("evaluarFechaDesvinculacion");
+
+        Boolean resultado =false;
+        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
+            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            if(fecha.before(persoReempFinal.getFeFechaFinalizacionContrato()) || fecha.equals(persoReempFinal.getFeFechaFinalizacionContrato())){
+              if (!fecha.equals(persoReempFinal.getFeFechaDesvinculacion())){
+                  resultado = true;
+              }
+            }
+        return resultado;
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+	public PersonalReemplazo evaluarDocumentoInforme(Long id, Date fecha) {
+       logger.info("evaluarDocumentoInforme");
+
+       Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
+            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            persoReempFinal.setFeFechaDesvinculacion(fecha);
+            reemplazoDao.save(persoReempFinal);
+        return persoReempFinal;
+        }
+
+    @Override
+	public List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String seccion) {
+       logger.info("obtenerDocumentoPPxSeccion");
+       Long idseccion = 0L;
+       if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.INFORME)){
+
+            idseccion = listadoDetalleDao
+                    .obtenerListadoDetalle(Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO, Constantes.SECCION_EVALUAR_DOCUMENTOS.INFORME).getIdListadoDetalle();
+        }
+        if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.BAJA_PERSONAL_PROPUESTO)){
+
+            idseccion =listadoDetalleDao
+                    .obtenerListadoDetalle(Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO, Constantes.SECCION_EVALUAR_DOCUMENTOS.BAJA_PERSONAL_PROPUESTO).getIdListadoDetalle();
+        }
+        if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.PERSONAL_PROPUESTO)){
+
+            idseccion =listadoDetalleDao
+                    .obtenerListadoDetalle(Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO,  Constantes.SECCION_EVALUAR_DOCUMENTOS.PERSONAL_PROPUESTO).getIdListadoDetalle();
+        }
+        if (seccion.equals(Constantes.SECCION_EVALUAR_DOCUMENTOS.SOLICITUD_REEMPLAZO_SUPERVISOR)){
+
+            idseccion =listadoDetalleDao
+                    .obtenerListadoDetalle( Constantes.SECCION_EVALUAR_DOCUMENTOS.CODIGO, Constantes.SECCION_EVALUAR_DOCUMENTOS.SOLICITUD_REEMPLAZO_SUPERVISOR).getIdListadoDetalle();
+        }
+
+        return documentoPPDao.buscarDocumentoPP(id,idseccion);
+        }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+	public Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion) {
+       logger.info("evaluarDocumReemplazo");
+           Boolean result = false;
+           Usuario usu = usuarioDao.obtener(evaluacion.getIdEvaluadoPor());
+
+           DocumentoReemplazo doc = documentoReemDao.findById(evaluacion.getIdDocumento())
+                   .orElseThrow(()  -> new RuntimeException("documento no encontrado"));
+
+       if(evaluacion.getIdEvalDocumento()!=null){
+        Optional<EvaluarDocuReemplazo> evalOpt = evaluarDocuReemDao.findByIdDocumentoId(evaluacion.getIdEvalDocumento());
+           EvaluarDocuReemplazo evalFinal = evalOpt.orElseThrow(()  -> new RuntimeException("evaluación no encontrada"));
+           evalFinal.setDocumento(doc);
+           evalFinal.setConforme(evaluacion.getConforme());
+           evalFinal.setFechaEvaluacion(evaluacion.getFechaEvaluacion());
+           evalFinal.setEvaluadoPor(usu);
+           evalFinal.setFecActualizacion(new Date());
+           evalFinal.setIpActualizacion(evaluacion.getIpActualizacion());
+           evalFinal.setUsuActualizacion(evaluacion.getUsuActualizacion());
+           evaluarDocuReemDao.save(evalFinal);
+           result = true;
+       }else{
+           EvaluarDocuReemplazo evalNuevo = new EvaluarDocuReemplazo();
+           evalNuevo.setConforme(evaluacion.getConforme());
+           evalNuevo.setFechaEvaluacion(evaluacion.getFechaEvaluacion());
+           evalNuevo.setEvaluadoPor(usu);
+           evalNuevo.setFecActualizacion(new Date());
+           evalNuevo.setIpActualizacion(evaluacion.getIpActualizacion());
+           evalNuevo.setUsuActualizacion(evaluacion.getUsuActualizacion());
+           evaluarDocuReemDao.save(evalNuevo);
+           result = true;
+       }
+        return result;
     }
 }

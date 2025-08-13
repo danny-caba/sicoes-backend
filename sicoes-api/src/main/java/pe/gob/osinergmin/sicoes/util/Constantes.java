@@ -1025,4 +1025,13 @@ public class Constantes {
 		public static final String DOCUMENTO_EVAL_INI_SERV_ADICIONAL = "DOCUMENTO_EVAL_INI_SERV_ADICIONAL";
 		public static final String DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO = "DOCUMENTO_EVAL_INI_SERV_ACTA_INICIO";
 	}
+
+	public static final class SECCION_EVALUAR_DOCUMENTOS{
+
+		public static final String CODIGO= "SECCIONES_REEMPLAZO_PERSONAL";
+		public static final String BAJA_PERSONAL_PROPUESTO= "BAJA_PERSONAL_PROPUESTO";
+		public static final String PERSONAL_PROPUESTO = "PERSONAL_PROPUESTO";
+		public static final String SOLICITUD_REEMPLAZO_SUPERVISOR = "SOLICITUD_REEMPLAZO_SUPERVISOR";
+		public static final String INFORME = "INFORME";
+	}
 }
