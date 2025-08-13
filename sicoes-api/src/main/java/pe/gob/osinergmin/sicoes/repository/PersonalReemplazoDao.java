@@ -26,6 +26,9 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
     + " left join fetch p.estadoEvalDocIniServ e5"
     + " where p.idSolicitud = :idSolicitud"
     + " and ( :idAprobacion is null or e.idListadoDetalle = :idAprobacion )"
+    + " and ( :idRevisarEval is null or e2.idListadoDetalle = :idRevisarEval)"
+    + " and ( :idAprobacionInforme is null or e3.idListadoDetalle = :idAprobacionInforme)"
+    + " and ( :idAprobacionAdenda is null or e4.idListadoDetalle = :idAprobacionAdenda)"
     + " and ( :idEvalDocIniServ is null or e5.idListadoDetalle = :idEvalDocIniServ)"
     + " order by p.idReemplazo",
     countQuery = "select count(p) from PersonalReemplazo p"
@@ -41,9 +44,14 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
     + " left join p.estadoEvalDocIniServ e5"
     + " where p.idSolicitud = :idSolicitud"
     + " and ( :idAprobacion is null or e.idListadoDetalle = :idAprobacion)"
+    + " and ( :idEvalDoc is null or e1.idListadoDetalle = :idEvalDoc)"
+    + " and ( :idRevisarEval is null or e2.idListadoDetalle = :idRevisarEval)"
+    + " and ( :idAprobacionInforme is null or e3.idListadoDetalle = :idAprobacionInforme)"
+    + " and ( :idAprobacionAdenda is null or e4.idListadoDetalle = :idAprobacionAdenda)"
     + " and ( :idEvalDocIniServ is null or e5.idListadoDetalle = :idEvalDocIniServ)"
     )
-    Page<PersonalReemplazo> obtenerxIdSolicitud(Long idSolicitud, Long idAprobacion,
+    Page<PersonalReemplazo> obtenerxIdSolicitud(Long idSolicitud, Long idAprobacion, Long idEvalDoc,
+                                                Long idRevisarEval, Long idAprobacionInforme, Long idAprobacionAdenda,
                                                 Long idEvalDocIniServ, Pageable pageable);
 
     @Query("select p from PersonalReemplazo p"
