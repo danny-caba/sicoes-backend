@@ -251,6 +251,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getFeFechaFinalizacionContrato() != null) {
             existe.setFeFechaFinalizacionContrato(personalReemplazo.getFeFechaFinalizacionContrato());
         }
+
+        if (personalReemplazo.getEstadoRevisarDoc() != null){
+            existe.setEstadoRevisarDoc(personalReemplazo.getEstadoRevisarDoc());
+        }
+
         if (personalReemplazo.getEstadoRevisarEval() != null) {
             existe.setEstadoRevisarEval(personalReemplazo.getEstadoRevisarEval());
         }
@@ -263,12 +268,14 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (personalReemplazo.getEstadoAprobacionAdenda() != null) {
             existe.setEstadoAprobacionAdenda(personalReemplazo.getEstadoAprobacionAdenda());
         }
+        if (personalReemplazo.getEstadoDocIniServ() != null){
+            existe.setEstadoRevisarDoc(personalReemplazo.getEstadoDocIniServ());
+        }
         if (personalReemplazo.getEstadoEvalDocIniServ() != null) {
             existe.setEstadoEvalDocIniServ(personalReemplazo.getEstadoEvalDocIniServ());
         }
 
         logger.info("actualizando_Ex {}:",existe);
-
         AuditoriaUtil.setAuditoriaActualizacion(existe,contexto);
         return reemplazoDao.save(existe);
     }
