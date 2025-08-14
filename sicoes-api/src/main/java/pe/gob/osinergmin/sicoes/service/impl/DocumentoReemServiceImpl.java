@@ -114,7 +114,7 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
         Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
         String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null,
-                null, null,null,documentoBD.getIdDocumento(), archivo);
+                null, null,null,documentoBD.getIdDocumento(), null, archivo);
         archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
         archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
         logger.info("Archivo registrado en DB con ID: " + archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);

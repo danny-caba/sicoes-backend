@@ -196,7 +196,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 		
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null ,null, archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(), archivoBD.getIdSeccionRequisito(),null,null ,null, null, archivo);
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
@@ -233,7 +233,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					nombre=nombre.replace(".pdf", "");
 					archivo.setNombreReal(nombre+"-"+hora+".pdf");
 				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,null,archivo);
+				String nombre = sigedOldConsumer.subirArchivosAlfresco(archivoBD.getIdSolicitud(),archivoBD.getIdPropuesta(),archivoBD.getIdProceso(),archivoBD.getIdSeccionRequisito(),null,null,null, null, archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
@@ -1156,7 +1156,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, null,archivo);
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivoGuardadoBD.getIdContrato(),null, null, null, archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 		
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1319,7 +1319,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 		Archivo archivoGuardadoBD = archivoDao.save(archivo);
 
-	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), null,archivo);
+	    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null,archivoGuardadoBD.getIdSoliPerfCont(), null, null, archivo);
 		archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
 		
 		archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
@@ -1382,13 +1382,13 @@ public class ArchivoServiceImpl implements ArchivoService {
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public Archivo guardarPorSolicitud (Archivo archivo, Contexto contexto) {
+	public Archivo guardarPorPersonalReemplazo (Archivo archivo, Contexto contexto) {
 		return archivo.getIdArchivo() == null
-				? registrarSolicitud(archivo, contexto)
-				: modificarSolicitud(archivo, contexto);
+				? registrarPersonalReemplazo(archivo, contexto)
+				: modificarPersonalReemplazo(archivo, contexto);
 	}
 
-	private Archivo registrarSolicitud(Archivo archivo, Contexto contexto) {
+	private Archivo registrarPersonalReemplazo(Archivo archivo, Contexto contexto) {
 		Archivo archivoBD;
 		int tamanioByte;
 		Double tamanioMB;
@@ -1430,14 +1430,14 @@ public class ArchivoServiceImpl implements ArchivoService {
 		archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, archivoBD.getIdSoliPerfCont(), null, archivo);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, null, null, archivoBD.getIdReemplazoPersonal(), archivo);
 			archivo.setNombreAlFresco(nombre);
 			archivoBD = archivoDao.save(archivo);
 		}
 		return archivoBD;
 	}
 
-	private Archivo modificarSolicitud(Archivo archivo, Contexto contexto) {
+	private Archivo modificarPersonalReemplazo(Archivo archivo, Contexto contexto) {
 		Archivo archivoBD;
 		archivoBD = archivoDao.obtener(archivo.getIdArchivo());
 		AuditoriaUtil.setAuditoriaRegistro(archivoBD, contexto);
@@ -1447,27 +1447,17 @@ public class ArchivoServiceImpl implements ArchivoService {
 			archivo.setNombreReal(reemplazarCaracteres(archivo.getFile().getOriginalFilename()));
 			archivoBD.setNombreReal(archivo.getNombreReal());
 			archivoBD.setTipo(archivo.getFile().getContentType());
-			if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
-				SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
-				String hora = sdf2.format(new Date());
-				String nombre = reemplazarCaracteres(archivo.getNombreReal());
-				nombre=nombre.replace(".pdf", "");
-				archivoBD.setNombreReal(nombre+"-"+hora+".pdf");
-			}
+			SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
+			String hora = sdf2.format(new Date());
+			String nombre = reemplazarCaracteres(archivo.getNombreReal());
+			nombre=nombre.replace(".pdf", "");
+			archivoBD.setNombreReal(nombre+"-"+hora+".pdf");
 			PdfReader reader;
 			try {
 				reader = new PdfReader(archivo.getFile().getBytes());
 				int count = reader.getNumberOfPages();
 				archivoBD.setNroFolio(count * 1L);
-				archivoBD.setPeso(archivo.getFile().getSize());
-				if(archivo.getIdPropuesta() != null&&(archivo.getIdPropuestaEconomica()!=null||archivo.getIdPropuestaTecnica()!=null)) {
-					SimpleDateFormat sdf2=new SimpleDateFormat("hhmmss");
-					String hora = sdf2.format(new Date());
-					String nombre = reemplazarCaracteres(archivo.getNombreReal());
-					nombre=nombre.replace(".pdf", "");
-					archivo.setNombreReal(nombre+"-"+hora+".pdf");
-				}
-				String nombre = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, archivoBD.getIdSoliPerfCont(), null, archivo);
+				nombre = sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, null, null, null, archivoBD.getIdReemplazoPersonal(), archivo);
 				archivoBD.setNombreAlFresco(nombre);
 			} catch (Exception e) {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);

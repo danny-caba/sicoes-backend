@@ -432,25 +432,27 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } catch (JsonProcessingException e) {
             throw new ValidacionException(e.getMessage());
         }
-        generarArchivoSiged(sicoesSolicitud, tipoArchivo, contexto);
+        generarArchivoSiged(personalReemplazoOUT, tipoArchivo, contexto);
         enviarNotificacionByRolEvaluador(personalReemplazo,contexto);
         enviarNotificacionDesvinculacion(personalReemplazo,contexto);
         return personalReemplazoOUT;
     }
 
-    private String generarArchivoSiged(SicoesSolicitud sicoesSolicitud, ListadoDetalle tipoArchivo, Contexto contexto) {
+    private void generarArchivoSiged(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
         String nombreArchivo = ArchivoUtil.obtenerNombreArchivo(tipoArchivo);
         String nombreJasper = ArchivoUtil.obtenerNombreJasper(tipoArchivo);
-        Archivo archivo = generarReporte(sicoesSolicitud, nombreArchivo, nombreJasper);
-        archivo.setIdSolicitud(sicoesSolicitud.getIdSolicitud());
+        Archivo archivo = generarReporte(personalReemplazo, nombreArchivo, nombreJasper);
+        archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
-        Archivo archivoDB = archivoService.guardarPorSolicitud(archivo, contexto);
-        return Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)
-                ? registrarExpedienteSiged(archivoDB, sicoesSolicitud)
-                : adjuntarDocumentoSiged(archivoDB, sicoesSolicitud);
+        Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
+        if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)) {
+            registrarExpedienteSiged(archivoDB, personalReemplazo);
+        } else {
+            adjuntarDocumentoSiged(archivoDB, personalReemplazo);
+        }
     }
 
-    private Archivo generarReporte(SicoesSolicitud sicoesSolicitud, String nombreArchivo, String nombreJasper) {
+    private Archivo generarReporte(PersonalReemplazo personalReemplazo, String nombreArchivo, String nombreJasper) {
         Archivo archivo = new Archivo();
         archivo.setNombre(nombreArchivo);
         archivo.setNombreReal(nombreArchivo);
@@ -467,9 +469,51 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             osinermingLogo = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
             parameters.put("P_LOGO_APP", appLogo);
             parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
-            List<SicoesSolicitud> solicitudes = new ArrayList<>();
-            solicitudes.add(sicoesSolicitud);
-            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
+            Long idSolicitud = personalReemplazo.getIdSolicitud();
+            if (idSolicitud == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+            }
+            logger.info("idSolicitud: {}", idSolicitud);
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+            ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+            mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+            try {
+                logger.info("sicoesSolicitud: {}", mapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(Hibernate.unproxy(sicoesSolicitud)));
+            } catch (JsonProcessingException e) {
+                throw new ValidacionException(e.getMessage());
+            }
+            String numeroExpediente = sicoesSolicitud.getNumeroExpediente();
+            if (numeroExpediente == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.NUMERO_EXPEDIENTE_NO_ENVIADO);
+            }
+            logger.info("numeroExpediente: {}", numeroExpediente);
+            personalReemplazo.setNumeroExpediente(numeroExpediente);
+            Supervisora supervisora = sicoesSolicitud.getSupervisora();
+            try {
+                logger.info("supervisora: {}", mapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(Hibernate.unproxy(supervisora)));
+            } catch (JsonProcessingException e) {
+                throw new ValidacionException(e.getMessage());
+            }
+            personalReemplazo.setSupervisora(supervisora);
+            Long idReemplazo = personalReemplazo.getIdReemplazo();
+            if (idReemplazo == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
+            }
+            logger.info("idReemplazo: {}", idReemplazo);
+            List<DocumentoReemplazo> documentosReemplazo = documentoReemDao.findByIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
+            List<Archivo> archivos = new ArrayList<>();
+            for (DocumentoReemplazo documentoReemplazo : documentosReemplazo) {
+                Archivo archivoBD = archivoDao.findByIdDocumento(documentoReemplazo.getIdDocumento());
+                if (archivoBD != null) {
+                    archivos.add(archivoBD);
+                }
+            }
+            personalReemplazo.setArchivos(archivos.isEmpty() ? Collections.emptyList() : archivos);
+            List<PersonalReemplazo> personalesReemplazo = java.util.Collections.singletonList(personalReemplazo);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(personalesReemplazo, true);
             JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
             print = JasperFillManager.fillReport(jasperReport, parameters, ds);
             output = new ByteArrayOutputStream();
@@ -488,13 +532,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return archivo;
     }
 
-    private String registrarExpedienteSiged(Archivo archivo, SicoesSolicitud sicoesSolicitud) {
+    private void registrarExpedienteSiged(Archivo archivo, PersonalReemplazo personalReemplazo) {
         List<File> archivosAlfresco = new ArrayList<>();
         ExpedienteInRO expedienteInRO = crearExpediente(
-                sicoesSolicitud,
+                personalReemplazo,
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
         );
-        File file = fileRequerimiento(archivo, sicoesSolicitud.getIdSolicitud());
+        File file = fileRequerimiento(archivo, personalReemplazo.getIdReemplazo());
         archivosAlfresco.add(file);
         ExpedienteOutRO expedienteOutRO = null;
         try {
@@ -502,8 +546,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             logger.info("SIGED RESULT: {}", expedienteOutRO.getMessage());
             if (expedienteOutRO.getResultCode() != 1) {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, expedienteOutRO.getMessage());
-            } else {
-                return expedienteOutRO.getCodigoExpediente();
             }
         } catch (Exception e) {
             logger.error("Error al agregar documento en SIGED", e);
@@ -511,13 +553,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
     }
 
-    private String adjuntarDocumentoSiged(Archivo archivo, SicoesSolicitud sicoesSolicitud) {
+    private void adjuntarDocumentoSiged(Archivo archivo, PersonalReemplazo personalReemplazo) {
         List<File> archivosAlfresco = new ArrayList<>();
         ExpedienteInRO expedienteInRO = crearExpediente(
-                sicoesSolicitud,
+                personalReemplazo,
                 Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear"))
         );
-        File file = fileRequerimiento(archivo, sicoesSolicitud.getIdSolicitud());
+        File file = fileRequerimiento(archivo, personalReemplazo.getIdReemplazo());
         archivosAlfresco.add(file);
         try {
             DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
@@ -528,10 +570,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } catch (Exception e) {
             logger.error("Error al agregar documento en SIGED", e);
         }
-        return null;
     }
 
-    private ExpedienteInRO crearExpediente(SicoesSolicitud sicoesSolicitud, Integer codigoTipoDocumento) {
+    private ExpedienteInRO crearExpediente(PersonalReemplazo personalReemplazo, Integer codigoTipoDocumento) {
         ExpedienteInRO expediente = new ExpedienteInRO();
         DocumentoInRO documento = new DocumentoInRO();
         ClienteListInRO clientes = new ClienteListInRO();
@@ -542,9 +583,27 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         List<DireccionxClienteInRO> direccion = new ArrayList<>();
         expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
         expediente.setDocumento(documento);
-        if (sicoesSolicitud.getNumeroExpediente() != null) {
-            expediente.setNroExpediente(sicoesSolicitud.getNumeroExpediente());
+        Long idSolicitud = personalReemplazo.getIdSolicitud();
+        if (idSolicitud == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
         }
+        logger.info("idSolicitud: {}", idSolicitud);
+        SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        try {
+            logger.info("sicoesSolicitud: {}", mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(Hibernate.unproxy(sicoesSolicitud)));
+        } catch (JsonProcessingException e) {
+            throw new ValidacionException(e.getMessage());
+        }
+        String numeroExpediente = sicoesSolicitud.getNumeroExpediente();
+        if (numeroExpediente == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.NUMERO_EXPEDIENTE_NO_ENVIADO);
+        }
+        logger.info("numeroExpediente: {}", numeroExpediente);
+        expediente.setNroExpediente(numeroExpediente);
         documento.setAsunto(CONSOLIDADO_DOCUMENTOS);
         documento.setAppNameInvokes(SIGLA_PROYECTO);
         documento.setCodTipoDocumento(codigoTipoDocumento);
@@ -579,9 +638,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return expediente;
     }
 
-    private File fileRequerimiento(Archivo archivo, Long idRequerimiento) {
+    private File fileRequerimiento(Archivo archivo, Long idReemplazo) {
         try {
-            String dirPath = pathTemporal + File.separator + "temporales" + File.separator + idRequerimiento;
+            String dirPath = pathTemporal + File.separator + "temporales" + File.separator + idReemplazo;
             File dir = new File(dirPath);
             if (!dir.exists()) {
                 boolean creado = dir.mkdirs();

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Formato_04" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="425" leftMargin="85" rightMargin="85" topMargin="85" bottomMargin="85" uuid="4f4b3c34-8984-453d-8d2d-18f9c5648327">
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 6.19.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Formato_04_Cons_Doc" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="425" leftMargin="85" rightMargin="85" topMargin="85" bottomMargin="85" uuid="4f4b3c34-8984-453d-8d2d-18f9c5648327">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -16,16 +16,19 @@
 	<parameter name="P_LOGO_OSINERGMIN" class="java.io.InputStream"/>
 	<parameter name="P_LOGO_APP" class="java.io.InputStream"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String">
-		<defaultValueExpression><![CDATA["C:\\opt\\sicoes\\jasper\\"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["C:\\OSINERGMIN\\sicoes_backend_repo\\sicoes-api\\src\\main\\resources\\jasper\\"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
 	<field name="numeroExpediente" class="java.lang.String"/>
-	<field name="fechaHoraPresentacion" class="java.util.Date"/>
+	<field name="fecCreacion" class="java.util.Date"/>
 	<field name="supervisora.nombreRazonSocial" class="java.lang.String"/>
 	<field name="supervisora.tipoDocumento.nombre" class="java.lang.String"/>
 	<field name="supervisora.numeroDocumento" class="java.lang.String"/>
+	<field name="personaPropuesta.nombres" class="java.lang.String"/>
+	<field name="personaPropuesta.apellidoPaterno" class="java.lang.String"/>
+	<field name="personaPropuesta.apellidoMaterno" class="java.lang.String"/>
 	<field name="archivos" class="java.util.List"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -136,7 +139,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{fechaHoraPresentacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{fecCreacion}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="125" width="425" height="18" uuid="6561baa9-8dfa-45b1-a659-36f320f83426"/>
@@ -278,8 +281,17 @@
 			</staticText>
 			<subreport isUsingCache="true">
 				<reportElement x="-85" y="21" width="595" height="40" uuid="cc7b6fa9-171a-4177-b91e-1a3f920b3ffa"/>
+				<subreportParameter name="P_NOMBRES">
+					<subreportParameterExpression><![CDATA[$F{personaPropuesta.nombres}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_APELLIDO_PATERNO">
+					<subreportParameterExpression><![CDATA[$F{personaPropuesta.apellidoPaterno}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_APELLIDO_MATERNO">
+					<subreportParameterExpression><![CDATA[$F{personaPropuesta.apellidoMaterno}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[new  net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{archivos})]]></dataSourceExpression>
-				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "Formato_04_06_Presentados.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "Formato_04_Cons_Doc_Arch.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

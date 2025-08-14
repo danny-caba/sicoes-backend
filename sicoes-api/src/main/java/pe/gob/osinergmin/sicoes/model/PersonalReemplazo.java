@@ -89,4 +89,13 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @JoinColumn(name="ES_ESTADO_EVAL_DOC_INI_SERV")
     private ListadoDetalle estadoEvalDocIniServ;
 
+    @Transient
+    private String numeroExpediente;
+
+    @Transient
+    public Supervisora supervisora;
+
+    @Transient
+    private java.util.List<Archivo> archivos = java.util.Collections.emptyList();
+
 }

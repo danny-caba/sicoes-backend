@@ -79,7 +79,7 @@ public class SicoesArchivoServiceImpl implements SicoesArchivoService {
 			
 			archivoToAlfresco.setFile(archivo.getFile());
 			archivoToAlfresco.setIdSolicitud(archivo.getIdSolicitud());
-			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivo.getIdSolicitud(),null,null,null,null,null, null,archivoToAlfresco);
+			String nombre = sigedOldConsumer.subirArchivosAlfresco(archivo.getIdSolicitud(),null,null,null,null,null, null, null, archivoToAlfresco);
 			archivoToAlfresco.setFile(null);
 			archivo.setNombreAlFresco(nombre);
 		}

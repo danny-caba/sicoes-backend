@@ -278,4 +278,8 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	@Modifying(clearAutomatically = true)
 	@Query("delete from Archivo a where a.idDocumentoReem in :ids")
 	int deleteByDocumentoIds(Collection<Long> ids);
+
+	@Query("select a from Archivo a "
+			+"where a.idDocumento=:idDocumento")
+	Archivo findByIdDocumento(Long idDocumento);
 }

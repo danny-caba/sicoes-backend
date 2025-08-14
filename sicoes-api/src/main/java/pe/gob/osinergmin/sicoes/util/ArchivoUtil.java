@@ -47,7 +47,7 @@ public class ArchivoUtil {
     public static String obtenerNombreJasper(ListadoDetalle tipo) {
         switch (tipo.getCodigo()) {
             case Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS:
-                return "Formato_04_Consolidado_Documentos.jrxml";
+                return "Formato_04_Cons_Doc.jrxml";
             case Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION:
                 return "Formato_04_Finalizacion_Evaluacion.jrxml";
             case Constantes.LISTADO.TIPO_ARCHIVO.CARGA_DOCUMENTOS:
