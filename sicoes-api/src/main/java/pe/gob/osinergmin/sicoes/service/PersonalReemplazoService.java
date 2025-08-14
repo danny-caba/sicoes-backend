@@ -41,5 +41,8 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     PersonalReemplazo evaluarDocumentoInforme(Long id, Date fecha);
     List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String idseccion);
     Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion);
+    PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo, Boolean conforme, Contexto contexto);
+    PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto);
+
 
 }

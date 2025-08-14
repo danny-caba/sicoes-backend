@@ -809,36 +809,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         String numeroExpediente = obtenerNumeroExpediente(persoReempFinal);
 
-        if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_DOC_EVAL_TEC_CONT)){ //Evaluar la documentación Rol Evaluador Técnico del Contrato
-            if(aprobacion.getAccion().equals("A")) {
 
-                String nombreSupervisora = obtenerNombreSupervisora(persoReempFinal);
-
-                if (aprobacion.getConforme()) {
-                   ListadoDetalle x =  listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
-                persoReempFinal.setEstadoReemplazo(x); //en proceso  ---ok
-                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
-                persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
-                persoReempFinal.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
-
-                    notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
-                } else {
-                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
-                    // enviar notificacion x email            
-                    notificacionContratoService.notificarSubsanacionDocumentos( nombreSupervisora,contexto);
-                }
-            }else{
-                persoReempFinal.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
-                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
-                //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS
-                //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
-                // buscar campo Estado personal y cambiarle el estado a propuesto
-            }
-               persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-               persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
-               persoReempFinal.setFecActualizacion(new Date());
-               reemplazoDao.save(persoReempFinal);
-        }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_INF_APROB_TEC_G2)){ //Evaluar Informe Rol Aprobador Técnico (G2 - Gerente de Division)
 
            if(aprobacion.getAccion().equals("A")) {
@@ -966,12 +937,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
 
     @Override
-    public Boolean evaluarFechaDesvinculacion (Long id, Date fecha) {
+       public Boolean evaluarFechaDesvinculacion (Long id, Date fecha) {
         logger.info("evaluarFechaDesvinculacion");
 
         Boolean resultado =false;
         Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
             PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            if(persoReempFinal.getFeFechaFinalizacionContrato() == null) {
+                throw new ValidacionException("No se encuentra la fecha");
+            }
             if(fecha.before(persoReempFinal.getFeFechaFinalizacionContrato()) || fecha.equals(persoReempFinal.getFeFechaFinalizacionContrato())){
               if (!fecha.equals(persoReempFinal.getFeFechaDesvinculacion())){
                   resultado = true;
@@ -988,10 +962,14 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
             PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            if(fecha == null) {
+                throw new ValidacionException("No se encuentra la fecha");
+            }
             persoReempFinal.setFeFechaDesvinculacion(fecha);
             reemplazoDao.save(persoReempFinal);
         return persoReempFinal;
-        }
+    }
+
 
     @Override
 	public List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String seccion) {
@@ -1056,5 +1034,90 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
            result = true;
        }
         return result;
+    }
+
+
+        @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,Boolean conforme, Contexto contexto) {
+        Long id = personalReemplazo.getIdReemplazo();
+        if (id == null) {
+            throw new ValidacionException("No existe id");
+        }
+
+        PersonalReemplazo existe = reemplazoDao.findById(id)
+                .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
+
+        //consultar
+        //	La plataforma SICOES validará que el campo “Estado Aprobación” sea “Concluido” para finalizar con el procedimiento de conformidad. Además, la plataforma SICOES mostrará un mensaje
+        // informativo: La solicitud aún no cuenta con todas las aprobaciones. [Aprobar]. El proceso no continuará.
+        if(existe.getEstadoAprobacionInforme() != listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0)){
+            throw new ValidacionException("La solicitud aún no cuenta con todas las aprobaciones");
+        }
+       // Long idPerfContrato = existe.getIdSolicitud();
+       // SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+
+        if(conforme){
+            existe.setEstadoReemplazo(listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0));
+            existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0));
+        }else{
+
+            //	Se almacenará en el campo “Estado documentos inicio servicio“ en “Preliminar” en la plataforma SICOES.
+
+
+            //La plataforma SICOES descargará en formato PDF el resultado de la revisión de documentos de inicio de servicio.
+
+
+
+           //La plataforma SICOES notificará mediante email al rol Empresa Supervisora que tiene que subsanar la carga de documentos de inicio de servicio.
+
+        }
+
+        AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);
+        return reemplazoDao.save(existe);
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
+        Long id = personalReemplazo.getIdReemplazo();
+        if (id == null) {
+            throw new ValidacionException("No existe id");
+        }
+
+        PersonalReemplazo existe = reemplazoDao.findById(id)
+                .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
+
+
+        if (accion.equals("A")) {
+
+              String nombreSupervisora = obtenerNombreSupervisora(existe);
+
+            if (conforme) {
+                existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)); //en proceso  ---ok
+                existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
+                existe.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
+                existe.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
+
+                notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
+            } else {
+                existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
+                // enviar notificacion x email
+                notificacionContratoService.notificarSubsanacionDocumentos( nombreSupervisora,contexto);
+            }
+        } else {
+            existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
+            existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
+            //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS
+            //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
+            // buscar campo Estado personal y cambiarle el estado a propuesto
+        }
+           AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);
+
+        return reemplazoDao.save(existe);
     }
 }
