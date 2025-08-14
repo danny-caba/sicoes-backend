@@ -182,14 +182,14 @@ public class PersonalReemplazoRestController extends BaseRestController {
     }
 
 
-    @PostMapping("/interno/reemplazo/solicitud/propuesto/evalua/fecha")
+    @PutMapping("/interno/reemplazo/solicitud/propuesto/evalua/fecha")
     public Boolean listarContratistas(@RequestParam Long id,  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha){
         logger.info("evaluar fecha desvinculacion");
         return personalReemplazoService.evaluarFechaDesvinculacion(id,fecha);
     }
 
 
-    @PostMapping("/interno/reemplazo/solicitud/propuesto/evalua/informe")
+    @PutMapping("/interno/reemplazo/solicitud/propuesto/evalua/informe")
     public PersonalReemplazo actualizzarEvaluarInforme(@RequestParam Long id, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha){
         logger.info("evaluar fecha desvinculacion");
         return personalReemplazoService.evaluarDocumentoInforme(id, fecha);
@@ -214,14 +214,14 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.evaluarDocumReemplazo(evaluacion);
     }
 
-        @PostMapping("/interno/reemplazo/solicitud/registra/inicio-servicio")
+    @PutMapping("/interno/reemplazo/solicitud/registra/inicio-servicio")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo rechazarSolicitudContrato(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme) {
         logger.info("registro inicio servicio {}", personalReemplazo);
         return personalReemplazoService.registrarInicioServicioSolContr(personalReemplazo, conforme , getContexto());
     }
 
-    @PostMapping("/interno/reemplazo/solicitud/propuesto")
+    @PutMapping("/interno/reemplazo/solicitud/propuesto")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo evaluarDocumentos(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme, @RequestParam String accion) {
         logger.info("evaluar documentos {}", personalReemplazo);
