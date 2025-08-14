@@ -1040,7 +1040,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,Boolean conforme, Contexto contexto) {
-        Long id = personalReemplazo.getIdReemplazo();
+     Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException("No existe id");
         }
@@ -1048,31 +1048,28 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
 
-        //consultar
-        //	La plataforma SICOES validará que el campo “Estado Aprobación” sea “Concluido” para finalizar con el procedimiento de conformidad. Además, la plataforma SICOES mostrará un mensaje
-        // informativo: La solicitud aún no cuenta con todas las aprobaciones. [Aprobar]. El proceso no continuará.
         if(existe.getEstadoAprobacionInforme() != listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0)){
             throw new ValidacionException("La solicitud aún no cuenta con todas las aprobaciones");
         }
-       // Long idPerfContrato = existe.getIdSolicitud();
-       // SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+        Long idPerfContrato = existe.getIdSolicitud();
+        SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
 
         if(conforme){
+
+            solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.CONCLUIDO);
+            solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.CONCLUIDO);
             existe.setEstadoReemplazo(listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0));
             existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0));
         }else{
-
-            //	Se almacenará en el campo “Estado documentos inicio servicio“ en “Preliminar” en la plataforma SICOES.
-
+            solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.PRELIMINAR);
+            solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.PRELIMINAR);
 
             //La plataforma SICOES descargará en formato PDF el resultado de la revisión de documentos de inicio de servicio.
 
-
-
-           //La plataforma SICOES notificará mediante email al rol Empresa Supervisora que tiene que subsanar la carga de documentos de inicio de servicio.
+            //La plataforma SICOES notificará mediante email al rol Empresa Supervisora que tiene que subsanar la carga de documentos de inicio de servicio.
 
         }
 

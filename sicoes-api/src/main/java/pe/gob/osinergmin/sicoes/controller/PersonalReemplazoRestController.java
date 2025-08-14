@@ -217,14 +217,14 @@ public class PersonalReemplazoRestController extends BaseRestController {
         @PostMapping("/interno/reemplazo/solicitud/registra/inicio-servicio")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo rechazarSolicitudContrato(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme) {
-        logger.info("Registro inicio servicio {}", personalReemplazo);
+        logger.info("registro inicio servicio {}", personalReemplazo);
         return personalReemplazoService.registrarInicioServicioSolContr(personalReemplazo, conforme , getContexto());
     }
 
     @PostMapping("/interno/reemplazo/solicitud/propuesto")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo evaluarDocumentos(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme, @RequestParam String accion) {
-        logger.info("Evaluar documentos {}", personalReemplazo);
+        logger.info("evaluar documentos {}", personalReemplazo);
         return personalReemplazoService.evaluarDocumentos(personalReemplazo, conforme,accion , getContexto());
     }
 }
