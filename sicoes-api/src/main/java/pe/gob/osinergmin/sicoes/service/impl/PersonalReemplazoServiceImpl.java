@@ -620,7 +620,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
 
         //Validar que existan documentos de inicio de servicio
-        existe.setEstadoEvalDoc(listadoDetalleDao.listarListadoDetallePorCoodigo(
+        existe.setEstadoDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
         existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR).get(0));
