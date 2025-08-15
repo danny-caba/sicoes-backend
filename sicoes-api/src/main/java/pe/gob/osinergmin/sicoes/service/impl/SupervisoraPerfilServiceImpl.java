@@ -199,14 +199,15 @@ public class SupervisoraPerfilServiceImpl implements SupervisoraPerfilService{
 	@Override
 	public Page<SupervisoraPerfil> buscarPorIdPerfil(Long idPerfil, Pageable pageable, Contexto contexto) {
 		Page<SupervisoraPerfil> supervisoras = supervisoraPerfilDao.buscarPorIdPerfil(idPerfil,pageable);
-		ListadoDetalle listadoDetalle = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO);
+		/*ListadoDetalle listadoDetalle = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO);
 		List<SupervisoraPerfil> supervisorasFiltradas = supervisoras.getContent().stream()
 				.filter(supervisora -> {
 					SupervisoraMovimiento movimiento = supervisoraMovimientoService.ultimoMovimiento(supervisora.getSupervisora().getIdSupervisora(), contexto);
 					// Retornar true solo si el movimiento no es nulo y el estado coincide
 					return movimiento != null && movimiento.getEstado().getIdListadoDetalle().equals(listadoDetalle.getIdListadoDetalle());
 				})
-				.collect(Collectors.toList());
+				.collect(Collectors.toList());*/
+		List<SupervisoraPerfil> supervisorasFiltradas = supervisoras.getContent();
 		return new PageImpl<>(supervisorasFiltradas, pageable, supervisorasFiltradas.size());
 	}
 }
