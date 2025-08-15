@@ -29,7 +29,7 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     private Supervisora personaPropuesta;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="CO_PERFIL")
+    @JoinColumn(name = "CO_PERFIL", referencedColumnName = "CO_LISTADO_DETALLE")
     private ListadoDetalle perfil;
 
     @Temporal(TemporalType.DATE)
@@ -51,7 +51,7 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     private Supervisora personaBaja;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="CO_PERFIL_PER_BAJA")
+    @JoinColumn(name = "CO_PERFIL_PER_BAJA", referencedColumnName = "CO_LISTADO_DETALLE")
     private ListadoDetalle perfilBaja;
 
     @Temporal(TemporalType.DATE)
@@ -88,5 +88,14 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ES_ESTADO_EVAL_DOC_INI_SERV")
     private ListadoDetalle estadoEvalDocIniServ;
+
+    @Transient
+    private String numeroExpediente;
+
+    @Transient
+    public Supervisora supervisora;
+
+    @Transient
+    private java.util.List<Archivo> archivos = java.util.Collections.emptyList();
 
 }

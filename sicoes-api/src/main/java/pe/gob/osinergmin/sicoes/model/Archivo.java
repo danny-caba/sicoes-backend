@@ -117,6 +117,9 @@ public class Archivo extends BaseModel implements Serializable {
 
 	@Column(name = "ID_DOCUMENTO_REEMPLAZO")
 	private Long idDocumentoReem;
+
+	@Column(name = "ID_PERSONAL_REEMPLAZO")
+	private Long idReemplazoPersonal;
 	
 	@Transient
 	private MultipartFile file;
@@ -405,6 +408,14 @@ public class Archivo extends BaseModel implements Serializable {
 
 	public void setIdDocumentoReem(Long idDocumentoReem) {
 		this.idDocumentoReem = idDocumentoReem;
+	}
+
+	public Long getIdReemplazoPersonal() {
+		return idReemplazoPersonal;
+	}
+
+	public void setIdReemplazoPersonal(Long idReemplazoPersonal) {
+		this.idReemplazoPersonal = idReemplazoPersonal;
 	}
 	
 }
