@@ -1607,15 +1607,16 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
-
+        Long idPerfContrato = existe.getIdSolicitud();
+                    SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+                    Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
         if (accion.equals("A")) {
             if (conforme) {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)); //en proceso  ---ok
                 existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
                 existe.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
                 existe.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
-                    Long idPerfContrato = existe.getIdSolicitud();
-                    SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+
                     Aprobacion aprob = new Aprobacion();
 
                     aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR));
@@ -1625,8 +1626,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
                     aprob.setIdRol(5L);
-                    aprob.setDeTp(solicitud.getSupervisora().getTipoPersona().getValor());
-                    aprob.setIdContratista(solicitud.getSupervisora().getIdSupervisora());
+                    aprob.setDeTp(supervisora.getTipoPersona().getValor());
+                    aprob.setIdContratista(supervisora.getIdSupervisora());
                     aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
                     aprob.setFechaIngreso(new Date());
                     aprob.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
@@ -1634,11 +1635,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     aprob.setEstadoAprobGerenteLinea(null);
                     AuditoriaUtil.setAuditoriaRegistro(aprob,contexto);
                     aprobacionDao.save(aprob);
-                notificacionContratoService.notificarCargarDocumentosInicioServicio( existe.getSupervisora(), contexto);
+                notificacionContratoService.notificarCargarDocumentosInicioServicio(supervisora, contexto);
             } else {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
                 // enviar notificacion x email
-                notificacionContratoService.notificarSubsanacionDocumentos( existe.getSupervisora(), contexto);
+                notificacionContratoService.notificarSubsanacionDocumentos( supervisora, contexto);
             }
         } else {
             existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
