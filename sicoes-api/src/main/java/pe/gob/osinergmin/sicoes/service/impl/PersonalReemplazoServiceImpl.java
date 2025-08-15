@@ -1597,7 +1597,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
-
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException("No existe id");
@@ -1606,9 +1605,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
 
         if (accion.equals("A")) {
-
-              String nombreSupervisora = obtenerNombreSupervisora(existe);
-
             if (conforme) {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)); //en proceso  ---ok
                 existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
@@ -1634,11 +1630,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     aprob.setEstadoAprobGerenteLinea(null);
                     AuditoriaUtil.setAuditoriaRegistro(aprob,contexto);
                     aprobacionDao.save(aprob);
-                notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
+                notificacionContratoService.notificarCargarDocumentosInicioServicio( existe.getSupervisora(), contexto);
             } else {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
                 // enviar notificacion x email
-                notificacionContratoService.notificarSubsanacionDocumentos( nombreSupervisora,contexto);
+                notificacionContratoService.notificarSubsanacionDocumentos( existe.getSupervisora(), contexto);
             }
         } else {
             existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
