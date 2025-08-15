@@ -1,20 +1,26 @@
-package pe.gob.osinergmin.sicoes.model;
+package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import lombok.Getter;
 import lombok.Setter;
+import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 
 @Entity
 @Table(name="SICOES_TD_INFORME_RENOVACION")
@@ -42,6 +48,9 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     @ManyToOne
     @JoinColumn(name = "ID_REQUERIMIENTO", referencedColumnName = "ID_REQ_RENOVACION", nullable = false)
     private RequerimientoRenovacion requerimiento;
+
+    @OneToMany(mappedBy = "informeRenovacionContrato", fetch = FetchType.LAZY)
+    private List<RequerimientoAprobacion> aprobaciones;
 
     @Lob
     @Column(name = "DE_OBJETO")
@@ -84,4 +93,7 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
 
     @Column(name = "ES_COMPLETADO", nullable = false, length = 1)
     private String completado;
+    
+//    @Column(name = "ES_APROBACION_INFORME")
+//    private Integer esAprobacionInforme;
 }

@@ -3,15 +3,9 @@ package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
 
@@ -26,7 +20,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQ_APROBACION")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_APROBACION", sequenceName = "SEQ_SICOES_TC_REQ_APROBACION", allocationSize = 1)
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_APROBACION", sequenceName = "SICOES_SEQ_REQ_APROBACION", allocationSize = 1)
     @Column(name = "ID_REQ_APROBACION")
     private Long idReqAprobacion;
 
@@ -35,6 +29,12 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @Column(name = "ID_REQ_INFORME", precision = 38)
     private Long idReqInforme;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_INFORME_RENOVACION", nullable = false,insertable = false, updatable = false)
+    @JsonIgnore
+    private InformeRenovacionContrato informeRenovacionContrato;
+
 
     @Column(name = "ID_REQ_DOCUMENTO", precision = 38)
     private Long idReqDocumento;
