@@ -5,15 +5,21 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 
 /**
  * Entidad para la tabla SICOES_TC_REQ_RENOVACION
@@ -30,11 +36,18 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQ_RENOVACION")
     private Long idReqRenovacion;
 
-    @Column(name = "ID_SOLI_PERF_CONT", precision = 38)
-    private Long idSoliPerfCont;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_SOLI_PERF_CONT", insertable = false, updatable = false)
+    private SicoesSolicitud solicitudPerfil;
 
     @Column(name = "ID_USUARIO", precision = 10)
     private Long idUsuario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO", insertable = false, updatable = false)
+    private Usuario usuario;
 
     @Column(name = "NU_EXPEDIENTE", length = 50, nullable = false)
     private String nuExpediente;
@@ -52,8 +65,11 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     @Column(name = "FE_REGISTRO", nullable = false)
     private Date feRegistro;
 
-    @Column(name = "ES_REQ_RENOVACION", precision = 10, nullable = false)
-    private Integer esReqRenovacion;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ES_REQ_RENOVACION", insertable = false, updatable = false)
+    private ListadoDetalle estadoReqRenovacion;
 
     @Column(name = "DE_OBSERVACION", length = 500)
     private String deObservacion;
@@ -66,12 +82,11 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     }
 
     public RequerimientoRenovacion(String nuExpediente, String tiSector, String tiSubSector, String noItem, 
-                        Integer esReqRenovacion, String esRegistro) {
+                        String esRegistro) {
         this.nuExpediente = nuExpediente;
         this.tiSector = tiSector;
         this.tiSubSector = tiSubSector;
         this.noItem = noItem;
-        this.esReqRenovacion = esReqRenovacion;
         this.esRegistro = esRegistro;
         this.feRegistro = new Date();
     }
@@ -85,12 +100,12 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
         this.idReqRenovacion = idReqRenovacion;
     }
 
-    public Long getIdSoliPerfCont() {
-        return idSoliPerfCont;
+    public SicoesSolicitud getSolicitudPerfil() {
+        return solicitudPerfil;
     }
 
-    public void setIdSoliPerfCont(Long idSoliPerfCont) {
-        this.idSoliPerfCont = idSoliPerfCont;
+    public void setSolicitudPerfil(SicoesSolicitud solicitudPerfil) {
+        this.solicitudPerfil = solicitudPerfil;
     }
 
     public Long getIdUsuario() {
@@ -99,6 +114,14 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
     public void setIdUsuario(Long idUsuario) {
         this.idUsuario = idUsuario;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getNuExpediente() {
@@ -141,12 +164,12 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
         this.feRegistro = feRegistro;
     }
 
-    public Integer getEsReqRenovacion() {
-        return esReqRenovacion;
+    public ListadoDetalle getEstadoReqRenovacion() {
+        return estadoReqRenovacion;
     }
 
-    public void setEsReqRenovacion(Integer esReqRenovacion) {
-        this.esReqRenovacion = esReqRenovacion;
+    public void setEstadoReqRenovacion(ListadoDetalle estadoReqRenovacion) {
+        this.estadoReqRenovacion = estadoReqRenovacion;
     }
 
     public String getDeObservacion() {
@@ -168,14 +191,12 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     @Override
     public String toString() {
         return "RequerimientoRenovacion [idReqRenovacion=" + idReqRenovacion 
-                + ", idSoliPerfCont=" + idSoliPerfCont 
                 + ", idUsuario=" + idUsuario 
                 + ", nuExpediente=" + nuExpediente 
                 + ", tiSector=" + tiSector 
                 + ", tiSubSector=" + tiSubSector 
                 + ", noItem=" + noItem 
                 + ", feRegistro=" + feRegistro 
-                + ", esReqRenovacion=" + esReqRenovacion 
                 + ", deObservacion=" + deObservacion 
                 + ", esRegistro=" + esRegistro + "]";
     }
