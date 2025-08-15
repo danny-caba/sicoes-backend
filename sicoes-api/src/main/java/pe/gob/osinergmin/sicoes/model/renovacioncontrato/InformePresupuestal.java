@@ -5,9 +5,12 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -30,8 +33,12 @@ public class InformePresupuestal extends BaseModel implements Serializable {
     @Column(name = "ID_INF_PRESUPUESTAL")
     private Long idInfPresupuestal;
 
-    @Column(name = "ID_REQ_APROBACION", precision = 38)
-    private Long idReqAprobacion;
+ 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REQ_APROBACION", insertable = false, updatable = false)
+    private RequerimientoAprobacion requerimientoAprobacion;
+
 
     @Column(name = "DE_UUID_ARCHIVO", length = 36, nullable = false)
     private String deUuidArchivo;
@@ -53,9 +60,8 @@ public class InformePresupuestal extends BaseModel implements Serializable {
     public InformePresupuestal() {
     }
 
-    public InformePresupuestal(Long idReqAprobacion, String deUuidArchivo, String deNombreArchivo, 
+    public InformePresupuestal(String deUuidArchivo, String deNombreArchivo, 
                           String deRutaArchivo, String esRegistro) {
-        this.idReqAprobacion = idReqAprobacion;
         this.deUuidArchivo = deUuidArchivo;
         this.deNombreArchivo = deNombreArchivo;
         this.deRutaArchivo = deRutaArchivo;
@@ -72,12 +78,12 @@ public class InformePresupuestal extends BaseModel implements Serializable {
         this.idInfPresupuestal = idInfPresupuestal;
     }
 
-    public Long getIdReqAprobacion() {
-        return idReqAprobacion;
+    public RequerimientoAprobacion getRequerimientoAprobacion() {
+        return requerimientoAprobacion;
     }
 
-    public void setIdReqAprobacion(Long idReqAprobacion) {
-        this.idReqAprobacion = idReqAprobacion;
+    public void setRequerimientoAprobacion(RequerimientoAprobacion requerimientoAprobacion) {
+        this.requerimientoAprobacion = requerimientoAprobacion;
     }
 
     public String getDeUuidArchivo() {
@@ -123,7 +129,6 @@ public class InformePresupuestal extends BaseModel implements Serializable {
     @Override
     public String toString() {
         return "InformePresupuestal [idInfPresupuestal=" + idInfPresupuestal 
-                + ", idReqAprobacion=" + idReqAprobacion 
                 + ", deUuidArchivo=" + deUuidArchivo 
                 + ", deNombreArchivo=" + deNombreArchivo 
                 + ", deRutaArchivo=" + deRutaArchivo 
