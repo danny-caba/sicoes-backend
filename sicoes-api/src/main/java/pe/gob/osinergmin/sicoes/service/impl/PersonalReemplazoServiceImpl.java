@@ -1133,9 +1133,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                                                   Long idcontratista, Long numexpediente) {
         List<AprobacionReemp>  resultado = new ArrayList<>();
 
-        if(requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G2_GER_DIV)){
+          if(requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G2_GER_DIV)){
             resultado =  aprobacionReempDao.buscarEvalInfAprobTecG2(tipoaprob, estadoaprob, tiposolicitud,
-                idcontratista, numexpediente);
+                idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR).getIdListadoDetalle(),
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle());
         }
         if(requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G3_GER_LIN)){
             resultado =  aprobacionReempDao.buscarEvalInfAprobTecG3(tipoaprob, estadoaprob, tiposolicitud,
@@ -1460,7 +1462,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
         }
 
-        AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);
+        AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
         return reemplazoDao.save(existe);
     }
 
@@ -1468,14 +1470,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
+
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException("No existe id");
         }
-
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
-
 
         if (accion.equals("A")) {
 
@@ -1486,7 +1487,26 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
                 existe.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
                 existe.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
+                    Long idPerfContrato = existe.getIdSolicitud();
+                    SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+                    Aprobacion aprob = new Aprobacion();
 
+                    aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR));
+                    aprob.setRemplazoPersonal(existe);
+                    aprob.setNumeroExpediente(sicoesSolicitudDao.obtenerNumExpedienteAprobacion(solicitud.getIdSolicitud()));
+                    DocumentoReemplazo doc = documentoReemDao.findById(solicitud.getIdDocInicio())
+                            .orElseThrow(() -> new ValidacionException("Id documento no encontrado"));
+                    aprob.setDocumento(doc);
+                    aprob.setIdRol(5L);
+                    aprob.setDeTp(solicitud.getSupervisora().getTipoPersona().getValor());
+                    aprob.setIdContratista(solicitud.getSupervisora().getIdSupervisora());
+                    aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
+                    aprob.setFechaIngreso(new Date());
+                    aprob.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
+                    aprob.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
+                    aprob.setEstadoAprobGerenteLinea(null);
+                    AuditoriaUtil.setAuditoriaRegistro(aprob,contexto);
+                    aprobacionDao.save(aprob);
                 notificacionContratoService.notificarCargarDocumentosInicioServicio( nombreSupervisora,contexto);
             } else {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
@@ -1500,7 +1520,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
             // buscar campo Estado personal y cambiarle el estado a propuesto
         }
-           AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);
+           AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
 
         return reemplazoDao.save(existe);
     }

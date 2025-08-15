@@ -29,7 +29,7 @@ public class Aprobacion extends BaseModel implements Serializable {
     private PersonalReemplazo remplazoPersonal;
 
     @Column(name = "NU_NUMERO_EXPEDIENTE")
-    private Long numeroExpediente;
+    private String numeroExpediente;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,8 +45,9 @@ public class Aprobacion extends BaseModel implements Serializable {
     @Column(name = "CO_TIPO_SOLICITUD")
     private String coTipoSolicitud;
 
-    @Column(name = "CO_TIPO_APROBACION")
-    private String coTipoAprobacion;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "CO_TIPO_APROBACION")
+    private ListadoDetalle coTipoAprobacion;
 
     @Temporal(TemporalType.DATE)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")

@@ -63,8 +63,17 @@ public class Constantes {
 	}
 
 	public static final class LISTADO {
-		
+
+		public static final class TIPO_APROBACION{
+
+			public static final String CODIGO 		 = "TIPO_APROBACION";
+			public static final String APROBAR     = "APROBAR";
+			public static final String FIRMAR = "FIRMAR";
+			public static final String  VISTO_BUENO     = "VISTO_BUENO";
+		}
+
 		public static final class ESTADO_APROBACION{
+
 
 			public static final String CODIGO 		 = "ESTADO_APROBACION";
 			public static final String APROBADO      = "APROBADO";
