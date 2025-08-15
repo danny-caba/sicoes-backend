@@ -926,6 +926,8 @@ public class Constantes {
 		public static final String USUARIO_G3_NO_EXISTE="V01035";
 		public static final String USUARIO_EXTERNO_NO_EXISTE="V01036";
 		public static final String USUARIO_RESPONSABLE_TECNICO_NO_EXISTE="V01037";
+		public static final String SOLICITUD_NO_EXISTE="V01038";
+		public static final String USUARIO_G4_NO_EXISTE="V01039";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -940,6 +942,7 @@ public class Constantes {
 		public static final String INVITADO		                = "15";
 		public static final String G2_APROBADOR_ADMINISTRATIVO	= "18";
 		public static final String G3_APROBADOR_ADMINISTRATIVO	= "17";
+		public static final String G4_APROBADOR_ADMINISTRATIVO	= "16";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

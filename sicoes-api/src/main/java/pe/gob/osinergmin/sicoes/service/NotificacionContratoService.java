@@ -9,25 +9,25 @@ import java.util.List;
 
 public interface NotificacionContratoService {
 
-    void notificarReemplazoPersonalByEmail(String numExpediente,String nombreRol, Contexto contexto);
+    void notificarReemplazoPersonalByEmail(Usuario usuario, String numExpediente,String nombreRol, Contexto contexto);
 
-    void notificarDesvinculacionEmpresa(String nummeroExpediente, String nombreSupervisora, Contexto contexto);
+    void notificarDesvinculacionEmpresa(Usuario usuario, String nummeroExpediente, String nombreSupervisora, Contexto contexto);
 
     void notificarSubsanacionDocumentos(Supervisora personaPropuesta, Contexto contexto);
 
     void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto);
 
-    void notificarRechazoPersonalPropuesto(Supervisora personaPropuesta, Contexto contexto);
+    void notificarRechazoPersonalPropuesto(Supervisora empresa, Supervisora personaPropuesta, Contexto contexto);
 
-    void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto);
+    void notificarRevisarDocumentacionPendiente(Usuario usuario, String numExpediente, String nombreRol, Contexto contexto);
 
-    void notificarRevDocumentos2(Usuario usuario, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
+    void notificarRevDocumentos2(Supervisora empresa, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
 
     void notificarRevDocumentos15(Usuario usuario, String numeroExpediente, Contexto contexto);
 
     void notificarRevDocumentos12(Usuario usuario, Contexto contexto);
 
-    void notificarRevDocumentos122(Usuario usuario, Contexto contexto);
+    void notificarRevDocumentos122(Supervisora empresa,String nombrePersonal, String nombrePerfil, Contexto contexto);
 
     void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
 

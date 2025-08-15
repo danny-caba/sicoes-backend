@@ -80,6 +80,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     @Autowired
     private NotificacionContratoService notificacionContratoService;
 
+    @Autowired
+    private SicoesSolicitudDao sicoesSolicitudDao;
+
     @Override
     @Transactional
     public AdendaReemplazo guardar(AdendaReemplazo adenda, Contexto contexto) {
@@ -332,6 +335,19 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                         adenda.setEstadoFirmaJefe(estadoApro);
                         adenda.setEstadoFirmaGerencia(estadoAsig);
                         adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
+                        //Notificacion
+                        PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
+                                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+                        Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO)
+                                .stream()
+                                .findFirst()
+                                .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                        if (usuario.isPresent()) {
+                            String numeroExpediente = this.obtenerNumeroExpediente(personalReemplazo);
+                            notificacionContratoService.notificarAprobacionPendiente(usuario.get(), numeroExpediente, contexto);
+                        } else {
+                            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G4_NO_EXISTE);
+                        }
                     }
                     if (firmaRequestDTO.getFirmaGerente()){
                         Optional<PersonalReemplazo> personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal());
@@ -515,9 +531,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         if (personalReemplazo == null) {
             return "";
         }
-        Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
-        return personaPropuesta != null ?
-                Optional.ofNullable(personaPropuesta.getNumeroExpediente())
-                        .orElse("") : "";
+        SicoesSolicitud solicitud = sicoesSolicitudDao.findById(personalReemplazo.getIdSolicitud())
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_EXISTE));
+        return Optional.ofNullable(solicitud.getNumeroExpediente())
+                .orElse("");
     }
 }
