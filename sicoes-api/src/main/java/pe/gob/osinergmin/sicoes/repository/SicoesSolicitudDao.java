@@ -118,4 +118,15 @@ public interface SicoesSolicitudDao extends JpaRepository<SicoesSolicitud, Long>
                    "(SELECT c.id_soli_perf_cont FROM SICOES_TD_CONTRATO c WHERE id_contrato = :idContrato)", nativeQuery = true)
     int actualizarIdDocInicioPorContrato(Long idContrato);
 
+
+	@Query( value = "SELECT PRO.NU_PROCESO FROM SICOES_TC_SOLI_PERF_CONT SOLI " +
+		"LEFT JOIN SICOES_TR_PROPUESTA PROP " +
+		"ON SOLI.ID_PROPUESTA = PROP.ID_PROPUESTA " +
+		"LEFT  JOIN SICOES_TR_PROCESO_ITEM  PROIT " +
+		"ON PROP.ID_PROCESO_ITEM = PROIT.ID_PROCESO_ITEM " +
+		"LEFT JOIN SICOES_TR_PROCESO PRO " +
+		"ON PROIT.ID_PROCESO = PRO.ID_PROCESO " +
+		"WHERE SOLI.ID_SOLI_PERF_CONT = :idSolicitud", nativeQuery = true)
+	String obtenerNumExpedienteAprobacion(Long idSolicitud);
+
 }

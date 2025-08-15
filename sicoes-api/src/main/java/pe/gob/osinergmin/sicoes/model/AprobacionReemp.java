@@ -14,12 +14,14 @@ public class AprobacionReemp {
     @Id
     @Column(name = "ID")
     private Long id;
+    @Column(name = "ID_REEMP")
+    private Long idReemp;
     @Column(name = "TIPO_APROBACION")
     private Long tipoAprobacion;
     @Column(name = "NOM_TIPO_APROBACION")
     private String nomTipoAprobacion;
     @Column(name = "NUMERO_EXPEDIENTE")
-    private Long numeroExpediente;
+    private String numeroExpediente;
     @Column(name = "ID_INFORME")
     private Long idInforme;
     @Column(name = "INFORME")
@@ -31,7 +33,7 @@ public class AprobacionReemp {
     @Column(name = "CONTRATISTA")
     private String contratista;
     @Column(name = "ID_TIPO_SOLICITUD")
-    private Long idTipoSolicitud;
+    private String idTipoSolicitud;
     @Column(name = "TIPO_SOLICITUD")
     private String tipoSolictiud;
     @Temporal(TemporalType.DATE)
@@ -68,4 +70,5 @@ public class AprobacionReemp {
     private String estadoFirmaGerencia;
     @Column(name = "ID_ARCHIVO")
     private String idArchivo;
+
 }
