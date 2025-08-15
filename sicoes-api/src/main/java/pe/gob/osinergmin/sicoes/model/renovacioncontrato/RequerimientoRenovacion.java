@@ -55,15 +55,6 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     @Column(name = "ES_REQ_RENOVACION", precision = 10, nullable = false)
     private Integer esReqRenovacion;
 
-    @Column(name = "ES_APROBACION_INFORME", precision = 10, nullable = false)
-    private Integer esAprobacionInforme;
-
-    @Column(name = "ES_APROBACION_GPPM", precision = 10, nullable = false)
-    private Integer esAprobacionGppm;
-
-    @Column(name = "ES_APROBACION_GSE", precision = 10, nullable = false)
-    private Integer esAprobacionGse;
-
     @Column(name = "DE_OBSERVACION", length = 500)
     private String deObservacion;
 
@@ -75,16 +66,12 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     }
 
     public RequerimientoRenovacion(String nuExpediente, String tiSector, String tiSubSector, String noItem, 
-                        Integer esReqRenovacion, Integer esAprobacionInforme, Integer esAprobacionGppm, 
-                        Integer esAprobacionGse, String esRegistro) {
+                        Integer esReqRenovacion, String esRegistro) {
         this.nuExpediente = nuExpediente;
         this.tiSector = tiSector;
         this.tiSubSector = tiSubSector;
         this.noItem = noItem;
         this.esReqRenovacion = esReqRenovacion;
-        this.esAprobacionInforme = esAprobacionInforme;
-        this.esAprobacionGppm = esAprobacionGppm;
-        this.esAprobacionGse = esAprobacionGse;
         this.esRegistro = esRegistro;
         this.feRegistro = new Date();
     }
@@ -162,30 +149,6 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
         this.esReqRenovacion = esReqRenovacion;
     }
 
-    public Integer getEsAprobacionInforme() {
-        return esAprobacionInforme;
-    }
-
-    public void setEsAprobacionInforme(Integer esAprobacionInforme) {
-        this.esAprobacionInforme = esAprobacionInforme;
-    }
-
-    public Integer getEsAprobacionGppm() {
-        return esAprobacionGppm;
-    }
-
-    public void setEsAprobacionGppm(Integer esAprobacionGppm) {
-        this.esAprobacionGppm = esAprobacionGppm;
-    }
-
-    public Integer getEsAprobacionGse() {
-        return esAprobacionGse;
-    }
-
-    public void setEsAprobacionGse(Integer esAprobacionGse) {
-        this.esAprobacionGse = esAprobacionGse;
-    }
-
     public String getDeObservacion() {
         return deObservacion;
     }
@@ -213,9 +176,6 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
                 + ", noItem=" + noItem 
                 + ", feRegistro=" + feRegistro 
                 + ", esReqRenovacion=" + esReqRenovacion 
-                + ", esAprobacionInforme=" + esAprobacionInforme 
-                + ", esAprobacionGppm=" + esAprobacionGppm 
-                + ", esAprobacionGse=" + esAprobacionGse 
                 + ", deObservacion=" + deObservacion 
                 + ", esRegistro=" + esRegistro + "]";
     }
