@@ -70,6 +70,10 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     private Date feFechaFinalizacionContrato;
 
     @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_REVISAR_DOC")
+    private ListadoDetalle estadoRevisarDoc;
+
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ES_ESTADO_EVAL_DOC")
     private ListadoDetalle estadoEvalDoc;
 
@@ -84,6 +88,10 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ES_ESTADO_APROBACION_ADENDA")
     private ListadoDetalle estadoAprobacionAdenda;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ES_ESTADO_DOC_INI_SERV")
+    private ListadoDetalle estadoDocIniServ;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ES_ESTADO_EVAL_DOC_INI_SERV")

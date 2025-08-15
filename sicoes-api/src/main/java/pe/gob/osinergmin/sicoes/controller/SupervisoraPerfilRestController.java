@@ -107,11 +107,12 @@ public class SupervisoraPerfilRestController extends BaseRestController {
 		return supervisoras;
 	}
 
+	/*
 	@GetMapping("/profesionales/propuesto/baja")
 	@Raml("supervisora.perfil.listar.properties")
 	public Page<SupervisoraPerfil> buscarPorIdPropuesta(@RequestParam Long idPropuesta,Pageable pageable){
 		return supervisoraPerfilService.buscarPorIdPropuesta(idPropuesta,pageable,getContexto());
-	}
+	}*/
 
 	@GetMapping("/profesionales/propuesto/reemplazo")
 	@Raml("supervisora.perfil.listar.properties")

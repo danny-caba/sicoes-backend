@@ -66,7 +66,7 @@ public class Constantes {
 		
 		public static final class ESTADO_APROBACION{
 
-			public static final String CODIGO 		 = "ESTADO_APROBACION_REEMP";
+			public static final String CODIGO 		 = "ESTADO_APROBACION";
 			public static final String APROBADO      = "APROBADO";
 			public static final String EN_APROBACION = "EN_APROBACION";
 			public static final String  ASIGNADO     = "ASIGNADO";

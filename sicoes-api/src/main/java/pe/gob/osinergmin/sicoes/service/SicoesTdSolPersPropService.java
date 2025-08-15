@@ -15,6 +15,7 @@ public interface SicoesTdSolPersPropService extends BaseService<SicoesTdSoliPers
 	List<SicoesTdSoliPersProp> registrarProfesionales(SicoesSolicitud resSolicitud, List<SicoesTdSolPerConSec> secciones, Contexto contexto);
 	List<SicoesTdSoliPersProp> obtenerProfesionalesPorSeccion(Long idSeccion);
 	Page<SicoesTdSoliPersProp> personasPorSeccion(Long idSeccionPerConSec, Pageable pageable, Contexto contexto);
+	Page<SicoesTdSoliPersProp> personasPorIdSolicitud(Long idSolicitud, Pageable pageable);
 	List<SicoesTdSoliPersProp> registrarProfesionalesSubsanacion(List<SicoesTdSolPerConSec> seccionesSubsanacion, Contexto contexto);
 
 }

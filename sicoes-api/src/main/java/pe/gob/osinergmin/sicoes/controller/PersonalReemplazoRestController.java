@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
@@ -181,18 +182,19 @@ public class PersonalReemplazoRestController extends BaseRestController {
     }
 
 
-    @GetMapping("/interno/reemplazo/solicitud/propuesto/evalua/fecha")
-    public Boolean listarContratistas(@RequestParam Long id, @RequestParam Date fecha){
+    @PutMapping("/interno/reemplazo/solicitud/propuesto/evalua/fecha")
+    public Boolean listarContratistas(@RequestParam Long id,  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha){
         logger.info("evaluar fecha desvinculacion");
         return personalReemplazoService.evaluarFechaDesvinculacion(id,fecha);
     }
 
 
-    @PostMapping("/interno/reemplazo/solicitud/propuesto/evalua/informe")
-    public PersonalReemplazo actualizzarEvaluarInforme(@RequestParam Long id, @RequestParam Date fecha){
+    @PutMapping("/interno/reemplazo/solicitud/propuesto/evalua/informe")
+    public PersonalReemplazo actualizzarEvaluarInforme(@RequestParam Long id, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha){
         logger.info("evaluar fecha desvinculacion");
         return personalReemplazoService.evaluarDocumentoInforme(id, fecha);
     }
+
 
     @GetMapping("/interno/reemplazo/solicitud/baja/propuestos")
     public EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionPP(@RequestParam Long id, @RequestParam(required = false)  Long idsol) {
@@ -210,5 +212,19 @@ public class PersonalReemplazoRestController extends BaseRestController {
     public Boolean evaluarConformidad(@RequestBody EvaluarDocuDTO evaluacion){
         logger.info("evaluar conformidad");
         return personalReemplazoService.evaluarDocumReemplazo(evaluacion);
+    }
+
+    @PutMapping("/interno/reemplazo/solicitud/registra/inicio-servicio")
+    @Raml("personalReemplazo.listar.properties")
+    public PersonalReemplazo rechazarSolicitudContrato(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme) {
+        logger.info("registro inicio servicio {}", personalReemplazo);
+        return personalReemplazoService.registrarInicioServicioSolContr(personalReemplazo, conforme , getContexto());
+    }
+
+    @PutMapping("/interno/reemplazo/solicitud/propuesto")
+    @Raml("personalReemplazo.listar.properties")
+    public PersonalReemplazo evaluarDocumentos(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme, @RequestParam String accion) {
+        logger.info("evaluar documentos {}", personalReemplazo);
+        return personalReemplazoService.evaluarDocumentos(personalReemplazo, conforme,accion , getContexto());
     }
 }

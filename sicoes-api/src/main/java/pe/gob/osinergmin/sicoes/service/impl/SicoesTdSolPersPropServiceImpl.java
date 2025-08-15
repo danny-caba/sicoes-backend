@@ -4,13 +4,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -66,6 +61,12 @@ public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropServic
 	@Autowired
 	private SicoesTdSolPerConSecService sicoesTdSolPerConSecService;
 
+	@Autowired
+	private ListadoDetalleService listadoDetalleService;
+
+	@Autowired
+	private SupervisoraMovimientoService supervisoraMovimientoService;
+
 	@Override
 	public SicoesTdSoliPersProp guardar(SicoesTdSoliPersProp sicoesTdSoliPersProp, Contexto contexto) {
 		return sicoesTdSoliPersPropDao.save(sicoesTdSoliPersProp);
@@ -96,6 +97,9 @@ public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropServic
 		 if (sicoesTdSoliPersProp.getSicoesTdSolPerConSec() != null) {
 			 sicoesTdSoliPersPropFinal.setSicoesTdSolPerConSec(sicoesTdSoliPersProp.getSicoesTdSolPerConSec());
           }
+		 if (sicoesTdSoliPersProp.getPerfil() != null) {
+			 sicoesTdSoliPersPropFinal.setPerfil(sicoesTdSoliPersProp.getPerfil());
+		 }
 		 if (sicoesTdSoliPersProp.getDePerfilProfesional() != null) {
 			 sicoesTdSoliPersPropFinal.setDePerfilProfesional(sicoesTdSoliPersProp.getDePerfilProfesional()) ;
           }
@@ -128,6 +132,7 @@ public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropServic
 				SicoesTdSoliPersProp sicoesTdSoliPersProp = new SicoesTdSoliPersProp();
 				sicoesTdSoliPersProp.setSupervisora(propuestaProfesional.getSupervisora());
 				sicoesTdSoliPersProp.setSicoesTdSolPerConSec(sicoesTdSolPerConSec);
+				sicoesTdSoliPersProp.setPerfil(propuestaProfesional.getPerfil());
 				sicoesTdSoliPersProp.setDePerfilProfesional(propuestaProfesional.getPerfil().getDescripcion());
 				sicoesTdSoliPersProp.setTiSolicitud(Constantes.TIPO_SOLICITUD_PERF_CONTRATO.INSCRIPCION);
 				sicoesTdSoliPersProp.setEsAdjuntoSolicitud(Constantes.ESTADO.ACTIVO);
@@ -147,6 +152,36 @@ public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropServic
 	@Override
 	public Page<SicoesTdSoliPersProp> personasPorSeccion(Long idSeccionPerConSec, Pageable pageable, Contexto contexto) {
 		return sicoesTdSoliPersPropDao.personasPorSeccion(idSeccionPerConSec, pageable);
+	}
+
+	@Override
+	public Page<SicoesTdSoliPersProp> personasPorIdSolicitud(Long idSolicitud, Pageable pageable) {
+		Page<SicoesTdSoliPersProp> allPage = sicoesTdSoliPersPropDao.personasPorSolicitud(idSolicitud,Pageable.unpaged());
+		List<SicoesTdSoliPersProp> todas = allPage.getContent();
+
+		ListadoDetalle listadoDetalle = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
+				Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO);
+
+		Contexto ctx = AuditoriaUtil.getContextoJob();
+
+		List<SicoesTdSoliPersProp> filtradas = todas.stream()
+				.filter(ss -> {
+					if (ss.getSupervisora() == null || ss.getSupervisora().getIdSupervisora() == null) return false;
+					SupervisoraMovimiento mov = supervisoraMovimientoService
+							.ultimoMovimiento(ss.getSupervisora().getIdSupervisora(), ctx);
+					return mov != null
+							&& mov.getEstado() != null
+							&& Objects.equals(
+							mov.getEstado().getIdListadoDetalle(),
+							listadoDetalle.getIdListadoDetalle()
+					);
+				})
+				.collect(Collectors.toList());
+
+		int start = (int) Math.min(pageable.getOffset(), filtradas.size());
+		int end   = Math.min(start + pageable.getPageSize(), filtradas.size());
+		List<SicoesTdSoliPersProp> pageContent = filtradas.subList(start, end);
+		return new PageImpl<>(pageContent, pageable, filtradas.size());
 	}
 
 	@Override
