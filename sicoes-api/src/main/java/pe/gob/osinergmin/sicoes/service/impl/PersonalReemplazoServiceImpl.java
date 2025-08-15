@@ -1621,8 +1621,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR));
                     aprob.setRemplazoPersonal(existe);
                     aprob.setNumeroExpediente(sicoesSolicitudDao.obtenerNumExpedienteAprobacion(solicitud.getIdSolicitud()));
-                    DocumentoReemplazo doc = documentoReemDao.findById(solicitud.getIdDocInicio())
-                            .orElseThrow(() -> new ValidacionException("Id documento no encontrado"));
+                    DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(existe.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
                     aprob.setIdRol(5L);
                     aprob.setDeTp(solicitud.getSupervisora().getTipoPersona().getValor());
