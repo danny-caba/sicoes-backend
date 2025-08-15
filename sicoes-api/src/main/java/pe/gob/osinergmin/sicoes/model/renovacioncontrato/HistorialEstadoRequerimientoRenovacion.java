@@ -34,11 +34,11 @@ public class HistorialEstadoRequerimientoRenovacion extends BaseModel implements
     @Column(name = "ID_USUARIO", precision = 10)
     private Long idUsuario;
 
-    @Column(name = "DE_ESTADO_ANTERIOR", length = 20)
-    private String deEstadoAnterior;
+    @Column(name = "DE_ESTADO_ANTERIOR_LD", precision = 10)
+    private Long deEstadoAnteriorLd;
 
-    @Column(name = "DE_ESTADO_NUEVO", length = 20, nullable = false)
-    private String deEstadoNuevo;
+    @Column(name = "DE_ESTADO_NUEVO_LD", precision = 10, nullable = false)
+    private Long deEstadoNuevoLd;
 
     @Column(name = "FE_FECHA_CAMBIO", nullable = false)
     private Timestamp feFechaCambio;
@@ -50,12 +50,12 @@ public class HistorialEstadoRequerimientoRenovacion extends BaseModel implements
     public HistorialEstadoRequerimientoRenovacion() {
     }
 
-    public HistorialEstadoRequerimientoRenovacion(Long idRequerimiento, Long idUsuario, String deEstadoAnterior, 
-                          String deEstadoNuevo, String esRegistro) {
+    public HistorialEstadoRequerimientoRenovacion(Long idRequerimiento, Long idUsuario, Long deEstadoAnteriorLd, 
+                          Long deEstadoNuevoLd, String esRegistro) {
         this.idRequerimiento = idRequerimiento;
         this.idUsuario = idUsuario;
-        this.deEstadoAnterior = deEstadoAnterior;
-        this.deEstadoNuevo = deEstadoNuevo;
+        this.deEstadoAnteriorLd = deEstadoAnteriorLd;
+        this.deEstadoNuevoLd = deEstadoNuevoLd;
         this.esRegistro = esRegistro;
         this.feFechaCambio = new Timestamp(System.currentTimeMillis());
     }
@@ -85,20 +85,20 @@ public class HistorialEstadoRequerimientoRenovacion extends BaseModel implements
         this.idUsuario = idUsuario;
     }
 
-    public String getDeEstadoAnterior() {
-        return deEstadoAnterior;
+    public Long getDeEstadoAnteriorLd() {
+        return deEstadoAnteriorLd;
     }
 
-    public void setDeEstadoAnterior(String deEstadoAnterior) {
-        this.deEstadoAnterior = deEstadoAnterior;
+    public void setDeEstadoAnteriorLd(Long deEstadoAnteriorLd) {
+        this.deEstadoAnteriorLd = deEstadoAnteriorLd;
     }
 
-    public String getDeEstadoNuevo() {
-        return deEstadoNuevo;
+    public Long getDeEstadoNuevoLd() {
+        return deEstadoNuevoLd;
     }
 
-    public void setDeEstadoNuevo(String deEstadoNuevo) {
-        this.deEstadoNuevo = deEstadoNuevo;
+    public void setDeEstadoNuevoLd(Long deEstadoNuevoLd) {
+        this.deEstadoNuevoLd = deEstadoNuevoLd;
     }
 
     public Timestamp getFeFechaCambio() {
@@ -122,8 +122,8 @@ public class HistorialEstadoRequerimientoRenovacion extends BaseModel implements
         return "HistorialEstadoRequerimientoRenovacion [idHistorialEstadoCampo=" + idHistorialEstadoCampo 
                 + ", idRequerimiento=" + idRequerimiento 
                 + ", idUsuario=" + idUsuario 
-                + ", deEstadoAnterior=" + deEstadoAnterior 
-                + ", deEstadoNuevo=" + deEstadoNuevo 
+                + ", deEstadoAnteriorLd=" + deEstadoAnteriorLd 
+                + ", deEstadoNuevoLd=" + deEstadoNuevoLd 
                 + ", feFechaCambio=" + feFechaCambio 
                 + ", esRegistro=" + esRegistro + "]";
     }

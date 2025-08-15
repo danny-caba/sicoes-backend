@@ -64,6 +64,9 @@ public class InformeRenovacion extends BaseModel implements Serializable {
     @Column(name = "ES_VIGENTE", precision = 1, nullable = false)
     private Integer esVigente;
 
+    @Column(name = "ES_APROBACION_INFORME", precision = 10, nullable = false)
+    private Integer esAprobacionInforme;
+
     @Column(name = "DE_UUID_INFO_RENOVACION", length = 36, nullable = false)
     private String deUuidInfoRenovacion;
 
@@ -84,11 +87,12 @@ public class InformeRenovacion extends BaseModel implements Serializable {
     }
 
     public InformeRenovacion(Long idUsuario, Long idRequerimiento, String deUuidInfoRenovacion, 
-                           Integer esVigente, String esCompletado, String esRegistro) {
+                           Integer esVigente, Integer esAprobacionInforme, String esCompletado, String esRegistro) {
         this.idUsuario = idUsuario;
         this.idRequerimiento = idRequerimiento;
         this.deUuidInfoRenovacion = deUuidInfoRenovacion;
         this.esVigente = esVigente;
+        this.esAprobacionInforme = esAprobacionInforme;
         this.esCompletado = esCompletado;
         this.esRegistro = esRegistro;
     }
@@ -182,6 +186,14 @@ public class InformeRenovacion extends BaseModel implements Serializable {
         this.esVigente = esVigente;
     }
 
+    public Integer getEsAprobacionInforme() {
+        return esAprobacionInforme;
+    }
+
+    public void setEsAprobacionInforme(Integer esAprobacionInforme) {
+        this.esAprobacionInforme = esAprobacionInforme;
+    }
+
     public String getDeUuidInfoRenovacion() {
         return deUuidInfoRenovacion;
     }
@@ -230,6 +242,7 @@ public class InformeRenovacion extends BaseModel implements Serializable {
                 + ", idRequerimiento=" + idRequerimiento 
                 + ", deUuidInfoRenovacion=" + deUuidInfoRenovacion 
                 + ", esVigente=" + esVigente 
+                + ", esAprobacionInforme=" + esAprobacionInforme 
                 + ", deNombreArchivo=" + deNombreArchivo 
                 + ", deRutaArchivo=" + deRutaArchivo 
                 + ", esCompletado=" + esCompletado 
