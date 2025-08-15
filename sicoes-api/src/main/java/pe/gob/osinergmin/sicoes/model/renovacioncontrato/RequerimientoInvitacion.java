@@ -6,15 +6,19 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.Notificacion;
 
 /**
  * Entidad para la tabla SICOES_TC_REQ_INVITACION
@@ -34,14 +38,23 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQUERIMIENTO", precision = 38, nullable = false)
     private Long idRequerimiento;
 
-    @Column(name = "ID_REQ_RENOVACION", precision = 38, nullable = false)
-    private Long idReqRenovacion;
 
-    @Column(name = "ID_NOTIFICACION", precision = 10)
-    private Long idNotificacion;
 
-    @Column(name = "ID_PLAZO_CONFIRMACION")
-    private Long idPlazoConfirmacion;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_NOTIFICACION")
+    private Notificacion notificacion;
+
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PLAZO_CONFIRMACION")
+    private PlazoConfirmacion plazoConfirmacion;
+
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_REQ_RENOVACION", insertable = false, updatable = false)
+    private RequerimientoRenovacion requerimientoRenovacion;
 
     @Column(name = "ID_ESTADO_LD", precision = 38)
     private Long idEstadoLd;
@@ -82,15 +95,13 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     public RequerimientoInvitacion() {
     }
 
-    public RequerimientoInvitacion(Long idRequerimiento, Long idReqRenovacion) {
+    public RequerimientoInvitacion(Long idRequerimiento) {
         this.idRequerimiento = idRequerimiento;
-        this.idReqRenovacion = idReqRenovacion;
         this.flActivo = "1";
     }
 
-    public RequerimientoInvitacion(Long idRequerimiento, Long idReqRenovacion, Long idSupervisora, String flActivo) {
+    public RequerimientoInvitacion(Long idRequerimiento, Long idSupervisora, String flActivo) {
         this.idRequerimiento = idRequerimiento;
-        this.idReqRenovacion = idReqRenovacion;
         this.idSupervisora = idSupervisora;
         this.flActivo = flActivo != null ? flActivo : "1";
     }
@@ -112,28 +123,30 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.idRequerimiento = idRequerimiento;
     }
 
-    public Long getIdReqRenovacion() {
-        return idReqRenovacion;
+    public Notificacion getNotificacion() {
+        return notificacion;
     }
 
-    public void setIdReqRenovacion(Long idReqRenovacion) {
-        this.idReqRenovacion = idReqRenovacion;
+    public void setNotificacion(Notificacion notificacion) {
+        this.notificacion = notificacion;
     }
 
-    public Long getIdNotificacion() {
-        return idNotificacion;
+
+
+    public PlazoConfirmacion getPlazoConfirmacion() {
+        return plazoConfirmacion;
     }
 
-    public void setIdNotificacion(Long idNotificacion) {
-        this.idNotificacion = idNotificacion;
+    public void setPlazoConfirmacion(PlazoConfirmacion plazoConfirmacion) {
+        this.plazoConfirmacion = plazoConfirmacion;
     }
 
-    public Long getIdPlazoConfirmacion() {
-        return idPlazoConfirmacion;
+    public RequerimientoRenovacion getRequerimientoRenovacion() {
+        return requerimientoRenovacion;
     }
 
-    public void setIdPlazoConfirmacion(Long idPlazoConfirmacion) {
-        this.idPlazoConfirmacion = idPlazoConfirmacion;
+    public void setRequerimientoRenovacion(RequerimientoRenovacion requerimientoRenovacion) {
+        this.requerimientoRenovacion = requerimientoRenovacion;
     }
 
     public Long getIdEstadoLd() {
@@ -220,9 +233,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     public String toString() {
         return "RequerimientoInvitacion [idReqInvitacion=" + idReqInvitacion 
                 + ", idRequerimiento=" + idRequerimiento 
-                + ", idReqRenovacion=" + idReqRenovacion 
-                + ", idNotificacion=" + idNotificacion 
-                + ", idPlazoConfirmacion=" + idPlazoConfirmacion 
+
                 + ", idEstadoLd=" + idEstadoLd 
                 + ", idSupervisora=" + idSupervisora 
                 + ", feInvitacion=" + feInvitacion 

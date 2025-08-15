@@ -3,11 +3,21 @@ package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.*;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.Notificacion;
 
 /**
  * Entidad para la tabla SICOES_TC_REQ_APROBACION
@@ -69,11 +79,19 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "FE_FIRMA")
     private Date feFirma;
 
-    @Column(name = "ID_INFORME_RENOVACION")
-    private Long idInformeRenovacion;
 
-    @Column(name = "ID_NOTIFICACION", precision = 10, nullable = false)
-    private Long idNotificacion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_INFORME_RENOVACION", insertable = false, updatable = false)
+    private InformeRenovacion informeRenovacion;
+
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_NOTIFICACION", insertable = false, updatable = false)
+    private Notificacion notificacion;
+
+
 
     @Temporal(TemporalType.DATE)
     @Column(name = "FE_ASIGNACION")
@@ -89,9 +107,8 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     public RequerimientoAprobacion() {
     }
 
-    public RequerimientoAprobacion(Long idRequerimiento, Long idNotificacion) {
+    public RequerimientoAprobacion(Long idRequerimiento) {
         this.idRequerimiento = idRequerimiento;
-        this.idNotificacion = idNotificacion;
     }
 
     // Getters y Setters
@@ -199,20 +216,20 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.feFirma = feFirma;
     }
 
-    public Long getIdInformeRenovacion() {
-        return idInformeRenovacion;
+    public InformeRenovacion getInformeRenovacion() {
+        return informeRenovacion;
     }
 
-    public void setIdInformeRenovacion(Long idInformeRenovacion) {
-        this.idInformeRenovacion = idInformeRenovacion;
+    public void setInformeRenovacion(InformeRenovacion informeRenovacion) {
+        this.informeRenovacion = informeRenovacion;
     }
 
-    public Long getIdNotificacion() {
-        return idNotificacion;
+    public Notificacion getNotificacion() {
+        return notificacion;
     }
 
-    public void setIdNotificacion(Long idNotificacion) {
-        this.idNotificacion = idNotificacion;
+    public void setNotificacion(Notificacion notificacion) {
+        this.notificacion = notificacion;
     }
 
     public Date getFeAsignacion() {
@@ -254,8 +271,6 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
                 + ", feAprobacion=" + feAprobacion 
                 + ", feRechazo=" + feRechazo 
                 + ", feFirma=" + feFirma 
-                + ", idInformeRenovacion=" + idInformeRenovacion 
-                + ", idNotificacion=" + idNotificacion 
                 + ", feAsignacion=" + feAsignacion 
                 + ", idTipoAprobadorLd=" + idTipoAprobadorLd 
                 + ", idGrupoAprobadorLd=" + idGrupoAprobadorLd + "]";
