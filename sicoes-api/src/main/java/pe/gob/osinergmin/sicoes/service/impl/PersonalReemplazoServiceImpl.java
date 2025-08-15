@@ -445,6 +445,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } catch (JsonProcessingException e) {
             throw new ValidacionException(e.getMessage());
         }
+        /*
         PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
         if (propuestaProfesional == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
@@ -455,6 +456,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } catch (JsonProcessingException e) {
             throw new ValidacionException(e.getMessage());
         }
+         */
         Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
         if (personaPropuesta == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
@@ -465,6 +467,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } catch (JsonProcessingException e) {
             throw new ValidacionException(e.getMessage());
         }
+        /*
         propuestaProfesional.setSupervisora(personaPropuesta);
         SupervisoraMovimiento supervisoraMovimiento = new SupervisoraMovimiento();
         supervisoraMovimiento.setSector(propuestaProfesional.getSector());
@@ -483,6 +486,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             throw new ValidacionException(e.getMessage());
         }
         supervisoraMovimientoService.guardar(supervisoraMovimiento,contexto);
+        */
         AuditoriaUtil.setAuditoriaActualizacion(personalReemplazo,contexto);
         PersonalReemplazo personalReemplazoOUT = reemplazoDao.save(personalReemplazo);
         SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
