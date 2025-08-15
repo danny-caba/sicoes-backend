@@ -7,15 +7,19 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 
-
+import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+
+import java.util.List;
 
 @Service
 public class NotificacionContratoServiceImpl implements NotificacionContratoService{
@@ -25,7 +29,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String ASUNTO_NOTIFICACION_DESVINCULACION_PERSONAL = "NOTIFICACIÓN INGRESO FECHA DESVINCULACIÓN";
     private static final String NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL ="26-notificacion-desvinculacion-personal.html";
 
-    private static final String ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO = "SUBASANAR DOCUMENTOS DE INICIO DE SERVICIO";
+    private static final String ASUNTO_NOTIFICACION_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO = "SUBSANAR DOCUMENTOS DE INICIO DE SERVICIO";
     private static final String NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO ="28-notificacion-subsanar-documento.html";
 
     private static final String ASUNTO_NOTIFICACION_CARGAR_DOCUMENTOS_INICIO_SERVICIO = "PENDIENTE EN CARGAR DOCUMENTOS DE INICIO DE SERVICIO";
@@ -33,7 +37,28 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     private static final String ASUNTO_NOTIFICACION_REVISAR_DOCUMENTACION_PENDIENTE = "DOCUMENTACION PENDIENTE POR REVISAR (REEMPLAZO DE PERSONAL PROPUESTO)";
     private static final String NOMBRE_TEMPLATE_REVISAR_DOCUMENTACION_PENDIENTE = "30-notificacion-revisar-documento-pendiente.html";
-    
+
+    private static final String ASUNTO_NOTIFICACION_REV_DOCUMENTOS_2 = "SUBSANAR DOCUMENTOS DE INICIO DE SERVICIO";
+    private static final String NOMBRE_TEMPLATE_REV_DOCUMENTOS_2 = "31-notificacion-rev-documentos-2.html";
+
+    private static final String ASUNTO_NOTIFICACION_REV_DOCUMENTOS_15 = "DOCUMENTACION REVISADA";
+    private static final String NOMBRE_TEMPLATE_REV_DOCUMENTOS_15 = "32-notificacion-rev-documentos-15.html";
+
+    private static final String ASUNTO_NOTIFICACION_REV_DOCUMENTOS_12 = "SUBSANAR DOCUMENTOS";
+    private static final String NOMBRE_TEMPLATE_REV_DOCUMENTOS_12 = "33-notificacion-rev-documentos-12.html";
+
+    private static final String ASUNTO_NOTIFICACION_REV_DOCUMENTOS_122 = "SUBSANAR DOCUMENTOS DE REEMPLAZO";
+    private static final String NOMBRE_TEMPLATE_REV_DOCUMENTOS_122 = "34-notificacion-rev-documentos-12-2.html";
+
+    private static final String ASUNTO_NOTIFICACION_APROBACION_PENDIENTE = "DOCUMENTACION REVISADA";
+    private static final String NOMBRE_TEMPLATE_APROBACION_PENDIENTE = "35-notificacion-aprobacion-pendiente.html";
+
+    private static final String ASUNTO_NOTIFICACION_RECHAZO_PERSONAL = "RECHAZAR EL REEMPLAZO DE PERSONAL PROPUESTO";
+    private static final String NOMBRE_TEMPLATE_RECHAZO_PERSONAL = "36-notificacion-rechazo-personal.html";
+
+    private static final String ASUNTO_NOTIFICACION_EVALUACION_PENDIENTE = "TIENE UN PENDIENTE POR EVALUAR";
+    private static final String NOMBRE_TEMPLATE_EVALUACION_PENDIENTE = "37-notificacion-evaluacion-pendiente.html";
+
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
     private final TemplateEngine templateEngine;
@@ -74,34 +99,29 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
 
     @Override
-    public void notificarReemplazoPersonalByEmail(String expedienteId,String nombreRol, Contexto contexto) {
-
-        String email = contexto.getUsuario().getCorreo();
+    public void notificarReemplazoPersonalByEmail(Usuario usuario, String numExpediente, String nombreRol, Contexto contexto) {
+        String email = usuario.getCorreo();
         logger.info(" notificarReemplazoPersonalByEmail para email: {} ",email);
 
         Context ctx = new Context();
         ctx.setVariable("nombreRol", nombreRol);
-        ctx.setVariable("numeroExpediente", expedienteId);
+        ctx.setVariable("numeroExpediente", numExpediente);
 
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_REEMPLAZO_PERSONAL,
                 NOMBRE_TEMPLATE_NOTIFICACION_REEMPLAZO_PERSONAL,
                 ctx);
-
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);    
     }
 
     @Override
-    public void notificarDesvinculacionEmpresa(String numeroExpediente, String nombreSupervisora, Contexto contexto) {
-
-        String email = contexto.getUsuario().getCorreo();
+    public void notificarDesvinculacionEmpresa(Usuario usuario, String numeroExpediente, String nombreSupervisora, Contexto contexto) {
+        String email = usuario.getCorreo();
         logger.info(" notificarDesvinculacionEmpresa para email: {} ",email);
 
         Context ctx = new Context();
-        
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
         ctx.setVariable("numeroExpediente", numeroExpediente);
 
@@ -110,18 +130,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 ASUNTO_NOTIFICACION_DESVINCULACION_PERSONAL,
                 NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
                 ctx);
-
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
-
     @Override
-    public void notificarSubsanacionDocumentos(String nombreSupervisora,Contexto contexto) {
-
-        String email = contexto.getUsuario().getCorreo();
+    public void notificarSubsanacionDocumentos(Supervisora personaPropuesta,Contexto contexto) {
+        String email = personaPropuesta.getCorreo();
         logger.info(" notificarSubsanacionDocumentos para email: {} ",email);
+        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
@@ -132,16 +149,14 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 NOMBRE_TEMPLATE_SUBSANAR_DOCUMENTACION_INICIO_SERVICIO,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
-
     @Override
-    public void notificarCargarDocumentosInicioServicio(String nombreSupervisora,Contexto contexto ) {
-
-        String email = contexto.getUsuario().getCorreo();
-        logger.info(" notifcarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
+    public void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto ) {
+        String email = personaPropuesta.getCorreo();
+        logger.info(" notificarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
+        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
@@ -152,19 +167,36 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 NOMBRE_TEMPLATE_CARGAR_DOCUMENTOS_INICIO_SERVICIO,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
 
+    @Override
+    public void notificarRechazoPersonalPropuesto(Supervisora empresa, Supervisora personaPropuesta, Contexto contexto ) {
+        String email = empresa.getCorreo();
+        logger.info(" notificarRechazoPersonalPropuesto para email: {} ", empresa.getCorreo());
+        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
+
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("numeroExpediente", personaPropuesta.getNumeroExpediente());
+
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_RECHAZO_PERSONAL,
+                NOMBRE_TEMPLATE_RECHAZO_PERSONAL,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
 
     @Override
-    public void notificarRevisarDocumentacionPendiente(String numExpediente, Contexto contexto) {
-
-        String email = contexto.getUsuario().getCorreo();
-        logger.info(" notificarRevisarDocumentacionPendiente para email: {} ",contexto.getUsuario().getCorreo());
+    public void notificarRevisarDocumentacionPendiente(Usuario usuario, String numExpediente, String nombreRol, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarRevisarDocumentacionPendiente para email: {} ", usuario.getCorreo());
 
         Context ctx = new Context();
         ctx.setVariable("numExpediente", numExpediente);
+        ctx.setVariable("nombreRol", nombreRol);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -173,8 +205,123 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 ctx);
 
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        
         saveNotificacion(notificacion);
     }
-    
+
+    @Override
+    public void notificarRevDocumentos2(Supervisora empresa, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto) {
+        String email = empresa.getCorreo();
+        logger.info(" notificarRevDocumentos2 para email: {} ",email);
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", empresa.getNombreRazonSocial());
+        ctx.setVariable("nombrePersonal", nombrePersonal);
+        ctx.setVariable("nombrePerfil", nombrePerfil);
+        ctx.setVariable("listDocsAsociados", listDocsAsociados);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REV_DOCUMENTOS_2,
+                NOMBRE_TEMPLATE_REV_DOCUMENTOS_2,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarRevDocumentos15(Usuario usuario, String numeroExpediente, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarRevDocumentos15 para email: {} ",email);
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", usuario.getNombreUsuario());
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REV_DOCUMENTOS_15,
+                NOMBRE_TEMPLATE_REV_DOCUMENTOS_15,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarRevDocumentos12(Usuario usuario, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarRevDocumentos12 para email: {} ",email);
+        Context ctx = new Context();
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REV_DOCUMENTOS_12,
+                NOMBRE_TEMPLATE_REV_DOCUMENTOS_12,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String nombrePerfil, Contexto contexto) {
+        String email = empresa.getCorreo();
+        logger.info(" notificarRevDocumentos122 para email: {} ",email);
+        Context ctx = new Context();
+        ctx.setVariable("nombreSupervisora", empresa.getNombreRazonSocial());
+        ctx.setVariable("nombrePersonal", nombrePersonal);
+        ctx.setVariable("nombrePerfil", nombrePerfil);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_REV_DOCUMENTOS_122,
+                NOMBRE_TEMPLATE_REV_DOCUMENTOS_122,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarAprobacionPendiente para email: {} ",email);
+
+        Context ctx = new Context();
+        ctx.setVariable("nombreAprobador", usuario.getNombreUsuario());
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_APROBACION_PENDIENTE,
+                NOMBRE_TEMPLATE_APROBACION_PENDIENTE,
+                ctx);
+
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarEvaluacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto) {
+        String email = usuario.getCorreo();
+        logger.info(" notificarEvaluacionPendiente para email: {} ",email);
+
+        Context ctx = new Context();
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_EVALUACION_PENDIENTE,
+                NOMBRE_TEMPLATE_EVALUACION_PENDIENTE,
+                ctx);
+
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
+    private String obtenerNombreSupervisora(Supervisora personaPropuesta) {
+        String razonSocial = personaPropuesta.getNombreRazonSocial();
+        this.logger.info("razon social juridica {} ", razonSocial);
+        String nombreSupervisora = null;
+        if(razonSocial!=null){
+            nombreSupervisora = razonSocial;
+        }else{
+            String apellidoPaterno = personaPropuesta.getApellidoPaterno();
+            String apellidoMaterno = personaPropuesta.getApellidoMaterno();
+            nombreSupervisora = personaPropuesta.getNombres()
+                    .concat(" ").concat(apellidoPaterno)
+                    .concat(" ").concat(apellidoMaterno);
+            this.logger.info("razon social personal natural {} ", razonSocial);
+        }
+        return nombreSupervisora;
+    }
 }

@@ -186,6 +186,9 @@ public class Constantes {
 			public static final String PERFECCIONAMIENTO_CONTRATO = "ARCHIVO_PERFECCIONAMIENTO";
 
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
+			public static final String CONSOLIDADO_DOCUMENTOS = "TA32";
+			public static final String FINALIZACION_EVALUACION = "TA33";
+			public static final String CARGA_DOCUMENTOS = "TA34";
 
 		}
 		
@@ -930,6 +933,18 @@ public class Constantes {
 		public static final String VISTO_BUENO_APROBADO = "V01030";
 		public static final String FIRMA_APROBADA = "V01031";
 		public static final String ID_DOCUMENTO_REEMPLAZO = "V01032";
+		public static final String USUARIO_EXTERNO_NO_EXISTE="V01033";
+		public static final String EVALUADOR_CONTRATOS_NO_EXISTE="V01034";
+		public static final String SOLICITUD_NO_ENCONTRADA= "V01035";
+		public static final String SICOES_SOLICITUD_GUARDAR_FORMATO_04 = "V01036";
+		public static final String TIPO_ARCHIVO_NO_EXISTE = "V01037";
+		public static final String PROFESIONAL_NO_EXISTE = "V01038";
+		public static final String PERSONAL_REEMPLAZO_NO_EXISTE = "V01039";
+		public static final String USUARIO_G2_NO_EXISTE="V01040";
+		public static final String USUARIO_G3_NO_EXISTE="V01041";
+		public static final String USUARIO_RESPONSABLE_TECNICO_NO_EXISTE="V01042";
+		public static final String SOLICITUD_NO_EXISTE="V01043";
+		public static final String USUARIO_G4_NO_EXISTE="V01044";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -940,7 +955,11 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
-		public static final String EVALUADOR_CONTRATOS			= "12";
+		public static final String EVALUADOR_CONTRATOS 			= "12";
+		public static final String INVITADO		                = "15";
+		public static final String G2_APROBADOR_ADMINISTRATIVO	= "18";
+		public static final String G3_APROBADOR_ADMINISTRATIVO	= "17";
+		public static final String G4_APROBADOR_ADMINISTRATIVO	= "16";
 	}
 	
 	public static final class OPCIONES_EXTERNO {
