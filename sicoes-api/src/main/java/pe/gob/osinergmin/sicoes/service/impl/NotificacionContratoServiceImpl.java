@@ -84,7 +84,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
             throw  new RuntimeException("Estado 'Pendiente' no encontrado en listado detalle");
         }
         notificacion.setEstado(pendiente);
-        notificacionDao.save(notificacion);
+        //notificacionDao.save(notificacion);
     }
 
     private Notificacion buildNotification (String email, String subject, String template,Context context){
@@ -93,7 +93,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         notificacion.setAsunto(subject);
 
         String htmlContent = templateEngine.process(template, context);
-        notificacion.setMensaje(htmlContent);
+        String msjLimpio = htmlContent.replaceAll("[\\n\\r\\t]", "").replaceAll(" +", " ");
+        notificacion.setMensaje(msjLimpio);
         return notificacion;
     }
 
