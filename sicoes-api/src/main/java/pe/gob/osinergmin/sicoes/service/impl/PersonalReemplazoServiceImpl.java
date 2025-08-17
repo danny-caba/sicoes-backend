@@ -984,8 +984,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 .filter(doc -> Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME.equals(doc.getSeccion().getCodigo()))
                 .collect(Collectors.toList());
         List<DocumentoReemplazo> listDocumentosPersPropuestoSolSuperv = listDocsAsociados.stream()
-                .filter(doc -> (doc.getSeccion().getIdListado().compareTo(97L) == 0)
-                || doc.getSeccion().getIdListado().compareTo(104L) == 0)
+                .filter(doc -> Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PERSONAL_PROPUESTO
+                        .equals(doc.getSeccion().getCodigo())
+                || Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR
+                        .equals(doc.getSeccion().getCodigo()))
                 .collect(Collectors.toList());
 
         boolean allDocsConformeInforme = !listDocumentosInforme.isEmpty()
