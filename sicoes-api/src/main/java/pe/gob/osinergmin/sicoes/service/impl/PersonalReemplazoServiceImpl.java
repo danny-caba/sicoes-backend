@@ -1240,9 +1240,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             resultado = aprobacionReempDao.buscarFirmarAprobG3Admin(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente);
         }
-        if(requerimiento.equals(Constantes.REQUERIMIENTO.APROB_ADMIN_G4_GAF)){
+       if(requerimiento.equals(Constantes.REQUERIMIENTO.APROB_ADMIN_G4_GAF)){
             resultado =  aprobacionReempDao.buscarAprobG4AdmGAF(tipoaprob, estadoaprob, tiposolicitud,
-                idcontratista, numexpediente);
+                idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.FIRMAR).getIdListadoDetalle(),
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO).getIdListadoDetalle());
         }
 
         return resultado;
