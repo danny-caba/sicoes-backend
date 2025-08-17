@@ -860,16 +860,30 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 .findById(request.getIdReemplazo())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
         List<DocumentoReemplazo> listDocsAsociados = documentoReemDao
-                .findByIdReemplazoPersonal(request.getIdReemplazo());
+                .findByIdReemplazoPersonal(request.getIdReemplazo())
+                .stream()
+                .filter(doc -> !Objects.isNull(doc.getEvaluacion()))
+                .collect(Collectors.toList());
+
         if (Constantes.ROLES.RESPONSABLE_TECNICO.equals(request.getCodRol())) {
+            List<DocumentoReemplazo> docsRevisadosResTecnico = listDocsAsociados
+                    .stream()
+                    .filter(doc -> Constantes.ROLES.RESPONSABLE_TECNICO.equals(doc.getEvaluacion().getRol().getCodigo()))
+                    .collect(Collectors.toList());
+
             return GenericResponseDTO.<String>builder()
                     .resultado(flujoRevisionResponsableTecnico(
-                            contexto, personalReemplazoToUpdate, listDocsAsociados))
+                            contexto, personalReemplazoToUpdate, docsRevisadosResTecnico))
                     .build();
         } else {
+            List<DocumentoReemplazo> docsRevisadosEvalContratos = listDocsAsociados
+                    .stream()
+                    .filter(doc -> Constantes.ROLES.EVALUADOR_CONTRATOS.equals(doc.getEvaluacion().getRol().getCodigo()))
+                    .collect(Collectors.toList());
+
             return GenericResponseDTO.<String>builder()
                     .resultado(flujoRevisionEvaluadorContratos(
-                            contexto, personalReemplazoToUpdate, listDocsAsociados))
+                            contexto, personalReemplazoToUpdate, docsRevisadosEvalContratos))
                     .build();
         }
     }
