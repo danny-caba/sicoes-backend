@@ -905,6 +905,16 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             personalReemplazoToUpdate.setEstadoRevisarEval(estadoEnProceso);
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazoToUpdate, contexto);
             reemplazoDao.save(personalReemplazoToUpdate);
+
+            Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazoToUpdate)
+                    .orElseThrow(() -> new RuntimeException("Aprobacion no encontrada"));
+            aprobacion.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
+            AuditoriaUtil.setAuditoriaActualizacion(aprobacion, contexto);
+
+            aprobacionDao.save(aprobacion);
+
             if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO) || rol.getCodigo().equals(Constantes.ROLES.INVITADO) || rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
                 if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO))) {
                     logger.info("GENPDF:Revisar la documentación (Rol Responsable Técnico)");
