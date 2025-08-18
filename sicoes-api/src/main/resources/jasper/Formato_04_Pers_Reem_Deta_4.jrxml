@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 6.19.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Formato_04_Pers_Reem_Deta_4" pageWidth="595" pageHeight="842" columnWidth="425" leftMargin="85" rightMargin="85" topMargin="0" bottomMargin="0" uuid="84a2d00b-29bd-4a39-8016-0fa5ccb9a3e0">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<field name="tipoArchivo.nombre" class="java.lang.String"/>
+	<field name="nombre" class="java.lang.String"/>
+	<field name="nroFolio" class="java.lang.Long"/>
+	<field name="peso" class="java.lang.Long"/>
+	<detail>
+		<band height="20">
+			<frame>
+				<reportElement x="0" y="0" width="425" height="20" uuid="0f85e5ea-9988-4853-b867-a1ecf612a274"/>
+				<box>
+					<pen lineWidth="0.6" lineColor="#000000"/>
+					<bottomPen lineWidth="0.6" lineColor="#000000"/>
+				</box>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="0" y="0" width="174" height="20" uuid="cdb7c6b5-a805-47e5-9c6a-3c9fdab2cc28"/>
+					<box leftPadding="1">
+						<pen lineWidth="0.0"/>
+						<rightPen lineWidth="0.6" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{tipoArchivo.nombre}==null?"":$F{tipoArchivo.nombre}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="174" y="0" width="176" height="20" uuid="afd15484-6f52-46b8-a97e-7484f6f09bf1"/>
+					<box leftPadding="1">
+						<pen lineWidth="0.0"/>
+						<leftPen lineWidth="0.6" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{nombre}==null?"":$F{nombre}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="350" y="0" width="40" height="20" uuid="afd15484-6f52-46b8-a97e-7484f6f09bf1"/>
+					<box rightPadding="1">
+						<pen lineWidth="0.0"/>
+						<leftPen lineWidth="0.6" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{nroFolio}==null?"":$F{nroFolio}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="390" y="0" width="35" height="20" uuid="afd15484-6f52-46b8-a97e-7484f6f09bf1"/>
+					<box rightPadding="1">
+						<pen lineWidth="0.0"/>
+						<leftPen lineWidth="0.6" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{peso}==null?"":$F{peso}/8/1024]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

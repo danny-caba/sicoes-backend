@@ -133,6 +133,17 @@ public class Archivo extends BaseModel implements Serializable {
 	@Transient
 	private String propuestaUuid;
 
+	@Transient
+	private String conforme;
+
+	public String getConforme() {
+		return conforme;
+	}
+
+	public void setConforme(String conforme) {
+		this.conforme = conforme;
+	}
+
 	public Long getIdArchivo() {
 		return idArchivo;
 	}
