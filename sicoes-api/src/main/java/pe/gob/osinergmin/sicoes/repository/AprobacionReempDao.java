@@ -234,158 +234,165 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente);
 
-	 @Query( value = " WITH LISTADOS AS ( " +
-			 "    SELECT  " +
-			 "        TO_NUMBER(LIDE.ID_LISTADO_DETALLE) AS ID, " +
-			 "        LIDE.NO_LISTADO_DETALLE AS VALOR, " +
-			 "        LI.CD_LISTADO " +
-			 "    FROM SICOES_TM_LISTADO_DETALLE LIDE " +
-			 "    INNER JOIN SICOES_TM_LISTADO LI  " +
-			 "        ON LIDE.ID_LISTADO = LI.ID_LISTADO " +
-			 ") " +
-			 "SELECT  " +
-			 "    APRE.ID_APROBACION AS ID, " +
-			 "    TIPO_APROB.ID AS TIPO_APROBACION, " +
-			 "    TIPO_APROB.VALOR AS NOM_TIPO_APROBACION, " +
-			 "    APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE, " +
-			 "    APRE.ID_DOCUMENTO AS ID_INFORME, " +
-			 "    DORE.DE_NOMBRE_DOCUMENTO AS INFORME, " +
-			 "    APRE.DE_TP AS TP, " +
-			 "    APRE.ID_CONTRATISTA AS ID_CONTRATISTA, " +
-			 "    CASE  " +
-			 "        WHEN NO_RAZON_SOCIAL IS NOT NULL THEN NO_RAZON_SOCIAL " +
-			 "        ELSE TRIM(NVL(AP_PATERNO, '') || ' ' || NVL(AP_MATERNO, '') || ' ' || NVL(NO_PERSONA, '')) " +
-			 "    END AS CONTRATISTA, " +
-			 "    APRE.CO_TIPO_SOLICITUD AS ID_TIPO_SOLICITUD, " +
-			 "    TIPO_SOL.VALOR AS TIPO_SOLICITUD, " +
-			 "    APRE.FE_FECHA_INGRESO AS FECHA_INGRESO, " +
-			 "    APRE.ES_ESTADO_APROB AS ID_ES_APROB, " +
-			 "    EST_APROB.VALOR AS ES_APROB, " +
-			 "    NULL AS ID_ES_APROB_DIV, " +
-			 "    NULL AS ES_APROB_DIV, " +
-			 "    NULL AS ID_ES_APROB_LI, " +
-			 "    NULL AS ES_APROB_LI, " +
-			 "    ADEN.CO_ESTADO_APR_LOGISTICA AS ID_ESTADO_APROB_LOGISTICA, " +
-			 "    LOGISTICA.VALOR AS ESTADO_APROB_LOGISTICA, " +
-			 "    ADEN.CO_ESTADO_VB_GAF AS ID_ESTADO_VISTO_BUENO_GAF, " +
-			 "    VB_GAF.VALOR AS ESTADO_VISTO_BUENO_GAF, " +
-			 "    ADEN.CO_ESTADO_FIRMA_JEFE AS ID_ESTADO_FIRMA_JEFE, " +
-			 "    JEFE.VALOR AS ESTADO_FIRMA_JEFE, " +
-			 "    ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA, " +
-			 "    GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA, " +
-			 "    ARCH.CO_ARCHIVO AS ID_ARCHIVO " +
-		     "FROM SICOES_TZ_APROBACION_REEMP APRE " +
-			 "LEFT JOIN LISTADOS TIPO_APROB  " +
-			 "    ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION' " +
-			 "LEFT JOIN SICOES_TZ_DOCUMENTO_REEMP DORE  " +
-			 "    ON APRE.ID_DOCUMENTO = DORE.ID_DOCUMENTO " +
-			 "LEFT JOIN SICOES_TM_SUPERVISORA SUP  " +
-			 "    ON APRE.ID_CONTRATISTA = SUP.ID_SUPERVISORA " +
-			 "LEFT JOIN SICOES_TZ_ADENDA_REEMP ADEN " +
-			 "    ON APRE.ID_REEMPLAZO_PERSONAL = ADEN.ID_REEMPLAZO_PERSONAL " +
-			 "LEFT JOIN LISTADOS TIPO_SOL  " +
-			 "    ON APRE.CO_TIPO_SOLICITUD = TIPO_SOL.ID AND TIPO_SOL.CD_LISTADO = 'TIPO_SOLICITUD'  " +
-			 "LEFT JOIN LISTADOS EST_APROB  " +
-			 "    ON APRE.ES_ESTADO_APROB = EST_APROB.ID AND EST_APROB.CD_LISTADO = 'ESTADO_APROBACION_REEMP' " +
-			 "LEFT JOIN LISTADOS LOGISTICA  " +
-			 "    ON ADEN.CO_ESTADO_APR_LOGISTICA = LOGISTICA.ID AND LOGISTICA.CD_LISTADO = 'ESTADO_APROBACION_REEMP' " +
-			 "LEFT JOIN LISTADOS VB_GAF  " +
-			 "    ON ADEN.CO_ESTADO_VB_GAF = VB_GAF.ID AND VB_GAF.CD_LISTADO = 'ESTADO_APROBACION_REEMP'  " +
-			 "LEFT JOIN LISTADOS JEFE  " +
-			 "    ON ADEN.CO_ESTADO_FIRMA_JEFE = JEFE.ID AND JEFE.CD_LISTADO = 'ESTADO_APROBACION_REEMP'  " +
-			 "LEFT JOIN LISTADOS GERENCIA " +
-			 "    ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_APROBACION_REEMP'  " +
-			 "LEFT JOIN SICOES_TR_ARCHIVO ARCH " +
-			 "    ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO " +
-			 "WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))  " +
-			 "AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))  " +
-			 "AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))  " +
-			 "AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))  " +
-			 "AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))  " +
-			 "AND APRE.ID_ROL = 18 " +
-			 "AND APRE.CO_TIPO_APROBACION = 1028 " +  // VISTO BUENO
-			 "AND APRE.ES_ESTADO_APROB  = 1022   " +  //EN APROBACION
-			 "AND ADEN.CO_ESTADO_VB_GAF =  1026  " , nativeQuery = true)  //ASIGNADO
+	 @Query( value =  " WITH LISTADOS AS (  " +
+		 "             SELECT   " +
+		 "                 TO_NUMBER(LIDE.ID_LISTADO_DETALLE) AS ID,  " +
+		 "                 LIDE.NO_LISTADO_DETALLE AS VALOR,  " +
+		 "                 LI.CD_LISTADO  " +
+		 "             FROM SICOES_TM_LISTADO_DETALLE LIDE  " +
+		 "             INNER JOIN SICOES_TM_LISTADO LI   " +
+		 "                 ON LIDE.ID_LISTADO = LI.ID_LISTADO  " +
+		 "         )  " +
+		 "         SELECT   " +
+		 "             APRE.ID_APROBACION AS ID,  " +
+		 "             APRE.ID_REEMPLAZO_PERSONAL AS ID_REEMP,  " +
+		 "             TIPO_APROB.ID AS TIPO_APROBACION,  " +
+		 "             TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
+		 "             APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
+		 "             APRE.ID_DOCUMENTO AS ID_INFORME,  " +
+		 "             DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+		 "             APRE.DE_TP AS TP,  " +
+		 "             APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
+		 "             CASE   " +
+		 "                 WHEN NO_RAZON_SOCIAL IS NOT NULL THEN NO_RAZON_SOCIAL  " +
+		 "                 ELSE TRIM(NVL(AP_PATERNO, '') || ' ' || NVL(AP_MATERNO, '') || ' ' || NVL(NO_PERSONA, ''))  " +
+		 "             END AS CONTRATISTA,  " +
+		 "             APRE.CO_TIPO_SOLICITUD AS ID_TIPO_SOLICITUD,  " +
+		 "             CASE   " +
+		 "                 WHEN APRE.CO_TIPO_SOLICITUD = '1'  THEN 'Inscripción'  " +
+		 "                 ELSE 'Subsanación' " +
+		 "             END AS TIPO_SOLICITUD, " +
+		 "             APRE.FE_FECHA_INGRESO AS FECHA_INGRESO,  " +
+		 "             APRE.ES_ESTADO_APROB AS ID_ES_APROB,  " +
+		 "             EST_APROB.VALOR AS ES_APROB,  " +
+		 "             NULL AS ID_ES_APROB_DIV,  " +
+		 "             NULL AS ES_APROB_DIV,  " +
+		 "             NULL AS ID_ES_APROB_LI,  " +
+		 "             NULL AS ES_APROB_LI,  " +
+		 "             ADEN.CO_ESTADO_APR_LOGISTICA AS ID_ESTADO_APROB_LOGISTICA,  " +
+		 "             LOGISTICA.VALOR AS ESTADO_APROB_LOGISTICA,  " +
+		 "             ADEN.CO_ESTADO_VB_GAF AS ID_ESTADO_VISTO_BUENO_GAF,  " +
+		 "             VB_GAF.VALOR AS ESTADO_VISTO_BUENO_GAF,  " +
+		 "             ADEN.CO_ESTADO_FIRMA_JEFE AS ID_ESTADO_FIRMA_JEFE,  " +
+		 "             JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
+		 "             ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
+		 "             GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
+		 "             ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+		 "         FROM SICOES_TZ_APROBACION_REEMP APRE  " +
+		 "         LEFT JOIN LISTADOS TIPO_APROB   " +
+		 "             ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
+		 "         LEFT JOIN SICOES_TZ_DOCUMENTO_REEMP DORE   " +
+		 "             ON APRE.ID_DOCUMENTO = DORE.ID_DOCUMENTO  " +
+		 "         LEFT JOIN SICOES_TM_SUPERVISORA SUP   " +
+		 "             ON APRE.ID_CONTRATISTA = SUP.ID_SUPERVISORA  " +
+		 "         LEFT JOIN SICOES_TZ_ADENDA_REEMP ADEN  " +
+		 "             ON APRE.ID_REEMPLAZO_PERSONAL = ADEN.ID_REEMPLAZO_PERSONAL     " +
+		 "         LEFT JOIN LISTADOS EST_APROB   " +
+		 "             ON APRE.ES_ESTADO_APROB = EST_APROB.ID AND EST_APROB.CD_LISTADO = 'ESTADO_APROBACION'  " +
+		 "         LEFT JOIN LISTADOS LOGISTICA   " +
+		 "             ON ADEN.CO_ESTADO_APR_LOGISTICA = LOGISTICA.ID AND LOGISTICA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'  " +
+		 "         LEFT JOIN LISTADOS VB_GAF   " +
+		 "             ON ADEN.CO_ESTADO_VB_GAF = VB_GAF.ID AND VB_GAF.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
+		 "         LEFT JOIN LISTADOS JEFE   " +
+		 "             ON ADEN.CO_ESTADO_FIRMA_JEFE = JEFE.ID AND JEFE.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
+		 "         LEFT JOIN LISTADOS GERENCIA  " +
+		 "             ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
+		 "         LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
+		 "             ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+		 "         WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
+		 "         AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
+		 "         AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
+		 "         AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
+		 "         AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
+		 "         AND APRE.ID_ROL = 18  " +
+		 "         AND APRE.CO_TIPO_APROBACION = :param1    " +
+		 "         AND APRE.ES_ESTADO_APROB  = :param2      " +
+		 "         AND ADEN.CO_ESTADO_VB_GAF =  :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarVBAprobG2Admin(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
-												  @Param("numexpediente") Long numexpediente);
+												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
+	                                              @Param("param2") Long param2, @Param("param3") Long param3);
 
-
-	 @Query( value = " WITH LISTADOS AS ( " +
-			 "    SELECT  " +
-			 "        TO_NUMBER(LIDE.ID_LISTADO_DETALLE) AS ID, " +
-			 "        LIDE.NO_LISTADO_DETALLE AS VALOR, " +
-			 "        LI.CD_LISTADO " +
-			 "    FROM SICOES_TM_LISTADO_DETALLE LIDE " +
-			 "    INNER JOIN SICOES_TM_LISTADO LI  " +
-			 "        ON LIDE.ID_LISTADO = LI.ID_LISTADO " +
-			 ") " +
-			 "SELECT  " +
-			 "    APRE.ID_APROBACION AS ID, " +
-			 "    TIPO_APROB.ID AS TIPO_APROBACION, " +
-			 "    TIPO_APROB.VALOR AS NOM_TIPO_APROBACION, " +
-			 "    APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE, " +
-			 "    APRE.ID_DOCUMENTO AS ID_INFORME, " +
-			 "    DORE.DE_NOMBRE_DOCUMENTO AS INFORME, " +
-			 "    APRE.DE_TP AS TP, " +
-			 "    APRE.ID_CONTRATISTA AS ID_CONTRATISTA, " +
-			 "    CASE  " +
-			 "        WHEN NO_RAZON_SOCIAL IS NOT NULL THEN NO_RAZON_SOCIAL " +
-			 "        ELSE TRIM(NVL(AP_PATERNO, '') || ' ' || NVL(AP_MATERNO, '') || ' ' || NVL(NO_PERSONA, '')) " +
-			 "    END AS CONTRATISTA, " +
-			 "    APRE.CO_TIPO_SOLICITUD AS ID_TIPO_SOLICITUD, " +
-			 "    TIPO_SOL.VALOR AS TIPO_SOLICITUD, " +
-			 "    APRE.FE_FECHA_INGRESO AS FECHA_INGRESO, " +
-			 "    APRE.ES_ESTADO_APROB AS ID_ES_APROB, " +
-			 "    EST_APROB.VALOR AS ES_APROB, " +
-			 "    NULL AS ID_ES_APROB_DIV, " +
-			 "    NULL AS ES_APROB_DIV, " +
-			 "    NULL AS ID_ES_APROB_LI, " +
-			 "    NULL AS ES_APROB_LI, " +
-			 "    ADEN.CO_ESTADO_APR_LOGISTICA AS ID_ESTADO_APROB_LOGISTICA, " +
-			 "    LOGISTICA.VALOR AS ESTADO_APROB_LOGISTICA, " +
-			 "    ADEN.CO_ESTADO_VB_GAF AS ID_ESTADO_VISTO_BUENO_GAF, " +
-			 "    VB_GAF.VALOR AS ESTADO_VISTO_BUENO_GAF, " +
-			 "    ADEN.CO_ESTADO_FIRMA_JEFE AS ID_ESTADO_FIRMA_JEFE, " +
-			 "    JEFE.VALOR AS ESTADO_FIRMA_JEFE, " +
-			 "    ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA, " +
-			 "    GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA, " +
-			 "    ARCH.CO_ARCHIVO AS ID_ARCHIVO " +
-		     "FROM SICOES_TZ_APROBACION_REEMP APRE " +
-			 "LEFT JOIN LISTADOS TIPO_APROB  " +
-			 "    ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION' " +
-			 "LEFT JOIN SICOES_TZ_DOCUMENTO_REEMP DORE  " +
-			 "    ON APRE.ID_DOCUMENTO = DORE.ID_DOCUMENTO " +
-			 "LEFT JOIN SICOES_TM_SUPERVISORA SUP  " +
-			 "    ON APRE.ID_CONTRATISTA = SUP.ID_SUPERVISORA " +
-			 "LEFT JOIN SICOES_TZ_ADENDA_REEMP ADEN " +
-			 "    ON APRE.ID_REEMPLAZO_PERSONAL = ADEN.ID_REEMPLAZO_PERSONAL " +
-			 "LEFT JOIN LISTADOS TIPO_SOL  " +
-			 "    ON APRE.CO_TIPO_SOLICITUD = TIPO_SOL.ID AND TIPO_SOL.CD_LISTADO = 'TIPO_SOLICITUD'  " +
-			 "LEFT JOIN LISTADOS EST_APROB  " +
-			 "    ON APRE.ES_ESTADO_APROB = EST_APROB.ID AND EST_APROB.CD_LISTADO = 'ESTADO_APROBACION_REEMP' " +
-			 "LEFT JOIN LISTADOS LOGISTICA  " +
-			 "    ON ADEN.CO_ESTADO_APR_LOGISTICA = LOGISTICA.ID AND LOGISTICA.CD_LISTADO = 'ESTADO_APROBACION_REEMP' " +
-			 "LEFT JOIN LISTADOS VB_GAF  " +
-			 "    ON ADEN.CO_ESTADO_VB_GAF = VB_GAF.ID AND VB_GAF.CD_LISTADO = 'ESTADO_APROBACION_REEMP'  " +
-			 "LEFT JOIN LISTADOS JEFE  " +
-			 "    ON ADEN.CO_ESTADO_FIRMA_JEFE = JEFE.ID AND JEFE.CD_LISTADO = 'ESTADO_APROBACION_REEMP'  " +
-			 "LEFT JOIN LISTADOS GERENCIA " +
-			 "    ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_APROBACION_REEMP'  " +
-			 "LEFT JOIN SICOES_TR_ARCHIVO ARCH " +
-			 "    ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO " +
-			 "WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))  " +
-			 "AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))  " +
-			 "AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))  " +
-			 "AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))  " +
-			 "AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))  " +
-			 "AND APRE.ID_ROL = 17 " +
-			 "AND APRE.CO_TIPO_APROBACION = 953 " +  //FIRMAR
-			 "AND APRE.ES_ESTADO_APROB  = 1022   " +  //EN APROBACION
-			 "AND ADEN.CO_ESTADO_FIRMA_JEFE =  1026  " , nativeQuery = true)  //ASIGNADO
+	 @Query( value =   "  WITH LISTADOS AS (  " +
+			 " SELECT   " +
+			 " TO_NUMBER(LIDE.ID_LISTADO_DETALLE) AS ID,  " +
+			 " LIDE.NO_LISTADO_DETALLE AS VALOR,  " +
+			 " LI.CD_LISTADO  " +
+			 " FROM SICOES_TM_LISTADO_DETALLE LIDE  " +
+			 " INNER JOIN SICOES_TM_LISTADO LI   " +
+			 " ON LIDE.ID_LISTADO = LI.ID_LISTADO  " +
+			 " )  " +
+			 " SELECT   " +
+			 " APRE.ID_APROBACION AS ID,  " +
+			 " APRE.ID_REEMPLAZO_PERSONAL AS ID_REEMP,  " +
+			 " TIPO_APROB.ID AS TIPO_APROBACION,  " +
+			 " TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
+			 " APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
+			 " APRE.ID_DOCUMENTO AS ID_INFORME,  " +
+			 " DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+			 " APRE.DE_TP AS TP,  " +
+			 " APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
+			 " CASE   " +
+			 " WHEN NO_RAZON_SOCIAL IS NOT NULL THEN NO_RAZON_SOCIAL  " +
+			 " ELSE TRIM(NVL(AP_PATERNO, '') || ' ' || NVL(AP_MATERNO, '') || ' ' || NVL(NO_PERSONA, ''))  " +
+			 " END AS CONTRATISTA,  " +
+			 "         APRE.CO_TIPO_SOLICITUD AS ID_TIPO_SOLICITUD,  " +
+			 "     CASE   " +
+			 "         WHEN APRE.CO_TIPO_SOLICITUD = '1'  THEN 'Inscripción'  " +
+			 "         ELSE 'Subsanación' " +
+			 "     END AS TIPO_SOLICITUD,  " +
+			 " APRE.FE_FECHA_INGRESO AS FECHA_INGRESO,  " +
+			 " APRE.ES_ESTADO_APROB AS ID_ES_APROB,  " +
+			 " EST_APROB.VALOR AS ES_APROB,  " +
+			 " NULL AS ID_ES_APROB_DIV,  " +
+			 " NULL AS ES_APROB_DIV,  " +
+			 " NULL AS ID_ES_APROB_LI,  " +
+			 " NULL AS ES_APROB_LI,  " +
+			 " ADEN.CO_ESTADO_APR_LOGISTICA AS ID_ESTADO_APROB_LOGISTICA,  " +
+			 " LOGISTICA.VALOR AS ESTADO_APROB_LOGISTICA,  " +
+			 " ADEN.CO_ESTADO_VB_GAF AS ID_ESTADO_VISTO_BUENO_GAF,  " +
+			 " VB_GAF.VALOR AS ESTADO_VISTO_BUENO_GAF,  " +
+			 " ADEN.CO_ESTADO_FIRMA_JEFE AS ID_ESTADO_FIRMA_JEFE,  " +
+			 " JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
+			 " ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
+			 " GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
+			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
+			 "LEFT JOIN SICOES_TZ_DOCUMENTO_REEMP DORE   " +
+			 " ON APRE.ID_DOCUMENTO = DORE.ID_DOCUMENTO " +
+			 " LEFT JOIN LISTADOS TIPO_APROB   " +
+			 " ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
+			 "  LEFT JOIN SICOES_TZ_ADENDA_REEMP ADEN  " +
+			 " ON APRE.ID_REEMPLAZO_PERSONAL = ADEN.ID_REEMPLAZO_PERSONAL    " +
+			 " LEFT JOIN SICOES_TM_SUPERVISORA SUP   " +
+			 " ON APRE.ID_CONTRATISTA = SUP.ID_SUPERVISORA  " +
+			 " LEFT JOIN LISTADOS EST_APROB   " +
+			 " ON APRE.ES_ESTADO_APROB = EST_APROB.ID AND EST_APROB.CD_LISTADO = 'ESTADO_APROBACION'  " +
+			 " LEFT JOIN LISTADOS LOGISTICA   " +
+			 " ON ADEN.CO_ESTADO_APR_LOGISTICA = LOGISTICA.ID AND LOGISTICA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'  " +
+			 " LEFT JOIN LISTADOS VB_GAF   " +
+			 " ON ADEN.CO_ESTADO_VB_GAF = VB_GAF.ID AND VB_GAF.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
+			 " LEFT JOIN LISTADOS JEFE   " +
+			 " ON ADEN.CO_ESTADO_FIRMA_JEFE = JEFE.ID AND JEFE.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
+			 " LEFT JOIN LISTADOS GERENCIA  " +
+			 " ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
+			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
+			 " ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
+			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
+			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
+			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
+			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
+			 " AND APRE.ID_ROL = 17  " +
+			 " AND APRE.CO_TIPO_APROBACION = :param1    " +
+			 " AND APRE.ES_ESTADO_APROB  = :param2      " +
+			 " AND ADEN.CO_ESTADO_FIRMA_JEFE = :param3", nativeQuery = true)
 	public List<AprobacionReemp> buscarFirmarAprobG3Admin(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
-												  @Param("numexpediente") Long numexpediente);
+												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
+	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+
+
 
 
 
