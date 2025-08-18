@@ -27,6 +27,8 @@ import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
 import pe.gob.osinergmin.sicoes.model.dto.SupervisoraDTO;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraResponseDTO;
 import pe.gob.osinergmin.sicoes.service.SupervisoraDictamenService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -163,6 +165,22 @@ public class SupervisoraRestController extends BaseRestController {
 			@RequestParam(required=false) Long idPerfil){
 		logger.info("listarSupervisoras ");
 		return supervisoraService.listarSupervisoras(idPerfil,getContexto());
+	}
+	
+	/**
+	 * Endpoint para buscar supervisoras con funcionalidad de autocomplete
+	 * Requerimiento 350 - Renovación de Contratos
+	 * Permite buscar supervisoras por nombre, razón social o apellidos
+	 * @param nombreSupervisora Término de búsqueda opcional para filtrar supervisoras
+	 * @return Lista de SupervisoraResponseDTO con datos formateados para autocomplete (máximo 10 resultados)
+	 */
+	@GetMapping("/autocomplete")
+	public List<SupervisoraResponseDTO> buscarSupervisorasParaAutocomplete(
+			@RequestParam(required=false) String nombreSupervisora){
+		logger.info("buscarSupervisorasParaAutocomplete con nombre: " + nombreSupervisora);
+		SupervisoraRequestDTO request = new SupervisoraRequestDTO();
+		request.setNombreSupervisora(nombreSupervisora);
+		return supervisoraService.buscarSupervisorasParaAutocomplete(request, getContexto());
 	}
 	
 }
