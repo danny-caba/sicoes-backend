@@ -19,17 +19,22 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
     + " left join fetch p.personaBaja pb"
     + " left join fetch p.perfilBaja peb"
     + " left join fetch p.estadoReemplazo e"
+    + " left join fetch p.estadoRevisarDoc e0"
     + " left join fetch p.estadoEvalDoc e1"
     + " left join fetch p.estadoRevisarEval e2"
     + " left join fetch p.estadoAprobacionInforme e3"
     + " left join fetch p.estadoAprobacionAdenda e4"
-    + " left join fetch p.estadoEvalDocIniServ e5"
+    + " left join fetch p.estadoDocIniServ e5"
+    + " left join fetch p.estadoEvalDocIniServ e6"
     + " where p.idSolicitud = :idSolicitud"
     + " and ( :idAprobacion is null or e.idListadoDetalle = :idAprobacion )"
+    + " and ( :idRevisarDoc is null or e0.idListadoDetalle = :idRevisarDoc)"
+    + " and ( :idEvalDoc is null or e1.idListadoDetalle = :idEvalDoc)"
     + " and ( :idRevisarEval is null or e2.idListadoDetalle = :idRevisarEval)"
     + " and ( :idAprobacionInforme is null or e3.idListadoDetalle = :idAprobacionInforme)"
     + " and ( :idAprobacionAdenda is null or e4.idListadoDetalle = :idAprobacionAdenda)"
-    + " and ( :idEvalDocIniServ is null or e5.idListadoDetalle = :idEvalDocIniServ)"
+    + " and ( :idDocIniServ is null or e5.idListadoDetalle = :idDocIniServ)"
+    + " and ( :idEvalDocIniServ is null or e6.idListadoDetalle = :idEvalDocIniServ)"
     + " order by p.idReemplazo",
     countQuery = "select count(p) from PersonalReemplazo p"
     + " left join p.personaPropuesta pp"
@@ -37,32 +42,38 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
     + " left join p.personaBaja pb"
     + " left join p.perfilBaja peb"
     + " left join p.estadoReemplazo e"
+    + " left join p.estadoRevisarDoc e0"
     + " left join p.estadoEvalDoc e1"
     + " left join p.estadoRevisarEval e2"
     + " left join p.estadoAprobacionInforme e3"
     + " left join p.estadoAprobacionAdenda e4"
-    + " left join p.estadoEvalDocIniServ e5"
+    + " left join p.estadoDocIniServ e5"
+    + " left join p.estadoEvalDocIniServ e6"
     + " where p.idSolicitud = :idSolicitud"
     + " and ( :idAprobacion is null or e.idListadoDetalle = :idAprobacion)"
+    + " and ( :idRevisarDoc is null or e0.idListadoDetalle = :idRevisarDoc)"
     + " and ( :idEvalDoc is null or e1.idListadoDetalle = :idEvalDoc)"
     + " and ( :idRevisarEval is null or e2.idListadoDetalle = :idRevisarEval)"
     + " and ( :idAprobacionInforme is null or e3.idListadoDetalle = :idAprobacionInforme)"
     + " and ( :idAprobacionAdenda is null or e4.idListadoDetalle = :idAprobacionAdenda)"
-    + " and ( :idEvalDocIniServ is null or e5.idListadoDetalle = :idEvalDocIniServ)"
+    + " and ( :idDocIniServ is null or e5.idListadoDetalle = :idDocIniServ)"
+    + " and ( :idEvalDocIniServ is null or e6.idListadoDetalle = :idEvalDocIniServ)"
     )
-    Page<PersonalReemplazo> obtenerxIdSolicitud(Long idSolicitud, Long idAprobacion, Long idEvalDoc,
+    Page<PersonalReemplazo> obtenerxIdSolicitud(Long idSolicitud, Long idAprobacion, Long idRevisarDoc, Long idEvalDoc,
                                                 Long idRevisarEval, Long idAprobacionInforme, Long idAprobacionAdenda,
-                                                Long idEvalDocIniServ, Pageable pageable);
+                                                Long idDocIniServ, Long idEvalDocIniServ, Pageable pageable);
 
     @Query("select p from PersonalReemplazo p"
             + " left join fetch p.personaPropuesta pp"
             + " left join fetch p.personaBaja pb"
             + " left join fetch p.estadoReemplazo e"
+            + " left join fetch p.estadoRevisarDoc e0"
             + " left join fetch p.estadoEvalDoc e1"
             + " left join fetch p.estadoRevisarEval e2"
             + " left join fetch p.estadoAprobacionInforme e3"
             + " left join fetch p.estadoAprobacionAdenda e4"
-            + " left join fetch p.estadoEvalDocIniServ e5"
+            + " left join fetch p.estadoDocIniServ e5"
+            + " left join fetch p.estadoEvalDocIniServ e6"
             + " where p.idReemplazo = :idReemplazo")
     Optional<PersonalReemplazo> obtenerxIdReemplazo(@Param("idReemplazo") Long idReemplazo);
 }

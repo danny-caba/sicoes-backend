@@ -36,16 +36,18 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @Raml("personalReemplazo.obtener.properties")
     public Page<PersonalReemplazo> listarReemplazoPorIdSolicitud(@PathVariable Long idSolicitud,
                                                                  @RequestParam(required = false) String descAprobacion,
+                                                                 @RequestParam(required = false) String descRevisarDoc,
                                                                  @RequestParam(required = false) String descEvalDoc,
                                                                  @RequestParam(required = false) String descRevisarEval,
                                                                  @RequestParam(required = false) String descAprobacionInforme,
                                                                  @RequestParam(required = false) String descAprobacionAdenda,
+                                                                 @RequestParam(required = false) String descDocIniServ,
                                                                  @RequestParam(required = false) String descEvalDocIniServ,
                                                                  Pageable pageable){
         logger.info("obtener listado reemplazo personal");
         Page<PersonalReemplazo> page = personalReemplazoService
-                .listarPersonalReemplazo(idSolicitud, descAprobacion, descEvalDoc, descRevisarEval,
-                        descAprobacionInforme, descAprobacionAdenda,descEvalDocIniServ, pageable, getContexto());
+                .listarPersonalReemplazo(idSolicitud, descAprobacion, descRevisarDoc, descEvalDoc, descRevisarEval,
+                        descAprobacionInforme, descAprobacionAdenda,descDocIniServ, descEvalDocIniServ, pageable, getContexto());
         logger.info("page:p {}",page);
         return page;
     }

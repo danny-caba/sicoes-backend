@@ -13,10 +13,12 @@ import java.util.List;
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 
     Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
+                                                    String descRevisarDoc,
                                                     String descEvalDoc,
                                                     String descRevisarEval,
                                                     String descAprobacionInforme,
                                                     String descAprobacionAdenda,
+                                                    String descDocIniServ,
                                                     String descEvalDocIniServ,
                                                     Pageable pageable, Contexto contexto);
     PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto);

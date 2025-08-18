@@ -227,10 +227,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
+                                                           String descRevisarDoc,
                                                            String descEvalDoc,
                                                            String descRevisarEval,
                                                            String descAprobacionInforme,
                                                            String descAprobacionAdenda,
+                                                           String descDocIniServ,
                                                            String descEvalDocIniServ,
                                                            Pageable pageable, Contexto contexto) {
         logger.info("listarPersonalReemplazo");
@@ -239,15 +241,22 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
         String listadoEstadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         Long idAprobacion = null;
+        Long idRevisarDoc = null;
         Long idEvalDoc = null;
         Long idRevisarEval = null;
         Long idAprobacionInforme = null;
         Long idAprobacionAdenda = null;
+        Long idDocIniServ = null;
         Long idEvalDocIniServ = null;
 
         if (descAprobacion != null && !descAprobacion.isEmpty()) {
             ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descAprobacion.trim());
             if (ld != null) idAprobacion = ld.getIdListadoDetalle();
+        }
+
+        if (descRevisarDoc != null && !descRevisarDoc.isEmpty()){
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descRevisarDoc.trim());
+            if (ld != null) idRevisarDoc = ld.getIdListadoDetalle();
         }
 
         // Estado evaluación de documentos
@@ -274,19 +283,26 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             if (ld != null) idAprobacionAdenda = ld.getIdListadoDetalle();
         }
 
+        if (descDocIniServ != null && !descDocIniServ.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descDocIniServ);
+            if (ld != null) idDocIniServ = ld.getIdListadoDetalle();
+        }
+
         if (descEvalDocIniServ != null && !descEvalDocIniServ.isEmpty()) {
             ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descEvalDocIniServ);
             if (ld != null) idEvalDocIniServ = ld.getIdListadoDetalle();
         }
         return reemplazoDao.obtenerxIdSolicitud(
-                idSolicitud,idAprobacion,idEvalDoc,idRevisarEval,idAprobacionInforme,
-                idAprobacionAdenda,idEvalDocIniServ,pageRequest);
+                idSolicitud,idAprobacion,idRevisarDoc,idEvalDoc,idRevisarEval,
+                idAprobacionInforme, idAprobacionAdenda,idDocIniServ,idEvalDocIniServ,
+                pageRequest);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto) {
         AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);
+        personalReemplazo.setFeFechaRegistro(new Date());
         return reemplazoDao.save(personalReemplazo);
     }
 
@@ -417,11 +433,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         if (idReemplazo == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
-        logger.info("idReemplazo: {}", idReemplazo);
+        logger.info("idReemplazo registrar: {}", idReemplazo);
         PersonalReemplazo personalReemplazo = reemplazoDao.findById(idReemplazo)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERSONAL_REEMPLAZO_NO_EXISTE));
-        personalReemplazo.setEstadoReemplazo (listadoDetalleDao.listarListadoDetallePorCoodigo(
-                Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
+
+        String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+        ListadoDetalle listaEstado = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION);
+        personalReemplazo.setEstadoReemplazo (listaEstado);
+        ListadoDetalle listaEvalDoc = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
+        personalReemplazo.setEstadoEvalDoc(listaEvalDoc);
         ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         try {
