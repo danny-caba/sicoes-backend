@@ -3,19 +3,9 @@ package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import pe.gob.osinergmin.sicoes.model.BaseModel;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
@@ -39,7 +29,8 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_SOLI_PERF_CONT", insertable = false, updatable = false)
+    @JoinColumn(name = "ID_SOLI_PERF_CONT")
+    @JsonIgnore
     private SicoesSolicitud solicitudPerfil;
 
     @Column(name = "ID_USUARIO", precision = 10)
@@ -67,8 +58,8 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ES_REQ_RENOVACION", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ES_REQ_RENOVACION" )
     private ListadoDetalle estadoReqRenovacion;
 
     @Column(name = "DE_OBSERVACION", length = 500)
@@ -190,14 +181,14 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
     @Override
     public String toString() {
-        return "RequerimientoRenovacion [idReqRenovacion=" + idReqRenovacion 
+        return "RequerimientoRenovacion [idReqRenovacion=" + idReqRenovacion
                 + ", idUsuario=" + idUsuario 
                 + ", nuExpediente=" + nuExpediente 
                 + ", tiSector=" + tiSector 
                 + ", tiSubSector=" + tiSubSector 
                 + ", noItem=" + noItem 
                 + ", feRegistro=" + feRegistro 
-                + ", deObservacion=" + deObservacion 
+                + ", deObservacion=" + deObservacion
                 + ", esRegistro=" + esRegistro + "]";
     }
 }

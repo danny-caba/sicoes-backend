@@ -476,9 +476,15 @@ public class Constantes {
 			public static final String CANCELADO		= "CANCELADO";
 			public static final String ADMISION_CALIFICACION = "ADMISION_CALIFICACION";
 			public static final String ADJUDICADO		= "ADJUDICADO";
-			
-			
-			
+		}
+
+		public static final class ESTADO_REQ_RENOVACION {
+			public static final String CODIGO 			= "ESTADO_REQUERIMIENTO";
+			public static final String PRELIMINAR		= "PRELIMINAR";
+			public static final String EN_APROBACION 	= "EN_APROBACION";
+			public static final String EN_PROCESO		= "EN_PROCESO";
+			public static final String CONCLUIDO		= "CONCLUIDO";
+			public static final String ARCHIVADO		= "ARCHIVADO";
 		}
 		
 		public static final class ESTADO_INVITACION {
@@ -880,6 +886,8 @@ public class Constantes {
 		public static final String SOLICITUD_SIN_CAMBIOS = "V01016";
 		public static final String DJ_AUSENTE = "V01017";
 		public static final String FECHA_FINAL_CONTRATO = "V01018";
+		public static final String SOLICITUD_NO_CONCLUIDA = "V01019";
+		public static final String TIPO_SOLICITUD_NO_PERMITIDO = "V01020";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
@@ -949,6 +957,14 @@ public class Constantes {
 		public static final String OBSERVADO 		= "OBSERVADO";
 		public static final String CONCLUIDO 		= "CONCLUIDO";
 		public static final String ARCHIVADO 		= "ARCHIVADO";
+	}
+
+	public static final class ESTADO_REQUERIMIENTO_RENOVACION {
+		public static final Integer PRELIMINAR 		= 1;
+		public static final Integer EN_PROCESO 		= 2;
+		public static final Integer OBSERVADO 		= 3;
+		public static final Integer CONCLUIDO 		= 4;
+		public static final Integer ARCHIVADO 		= 5;
 	}
 
 }
