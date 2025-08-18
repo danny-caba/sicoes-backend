@@ -1,0 +1,34 @@
+package pe.gob.osinergmin.sicoes.controller.renovacioncontrato;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+import pe.gob.osinergmin.sicoes.controller.BaseRestController;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionService;
+
+@RestController
+@RequestMapping("/api/informe/renovacion")
+public class InformeRenovacionRestController extends BaseRestController {
+
+	private Logger logger = LogManager.getLogger(InformeRenovacionRestController.class);
+	
+	@Autowired
+    InformeRenovacionService informeRenovacionService;
+
+    @GetMapping("/aprobar/buscar")
+    public Page<InformeRenovacionDTO> buscar(
+            @RequestParam(required = false) String numeroExpediente,
+            @RequestParam(required = false) String contratista,
+            @RequestParam(required = false) String estadoAprobacion, Pageable pageable) {
+        logger.info("buscar {} ", numeroExpediente);
+        return informeRenovacionService.buscar(numeroExpediente,contratista,estadoAprobacion,pageable,getContexto());
+    }
+
+
+
+}
