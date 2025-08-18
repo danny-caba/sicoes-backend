@@ -30,7 +30,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQ_APROBACION")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_APROBACION", sequenceName = "SEQ_SICOES_TC_REQ_APROBACION", allocationSize = 1)
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_APROBACION", sequenceName = "SICOES_SEQ_REQ_APROBACION", allocationSize = 1)
     @Column(name = "ID_REQ_APROBACION")
     private Long idReqAprobacion;
 
@@ -39,6 +39,11 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @Column(name = "ID_REQ_INFORME", precision = 38)
     private Long idReqInforme;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_INFORME_RENOVACION", nullable = false,insertable = false, updatable = false)
+    private InformeRenovacionContrato informeRenovacionContrato;
+
 
     @Column(name = "ID_REQ_DOCUMENTO", precision = 38)
     private Long idReqDocumento;
