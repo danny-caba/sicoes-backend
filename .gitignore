@@ -1,1 +1,11 @@
 /.metadata/
+sicoes-api/.smarttomcat/sicoes-api/conf/catalina.policy
+sicoes-api/.smarttomcat/sicoes-api/conf/catalina.properties
+sicoes-api/.smarttomcat/sicoes-api/conf/context.xml
+sicoes-api/.smarttomcat/sicoes-api/conf/jaspic-providers.xml
+sicoes-api/.smarttomcat/sicoes-api/conf/jaspic-providers.xsd
+sicoes-api/.smarttomcat/sicoes-api/conf/logging.properties
+sicoes-api/.smarttomcat/sicoes-api/conf/server.xml
+sicoes-api/.smarttomcat/sicoes-api/conf/tomcat-users.xml
+sicoes-api/.smarttomcat/sicoes-api/conf/tomcat-users.xsd
+sicoes-api/.smarttomcat/sicoes-api/conf/web.xml
