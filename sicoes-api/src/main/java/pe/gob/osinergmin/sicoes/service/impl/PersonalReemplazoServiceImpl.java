@@ -99,14 +99,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -882,39 +875,53 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         List<DocumentoReemplazo> listDocsAsociados = documentoReemDao
                 .findByIdReemplazoPersonal(request.getIdReemplazo())
                 .stream()
-                .filter(doc -> !Objects.isNull(doc.getEvaluacion()))
+                .filter(doc -> !doc.getEvaluacion().isEmpty())
                 .collect(Collectors.toList());
 
         if (Constantes.ROLES.RESPONSABLE_TECNICO.equals(request.getCodRol())) {
-            List<DocumentoReemplazo> docsRevisadosResTecnico = listDocsAsociados
+            List<EvaluarDocuReemplazo> evaluacionesResTecnico = listDocsAsociados
                     .stream()
-                    .filter(doc -> Constantes.ROLES.RESPONSABLE_TECNICO.equals(doc.getEvaluacion().getRol().getCodigo()))
+                    .flatMap(doc -> doc.getEvaluacion().stream())
+                    .filter(eval -> Constantes.ROLES.RESPONSABLE_TECNICO.equals(eval.getRol().getCodigo()))
                     .collect(Collectors.toList());
 
             return GenericResponseDTO.<String>builder()
                     .resultado(flujoRevisionResponsableTecnico(
-                            contexto, personalReemplazoToUpdate, docsRevisadosResTecnico))
+                            contexto, personalReemplazoToUpdate, evaluacionesResTecnico, listDocsAsociados))
                     .build();
         } else {
-            List<DocumentoReemplazo> docsRevisadosEvalContratos = listDocsAsociados
+
+            List<EvaluarDocuReemplazo> listEvalInforme = listDocsAsociados
                     .stream()
-                    .filter(doc -> Constantes.ROLES.EVALUADOR_CONTRATOS.equals(doc.getEvaluacion().getRol().getCodigo()))
+                    .filter(doc -> Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME.equals(doc.getSeccion().getCodigo()))
+                    .flatMap(doc -> doc.getEvaluacion().stream())
+                    .filter(eval -> Constantes.ROLES.EVALUADOR_CONTRATOS.equals(eval.getRol().getCodigo()))
+                    .collect(Collectors.toList());
+
+            List<EvaluarDocuReemplazo> listEvalPersPropuestoSolSuperv = listDocsAsociados
+                    .stream()
+                    .filter(doc -> Arrays.asList(Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PERSONAL_PROPUESTO,
+                            Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR)
+                            .contains(doc.getSeccion().getCodigo()))
+                    .flatMap(doc -> doc.getEvaluacion().stream())
+                    .filter(eval -> Constantes.ROLES.EVALUADOR_CONTRATOS.equals(eval.getRol().getCodigo()))
                     .collect(Collectors.toList());
 
             return GenericResponseDTO.<String>builder()
                     .resultado(flujoRevisionEvaluadorContratos(
-                            contexto, personalReemplazoToUpdate, docsRevisadosEvalContratos))
+                            contexto, personalReemplazoToUpdate, listEvalInforme, listEvalPersPropuestoSolSuperv))
                     .build();
         }
     }
 
     private String flujoRevisionResponsableTecnico(Contexto contexto,
                                                    PersonalReemplazo personalReemplazoToUpdate,
+                                                   List<EvaluarDocuReemplazo> listEvaluaciones,
                                                    List<DocumentoReemplazo> listDocsAsociados) {
-        boolean allDocsConforme = !listDocsAsociados.isEmpty()
-                && listDocsAsociados.stream()
-                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
-                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
+        boolean allDocsConforme = !listEvaluaciones.isEmpty()
+                && listEvaluaciones.stream()
+                .allMatch(evaluacion -> Constantes.LISTADO.SI_NO.SI.equals(evaluacion.getConforme()));
+
         if (allDocsConforme) {
             ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
                             Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
@@ -1008,26 +1015,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     private String flujoRevisionEvaluadorContratos(Contexto contexto,
                                                    PersonalReemplazo personalReemplazoToUpdate,
-                                                   List<DocumentoReemplazo> listDocsAsociados) {
+                                                   List<EvaluarDocuReemplazo> listEvalInforme,
+                                                   List<EvaluarDocuReemplazo> listEvalPersPropuestoSolSuperv) {
 
-        List<DocumentoReemplazo> listDocumentosInforme = listDocsAsociados.stream()
-                .filter(doc -> Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME.equals(doc.getSeccion().getCodigo()))
-                .collect(Collectors.toList());
-        List<DocumentoReemplazo> listDocumentosPersPropuestoSolSuperv = listDocsAsociados.stream()
-                .filter(doc -> Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PERSONAL_PROPUESTO
-                        .equals(doc.getSeccion().getCodigo())
-                || Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR
-                        .equals(doc.getSeccion().getCodigo()))
-                .collect(Collectors.toList());
-
-        boolean allDocsConformeInforme = !listDocumentosInforme.isEmpty()
-                && listDocumentosInforme.stream()
-                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
-                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
-        boolean allDocsConformePersPropuestoSolSuperv = !listDocumentosPersPropuestoSolSuperv.isEmpty()
-                && listDocumentosPersPropuestoSolSuperv.stream()
-                .allMatch(doc -> !Objects.isNull(doc.getEvaluacion())
-                        && Constantes.LISTADO.SI_NO.SI.equals(doc.getEvaluacion().getConforme()));
+        boolean allDocsConformeInforme = !listEvalInforme.isEmpty()
+                && listEvalInforme.stream()
+                .allMatch(eval -> Constantes.LISTADO.SI_NO.SI.equals(eval.getConforme()));
+        boolean allDocsConformePersPropuestoSolSuperv = !listEvalPersPropuestoSolSuperv.isEmpty()
+                && listEvalPersPropuestoSolSuperv.stream()
+                .allMatch(eval -> Constantes.LISTADO.SI_NO.SI.equals(eval.getConforme()));
 
         if (!(allDocsConformeInforme && allDocsConformePersPropuestoSolSuperv)) {
 

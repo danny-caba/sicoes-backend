@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -69,7 +70,7 @@ public class DocumentoReemplazo extends BaseModel implements Serializable {
     @Transient
     private Archivo archivo;
 
-    @OneToOne(mappedBy = "documento", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "documento", cascade = CascadeType.ALL,
             orphanRemoval = true, fetch = FetchType.LAZY)
-    private EvaluarDocuReemplazo evaluacion;
+    private List<EvaluarDocuReemplazo> evaluacion;
 }

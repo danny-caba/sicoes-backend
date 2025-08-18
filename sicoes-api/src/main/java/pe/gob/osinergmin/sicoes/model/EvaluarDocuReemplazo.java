@@ -22,7 +22,7 @@ public class EvaluarDocuReemplazo extends BaseModel implements Serializable {
     @Column(name = "ID_EVAL_DOCUMENTO")
     private Long idEvalDocumento;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_DOCUMENTO")
     private DocumentoReemplazo documento;
 
