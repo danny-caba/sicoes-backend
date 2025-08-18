@@ -18,5 +18,7 @@ public interface InformeRenovacionContratoMapper {
     InformeRenovacionContratoMapper MAPPER = Mappers.getMapper(InformeRenovacionContratoMapper.class);
 
     @Mapping(source = "requerimiento", target = "requerimiento")
-    InformeRenovacionContratoDTO map(InformeRenovacionContrato informeRenovacionContrato);
+    InformeRenovacionContratoDTO toDTO(InformeRenovacionContrato informeRenovacionContrato);
+
+    InformeRenovacionContrato toEntity(InformeRenovacionContratoDTO informeRenovacionContrato);
 }

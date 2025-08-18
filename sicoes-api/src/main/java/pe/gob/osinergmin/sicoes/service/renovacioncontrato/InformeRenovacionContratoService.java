@@ -14,5 +14,7 @@ public interface InformeRenovacionContratoService {
         Long idContratista,
         Contexto contexto,
         Pageable pageable);
+
+    InformeRenovacionContratoDTO  crearInforme(InformeRenovacionContratoDTO informeRenovacionContratoDTO, Contexto contexto);
     
 }
