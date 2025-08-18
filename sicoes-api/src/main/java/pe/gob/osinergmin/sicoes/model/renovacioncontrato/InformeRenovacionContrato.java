@@ -93,7 +93,8 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
 
     @Column(name = "ES_COMPLETADO", nullable = false, length = 1)
     private String completado;
-    
-//    @Column(name = "ES_APROBACION_INFORME")
-//    private Integer esAprobacionInforme;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ES_APROBACION_INFORME", referencedColumnName = "ID_LISTADO_DETALLE", nullable = true)
+    private ListadoDetalleRenovacionContrato estadoAprobacionInforme;
 }

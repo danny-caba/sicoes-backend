@@ -42,7 +42,6 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_INFORME_RENOVACION", nullable = false,insertable = false, updatable = false)
-    @JsonIgnore
     private InformeRenovacionContrato informeRenovacionContrato;
 
 
