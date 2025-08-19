@@ -28,6 +28,8 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraResponseDTO;
 import pe.gob.osinergmin.sicoes.repository.SupervisoraDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraPerfilService;
@@ -328,6 +330,57 @@ public class SupervisoraServiceImpl implements SupervisoraService{
 	@Override
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc) {
 		return supervisoraDao.obtenerSupervisoraXRUCNoProfesional(codigoRuc);
+	}
+
+	/**
+	 * Busca supervisoras para funcionalidad de autocomplete
+	 * Requerimiento 350 - Renovación de Contratos
+	 * Transforma las entidades Supervisora en DTOs con la lógica de concatenación de nombres
+	 * @param request DTO con el criterio de búsqueda (nombreSupervisora)
+	 * @param contexto Contexto de la aplicación
+	 * @return Lista de SupervisoraResponseDTO con los datos formateados para autocomplete
+	 */
+	@Override
+	public List<SupervisoraResponseDTO> buscarSupervisorasParaAutocomplete(SupervisoraRequestDTO request, Contexto contexto) {
+		List<Supervisora> supervisoras = supervisoraDao.buscarSupervisorasParaAutocomplete(request.getNombreSupervisora());
+		
+		return supervisoras.stream()
+			.limit(10) // Limitar a 10 resultados para autocomplete
+			.map(s -> {
+				// Lógica de concatenación de nombres según tipo de persona
+				String etiqueta;
+				if (s.getNombreRazonSocial() != null && !s.getNombreRazonSocial().trim().isEmpty()) {
+					// Persona Jurídica
+					etiqueta = s.getNombreRazonSocial();
+				} else {
+					// Persona Natural - concatenar nombres y apellidos
+					StringBuilder sb = new StringBuilder();
+					if (s.getNombres() != null && !s.getNombres().trim().isEmpty()) {
+						sb.append(s.getNombres());
+					}
+					if (s.getApellidoPaterno() != null && !s.getApellidoPaterno().trim().isEmpty()) {
+						if (sb.length() > 0) sb.append(" ");
+						sb.append(s.getApellidoPaterno());
+					}
+					if (s.getApellidoMaterno() != null && !s.getApellidoMaterno().trim().isEmpty()) {
+						if (sb.length() > 0) sb.append(" ");
+						sb.append(s.getApellidoMaterno());
+					}
+					etiqueta = sb.toString().trim();
+				}
+				
+				return new SupervisoraResponseDTO(
+					s.getIdSupervisora(),
+					s.getTipoPersona() != null ? s.getTipoPersona().getIdListadoDetalle() : null,
+					s.getTipoPersona() != null ? s.getTipoPersona().getNombre() : null,
+					s.getNombreRazonSocial(),
+					s.getNombres(),
+					s.getApellidoPaterno(),
+					s.getApellidoMaterno(),
+					etiqueta
+				);
+			})
+			.collect(java.util.stream.Collectors.toList());
 	}
 
 
