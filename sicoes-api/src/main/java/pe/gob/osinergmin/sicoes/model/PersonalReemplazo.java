@@ -106,4 +106,7 @@ public class PersonalReemplazo extends BaseModel implements Serializable {
     @Transient
     private java.util.List<Archivo> archivos = java.util.Collections.emptyList();
 
+    @Transient
+    private java.util.List<Archivo> adicionales = java.util.Collections.emptyList();
+
 }

@@ -250,11 +250,11 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarRevDocumentos2(Supervisora empresa, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto) {
-        String email = empresa.getCorreo();
+    public void notificarRevDocumentos2(Usuario usuario, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto) {
+        String email = usuario.getCorreo();
         logger.info(" notificarRevDocumentos2 para email: {} ",email);
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", empresa.getNombreRazonSocial());
+        ctx.setVariable("nombreSupervisora", usuario.getNombreUsuario());
         ctx.setVariable("nombrePersonal", nombrePersonal);
         ctx.setVariable("nombrePerfil", nombrePerfil);
         ctx.setVariable("listDocsAsociados", listDocsAsociados);
@@ -298,11 +298,11 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String nombrePerfil, Contexto contexto) {
-        String email = empresa.getCorreo();
+    public void notificarRevDocumentos122(Usuario usuario, String nombrePersonal, String nombrePerfil, Contexto contexto) {
+        String email = usuario.getCorreo();
         logger.info(" notificarRevDocumentos122 para email: {} ",email);
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", empresa.getNombreRazonSocial());
+        ctx.setVariable("nombreSupervisora", usuario.getNombreUsuario());
         ctx.setVariable("nombrePersonal", nombrePersonal);
         ctx.setVariable("nombrePerfil", nombrePerfil);
         Notificacion notificacion = buildNotification(
