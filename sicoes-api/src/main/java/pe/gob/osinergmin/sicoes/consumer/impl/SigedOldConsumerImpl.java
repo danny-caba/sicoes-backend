@@ -164,6 +164,74 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	        	 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO,e);
 	        }
 	}
+
+	@Override
+	public byte[] descargarArchivoPorUuidAlfresco(String uuid) {
+		try {
+			// Validar UUID
+			if (uuid == null || uuid.trim().isEmpty()) {
+				throw new IllegalArgumentException("UUID del archivo es requerido");
+			}
+			
+			// Limpiar UUID para prevenir path traversal
+			String uuidLimpio = uuid.trim().replaceAll("[^a-zA-Z0-9\\-_]", "");
+			
+			// Construir URL para descarga usando UUID - formato: /archivos/{uuid}/descarga
+			String urlDescarga = SIGED_WS_URL + "/archivos/" + uuidLimpio + "/descarga";
+			
+			logger.info("Descargando archivo desde Alfresco - UUID: {}, URL: {}", uuidLimpio, urlDescarga);
+			
+			RestTemplate restTemplate = new RestTemplate();
+			
+			// Configurar headers si es necesario
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("User-Agent", "SICOES-API");
+			HttpEntity<String> entity = new HttpEntity<>(headers);
+			
+			// Realizar petición GET para descargar el archivo
+			ResponseEntity<byte[]> response = restTemplate.exchange(
+				urlDescarga, 
+				HttpMethod.GET, 
+				entity, 
+				byte[].class
+			);
+			
+			byte[] contenidoArchivo = response.getBody();
+			
+			if (contenidoArchivo == null || contenidoArchivo.length == 0) {
+				logger.warn("Archivo no encontrado o vacío para UUID: {}", uuidLimpio);
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
+			}
+			
+			logger.info("Archivo descargado exitosamente - UUID: {}, Tamaño: {} bytes", uuidLimpio, contenidoArchivo.length);
+			return contenidoArchivo;
+			
+		} catch (HttpClientErrorException e) {
+			logger.error("Error del cliente al descargar archivo - UUID: {}, Status: {}, Response: {}", 
+						uuid, e.getStatusCode(), e.getResponseBodyAsString());
+			
+			if (e.getStatusCode().value() == 404) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO, e);
+			} else if (e.getStatusCode().value() == 403) {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_SIN_PERMISOS, e);
+			} else {
+				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			}
+			
+		} catch (HttpServerErrorException e) {
+			logger.error("Error del servidor al descargar archivo - UUID: {}, Status: {}, Response: {}", 
+						uuid, e.getStatusCode(), e.getResponseBodyAsString());
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+			
+		} catch (ValidacionException e) {
+			// Re-lanzar excepciones de validación
+			throw e;
+			
+		} catch (Exception e) {
+			logger.error("Error inesperado al descargar archivo por UUID: " + uuid, e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO, e);
+		}
+	}
 	
 	public List<Ubigeo> departamentos()  {
 		List<Ubigeo> listUbigeo=new ArrayList<Ubigeo>();

@@ -660,6 +660,7 @@ public class Constantes {
 		public static final String ARCHIVO_NO_SE_PUEDE_LEER = "V00303";
 		public static final String ARCHIVO_PROBLEMA_SUBIR_ALFRESCO		= "V00304";		
 		public static final String ARCHIVO_PROBLEMA_DESCARGAR_ALFRESCO	= "V00305";
+		public static final String ARCHIVO_SIN_PERMISOS = "V00307";
 		public static final String ARCHIVO_SUBIR_ARCHIVO = "V00306";
 		
 		
