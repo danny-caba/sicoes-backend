@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,19 +51,22 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
     public InformeRenovacionContratoDTO crearInforme(InformeRenovacionContratoDTO informeRenovacionContratoDTO, Contexto contexto) {
         
 
+    InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
+    UUID uuid = UUID.randomUUID();
+    String uuidString = uuid.toString();
 
-        InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
-
-        
-        informe.setFecCreacion(new Date());
-
+    informe.setUuidInformeRenovacion(uuidString);
+    informe.setVigente(Boolean.TRUE);
+    informe.setRegistro(Constantes.ESTADO.ACTIVO);
+    informe.setCompletado(Constantes.ESTADO.INACTIVO);
 
     AuditoriaUtil.setAuditoriaRegistro(informe,contexto);
-
-        InformeRenovacionContrato nuevoInforme =  informeRenovacionContratoDao.save(
-                                                    InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO)
-                                                    ); 
-        return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInforme);
+    //TODO: Falta implementar crear PDF   
+    //TODO: Falta implementar flujo ALFRESCO
+    //TODO: Falta implementar flujo SIGED
+        
+    InformeRenovacionContrato nuevoInforme =  informeRenovacionContratoDao.save(informe);
+    return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInforme);
     }
 
     
