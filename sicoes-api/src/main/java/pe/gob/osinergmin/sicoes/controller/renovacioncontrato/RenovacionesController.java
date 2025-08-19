@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RenovacionesService;
 import pe.gob.osinergmin.sicoes.util.Raml;
@@ -54,6 +56,31 @@ public class RenovacionesController extends BaseRestController {
             return new ResponseEntity<>(solicitudes, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error al buscar solicitudes de renovación", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/invitaciones")
+    @Raml("renovacioncontrato.invitaciones.listar.properties")
+    public ResponseEntity<Page<InvitacionResponseDTO>> listarInvitaciones(
+            @RequestParam(required = false) String numeroExpediente,
+            @RequestParam(required = false) String nombreItem,
+            @RequestParam(required = false) Integer estadoInvitacion,
+            @RequestParam(required = false) String fechaDesde,
+            @RequestParam(required = false) String fechaHasta,
+            Pageable pageable) {
+        
+        logger.info("listarInvitaciones - Evaluar Invitación - Usuario: {}", 
+                    getContexto().getUsuario().getIdUsuario());
+        
+        try {
+            Page<InvitacionResponseDTO> invitaciones = renovacionesService.listarInvitaciones(
+                    numeroExpediente, nombreItem, estadoInvitacion, 
+                    fechaDesde, fechaHasta, pageable, getContexto());
+            
+            return new ResponseEntity<>(invitaciones, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error al listar invitaciones", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

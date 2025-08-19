@@ -73,11 +73,15 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "FE_FIRMA")
     private Date feFirma;
 
-
+    @Column(name = "ID_INFORME_RENOVACION", precision = 38)
+    private Long idInformeRenovacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_INFORME_RENOVACION", insertable = false, updatable = false)
     private InformeRenovacion informeRenovacion;
+
+    @Column(name = "ID_NOTIFICACION", precision = 38)
+    private Long idNotificacionAprobacion;
 
 
 
@@ -210,12 +214,28 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
         this.feFirma = feFirma;
     }
 
+    public Long getIdInformeRenovacion() {
+        return idInformeRenovacion;
+    }
+
+    public void setIdInformeRenovacion(Long idInformeRenovacion) {
+        this.idInformeRenovacion = idInformeRenovacion;
+    }
+
     public InformeRenovacion getInformeRenovacion() {
         return informeRenovacion;
     }
 
     public void setInformeRenovacion(InformeRenovacion informeRenovacion) {
         this.informeRenovacion = informeRenovacion;
+    }
+
+    public Long getIdNotificacionAprobacion() {
+        return idNotificacionAprobacion;
+    }
+
+    public void setIdNotificacionAprobacion(Long idNotificacionAprobacion) {
+        this.idNotificacionAprobacion = idNotificacionAprobacion;
     }
 
     public Notificacion getNotificacion() {

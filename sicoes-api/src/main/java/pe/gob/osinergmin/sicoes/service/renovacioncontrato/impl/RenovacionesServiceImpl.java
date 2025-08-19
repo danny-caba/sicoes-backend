@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.Bitacora;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
@@ -298,6 +299,246 @@ public class RenovacionesServiceImpl implements RenovacionesService {
         } catch (Exception e) {
             logger.warn("Error al registrar consulta en bitácora", e);
             // No lanzar excepción para no afectar la funcionalidad principal
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<InvitacionResponseDTO> listarInvitaciones(
+            String numeroExpediente,
+            String nombreItem,
+            Integer estadoInvitacion,
+            String fechaDesde,
+            String fechaHasta,
+            Pageable pageable,
+            Contexto contexto) {
+        
+        logger.info("listarInvitaciones - Usuario: {}, Expediente: {}, Item: {}", 
+                    contexto.getUsuario().getIdUsuario(), numeroExpediente, nombreItem);
+        
+        try {
+            // 1. Validar y limpiar parámetros de entrada
+            String numeroExpedienteLimpio = limpiarParametro(numeroExpediente);
+            String nombreItemLimpio = limpiarParametro(nombreItem);
+            
+            // 2. Validar permisos del usuario
+            if (!validarPermisosConsultaInvitaciones(contexto)) {
+                logger.warn("Usuario {} no tiene permisos para listar invitaciones", contexto.getUsuario().getIdUsuario());
+                return new PageImpl<>(new ArrayList<>(), pageable, 0);
+            }
+            
+            // 3. Obtener invitaciones desde el DAO
+            Page<RequerimientoInvitacion> invitacionesEntity;
+            
+            if (tieneParametrosFecha(fechaDesde, fechaHasta)) {
+                invitacionesEntity = buscarInvitacionesConFiltroFechas(
+                    numeroExpedienteLimpio, nombreItemLimpio, estadoInvitacion, 
+                    fechaDesde, fechaHasta, pageable, contexto);
+            } else {
+                invitacionesEntity = requerimientoInvitacionDao.buscarInvitaciones(
+                    numeroExpedienteLimpio, nombreItemLimpio, estadoInvitacion, pageable);
+            }
+            
+            // 4. Convertir entities a DTOs
+            List<InvitacionResponseDTO> invitacionesDTO = convertirAInvitacionResponseDTO(invitacionesEntity.getContent());
+            
+            // 5. Aplicar filtros de seguridad adicionales
+            List<InvitacionResponseDTO> invitacionesFiltradas = aplicarFiltrosSeguridadInvitaciones(invitacionesDTO, contexto);
+            
+            // 6. Registrar consulta en bitácora
+            registrarConsultaInvitacionesBitacora(numeroExpedienteLimpio, nombreItemLimpio, contexto);
+            
+            logger.info("Búsqueda de invitaciones completada - Encontradas {} invitaciones para usuario {}", 
+                       invitacionesFiltradas.size(), contexto.getUsuario().getIdUsuario());
+            
+            return new PageImpl<>(invitacionesFiltradas, pageable, invitacionesEntity.getTotalElements());
+            
+        } catch (Exception e) {
+            logger.error("Error al listar invitaciones", e);
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
+    }
+    
+    private boolean validarPermisosConsultaInvitaciones(Contexto contexto) {
+        try {
+            if (contexto.getUsuario() == null) {
+                return false;
+            }
+            
+            String usuario = contexto.getUsuario().getUsuario();
+            return usuario != null && (
+                usuario.contains("EVALUADOR") || 
+                usuario.contains("TECNICO") || 
+                usuario.contains("ADMIN") ||
+                usuario.contains("CONSULTOR")
+            );
+        } catch (Exception e) {
+            logger.warn("Error al validar permisos de consulta de invitaciones", e);
+            return false;
+        }
+    }
+    
+    private Page<RequerimientoInvitacion> buscarInvitacionesConFiltroFechas(
+            String numeroExpediente, String nombreItem, Integer estadoInvitacion,
+            String fechaDesde, String fechaHasta, Pageable pageable, Contexto contexto) {
+        
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            Date fechaDesdeDate = null;
+            Date fechaHastaDate = null;
+            
+            if (fechaDesde != null && !fechaDesde.trim().isEmpty()) {
+                fechaDesdeDate = dateFormat.parse(fechaDesde);
+            }
+            
+            if (fechaHasta != null && !fechaHasta.trim().isEmpty()) {
+                fechaHastaDate = dateFormat.parse(fechaHasta);
+            }
+            
+            if (fechaDesdeDate != null && fechaHastaDate != null) {
+                List<RequerimientoInvitacion> invitacionesPorFecha = 
+                    requerimientoInvitacionDao.buscarPorRangoFechas(fechaDesde, fechaHasta);
+                
+                List<RequerimientoInvitacion> invitacionesFiltradas = aplicarFiltrosAdicionalesInvitaciones(
+                    invitacionesPorFecha, numeroExpediente, nombreItem, estadoInvitacion);
+                
+                int inicio = (int) pageable.getOffset();
+                int fin = Math.min(inicio + pageable.getPageSize(), invitacionesFiltradas.size());
+                List<RequerimientoInvitacion> paginaActual = invitacionesFiltradas.subList(inicio, fin);
+                
+                return new PageImpl<>(paginaActual, pageable, invitacionesFiltradas.size());
+            } else {
+                return requerimientoInvitacionDao.buscarInvitaciones(
+                    numeroExpediente, nombreItem, estadoInvitacion, pageable);
+            }
+            
+        } catch (ParseException e) {
+            logger.error("Error al parsear fechas para invitaciones - fechaDesde: {}, fechaHasta: {}", fechaDesde, fechaHasta, e);
+            return requerimientoInvitacionDao.buscarInvitaciones(
+                numeroExpediente, nombreItem, estadoInvitacion, pageable);
+        }
+    }
+    
+    private List<RequerimientoInvitacion> aplicarFiltrosAdicionalesInvitaciones(
+            List<RequerimientoInvitacion> invitaciones, String numeroExpediente,
+            String nombreItem, Integer estadoInvitacion) {
+        
+        List<RequerimientoInvitacion> filtradas = new ArrayList<>();
+        
+        for (RequerimientoInvitacion invitacion : invitaciones) {
+            boolean cumpleFiltros = true;
+            
+            if (numeroExpediente != null && invitacion.getRequerimientoRenovacion() != null &&
+                !invitacion.getRequerimientoRenovacion().getNuExpediente().toLowerCase()
+                    .contains(numeroExpediente.toLowerCase())) {
+                cumpleFiltros = false;
+            }
+            
+            if (nombreItem != null && invitacion.getRequerimientoRenovacion() != null &&
+                !invitacion.getRequerimientoRenovacion().getNoItem().toLowerCase()
+                    .contains(nombreItem.toLowerCase())) {
+                cumpleFiltros = false;
+            }
+            
+            if (estadoInvitacion != null && invitacion.getIdEstadoLd() != null &&
+                !estadoInvitacion.equals(invitacion.getIdEstadoLd().intValue())) {
+                cumpleFiltros = false;
+            }
+            
+            if (cumpleFiltros) {
+                filtradas.add(invitacion);
+            }
+        }
+        
+        return filtradas;
+    }
+    
+    private List<InvitacionResponseDTO> convertirAInvitacionResponseDTO(List<RequerimientoInvitacion> invitaciones) {
+        List<InvitacionResponseDTO> invitacionesDTO = new ArrayList<>();
+        
+        for (RequerimientoInvitacion invitacion : invitaciones) {
+            InvitacionResponseDTO dto = new InvitacionResponseDTO();
+            
+            dto.setIdRequerimientoInvitacion(invitacion.getIdReqInvitacion() != null ? invitacion.getIdReqInvitacion().intValue() : null);
+            
+            if (invitacion.getRequerimientoRenovacion() != null) {
+                dto.setNumeroExpediente(invitacion.getRequerimientoRenovacion().getNuExpediente());
+                dto.setNombreItem(invitacion.getRequerimientoRenovacion().getNoItem());
+            }
+            
+            // Información de supervisora se debe obtener por ID
+            if (invitacion.getIdSupervisora() != null) {
+                // TODO: Implementar carga de supervisora por ID cuando sea necesario
+                dto.setIdSupervisora(invitacion.getIdSupervisora());
+            }
+            
+            if (invitacion.getIdEstadoLd() != null) {
+                dto.setEstadoInvitacion(invitacion.getIdEstadoLd().intValue());
+                // TODO: Implementar carga de descripción de estado cuando sea necesario
+            }
+            
+            dto.setFechaCreacion(invitacion.getFecCreacion() != null ? 
+                invitacion.getFecCreacion().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
+            dto.setFechaVencimiento(invitacion.getFeCaducidad() != null ? 
+                invitacion.getFeCaducidad().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
+            
+            // Observaciones no están en el modelo base
+            // dto.setObservaciones(invitacion.getDeObservaciones());
+            
+            // Usuario creación se obtiene por ID desde BaseModel
+            if (invitacion.getUsuCreacion() != null) {
+                dto.setNombreUsuarioCreacion(invitacion.getUsuCreacion());
+            }
+            
+            invitacionesDTO.add(dto);
+        }
+        
+        return invitacionesDTO;
+    }
+    
+    private List<InvitacionResponseDTO> aplicarFiltrosSeguridadInvitaciones(
+            List<InvitacionResponseDTO> invitaciones, Contexto contexto) {
+        
+        try {
+            String tipoUsuario = obtenerTipoUsuario(contexto);
+            
+            if ("EXTERNO".equals(tipoUsuario)) {
+                // Usuario externo solo ve invitaciones dirigidas a él
+                return invitaciones.stream()
+                    .filter(inv -> {
+                        // Aquí deberías implementar la lógica para verificar si la invitación
+                        // está dirigida al usuario actual (por ejemplo, por RUC o ID de supervisora)
+                        return true; // Placeholder - implementar lógica específica
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            return invitaciones;
+            
+        } catch (Exception e) {
+            logger.warn("Error al aplicar filtros de seguridad en invitaciones", e);
+            return invitaciones;
+        }
+    }
+    
+    private void registrarConsultaInvitacionesBitacora(String numeroExpediente, String nombreItem, Contexto contexto) {
+        try {
+            Bitacora bitacora = new Bitacora();
+            bitacora.setUsuario(contexto.getUsuario());
+            bitacora.setFechaHora(new Date());
+            bitacora.setDescripcion("Consulta de invitaciones de renovación. " +
+                                "Expediente: " + (numeroExpediente != null ? numeroExpediente : "Todos") + 
+                                ", Item: " + (nombreItem != null ? nombreItem : "Todos"));
+            
+            AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
+            
+            bitacoraDao.save(bitacora);
+            
+            logger.info("Registrada consulta de invitaciones en bitácora - Usuario: {}, Bitácora ID: {}", 
+                       contexto.getUsuario().getIdUsuario(), bitacora.getIdBitacora());
+            
+        } catch (Exception e) {
+            logger.warn("Error al registrar consulta de invitaciones en bitácora", e);
         }
     }
 

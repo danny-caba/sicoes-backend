@@ -1,16 +1,27 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.Bitacora;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Representante;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoRequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
@@ -18,6 +29,8 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ActualizacionBandejaDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RechazoInformeDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeAprobacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionDTO;
 import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
@@ -26,6 +39,7 @@ import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.HistorialEstadoReq
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
+import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.service.BitacoraService;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionService;
@@ -68,6 +82,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
     @Autowired
     private HistorialEstadoRequerimientoRenovacionDao historialEstadoRequerimientoRenovacionDao;
+
+    @Autowired
+    private SigedOldConsumer sigedOldConsumer;
 
     @Override
     public void rechazarInforme(RechazoInformeDTO rechazoDTO, Contexto contexto) {
@@ -390,6 +407,791 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.info("Actualizando bandejas relacionadas - Req: {}", requerimiento.getIdReqRenovacion());
         } catch (Exception e) {
             logger.error("Error al actualizar bandejas relacionadas", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] descargarAdjuntoDesdeAlfresco(String uuid, Contexto contexto) {
+        logger.info("descargarAdjuntoDesdeAlfresco - UUID: {}, Usuario: {}", 
+                    uuid, contexto.getUsuario().getIdUsuario());
+        
+        try {
+            // 1. Validar parámetros de entrada
+            if (uuid == null || uuid.trim().isEmpty()) {
+                throw new IllegalArgumentException("UUID del archivo es requerido");
+            }
+            
+            // 2. Validar permisos del usuario
+            if (!validarPermisosDescargarAdjunto(contexto)) {
+                throw new SecurityException("El usuario no tiene permisos para descargar adjuntos");
+            }
+            
+            // 3. Validar que el UUID corresponde a un archivo accesible por el usuario
+            if (!validarAccesoArchivoPorUuid(uuid, contexto)) {
+                throw new SecurityException("El usuario no tiene acceso a este archivo");
+            }
+            
+            // 4. Descargar archivo desde Alfresco
+            byte[] contenidoArchivo = sigedOldConsumer.descargarArchivoPorUuidAlfresco(uuid);
+            
+            // 5. Validar que se descargó contenido
+            if (contenidoArchivo == null || contenidoArchivo.length == 0) {
+                throw new IllegalArgumentException("Archivo no encontrado o vacío");
+            }
+            
+            // 6. Registrar descarga en bitácora
+            registrarDescargaEnBitacora(uuid, contenidoArchivo.length, contexto);
+            
+            logger.info("Adjunto descargado exitosamente - UUID: {}, Tamaño: {} bytes, Usuario: {}", 
+                       uuid, contenidoArchivo.length, contexto.getUsuario().getIdUsuario());
+            
+            return contenidoArchivo;
+            
+        } catch (SecurityException | IllegalArgumentException e) {
+            // Re-lanzar excepciones de validación y seguridad
+            logger.warn("Error al descargar adjunto - UUID: {}, Error: {}", uuid, e.getMessage());
+            throw e;
+            
+        } catch (Exception e) {
+            logger.error("Error inesperado al descargar adjunto desde Alfresco - UUID: " + uuid, e);
+            throw new RuntimeException("Error al descargar el archivo adjunto", e);
+        }
+    }
+    
+    private boolean validarPermisosDescargarAdjunto(Contexto contexto) {
+        try {
+            if (contexto.getUsuario() == null) {
+                return false;
+            }
+            
+            String usuario = contexto.getUsuario().getUsuario();
+            if (usuario == null) {
+                return false;
+            }
+            
+            // Verificar roles que pueden descargar adjuntos de informes de renovación
+            return usuario.contains("APROBADOR") || 
+                   usuario.contains("TECNICO") || 
+                   usuario.contains("ADMIN") ||
+                   usuario.contains("EVALUADOR") ||
+                   usuario.contains("CONSULTOR");
+                   
+        } catch (Exception e) {
+            logger.warn("Error al validar permisos para descargar adjunto", e);
+            return false;
+        }
+    }
+    
+    private boolean validarAccesoArchivoPorUuid(String uuid, Contexto contexto) {
+        try {
+            // Esta validación debe verificar que el UUID corresponde a un archivo
+            // asociado a un informe de renovación al cual el usuario tiene acceso
+            
+            // Por ahora implementamos una validación básica
+            // En una implementación completa, se debería:
+            // 1. Buscar el archivo por UUID en la base de datos
+            // 2. Verificar que pertenece a un informe de renovación
+            // 3. Validar que el usuario tiene acceso a ese informe
+            
+            String uuidLimpio = uuid.trim().replaceAll("[^a-zA-Z0-9\\-_]", "");
+            
+            // Validar formato UUID básico
+            if (uuidLimpio.length() < 8) {
+                return false;
+            }
+            
+            // Por seguridad, validar que no contenga caracteres maliciosos
+            if (!uuidLimpio.equals(uuid.trim())) {
+                logger.warn("UUID contiene caracteres no permitidos: {}", uuid);
+                return false;
+            }
+            
+            // TODO: Implementar validación específica de acceso por relación en BD
+            // Por ahora permitir acceso si el usuario tiene permisos generales
+            return validarPermisosDescargarAdjunto(contexto);
+            
+        } catch (Exception e) {
+            logger.warn("Error al validar acceso al archivo por UUID", e);
+            return false;
+        }
+    }
+    
+    private void registrarDescargaEnBitacora(String uuid, int tamanoArchivo, Contexto contexto) {
+        try {
+            Bitacora bitacora = new Bitacora();
+            bitacora.setUsuario(contexto.getUsuario());
+            bitacora.setFechaHora(new Date());
+            bitacora.setDescripcion("Descarga de adjunto de informe de renovación. " +
+                                  "UUID: " + uuid + 
+                                  ", Tamaño: " + tamanoArchivo + " bytes");
+            
+            AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
+            
+            bitacoraDao.save(bitacora);
+            
+            logger.info("Registrada descarga de adjunto en bitácora - UUID: {}, Usuario: {}, Bitácora ID: {}", 
+                       uuid, contexto.getUsuario().getIdUsuario(), bitacora.getIdBitacora());
+            
+        } catch (Exception e) {
+            logger.warn("Error al registrar descarga en bitácora", e);
+            // No lanzar excepción para no afectar la funcionalidad principal
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<InformeAprobacionResponseDTO> buscarInformesParaAprobar(
+            String numeroExpediente,
+            String tipoSector,
+            String tipoSubSector,
+            String nombreItem,
+            String razSocialSupervisora,
+            Integer estadoInforme,
+            Integer grupoAprobador,
+            Integer prioridad,
+            String fechaDesde,
+            String fechaHasta,
+            Boolean soloVencidos,
+            Boolean soloAsignados,
+            Pageable pageable,
+            Contexto contexto) {
+        
+        logger.info("buscarInformesParaAprobar - Usuario: {}, Expediente: {}, Sector: {}", 
+                    contexto.getUsuario().getIdUsuario(), numeroExpediente, tipoSector);
+        
+        try {
+            // 1. Validar y limpiar parámetros de entrada
+            String numeroExpedienteLimpio = limpiarParametro(numeroExpediente);
+            String tipoSectorLimpio = limpiarParametro(tipoSector);
+            String tipoSubSectorLimpio = limpiarParametro(tipoSubSector);
+            String nombreItemLimpio = limpiarParametro(nombreItem);
+            String razSocialLimpia = limpiarParametro(razSocialSupervisora);
+            
+            // 2. Validar permisos del usuario
+            if (!validarPermisosConsultaAprobaciones(contexto)) {
+                logger.warn("Usuario {} no tiene permisos para buscar informes de aprobación", contexto.getUsuario().getIdUsuario());
+                return new PageImpl<>(new ArrayList<>(), pageable, 0);
+            }
+            
+            // 3. Obtener informes desde el DAO con filtros básicos
+            Page<InformeRenovacion> informesPage = informeRenovacionDao.buscarInformesParaAprobar(
+                estadoInforme != null ? estadoInforme.longValue() : null,
+                grupoAprobador != null ? grupoAprobador.longValue() : null,
+                numeroExpedienteLimpio,
+                nombreItemLimpio,
+                razSocialLimpia,
+                pageable);
+            
+            List<InformeRenovacion> informesEntity = informesPage.getContent();
+            
+            // 4. Aplicar filtros adicionales
+            List<InformeRenovacion> informesFiltrados = aplicarFiltrosAdicionales(
+                informesEntity, fechaDesde, fechaHasta, soloVencidos, soloAsignados, contexto);
+            
+            // 5. Aplicar filtros de seguridad por usuario
+            List<InformeRenovacion> informesConAcceso = aplicarFiltrosSeguridadAprobaciones(informesFiltrados, contexto);
+            
+            // 6. Convertir a DTOs
+            List<InformeAprobacionResponseDTO> informesDTO = convertirAInformeAprobacionResponseDTO(informesConAcceso);
+            
+            // 7. Registrar consulta en bitácora
+            registrarConsultaAprobacionesBitacora(numeroExpedienteLimpio, tipoSectorLimpio, contexto);
+            
+            logger.info("Búsqueda de informes para aprobar completada - Encontrados {} informes para usuario {}", 
+                       informesDTO.size(), contexto.getUsuario().getIdUsuario());
+            
+            return new PageImpl<>(informesDTO, pageable, informesPage.getTotalElements());
+            
+        } catch (Exception e) {
+            logger.error("Error al buscar informes para aprobar", e);
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
+    }
+    
+    private String limpiarParametro(String parametro) {
+        if (parametro == null || parametro.trim().isEmpty()) {
+            return null;
+        }
+        return parametro.trim().replaceAll("[<>\"'%;()&+]", "");
+    }
+    
+    private boolean validarPermisosConsultaAprobaciones(Contexto contexto) {
+        try {
+            if (contexto.getUsuario() == null) {
+                return false;
+            }
+            
+            String usuario = contexto.getUsuario().getUsuario();
+            return usuario != null && (
+                usuario.contains("APROBADOR") || 
+                usuario.contains("GSE") || 
+                usuario.contains("TECNICO") || 
+                usuario.contains("ADMIN") ||
+                usuario.contains("SUPERVISOR")
+            );
+        } catch (Exception e) {
+            logger.warn("Error al validar permisos de consulta de aprobaciones", e);
+            return false;
+        }
+    }
+    
+    private List<InformeRenovacion> aplicarFiltrosAdicionales(
+            List<InformeRenovacion> informes, String fechaDesde, String fechaHasta, 
+            Boolean soloVencidos, Boolean soloAsignados, Contexto contexto) {
+        
+        List<InformeRenovacion> informesFiltrados = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        LocalDateTime ahora = LocalDateTime.now();
+        
+        for (InformeRenovacion informe : informes) {
+            boolean cumpleFiltros = true;
+            
+            // Filtro por rango de fechas
+            if (fechaDesde != null && fechaHasta != null) {
+                try {
+                    Date fechaDesdeDate = dateFormat.parse(fechaDesde);
+                    Date fechaHastaDate = dateFormat.parse(fechaHasta);
+                    
+                    if (informe.getFecCreacion() != null) {
+                        Date fechaCreacion = informe.getFecCreacion();
+                        if (fechaCreacion.before(fechaDesdeDate) || fechaCreacion.after(fechaHastaDate)) {
+                            cumpleFiltros = false;
+                        }
+                    }
+                } catch (ParseException e) {
+                    logger.warn("Error al parsear fechas de filtro", e);
+                }
+            }
+            
+            // Filtro solo vencidos
+            // TODO: Verificar si existe campo de fecha de vencimiento en la BD
+            if (Boolean.TRUE.equals(soloVencidos)) {
+                // No existe campo de fecha de vencimiento en SICOES_TD_INFORME_RENOVACION
+                // Por ahora no se puede filtrar por vencidos
+                // if (informe.getFeVencimiento() != null) {
+                //     LocalDateTime fechaVencimiento = informe.getFeVencimiento().toInstant()
+                //         .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+                //     if (!fechaVencimiento.isBefore(ahora)) {
+                //         cumpleFiltros = false;
+                //     }
+                // } else {
+                //     cumpleFiltros = false;
+                // }
+            }
+            
+            // Filtro solo asignados al usuario actual
+            // TODO: Verificar si existe campo de usuario asignado en la BD
+            if (Boolean.TRUE.equals(soloAsignados)) {
+                // Por ahora no se puede filtrar por usuario asignado ya que no existe en el modelo
+                // if (informe.getUsuarioAsignado() == null || 
+                //     !informe.getUsuarioAsignado().getIdUsuario().equals(contexto.getUsuario().getIdUsuario())) {
+                //     cumpleFiltros = false;
+                // }
+            }
+            
+            if (cumpleFiltros) {
+                informesFiltrados.add(informe);
+            }
+        }
+        
+        return informesFiltrados;
+    }
+    
+    private List<InformeRenovacion> aplicarFiltrosSeguridadAprobaciones(
+            List<InformeRenovacion> informes, Contexto contexto) {
+        
+        try {
+            String tipoUsuario = obtenerTipoUsuarioAprobador(contexto);
+            
+            // Filtrar por grupo aprobador según el tipo de usuario
+            return informes.stream()
+                .filter(informe -> validarAccesoInformePorGrupo(informe, tipoUsuario, contexto))
+                .collect(java.util.stream.Collectors.toList());
+                
+        } catch (Exception e) {
+            logger.warn("Error al aplicar filtros de seguridad de aprobaciones", e);
+            return informes;
+        }
+    }
+    
+    private String obtenerTipoUsuarioAprobador(Contexto contexto) {
+        try {
+            String usuario = contexto.getUsuario().getUsuario();
+            if (usuario != null) {
+                if (usuario.contains("GSE")) {
+                    return "GSE";
+                } else if (usuario.contains("APROBADOR_G1")) {
+                    return "GRUPO_1";
+                } else if (usuario.contains("APROBADOR_G2")) {
+                    return "GRUPO_2";
+                } else if (usuario.contains("ADMIN") || usuario.contains("SUPERVISOR")) {
+                    return "ADMIN";
+                }
+            }
+            return "GENERAL";
+        } catch (Exception e) {
+            return "GENERAL";
+        }
+    }
+    
+    private boolean validarAccesoInformePorGrupo(InformeRenovacion informe, String tipoUsuario, Contexto contexto) {
+        try {
+            // Administradores ven todo
+            if ("ADMIN".equals(tipoUsuario)) {
+                return true;
+            }
+            
+            // TODO: Validar acceso por grupo aprobador cuando se tenga la relación
+            // No existe campo grupoAprobador directo en InformeRenovacion
+            // Se necesita acceder a través de RequerimientoAprobacion
+            
+            // Por ahora permitir acceso a todos los informes
+            // if (informe.getGrupoAprobador() != null) {
+            //     Integer grupoInforme = informe.getGrupoAprobador().getIdListadoDetalle().intValue();
+            //     
+            //     switch (tipoUsuario) {
+            //         case "GSE":
+            //             // GSE ve informes del grupo 7
+            //             return grupoInforme.equals(7);
+            //         case "GRUPO_1":
+            //             // Grupo 1 ve informes del grupo 1
+            //             return grupoInforme.equals(1);
+            //         case "GRUPO_2":
+            //             // Grupo 2 ve informes del grupo 2
+            //             return grupoInforme.equals(2);
+            //         default:
+            //             return true;
+            //     }
+            // }
+            
+            return true;
+            
+        } catch (Exception e) {
+            logger.warn("Error al validar acceso a informe por grupo", e);
+            return false;
+        }
+    }
+    
+    private List<InformeAprobacionResponseDTO> convertirAInformeAprobacionResponseDTO(List<InformeRenovacion> informes) {
+        List<InformeAprobacionResponseDTO> informesDTO = new ArrayList<>();
+        LocalDateTime ahora = LocalDateTime.now();
+        
+        for (InformeRenovacion informe : informes) {
+            InformeAprobacionResponseDTO dto = new InformeAprobacionResponseDTO();
+            
+            dto.setIdInformeRenovacion(informe.getIdInformeRenovacion().intValue());
+            
+            // Datos del requerimiento de renovación
+            if (informe.getRequerimientoRenovacion() != null) {
+                dto.setIdRequerimientoRenovacion(informe.getRequerimientoRenovacion().getIdReqRenovacion().intValue());
+                dto.setNumeroExpediente(informe.getRequerimientoRenovacion().getNuExpediente());
+                dto.setNombreItem(informe.getRequerimientoRenovacion().getNoItem());
+                dto.setTipoSector(informe.getRequerimientoRenovacion().getTiSector());
+                dto.setTipoSubSector(informe.getRequerimientoRenovacion().getTiSubSector());
+                
+                // Datos de la supervisora a través de solicitudPerfil
+                if (informe.getRequerimientoRenovacion().getSolicitudPerfil() != null && 
+                    informe.getRequerimientoRenovacion().getSolicitudPerfil().getSupervisora() != null) {
+                    Supervisora supervisora = informe.getRequerimientoRenovacion().getSolicitudPerfil().getSupervisora();
+                    dto.setRazSocialSupervisora(supervisora.getNombreRazonSocial());
+                    dto.setNumeroRucSupervisora(supervisora.getCodigoRuc());
+                    
+                    // Note: Need to implement representante relationship or get from another way
+                    // For now, setting a placeholder
+                    dto.setNombreRepresentante("Representante no disponible");
+                }
+            }
+            
+            // Estado del informe
+            if (informe.getEstadoAprobacionInforme() != null) {
+                dto.setEstadoInforme(informe.getEstadoAprobacionInforme().getIdListadoDetalle().intValue());
+                dto.setDescripcionEstado(informe.getEstadoAprobacionInforme().getDescripcion());
+            }
+            
+            // Grupo aprobador - TODO: Verificar si existe este campo en InformeRenovacion
+            // No existe campo grupoAprobador en SICOES_TD_INFORME_RENOVACION
+            // if (informe.getGrupoAprobador() != null) {
+            //     dto.setGrupoAprobador(informe.getGrupoAprobador().getIdListadoDetalle().intValue());
+            //     dto.setDescripcionGrupoAprobador(informe.getGrupoAprobador().getDenominacion());
+            // }
+            
+            // Fechas
+            dto.setFechaCreacionInforme(informe.getFecCreacion() != null ? 
+                informe.getFecCreacion().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
+            // TODO: No existe campo de fecha de vencimiento, usar fecha de creación + días para calcular
+            // Calcular días transcurridos desde creación (prioridad por antigüedad)
+            if (informe.getFecCreacion() != null) {
+                LocalDateTime fechaCreacion = informe.getFecCreacion().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+                long diasTranscurridos = ChronoUnit.DAYS.between(fechaCreacion, ahora);
+                dto.setDiasVencimiento((int) diasTranscurridos);
+                
+                // Determinar prioridad basada en días transcurridos
+                if (diasTranscurridos > 30) {
+                    dto.setPrioridad(1); // Alta - Muy antiguo
+                } else if (diasTranscurridos > 15) {
+                    dto.setPrioridad(2); // Media - Antiguo
+                } else {
+                    dto.setPrioridad(3); // Baja - Reciente
+                }
+            }
+            
+            // Datos adicionales
+            dto.setObservaciones(informe.getDeObjeto()); // Usar DE_OBJETO como observaciones
+            dto.setConclusiones(informe.getDeConclusiones());
+            dto.setUuidArchivoInforme(informe.getDeUuidInfoRenovacion());
+            dto.setEsVigente(informe.getEsVigente());
+            dto.setEsCompletado(informe.getEsCompletado());
+            
+            // Usuario de creación
+            if (informe.getUsuario() != null) {
+                dto.setIdUsuarioCreacion(informe.getUsuario().getIdUsuario().intValue());
+                dto.setNombreUsuarioCreacion(informe.getUsuario().getNombreUsuario() != null ? 
+                                           informe.getUsuario().getNombreUsuario() : 
+                                           informe.getUsuario().getUsuario());
+            }
+            
+            // Adjunto del informe
+            dto.setRutaAdjuntoInforme(informe.getDeRutaArchivo());
+            dto.setNombreArchivoInforme(informe.getDeNombreArchivo());
+            
+            informesDTO.add(dto);
+        }
+        
+        return informesDTO;
+    }
+    
+    private void registrarConsultaAprobacionesBitacora(String numeroExpediente, String tipoSector, Contexto contexto) {
+        try {
+            Bitacora bitacora = new Bitacora();
+            bitacora.setUsuario(contexto.getUsuario());
+            bitacora.setFechaHora(new Date());
+            bitacora.setDescripcion("Consulta de informes para aprobación - GSE Bandeja Aprobaciones. " +
+                                "Expediente: " + (numeroExpediente != null ? numeroExpediente : "Todos") + 
+                                ", Sector: " + (tipoSector != null ? tipoSector : "Todos"));
+            
+            AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
+            
+            bitacoraDao.save(bitacora);
+            
+            logger.info("Registrada consulta de aprobaciones en bitácora - Usuario: {}, Bitácora ID: {}", 
+                       contexto.getUsuario().getIdUsuario(), bitacora.getIdBitacora());
+            
+        } catch (Exception e) {
+            logger.warn("Error al registrar consulta de aprobaciones en bitácora", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<HistorialAprobacionDTO> listarHistorialAprobaciones(
+            String numeroExpediente,
+            String tipoSector,
+            String tipoSubSector,
+            String nombreItem,
+            String razSocialSupervisora,
+            Integer estadoFinal,
+            String tipoAccion,
+            Integer grupoAprobador,
+            Integer idUsuarioAccion,
+            String fechaDesde,
+            String fechaHasta,
+            Boolean soloAprobados,
+            Boolean soloRechazados,
+            Boolean soloMisAcciones,
+            Pageable pageable,
+            Contexto contexto) {
+        
+        logger.info("listarHistorialAprobaciones - Usuario: {}, Expediente: {}, TipoAccion: {}", 
+                    contexto.getUsuario().getIdUsuario(), numeroExpediente, tipoAccion);
+        
+        try {
+            // 1. Validar y limpiar parámetros de entrada
+            String numeroExpedienteLimpio = limpiarParametro(numeroExpediente);
+            String tipoSectorLimpio = limpiarParametro(tipoSector);
+            String tipoSubSectorLimpio = limpiarParametro(tipoSubSector);
+            String nombreItemLimpio = limpiarParametro(nombreItem);
+            String razSocialLimpia = limpiarParametro(razSocialSupervisora);
+            String tipoAccionLimpia = limpiarParametro(tipoAccion);
+            
+            // 2. Validar permisos del usuario
+            if (!validarPermisosConsultaHistorial(contexto)) {
+                logger.warn("Usuario {} no tiene permisos para consultar historial de aprobaciones", contexto.getUsuario().getIdUsuario());
+                return new PageImpl<>(new ArrayList<>(), pageable, 0);
+            }
+            
+            // 3. Aplicar filtro de usuario si soloMisAcciones es true
+            Integer idUsuarioFiltro = idUsuarioAccion;
+            if (Boolean.TRUE.equals(soloMisAcciones)) {
+                idUsuarioFiltro = contexto.getUsuario().getIdUsuario().intValue();
+            }
+            
+            // 4. Obtener historial desde el DAO
+            // Buscar historial por informe de renovación específico si se proporciona número de expediente
+            List<HistorialEstadoAprobacionCampo> historialEntity = new ArrayList<>();
+            
+            if (numeroExpedienteLimpio != null) {
+                // Buscar informes por expediente para obtener historial
+                List<InformeRenovacion> informes = informeRenovacionDao.listarActivos();
+                for (InformeRenovacion informe : informes) {
+                    if (informe.getRequerimientoRenovacion() != null && 
+                        informe.getRequerimientoRenovacion().getNuExpediente() != null &&
+                        informe.getRequerimientoRenovacion().getNuExpediente().contains(numeroExpedienteLimpio)) {
+                        
+                        List<HistorialEstadoAprobacionCampo> historialInforme = 
+                            informeRenovacionDao.buscarHistorialAprobaciones(informe.getIdInformeRenovacion());
+                        historialEntity.addAll(historialInforme);
+                    }
+                }
+            } else {
+                // Si no hay filtro específico, obtener todo el historial activo
+                historialEntity = historialEstadoAprobacionCampoDao.findByEsRegistroOrderByFeFechaCambioDesc("1");
+            }
+            
+            // 5. Aplicar filtros adicionales
+            List<HistorialEstadoAprobacionCampo> historialFiltrado = aplicarFiltrosAdicionalesHistorial(
+                historialEntity, fechaDesde, fechaHasta, soloAprobados, soloRechazados, contexto);
+            
+            // 6. Aplicar filtros de seguridad por usuario
+            List<HistorialEstadoAprobacionCampo> historialConAcceso = aplicarFiltrosSeguridadHistorial(historialFiltrado, contexto);
+            
+            // 7. Convertir a DTOs
+            List<HistorialAprobacionDTO> historialDTO = convertirAHistorialAprobacionDTO(historialConAcceso);
+            
+            // 8. Aplicar paginación manual
+            int inicio = (int) pageable.getOffset();
+            int fin = Math.min(inicio + pageable.getPageSize(), historialDTO.size());
+            List<HistorialAprobacionDTO> paginaActual = historialDTO.subList(inicio, fin);
+            
+            // 9. Registrar consulta en bitácora
+            registrarConsultaHistorialBitacora(numeroExpedienteLimpio, tipoAccionLimpia, contexto);
+            
+            logger.info("Consulta de historial de aprobaciones completada - Encontrados {} registros para usuario {}", 
+                       historialDTO.size(), contexto.getUsuario().getIdUsuario());
+            
+            return new PageImpl<>(paginaActual, pageable, historialDTO.size());
+            
+        } catch (Exception e) {
+            logger.error("Error al consultar historial de aprobaciones", e);
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
+    }
+    
+    private boolean validarPermisosConsultaHistorial(Contexto contexto) {
+        try {
+            if (contexto.getUsuario() == null) {
+                return false;
+            }
+            
+            String usuario = contexto.getUsuario().getUsuario();
+            return usuario != null && (
+                usuario.contains("APROBADOR") || 
+                usuario.contains("GSE") || 
+                usuario.contains("TECNICO") || 
+                usuario.contains("ADMIN") ||
+                usuario.contains("SUPERVISOR") ||
+                usuario.contains("AUDITOR") ||
+                usuario.contains("CONSULTOR")
+            );
+        } catch (Exception e) {
+            logger.warn("Error al validar permisos de consulta de historial", e);
+            return false;
+        }
+    }
+    
+    private List<HistorialEstadoAprobacionCampo> aplicarFiltrosAdicionalesHistorial(
+            List<HistorialEstadoAprobacionCampo> historial, String fechaDesde, String fechaHasta, 
+            Boolean soloAprobados, Boolean soloRechazados, Contexto contexto) {
+        
+        List<HistorialEstadoAprobacionCampo> historialFiltrado = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        
+        for (HistorialEstadoAprobacionCampo registro : historial) {
+            boolean cumpleFiltros = true;
+            
+            // Filtro por rango de fechas
+            if (fechaDesde != null && fechaHasta != null) {
+                try {
+                    Date fechaDesdeDate = dateFormat.parse(fechaDesde);
+                    Date fechaHastaDate = dateFormat.parse(fechaHasta);
+                    
+                    if (registro.getFecCreacion() != null) {
+                        Date fechaCreacion = registro.getFecCreacion();
+                        if (fechaCreacion.before(fechaDesdeDate) || fechaCreacion.after(fechaHastaDate)) {
+                            cumpleFiltros = false;
+                        }
+                    }
+                } catch (ParseException e) {
+                    logger.warn("Error al parsear fechas de filtro en historial", e);
+                }
+            }
+            
+            // Filtro solo aprobados
+            if (Boolean.TRUE.equals(soloAprobados)) {
+                if (registro.getDeEstadoNuevoLd() == null || !esEstadoAprobado(registro.getDeEstadoNuevoLd())) {
+                    cumpleFiltros = false;
+                }
+            }
+            
+            // Filtro solo rechazados
+            if (Boolean.TRUE.equals(soloRechazados)) {
+                if (registro.getDeEstadoNuevoLd() == null || !esEstadoRechazado(registro.getDeEstadoNuevoLd())) {
+                    cumpleFiltros = false;
+                }
+            }
+            
+            if (cumpleFiltros) {
+                historialFiltrado.add(registro);
+            }
+        }
+        
+        return historialFiltrado;
+    }
+    
+    private boolean esEstadoAprobado(Long estadoId) {
+        try {
+            ListadoDetalle estado = listadoDetalleDao.obtener(estadoId);
+            return estado != null && estado.getDescripcion() != null && 
+                   estado.getDescripcion().toUpperCase().contains("APROBADO");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    private boolean esEstadoRechazado(Long estadoId) {
+        try {
+            ListadoDetalle estado = listadoDetalleDao.obtener(estadoId);
+            return estado != null && estado.getDescripcion() != null && 
+                   estado.getDescripcion().toUpperCase().contains("RECHAZADO");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    private List<HistorialEstadoAprobacionCampo> aplicarFiltrosSeguridadHistorial(
+            List<HistorialEstadoAprobacionCampo> historial, Contexto contexto) {
+        
+        try {
+            String tipoUsuario = obtenerTipoUsuarioAprobador(contexto);
+            
+            // Los administradores y auditores ven todo el historial
+            if ("ADMIN".equals(tipoUsuario) || contexto.getUsuario().getUsuario().contains("AUDITOR")) {
+                return historial;
+            }
+            
+            // Para otros usuarios, filtrar por grupo aprobador si es necesario
+            return historial.stream()
+                .filter(registro -> validarAccesoHistorialPorGrupo(registro, tipoUsuario, contexto))
+                .collect(java.util.stream.Collectors.toList());
+                
+        } catch (Exception e) {
+            logger.warn("Error al aplicar filtros de seguridad de historial", e);
+            return historial;
+        }
+    }
+    
+    private boolean validarAccesoHistorialPorGrupo(HistorialEstadoAprobacionCampo registro, String tipoUsuario, Contexto contexto) {
+        try {
+            // Administradores y auditores ven todo
+            if ("ADMIN".equals(tipoUsuario) || contexto.getUsuario().getUsuario().contains("AUDITOR")) {
+                return true;
+            }
+            
+            // TODO: Implementar validación específica por grupo aprobador
+            // cuando se tenga la relación con la tabla de requerimientos
+            return true;
+            
+        } catch (Exception e) {
+            logger.warn("Error al validar acceso a historial por grupo", e);
+            return false;
+        }
+    }
+    
+    private List<HistorialAprobacionDTO> convertirAHistorialAprobacionDTO(List<HistorialEstadoAprobacionCampo> historial) {
+        List<HistorialAprobacionDTO> historialDTO = new ArrayList<>();
+        
+        for (HistorialEstadoAprobacionCampo registro : historial) {
+            HistorialAprobacionDTO dto = new HistorialAprobacionDTO();
+            
+            dto.setIdHistorialAprobacion(registro.getIdHistorialEstadoCampo().intValue());
+            dto.setIdReqAprobacion(registro.getIdReqAprobacion().intValue());
+            dto.setIdGrupoLd(registro.getIdGrupoLd() != null ? registro.getIdGrupoLd().intValue() : null);
+            dto.setIdGrupoAprobadorLd(registro.getIdGrupoAprobadorLd() != null ? registro.getIdGrupoAprobadorLd().intValue() : null);
+            
+            // Obtener estado anterior y nuevo
+            if (registro.getDeEstadoAnteriorLd() != null) {
+                dto.setEstadoAnterior(registro.getDeEstadoAnteriorLd().intValue());
+                ListadoDetalle estadoAnterior = listadoDetalleDao.obtener(registro.getDeEstadoAnteriorLd());
+                if (estadoAnterior != null) {
+                    dto.setDescripcionEstadoAnterior(estadoAnterior.getDescripcion());
+                }
+            }
+            
+            if (registro.getDeEstadoNuevoLd() != null) {
+                dto.setEstadoNuevo(registro.getDeEstadoNuevoLd().intValue());
+                ListadoDetalle estadoNuevo = listadoDetalleDao.obtener(registro.getDeEstadoNuevoLd());
+                if (estadoNuevo != null) {
+                    dto.setDescripcionEstadoNuevo(estadoNuevo.getDescripcion());
+                    dto.setEstadoFinalProceso(estadoNuevo.getDescripcion());
+                }
+            }
+            
+            // Fecha de acción
+            if (registro.getFeFechaCambio() != null) {
+                dto.setFechaAccion(registro.getFeFechaCambio().toLocalDateTime());
+            }
+            
+            // Usuario que realizó la acción
+            dto.setIdUsuarioAccion(registro.getIdUsuario().intValue());
+            
+            // Determinar tipo de acción
+            if (dto.getDescripcionEstadoNuevo() != null) {
+                if (dto.getDescripcionEstadoNuevo().toUpperCase().contains("APROBADO")) {
+                    dto.setTipoAccion("APROBACION");
+                    dto.setAccionRealizada("Aprobó el informe");
+                } else if (dto.getDescripcionEstadoNuevo().toUpperCase().contains("RECHAZADO")) {
+                    dto.setTipoAccion("RECHAZO");
+                    dto.setAccionRealizada("Rechazó el informe");
+                } else {
+                    dto.setTipoAccion("CAMBIO_ESTADO");
+                    dto.setAccionRealizada("Cambió el estado del informe");
+                }
+            }
+            
+            // Obtener información del grupo aprobador si está disponible
+            if (registro.getIdGrupoAprobadorLd() != null) {
+                dto.setGrupoAprobador(registro.getIdGrupoAprobadorLd().intValue());
+                ListadoDetalle grupoAprobador = listadoDetalleDao.obtener(registro.getIdGrupoAprobadorLd());
+                if (grupoAprobador != null) {
+                    dto.setDescripcionGrupoAprobador(grupoAprobador.getDescripcion());
+                }
+            }
+            
+            historialDTO.add(dto);
+        }
+        
+        return historialDTO;
+    }
+    
+    private void registrarConsultaHistorialBitacora(String numeroExpediente, String tipoAccion, Contexto contexto) {
+        try {
+            Bitacora bitacora = new Bitacora();
+            bitacora.setUsuario(contexto.getUsuario());
+            bitacora.setFechaHora(new Date());
+            bitacora.setDescripcion("Consulta de historial de aprobaciones - Grupo 8. " +
+                                "Expediente: " + (numeroExpediente != null ? numeroExpediente : "Todos") + 
+                                ", TipoAccion: " + (tipoAccion != null ? tipoAccion : "Todas"));
+            
+            AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
+            
+            bitacoraDao.save(bitacora);
+            
+            logger.info("Registrada consulta de historial en bitácora - Usuario: {}, Bitácora ID: {}", 
+                       contexto.getUsuario().getIdUsuario(), bitacora.getIdBitacora());
+            
+        } catch (Exception e) {
+            logger.warn("Error al registrar consulta de historial en bitácora", e);
         }
     }
 }
