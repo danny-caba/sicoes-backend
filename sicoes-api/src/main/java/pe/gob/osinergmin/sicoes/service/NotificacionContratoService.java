@@ -17,6 +17,8 @@ public interface NotificacionContratoService {
 
     void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto);
 
+    void notificarCargarDocumentosInicioServicio(Contexto contexto);
+
     void notificarRechazoPersonalPropuesto(Supervisora empresa, Supervisora personaPropuesta, Contexto contexto);
 
     void notificarRevisarDocumentacionPendiente(Usuario usuario, String numExpediente, String nombreRol, Contexto contexto);

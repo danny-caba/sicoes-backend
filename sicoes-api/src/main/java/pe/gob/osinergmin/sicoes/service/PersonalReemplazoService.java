@@ -21,6 +21,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
                                                     String descDocIniServ,
                                                     String descEvalDocIniServ,
                                                     Pageable pageable, Contexto contexto);
+    List<PersonalReemplazo> listarPersonaReemplazoxDocIniServ(String descDocIniServ);
     PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto);
     PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo, Contexto contexto);
     PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo, Contexto contexto);

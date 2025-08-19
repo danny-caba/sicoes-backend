@@ -2,23 +2,23 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 
-import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Notificacion;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
+import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -64,6 +64,9 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private final TemplateEngine templateEngine;
     private final ListadoDetalleService listadoDetalleService;
     private final NotificacionDao notificacionDao;
+
+    @Autowired
+    private PersonalReemplazoService personalReemplazoService;
 
     public NotificacionContratoServiceImpl(
         TemplateEngine templateEngine, 
@@ -169,6 +172,43 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         saveNotificacion(notificacion);
+    }
+
+    @Override
+    public void notificarCargarDocumentosInicioServicio(Contexto contexto) {
+        List<PersonalReemplazo> lista = personalReemplazoService.listarPersonaReemplazoxDocIniServ(
+                Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
+
+        ListadoDetalle plazo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.PLAZOS.CODIGO,
+                Constantes.LISTADO.PLAZOS.PLAZO_DOCUMENTOS_SERVICIO);
+
+        int plazoDiasHabiles = Integer.parseInt(plazo.getValor());
+        for (PersonalReemplazo pr : lista) {
+            Date fechaIngreso = pr.getFeFechaRegistro();
+            Date fechaLimite = sumarDiasHabiles(fechaIngreso, plazoDiasHabiles);
+
+            if (new Date().after(fechaLimite)) { // compara fechas
+                notificarCargarDocumentosInicioServicio(pr.getSupervisora(), contexto);
+                logger.info("Notificado retraso: {}", pr.getIdReemplazo());
+            }
+        }
+
+    }
+
+    private Date sumarDiasHabiles(Date fecha, int dias) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fecha);
+        int added = 0;
+
+        while (added < dias) {
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+            int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+            if (dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY) {
+                added++;
+            }
+        }
+        return cal.getTime();
     }
 
     @Override

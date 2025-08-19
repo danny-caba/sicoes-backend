@@ -58,7 +58,9 @@ public class ScheduledTasks {
 
 	@Autowired
 	private SicoesSolicitudService sicoesSolicitudService;
-	
+
+	@Autowired
+	private NotificacionContratoService notificacionContratoService;
 	
 	@Value("${path.temporal}")
 	private String path;
@@ -167,4 +169,12 @@ public class ScheduledTasks {
 		sicoesSolicitudService.archivarSolicitudesPerfContNoPresentadas(getContextoAnonimo());
 		logger.info("Fin archivarSolicitudesPerfContNoPresentadas");
 	}
+
+	@Scheduled(cron = "0 1 0 * * ?")
+	public void notificarCargaDocuInicioServicio() throws Exception {
+		logger.info("Inicio notificarCargaDocuInicioServicio");
+		notificacionContratoService.notificarCargarDocumentosInicioServicio(getContextoAnonimo());
+		logger.info("Fin notificarCargaDocuInicioServicio");
+	}
+
 }

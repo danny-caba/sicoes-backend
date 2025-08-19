@@ -292,6 +292,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
+    public List<PersonalReemplazo> listarPersonaReemplazoxDocIniServ(String descDocIniServ) {
+        logger.info("listarPersonalReemplazoxDocIniServ");
+        String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+        Long idDocIniServ = null;
+        if (descDocIniServ != null && !descDocIniServ.isEmpty()) {
+            ListadoDetalle ld = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descDocIniServ);
+            if (ld != null) idDocIniServ = ld.getIdListadoDetalle();
+        }
+        return reemplazoDao.obtenerxEstadoDocuIniServ(idDocIniServ);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto) {
         AuditoriaUtil.setAuditoriaRegistro(personalReemplazo,contexto);

@@ -339,6 +339,7 @@ public class Constantes {
 			public static final String EVALUACION_9_DIAS					= "PLAZO-17";
 			public static final String PRESENTAR_PERFECCIONAMIENTO			= "PLAZO-18";
 			public static final String SUBSANAR_PERFECCIONAMIENTO			= "PLAZO-19";
+			public static final String PLAZO_DOCUMENTOS_SERVICIO			= "PLAZO-20";
 
 		}
 		

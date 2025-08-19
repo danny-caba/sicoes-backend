@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -76,4 +77,19 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
             + " left join fetch p.estadoEvalDocIniServ e6"
             + " where p.idReemplazo = :idReemplazo")
     Optional<PersonalReemplazo> obtenerxIdReemplazo(@Param("idReemplazo") Long idReemplazo);
+
+    @Query("select p from PersonalReemplazo p"
+            + " left join fetch p.personaPropuesta pp"
+            + " left join fetch p.personaBaja pb"
+            + " left join fetch p.estadoReemplazo e"
+            + " left join fetch p.estadoRevisarDoc e0"
+            + " left join fetch p.estadoEvalDoc e1"
+            + " left join fetch p.estadoRevisarEval e2"
+            + " left join fetch p.estadoAprobacionInforme e3"
+            + " left join fetch p.estadoAprobacionAdenda e4"
+            + " left join fetch p.estadoDocIniServ e5"
+            + " left join fetch p.estadoEvalDocIniServ e6"
+            + " where ( :idDocIniServ is null or e5.idListadoDetalle = :idDocIniServ)"
+    )
+    List<PersonalReemplazo> obtenerxEstadoDocuIniServ(@Param("idDocIniServ") Long idDocIniServ);
 }
