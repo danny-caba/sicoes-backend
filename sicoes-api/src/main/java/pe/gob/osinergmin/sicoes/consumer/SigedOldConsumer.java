@@ -12,6 +12,8 @@ public interface SigedOldConsumer {
 	
 	public byte[] descargarArchivosAlfresco(Archivo archivo);
 	
+	public byte[] descargarArchivoPorUuidAlfresco(String uuid);
+	
 	public List<Ubigeo> departamentos() ;
 
 	public List<Ubigeo> provincias(String codigoDepartamento);

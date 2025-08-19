@@ -3593,7 +3593,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 				appLogo = new FileInputStream(pathJasper + "logo-sicoes.png");
 				osinermingLogo = new FileInputStream(pathJasper + "logo-osinerming.png");
 				parameters.put("P_LOGO_APP", appLogo);
-				parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);				
+				parameters.put("P_LOGO_OSINERGMIN", osinermingLogo);
 				List<Solicitud> solicitudes = new ArrayList<Solicitud>();
 				solicitudes.add(solicitud);
 				JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(solicitudes);
