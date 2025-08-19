@@ -23,7 +23,7 @@ import pe.gob.osinergmin.sicoes.service.impl.SolicitudServiceImpl;
 //@PropertySource("file:D:/SICOES/data/sicoes/sicoes-api.properties")
 //@PropertySource("file:/data/sicoes/sicoes-api.properties")
 //@PropertySource("classpath:application.properties")
-@PropertySource("file:C:/sicoes/sicoes/sicoes-api.properties")
+@PropertySource("file:C:/dlw-sicoes/sicoes-api.properties")
 //@EnableTransactionManagement
 public class DataSourceConfig {
 	

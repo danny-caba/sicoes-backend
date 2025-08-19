@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.SuspensionCancelacion;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.SupervisoraResponseDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface SupervisoraService extends BaseService<Supervisora, Long>  {
@@ -57,6 +59,14 @@ public interface SupervisoraService extends BaseService<Supervisora, Long>  {
 
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc);
 
+	/**
+	 * Busca supervisoras para funcionalidad de autocomplete
+	 * Requerimiento 350 - Renovación de Contratos
+	 * @param request DTO con el criterio de búsqueda (nombreSupervisora)
+	 * @param contexto Contexto de la aplicación
+	 * @return Lista de SupervisoraResponseDTO con los datos formateados para la funcionalidad de autocomplete
+	 */
+	public List<SupervisoraResponseDTO> buscarSupervisorasParaAutocomplete(SupervisoraRequestDTO request, Contexto contexto);
 
 	
 

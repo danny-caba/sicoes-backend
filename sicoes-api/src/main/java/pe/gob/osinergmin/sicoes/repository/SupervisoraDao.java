@@ -196,6 +196,25 @@ public interface SupervisoraDao extends JpaRepository<Supervisora, Long> {
 			+ "and e.codigo ='"+Constantes.LISTADO.ESTADO_SUPERVISORA.VIGENTE+"' ")
 	public Supervisora obtenerSupervisoraXRUCNoProfesional(String codigoRuc);
 
+	/**
+	 * Busca supervisoras por nombre para funcionalidad de autocomplete
+	 * Requerimiento 350 - Renovación de Contratos
+	 * Retorna entidades Supervisora completas para posterior procesamiento en la capa de servicio
+	 * @param nombreSupervisora Término de búsqueda para filtrar por nombre, razón social o apellidos
+	 * @return Lista de supervisoras que coinciden con el criterio de búsqueda
+	 */
+	@Query("SELECT s FROM Supervisora s " +
+			"LEFT JOIN FETCH s.tipoPersona tp " +
+			"LEFT JOIN FETCH s.estado e " +
+			"WHERE e.codigo = '" + Constantes.LISTADO.ESTADO_SUPERVISORA.VIGENTE + "' " +
+			"AND (:nombreSupervisora IS NULL OR " +
+			"     UPPER(COALESCE(s.nombreRazonSocial, '')) LIKE UPPER(CONCAT('%', :nombreSupervisora, '%')) OR " +
+			"     UPPER(COALESCE(s.nombres, '')) LIKE UPPER(CONCAT('%', :nombreSupervisora, '%')) OR " +
+			"     UPPER(COALESCE(s.apellidoPaterno, '')) LIKE UPPER(CONCAT('%', :nombreSupervisora, '%')) OR " +
+			"     UPPER(COALESCE(s.apellidoMaterno, '')) LIKE UPPER(CONCAT('%', :nombreSupervisora, '%'))) " +
+			"ORDER BY s.nombreRazonSocial, s.nombres, s.apellidoPaterno")
+	List<Supervisora> buscarSupervisorasParaAutocomplete(String nombreSupervisora);
+
 
 	
 }
