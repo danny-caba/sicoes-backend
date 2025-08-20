@@ -486,6 +486,21 @@ public class Constantes {
 			public static final String CONCLUIDO		= "CONCLUIDO";
 			public static final String ARCHIVADO		= "ARCHIVADO";
 		}
+
+		public static final class GRUPO_APROBACION {
+			public static final String CODIGO 			= "GRUPO_APROBACION";
+			public static final String JEFE_UNIDAD		= "JEFE_UNIDAD";
+			public static final String GERENTE 	= "GERENTE";
+			public static final String GPPM		= "GPPM";
+			public static final String GSE		= "GSE";
+		}
+
+		public static final class ESTADO_APROBACION {
+			public static final String CODIGO 			= "ESTADO_APROBACION";
+			public static final String ASIGNADO		= "ASIGNADO";
+			public static final String DESAPROBADO		= "DESAPROBADO";
+			public static final String APROBADO 	= "APROBADO";
+		}
 		
 		public static final class ESTADO_INVITACION {
 			public static final String CODIGO 			= "ESTADO_INVITACION";
@@ -958,14 +973,6 @@ public class Constantes {
 		public static final String OBSERVADO 		= "OBSERVADO";
 		public static final String CONCLUIDO 		= "CONCLUIDO";
 		public static final String ARCHIVADO 		= "ARCHIVADO";
-	}
-
-	public static final class ESTADO_REQUERIMIENTO_RENOVACION {
-		public static final Integer PRELIMINAR 		= 1;
-		public static final Integer EN_PROCESO 		= 2;
-		public static final Integer OBSERVADO 		= 3;
-		public static final Integer CONCLUIDO 		= 4;
-		public static final Integer ARCHIVADO 		= 5;
 	}
 
 }

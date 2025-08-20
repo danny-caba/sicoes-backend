@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository.renovacioncontrato;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,11 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion
 
 @Repository
 public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoInvitacion, Long> {
+
+    @Query("SELECT ri FROM RequerimientoInvitacion ri " +
+            "LEFT JOIN FETCH ri.requerimientoRenovacion rr " +
+            "WHERE ri.idReqInvitacion = :id")
+    Optional<RequerimientoInvitacion> findByIdWithRequerimientoRenovacion(@Param("id") Long id);
 
     @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.flActivo = '1' ORDER BY r.fecCreacion DESC")
     List<RequerimientoInvitacion> listarActivos();

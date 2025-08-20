@@ -22,6 +22,7 @@ public class EvaluarInvitacionController extends BaseRestController {
     RequerimientoInvitacionService requerimientoInvitacionService;
 
 
+
 	@PostMapping("/aceptar")
 	public RequerimientoInvitacion aceptar(@RequestBody RequerimientoInvitacion requerimientoInvitacion) {
 		logger.info("registrar {} ", requerimientoInvitacion);
