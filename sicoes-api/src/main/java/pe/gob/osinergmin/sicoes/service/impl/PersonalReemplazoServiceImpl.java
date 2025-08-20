@@ -160,6 +160,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private DocumentoPPDao documentoPPDao;
 
+    @Autowired
+    private SupervisoraMovimientoDao supervisoraMovimientoDao;
+
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
                                                            String descRevisarDoc,
@@ -1753,9 +1756,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } else {
             existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
             existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO));  //archivado  ----OK
-            //persoReempFinal.setIdPersonaBaja(10000000L);  //liberado ----> agregar lista---> HACE INSERTS
-            //persoReempFinal.setIdPersonaPropuesta(1000000L); //bloqueado ---> agregar Lista  --> HACE INSERTS
-            // buscar campo Estado personal y cambiarle el estado a propuesto
+            SupervisoraMovimiento obSupMov = new SupervisoraMovimiento();
+            obSupMov.setSupervisora(supervisora);
+            obSupMov.setEstado(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
+            AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
+            supervisoraMovimientoDao.save(obSupMov);
         }
            AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
 
