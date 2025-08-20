@@ -79,9 +79,6 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     private SicoesSolicitudDao sicoesSolicitudDao;
 
     @Autowired
-    private InformeRenovacionDao informeRenovacionDao;
-
-    @Autowired
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
 
     @Autowired

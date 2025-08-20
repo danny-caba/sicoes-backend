@@ -21,7 +21,7 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
     Page<RequerimientoRenovacion> findByNuExpedienteContains(String nuExpediente, Pageable pageable);
 
 
-    @Query("SELECT r FROM RequerimientoRenovacion r WHERE r.esRegistro = '1' ORDER BY r.feCreacion DESC")
+    @Query("SELECT r FROM RequerimientoRenovacion r WHERE r.esRegistro = '1' ORDER BY r.fecCreacion DESC")
     List<RequerimientoRenovacion> listarActivos();
 
     @Query("SELECT r FROM RequerimientoRenovacion r WHERE r.idReqRenovacion = :id AND r.esRegistro = '1'")
@@ -34,7 +34,7 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
             "AND (:tipoSubSector IS NULL OR r.tiSubSector LIKE %:tipoSubSector%) " +
             "AND (:nombreItem IS NULL OR r.noItem LIKE %:nombreItem%) " +
             "AND (:estadoRequerimiento IS NULL OR r.estadoReqRenovacion.idListadoDetalle = :estadoRequerimiento) " +
-            "ORDER BY r.feCreacion DESC")
+            "ORDER BY r.fecCreacion DESC")
     Page<RequerimientoRenovacion> buscarSolicitudesRenovacion(
             @Param("numeroExpediente") String numeroExpediente,
             @Param("tipoSector") String tipoSector,
@@ -46,7 +46,7 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
     @Query("SELECT r FROM RequerimientoRenovacion r " +
             "WHERE r.esRegistro = '1' " +
             "AND r.feRegistro BETWEEN TO_DATE(:fechaDesde, 'DD/MM/YYYY') AND TO_DATE(:fechaHasta, 'DD/MM/YYYY') " +
-            "ORDER BY r.feCreacion DESC")
+            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoRenovacion> buscarPorRangoFechas(
             @Param("fechaDesde") String fechaDesde,
             @Param("fechaHasta") String fechaHasta);
@@ -54,13 +54,13 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
     @Query("SELECT r FROM RequerimientoRenovacion r " +
             "WHERE r.esRegistro = '1' " +
             "AND r.idUsuario = :idUsuario " +
-            "ORDER BY r.feCreacion DESC")
+            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoRenovacion> listarPorUsuario(@Param("idUsuario") Long idUsuario);
 
     @Query("SELECT r FROM RequerimientoRenovacion r " +
             "WHERE r.esRegistro = '1' " +
             "AND r.estadoReqRenovacion.idListadoDetalle = :estadoId " +
-            "ORDER BY r.feCreacion DESC")
+            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoRenovacion> listarPorEstado(@Param("estadoId") Long estadoId);
 }
 

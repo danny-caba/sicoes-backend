@@ -26,7 +26,7 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQ_RENOVACION")
     private Long idReqRenovacion;
 
-    @Column(name = "ID_SOLI_PERF_CONT", precision = 38)
+    @Column(name = "ID_SOLI_PERF_CONT", precision = 38,insertable = false, updatable = false)
     private Long idSoliPerfCont;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,6 +39,7 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_USUARIO", insertable = false, updatable = false)
+    @JsonIgnore
     private Usuario usuario;
 
     @Column(name = "NU_EXPEDIENTE", length = 50, nullable = false)
