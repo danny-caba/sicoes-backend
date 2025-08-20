@@ -173,8 +173,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " TIPO_APROB.ID AS TIPO_APROBACION,  " +
 			 " TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 			 " APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-			 " APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-			 " DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+	         " ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+			 " 'ADENDA' AS INFORME,  " +
 			 " APRE.DE_TP AS TP,  " +
 			 " APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 			 " CASE   " +
