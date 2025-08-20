@@ -25,6 +25,7 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
@@ -45,8 +46,11 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
 	private String pathJasper;
 
     private final InformeRenovacionContratoDao informeRenovacionContratoDao;
-    public InformeRenovacionContratoImpl(InformeRenovacionContratoDao informeRenovacionContratoDao) {
+    private final SigedOldConsumer sigedOldConsumer;
+
+    public InformeRenovacionContratoImpl(InformeRenovacionContratoDao informeRenovacionContratoDao,SigedOldConsumer sigedOldConsumer) {
         this.informeRenovacionContratoDao = informeRenovacionContratoDao;
+        this.sigedOldConsumer = sigedOldConsumer;
     }
 
     @Override
@@ -145,6 +149,8 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
     archivo.setContenido(bytesSalida);
  
     //TODO: Falta implementar flujo ALFRESCO
+
+    sigedOldConsumer.subirArchivosAlfresco(null, null, null, null, archivo.getIdContrato(), null, archivo);
     //TODO: Falta implementar flujo SIGED
 
     return null;
