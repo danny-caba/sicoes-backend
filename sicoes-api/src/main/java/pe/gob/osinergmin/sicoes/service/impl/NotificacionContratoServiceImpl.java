@@ -13,10 +13,12 @@ import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
+import pe.gob.osinergmin.sicoes.service.SicoesSolicitudService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
+import javax.transaction.Transactional;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +70,9 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Autowired
     private PersonalReemplazoService personalReemplazoService;
 
+    @Autowired
+    private SicoesSolicitudService sicoesSolicitudService;
+
     public NotificacionContratoServiceImpl(
         TemplateEngine templateEngine, 
         ListadoDetalleService listadoDetalleService, 
@@ -87,7 +92,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
             throw  new RuntimeException("Estado 'Pendiente' no encontrado en listado detalle");
         }
         notificacion.setEstado(pendiente);
-        //notificacionDao.save(notificacion);
+        notificacionDao.save(notificacion);
     }
 
     private Notificacion buildNotification (String email, String subject, String template,Context context){
@@ -159,9 +164,13 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Override
     public void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto ) {
         String email = personaPropuesta.getCorreo();
-        logger.info(" notificarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
+        if (email == null || email.isEmpty()) {
+            logger.warn("El correo de la supervisora es nulo o vacío");
+        } else {
+            logger.info("Correo de la Supervisora: {}", email);
+        }
+        //logger.info(" notificarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
         String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
-
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
 
@@ -175,6 +184,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
+    @Transactional
     public void notificarCargarDocumentosInicioServicio(Contexto contexto) {
         List<PersonalReemplazo> lista = personalReemplazoService.listarPersonaReemplazoxDocIniServ(
                 Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
@@ -184,16 +194,16 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
                 Constantes.LISTADO.PLAZOS.PLAZO_DOCUMENTOS_SERVICIO);
 
         int plazoDiasHabiles = Integer.parseInt(plazo.getValor());
+        logger.info("dias: {}",plazoDiasHabiles);
         for (PersonalReemplazo pr : lista) {
             Date fechaIngreso = pr.getFeFechaRegistro();
             Date fechaLimite = sumarDiasHabiles(fechaIngreso, plazoDiasHabiles);
-
-            if (new Date().after(fechaLimite)) { // compara fechas
-                notificarCargarDocumentosInicioServicio(pr.getSupervisora(), contexto);
-                logger.info("Notificado retraso: {}", pr.getIdReemplazo());
+            if (new Date().after(fechaLimite)) {
+                Long id = pr.getIdSolicitud(); //Solicitud perfeccionamiento
+                SicoesSolicitud sicoesSolicitud = sicoesSolicitudService.obtener(id,contexto);
+                notificarCargarDocumentosInicioServicio(sicoesSolicitud.getSupervisora(), contexto);
             }
         }
-
     }
 
     private Date sumarDiasHabiles(Date fecha, int dias) {
