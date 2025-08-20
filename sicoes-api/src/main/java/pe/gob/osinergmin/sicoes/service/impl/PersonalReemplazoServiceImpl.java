@@ -432,16 +432,17 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         logger.info("tipoArchivo: {}", tipoArchivo);
         logger.info("contexto: {}", contexto);
-        generarArchivoSigedRegistrar(personalReemplazoOUT, tipoArchivo, contexto);
+        Archivo archivo = generarArchivoSigedRegistrar(personalReemplazoOUT, tipoArchivo, contexto);
         Optional<Usuario> usuarioExterno = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.USUARIO_EXTERNO).stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
         enviarNotificacionByRolEvaluador(usuarioExterno.get(), personalReemplazo,contexto);
         enviarNotificacionDesvinculacion(usuarioExterno.get(), personalReemplazo,contexto);
+        personalReemplazoOUT.setArchivo(archivo);
         return personalReemplazoOUT;
     }
 
-    private void generarArchivoSigedRegistrar(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
+    private Archivo generarArchivoSigedRegistrar(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
         Archivo archivo = generarReporteRegistrar(personalReemplazo, ArchivoUtil.obtenerNombreArchivo(tipoArchivo));
         archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
@@ -451,6 +452,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } else {
             adjuntarDocumentoSiged(archivoDB, personalReemplazo, CONSOLIDADO_DOCUMENTOS);
         }
+        return archivoDB;
     }
 
     private Archivo generarReporteRegistrar(PersonalReemplazo personalReemplazo, String nombreArchivo) {
