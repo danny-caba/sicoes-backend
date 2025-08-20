@@ -440,8 +440,8 @@ public class RenovacionesServiceImpl implements RenovacionesService {
                 cumpleFiltros = false;
             }
             
-            if (estadoInvitacion != null && invitacion.getIdEstadoLd() != null &&
-                !estadoInvitacion.equals(invitacion.getIdEstadoLd().intValue())) {
+            if (estadoInvitacion != null && invitacion.getEstadoInvitacion() != null &&
+                !estadoInvitacion.equals(invitacion.getEstadoInvitacion().getIdListadoDetalle().intValue())) {
                 cumpleFiltros = false;
             }
             
@@ -472,9 +472,9 @@ public class RenovacionesServiceImpl implements RenovacionesService {
                 dto.setIdSupervisora(invitacion.getIdSupervisora());
             }
             
-            if (invitacion.getIdEstadoLd() != null) {
-                dto.setEstadoInvitacion(invitacion.getIdEstadoLd().intValue());
-                // TODO: Implementar carga de descripción de estado cuando sea necesario
+            if (invitacion.getEstadoInvitacion() != null) {
+                dto.setEstadoInvitacion(invitacion.getEstadoInvitacion().getIdListadoDetalle().intValue());
+                dto.setDescripcionEstado(invitacion.getEstadoInvitacion().getDescripcion());
             }
             
             dto.setFechaCreacion(invitacion.getFecCreacion() != null ? 
