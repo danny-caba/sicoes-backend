@@ -26,7 +26,8 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQ_RENOVACION")
     private Long idReqRenovacion;
 
-
+    @Column(name = "ID_SOLI_PERF_CONT", precision = 38)
+    private Long idSoliPerfCont;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_SOLI_PERF_CONT")
@@ -89,6 +90,14 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
     public void setIdReqRenovacion(Long idReqRenovacion) {
         this.idReqRenovacion = idReqRenovacion;
+    }
+
+    public Long getIdSoliPerfCont() {
+        return idSoliPerfCont;
+    }
+
+    public void setIdSoliPerfCont(Long idSoliPerfCont) {
+        this.idSoliPerfCont = idSoliPerfCont;
     }
 
     public SicoesSolicitud getSolicitudPerfil() {
@@ -181,14 +190,14 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
     @Override
     public String toString() {
-        return "RequerimientoRenovacion [idReqRenovacion=" + idReqRenovacion
+        return "RequerimientoRenovacion [idReqRenovacion=" + idReqRenovacion 
                 + ", idUsuario=" + idUsuario 
                 + ", nuExpediente=" + nuExpediente 
                 + ", tiSector=" + tiSector 
                 + ", tiSubSector=" + tiSubSector 
                 + ", noItem=" + noItem 
                 + ", feRegistro=" + feRegistro 
-                + ", deObservacion=" + deObservacion
+                + ", deObservacion=" + deObservacion 
                 + ", esRegistro=" + esRegistro + "]";
     }
 }

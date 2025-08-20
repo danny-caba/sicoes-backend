@@ -34,19 +34,22 @@ public class InformeRenovacion extends BaseModel implements Serializable {
     @Column(name = "ID_INFORME_RENOVACION")
     private Long idInformeRenovacion;
 
-
+    @Column(name = "ID_USUARIO", precision = 10, nullable = false)
+    private Long idUsuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_USUARIO", insertable = false, updatable = false)
     private Usuario usuario;
 
-
+    @Column(name = "ID_NOTIFICACION", precision = 10)
+    private Long idNotificacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_NOTIFICACION", insertable = false, updatable = false)
     private Notificacion notificacion;
 
-
+    @Column(name = "ID_REQUERIMIENTO", nullable = false)
+    private Long idRequerimiento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_REQUERIMIENTO", insertable = false, updatable = false)
@@ -119,6 +122,14 @@ public class InformeRenovacion extends BaseModel implements Serializable {
         this.idInformeRenovacion = idInformeRenovacion;
     }
 
+    public Long getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
     public Usuario getUsuario() {
         return usuario;
     }
@@ -127,12 +138,28 @@ public class InformeRenovacion extends BaseModel implements Serializable {
         this.usuario = usuario;
     }
 
+    public Long getIdNotificacion() {
+        return idNotificacion;
+    }
+
+    public void setIdNotificacion(Long idNotificacion) {
+        this.idNotificacion = idNotificacion;
+    }
+
     public Notificacion getNotificacion() {
         return notificacion;
     }
 
     public void setNotificacion(Notificacion notificacion) {
         this.notificacion = notificacion;
+    }
+
+    public Long getIdRequerimiento() {
+        return idRequerimiento;
+    }
+
+    public void setIdRequerimiento(Long idRequerimiento) {
+        this.idRequerimiento = idRequerimiento;
     }
 
     public RequerimientoRenovacion getRequerimientoRenovacion() {
