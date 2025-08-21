@@ -1426,9 +1426,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));  //preliminar
            }
-           persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-           persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
            persoReempFinal.setFecActualizacion(new Date());
+           AuditoriaUtil.setAuditoriaRegistro(persoReempFinal,contexto);
            reemplazoDao.save(persoReempFinal);
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.EVAL_INF_APROB_TEC_G3)){ //Evaluar Informe Rol Aprobador Técnico (G3 - Gerente de Línea)
@@ -1458,18 +1457,47 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
                persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar
            }
-           persoReempFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-           persoReempFinal.setIpActualizacion(aprobacion.getIpActualizacion());
            persoReempFinal.setFecActualizacion(new Date());
+           AuditoriaUtil.setAuditoriaRegistro(persoReempFinal,contexto);
            reemplazoDao.save(persoReempFinal);
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){ //Aprobación Rol Evaluador de contratos
-            Optional<Adenda> adendaOpt = adendaDao.findById(persoReempFinal.getIdReemplazo());
-            Adenda adendaFinal = adendaOpt.orElseThrow(() -> new RuntimeException("adenda no encontrada"));
+
+            Adenda adendaFinal = adendaDao.obtenerAdenda(aprobacion.getIdDocumento());
+            if(adendaFinal == null) {
+                throw new ValidacionException("No se encuentra adenda");
+            }
 
             if(aprobacion.getAccion().equals("A")) {
                 adendaFinal.setEstadoAprobacionLogistica(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.APROBADO));  //aprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO)); //asignado
+
+
+                 Long idPerfContrato = persoReempFinal.getIdSolicitud();
+                 SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+                 Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
+
+
+                     Aprobacion aprob = new Aprobacion();
+
+                    aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.VISTO_BUENO));
+                    aprob.setRemplazoPersonal(persoReempFinal);
+                    aprob.setNumeroExpediente(sicoesSolicitudDao.obtenerNumExpedienteAprobacion(solicitud.getIdSolicitud()));
+                    DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(persoReempFinal.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
+                    Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PROYECTO_ADENDA).get(0).getIdListadoDetalle()).get(0);
+                    aprob.setDocumento(doc);
+                    aprob.setIdRol(18L);
+                    aprob.setDeTp(supervisora.getTipoPersona().getValor());
+                    aprob.setIdContratista(supervisora.getIdSupervisora());
+                    aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
+                    aprob.setFechaIngreso(new Date());
+                    aprob.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
+                    aprob.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
+                    aprob.setEstadoAprobGerenteLinea(null);
+
+                    AuditoriaUtil.setAuditoriaRegistro(aprob,contexto);
+                    aprobacionDao.save(aprob);
+
 
                 Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO)
                         .stream()
@@ -1484,16 +1512,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //desaprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO)); //rechazado
             }
-            adendaFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-            adendaFinal.setIpActualizacion(aprobacion.getIpActualizacion());
             adendaFinal.setFecActualizacion(new Date());
+            AuditoriaUtil.setAuditoriaRegistro(adendaFinal,contexto);
             adendaDao.save(adendaFinal);
         }
-
-        aprobacionFinal.setUsuActualizacion(aprobacion.getUsuActualizacion());
-        aprobacionFinal.setIpActualizacion(aprobacion.getIpActualizacion());
         aprobacionFinal.setFecActualizacion(new Date());
-
+        AuditoriaUtil.setAuditoriaRegistro(aprobacionFinal,contexto);
         return  aprobacionDao.save(aprobacionFinal) ;
 	}
 
