@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,11 +44,13 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionContratoService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.NotificacionRenovacionContratoService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.PerfilAprobadorService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.InformeRenovacionContratoMapper;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -101,6 +105,7 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
     private final NotificacionRenovacionContratoService notificacionRenovacionContratoService;
     private final ArchivoDao archivoDao;
     private final ListadoDetalleService listadoDetalleService;
+    private final PerfilAprobadorService perfilAprobadorService;
 
     public InformeRenovacionContratoImpl(
         InformeRenovacionContratoDao informeRenovacionContratoDao,
@@ -108,7 +113,8 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
         SigedApiConsumer sigedApiConsumer,
         NotificacionRenovacionContratoService notificacionRenovacionContratoService,
         ArchivoDao archivoDao,
-        ListadoDetalleService listadoDetalleService) {
+        ListadoDetalleService listadoDetalleService,
+        PerfilAprobadorService perfilAprobadorService) {
 
         this.informeRenovacionContratoDao = informeRenovacionContratoDao;
         this.sigedOldConsumer = sigedOldConsumer;
@@ -116,6 +122,7 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
         this.notificacionRenovacionContratoService = notificacionRenovacionContratoService;
         this.archivoDao = archivoDao;
         this.listadoDetalleService = listadoDetalleService;
+        this.perfilAprobadorService = perfilAprobadorService;
     }
 
     @Override
@@ -127,14 +134,76 @@ public class InformeRenovacionContratoImpl implements InformeRenovacionContratoS
             Pageable pageable) {
 
         Boolean esVigente = true;
-        contexto.getUsuario().getRoles();
-        // TODO: Falta implementar flujo segun roles
-        Page<InformeRenovacionContrato> listInforme =  informeRenovacionContratoDao.findByFiltrosWithJoins(
-                                                        numeroExpediente,
-                                                        esVigente,
-                                                        estado,
-                                                        idContratista,
-                                                        pageable);
+        Usuario usuarioCtx = contexto.getUsuario();
+        Page<InformeRenovacionContrato> listInforme= null;
+
+        ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(
+                "ESTADO_APROBACION"    ,
+                "ASIGNADO"
+        );
+        ListadoDetalle grupoLd = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPOS"    ,
+                "G1"
+        );
+
+        if (estadoLd == null) {
+            throw  new RuntimeException("Estado 'renovacion contrato' no encontrado en listado detalle");
+        }
+
+        if(usuarioCtx
+                .getRoles()
+                .stream()
+                .anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.APROBADOR_TECNICO)) &&
+                perfilAprobadorService.esPerfilAprobadorG1(usuarioCtx.getIdUsuario())){
+            listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins(
+                    numeroExpediente,
+                    esVigente,
+                    estado,
+                    idContratista,
+                    pageable
+            ).map(informe -> {
+                // Filtrar aprobaciones
+                List<RequerimientoAprobacion> aprobacionesFiltradas = informe.getAprobaciones()
+                        .stream()
+                        .filter(reqAprob -> reqAprob.getIdEstadoLd() == estadoLd.getIdListadoDetalle() && //958 desarrollo
+                                reqAprob.getIdGrupoAprobadorLd() == grupoLd.getIdListadoDetalle())  // 954 desarrollo
+                        .collect(Collectors.toList());
+
+                informe.setAprobaciones(aprobacionesFiltradas);
+                return informe;
+            });
+
+
+        }
+
+
+        if(usuarioCtx
+                .getRoles()
+                .stream()
+                .anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.APROBADOR_TECNICO)) &&
+                perfilAprobadorService.esPerfilAprobadorG2(usuarioCtx.getIdUsuario())){
+
+            listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins(
+                    numeroExpediente,
+                    esVigente,
+                    estado,
+                    idContratista,
+                    pageable
+            ).map(informe -> {
+                // Filtrar aprobaciones
+                List<RequerimientoAprobacion> aprobacionesFiltradas = informe.getAprobaciones()
+                        .stream()
+                        .filter(reqAprob -> reqAprob.getIdEstadoLd() == 959 && //aprobado
+                                reqAprob.getIdGrupoAprobadorLd() == 955)//gerente division
+                        .collect(Collectors.toList());
+
+                informe.setAprobaciones(aprobacionesFiltradas);
+                return informe;
+            });
+        }
+
+
+
         return listInforme.map(InformeRenovacionContratoMapper.MAPPER::toDTO);
     }
 

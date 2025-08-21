@@ -38,12 +38,14 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
            "ORDER BY i.feCreacion DESC")
     List<InformeRenovacion> listarPorEstadoAprobacion(@Param("estadoId") Long estadoId);
 
+    /*
     @Query("SELECT i FROM InformeRenovacion i " +
            "WHERE i.esRegistro = '1' " +
            "AND i.esVigente = 1 " +
            "AND i.esCompletado = '1' " +
            "ORDER BY i.feCreacion DESC")
     List<InformeRenovacion> listarVigentesCompletados();
+    */
 
     @Query("SELECT i FROM InformeRenovacion i " +
            "LEFT JOIN i.requerimientoRenovacion req " +
