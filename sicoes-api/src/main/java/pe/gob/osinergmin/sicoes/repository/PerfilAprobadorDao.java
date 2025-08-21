@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -70,4 +71,11 @@ public interface PerfilAprobadorDao extends JpaRepository<PerfilAprobador, Long>
 	           "WHERE ag1.idUsuario = :idAprobador") // Comparación con el ID del usuario
 	public List<Integer> obtenerIdsPerfilesAsignadosAprobador(Long idAprobador);
 
+
+	@Query("select pa from PerfilAprobador pa "
+			+ "left join fetch pa.perfil p "
+			+ "left join fetch pa.aprobadorG1 apg1 "
+			+ "where p.idListadoDetalle = :idListadoDetalle "
+			+ "and pa.aprobadorG1.idUsuario = :idUsuario")
+	Optional<PerfilAprobador> obtenerPerfilAprobadorPorIdPerfilAndIdUsuario(Long idListadoDetalle, Long idUsuario);
 }

@@ -37,13 +37,6 @@ public class InformeRenovacionContratoDTO {
 
     private Boolean vigente;
 
-    private String uuidInformeRenovacion;
-
-    private String nombreArchivo;
-
-    private String rutaArchivo;
-
-
     private String registro;
 
 
