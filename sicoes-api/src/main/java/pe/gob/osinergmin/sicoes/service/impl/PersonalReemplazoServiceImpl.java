@@ -1486,7 +1486,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(persoReempFinal.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PROYECTO_ADENDA).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
-                  //  aprob.setIdRol(18L);
+                    aprob.setIdRol(18L);
                     aprob.setDeTp(supervisora.getTipoPersona().getValor());
                     aprob.setIdContratista(supervisora.getIdSupervisora());
                     aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
@@ -1761,7 +1761,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(existe.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
-                  //  aprob.setIdRol(12L);
+                    aprob.setIdRol(12L);
                     aprob.setDeTp(supervisora.getTipoPersona().getValor());
                     aprob.setIdContratista(supervisora.getIdSupervisora());
                     aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
