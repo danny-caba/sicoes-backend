@@ -19,6 +19,7 @@ import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 
 /**
@@ -45,12 +46,9 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_NOTIFICACION")
     private Notificacion notificacion;
 
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_PLAZO_CONFIRMACION")
     private PlazoConfirmacion plazoConfirmacion;
-
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,8 +56,9 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @JsonIgnore
     private RequerimientoRenovacion requerimientoRenovacion;
 
-    @Column(name = "ID_ESTADO_LD", precision = 38)
-    private Long idEstadoLd;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ESTADO_LD", insertable = false, updatable = false)
+    private ListadoDetalle estadoInvitacion;
 
     @Column(name = "ID_SUPERVISORA", precision = 38)
     private Long idSupervisora;
@@ -151,13 +150,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.requerimientoRenovacion = requerimientoRenovacion;
     }
 
-    public Long getIdEstadoLd() {
-        return idEstadoLd;
-    }
 
-    public void setIdEstadoLd(Long idEstadoLd) {
-        this.idEstadoLd = idEstadoLd;
-    }
 
     public Long getIdSupervisora() {
         return idSupervisora;
@@ -231,12 +224,19 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.feCancelado = feCancelado;
     }
 
+    public ListadoDetalle getEstadoInvitacion() {
+        return estadoInvitacion;
+    }
+
+    public void setEstadoInvitacion(ListadoDetalle estadoInvitacion) {
+        this.estadoInvitacion = estadoInvitacion;
+    }
+
     @Override
     public String toString() {
         return "RequerimientoInvitacion [idReqInvitacion=" + idReqInvitacion 
-                + ", idRequerimiento=" + idRequerimiento 
+                + ", idRequerimiento=" + idRequerimiento
 
-                + ", idEstadoLd=" + idEstadoLd 
                 + ", idSupervisora=" + idSupervisora 
                 + ", feInvitacion=" + feInvitacion 
                 + ", feCaducidad=" + feCaducidad 
