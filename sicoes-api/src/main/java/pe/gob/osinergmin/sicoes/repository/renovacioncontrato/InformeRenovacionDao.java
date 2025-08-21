@@ -72,7 +72,8 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
            "AND (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
            "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
            "AND (:nombreItem IS NULL OR UPPER(req.noItem) LIKE UPPER(CONCAT('%', :nombreItem, '%'))) " +
-           "AND (:rucSupervisora IS NULL OR s.nuRucSupervisora = :rucSupervisora) " +
+           "AND (:rucSupervisora IS NULL OR s.codigoRuc = :rucSupervisora) " +
+           "AND :grupoAprobador = :grupoAprobador " +
            "ORDER BY i.fecCreacion DESC")
     Page<InformeRenovacion> buscarInformesParaAprobar(@Param("estadoAprobacion") Long estadoAprobacion,
                                                       @Param("grupoAprobador") Long grupoAprobador,

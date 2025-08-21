@@ -32,15 +32,13 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
     @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.idSupervisora = :idSupervisora AND r.flActivo = '1'")
     List<RequerimientoInvitacion> listarPorSupervisora(@Param("idSupervisora") Long idSupervisora);
 
-    @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.idEstadoLd = :estadoId AND r.flActivo = '1'")
-    List<RequerimientoInvitacion> listarPorEstado(@Param("estadoId") Long estadoId);
-
     @Query("SELECT r FROM RequerimientoInvitacion r " +
            "LEFT JOIN r.requerimientoRenovacion req " +
+           "LEFT JOIN r.estadoInvitacion e " +
            "WHERE r.flActivo = '1' " +
            "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
            "AND (:tipoSector IS NULL OR UPPER(req.tiSector) LIKE UPPER(CONCAT('%', :tipoSector, '%'))) " +
-           "AND (:estadoInvitacion IS NULL OR r.idEstadoLd = :estadoInvitacion) " +
+           "AND (:estadoInvitacion IS NULL OR e.idListadoDetalle = :estadoInvitacion) " +
            "ORDER BY r.fecCreacion DESC")
     Page<RequerimientoInvitacion> buscarInvitaciones(@Param("numeroExpediente") String numeroExpediente,
                                                      @Param("tipoSector") String tipoSector,

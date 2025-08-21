@@ -39,7 +39,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Transactional
     public RequerimientoInvitacion aceptar(RequerimientoInvitacion requerimientoInvitacionIn, Contexto contexto) {
         RequerimientoInvitacion requerimientoInvitacion = requerimientoInvitacionDao.findById(requerimientoInvitacionIn.getIdReqInvitacion()).orElse(null);
-        ListadoDetalle estadoActual = listadoDetalleDao.findById(requerimientoInvitacion.getIdEstadoLd()).orElseThrow(
+        ListadoDetalle estadoActual = listadoDetalleDao.findById(requerimientoInvitacion.getEstadoInvitacion().getIdListadoDetalle()).orElseThrow(
                 () -> new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO));
         if (!Constantes.LISTADO.ESTADO_INVITACION.INVITADO.equals(estadoActual.getCodigo())) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_INVITACION_EDITAR);
@@ -47,7 +47,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         ListadoDetalle estadoNuevo = listadoDetalleDao.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_INVITACION.ACEPTADO
         );
-        requerimientoInvitacion.setIdEstadoLd(estadoNuevo.getIdListadoDetalle());
+        requerimientoInvitacion.setEstadoInvitacion(estadoNuevo);
         requerimientoInvitacion.setFeAceptacion(new Date());
 
         HistorialEstadoInvitacion nuevoHistorial = new HistorialEstadoInvitacion();
