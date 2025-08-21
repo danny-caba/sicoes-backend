@@ -114,10 +114,10 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.listarContratistas(filtro);
     }
 
-    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/{requerimiento}/{idrol}")
+    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/{requerimiento}/{corol}")
     public List<AprobacionReemp> buscarAprobacion(
             @PathVariable String requerimiento,
-            @PathVariable Long idrol,
+            @PathVariable String corol,
             @RequestParam(required = false) Long tipoaprob,
             @RequestParam(required = false) Long estadoaprob,
             @RequestParam(required = false) Long tiposolicitud,
@@ -126,7 +126,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
         logger.info("buscar aprobaciones");
 
-        return personalReemplazoService.buscarAprobacion( requerimiento, idrol, tipoaprob, estadoaprob, tiposolicitud,  idcontratista, numexpediente
+        return personalReemplazoService.buscarAprobacion( requerimiento, corol, tipoaprob, estadoaprob, tiposolicitud,  idcontratista, numexpediente
         );
     }
 

@@ -1321,45 +1321,47 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public List<AprobacionReemp> buscarAprobacion(String requerimiento, Long idrol, Long tipoaprob , Long estadoaprob, Long tiposolicitud,
+    public List<AprobacionReemp> buscarAprobacion(String requerimiento, String corol, Long tipoaprob , Long estadoaprob, Long tiposolicitud,
                                                   Long idcontratista, Long numexpediente) {
         List<AprobacionReemp>  resultado = new ArrayList<>();
 
-          if(requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G2_GER_DIV)){
+         Rol rolUsuarioInterno = rolDao.obtenerCodigo(corol);
+
+       if(rolUsuarioInterno.getCodigo().equals(Constantes.ROLES.APROBADOR_TECNICO) && requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G2_GER_DIV)){
             resultado =  aprobacionReempDao.buscarEvalInfAprobTecG2(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR).getIdListadoDetalle(),
                 listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
-                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), idrol);
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), rolUsuarioInterno.getIdRol());
         }
-       if(requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G3_GER_LIN)){
+       if(rolUsuarioInterno.getCodigo().equals(Constantes.ROLES.APROBADOR_TECNICO) && requerimiento.equals(Constantes.REQUERIMIENTO.EVAL_INFO_APROB_G3_GER_LIN)){
             resultado =  aprobacionReempDao.buscarEvalInfAprobTecG3(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR).getIdListadoDetalle(),
                 listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
-                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), idrol);
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), rolUsuarioInterno.getIdRol());
         }
-        if(requerimiento.equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){
+        if(rolUsuarioInterno.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS) && requerimiento.equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){
             resultado = aprobacionReempDao.buscarAprobEvalRolContr(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR).getIdListadoDetalle(),
                 listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
-                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), idrol);
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), rolUsuarioInterno.getIdRol());
         }
-        if(requerimiento.equals(Constantes.REQUERIMIENTO.VB_APROB_G2_APROB_ADMIN)){
+        if(rolUsuarioInterno.getCodigo().equals(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO) && requerimiento.equals(Constantes.REQUERIMIENTO.VB_APROB_G2_APROB_ADMIN)){
             resultado = aprobacionReempDao.buscarVBAprobG2Admin(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.VISTO_BUENO).getIdListadoDetalle(),
                 listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
-                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(),idrol);
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(),rolUsuarioInterno.getIdRol());
         }
-       if(requerimiento.equals(Constantes.REQUERIMIENTO.FIRMA_APROB_G3_APROB_ADMIN)){
+       if(rolUsuarioInterno.getCodigo().equals(Constantes.ROLES.G3_APROBADOR_ADMINISTRATIVO) && requerimiento.equals(Constantes.REQUERIMIENTO.FIRMA_APROB_G3_APROB_ADMIN)){
             resultado = aprobacionReempDao.buscarFirmarAprobG3Admin(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.FIRMAR).getIdListadoDetalle(),
                 listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
-                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(),idrol);
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(),rolUsuarioInterno.getIdRol());
         }
-       if(requerimiento.equals(Constantes.REQUERIMIENTO.APROB_ADMIN_G4_GAF)){
+       if(rolUsuarioInterno.getCodigo().equals(Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO) && requerimiento.equals(Constantes.REQUERIMIENTO.APROB_ADMIN_G4_GAF)){
             resultado =  aprobacionReempDao.buscarAprobG4AdmGAF(tipoaprob, estadoaprob, tiposolicitud,
                 idcontratista, numexpediente, listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.FIRMAR).getIdListadoDetalle(),
                 listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION).getIdListadoDetalle(),
-                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), idrol);
+                listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO).getIdListadoDetalle(), rolUsuarioInterno.getIdRol());
         }
 
         return resultado;
