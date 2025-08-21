@@ -11,6 +11,8 @@ public class AprobacionDTO {
     private Long idDocumento;
     private Long estadoAprob;
     private Long idAprobador;
+    private Long tipoAprobacion;
+    private String numExpediente;
     private String requerimiento;
     private String accion;
     private Boolean conforme;
