@@ -1488,7 +1488,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(persoReempFinal.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PROYECTO_ADENDA).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
-                    aprob.setIdRol(18L);
+                    Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO);
+                    aprob.setIdRol(rolUsuarioInterno.getIdRol());
                     aprob.setDeTp(supervisora.getTipoPersona().getValor());
                     aprob.setIdContratista(supervisora.getIdSupervisora());
                     aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
@@ -1763,7 +1764,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(existe.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
-                    aprob.setIdRol(12L);
+                    Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
+                    aprob.setIdRol(rolUsuarioInterno.getIdRol());
                     aprob.setDeTp(supervisora.getTipoPersona().getValor());
                     aprob.setIdContratista(supervisora.getIdSupervisora());
                     aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
