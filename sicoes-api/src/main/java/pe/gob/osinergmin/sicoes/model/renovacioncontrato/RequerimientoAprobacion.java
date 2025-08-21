@@ -78,7 +78,8 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "FE_FIRMA")
     private Date feFirma;
 
-
+    @Column(name = "ID_INFORME_RENOVACION", precision = 38)
+    private Long idInformeRenovacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_INFORME_RENOVACION", insertable = false, updatable = false)
@@ -273,5 +274,13 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
                 + ", feAsignacion=" + feAsignacion 
                 + ", idTipoAprobadorLd=" + idTipoAprobadorLd 
                 + ", idGrupoAprobadorLd=" + idGrupoAprobadorLd + "]";
+    }
+
+    public Long getIdInformeRenovacion() {
+        return idInformeRenovacion;
+    }
+
+    public void setIdInformeRenovacion(Long idInformeRenovacion) {
+        this.idInformeRenovacion = idInformeRenovacion;
     }
 }

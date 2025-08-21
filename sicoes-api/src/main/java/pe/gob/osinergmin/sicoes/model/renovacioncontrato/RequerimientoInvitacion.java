@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import pe.gob.osinergmin.sicoes.model.BaseModel;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
@@ -52,6 +53,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_REQ_RENOVACION", insertable = false, updatable = false)
+    @JsonIgnore
     private RequerimientoRenovacion requerimientoRenovacion;
 
     @ManyToOne(fetch = FetchType.LAZY)

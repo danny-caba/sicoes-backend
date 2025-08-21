@@ -2,6 +2,9 @@ package pe.gob.osinergmin.sicoes.service.renovacioncontrato;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RechazoInformeDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ActualizacionBandejaDTO;
@@ -9,32 +12,31 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeAprobacionRe
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
-/**
- * Servicio para manejar informes de renovación de contrato
- */
 public interface InformeRenovacionService {
-    
+
+    public Page<InformeRenovacionDTO> buscar(String nuExpediente, String contratista, String estadoAprobacion, Pageable pageable, Contexto contexto);
+
     /**
      * Rechaza un informe de renovación
      * @param rechazoDTO Datos del rechazo
      * @param contexto Contexto del usuario
      */
     void rechazarInforme(RechazoInformeDTO rechazoDTO, Contexto contexto);
-    
+
     /**
      * Actualiza la bandeja de aprobaciones
      * @param actualizacionDTO Datos de actualización
      * @param contexto Contexto del usuario
      */
     void actualizarBandejaAprobaciones(ActualizacionBandejaDTO actualizacionDTO, Contexto contexto);
-    
+
     /**
      * Actualiza la grilla de renovación de contrato
      * @param actualizacionDTO Datos de actualización
      * @param contexto Contexto del usuario
      */
     void actualizarGrillaRenovacionContrato(ActualizacionBandejaDTO actualizacionDTO, Contexto contexto);
-    
+
     /**
      * Descarga un adjunto desde Alfresco usando el UUID
      * @param uuid UUID del archivo en Alfresco
@@ -42,7 +44,7 @@ public interface InformeRenovacionService {
      * @return Contenido del archivo como byte array
      */
     byte[] descargarAdjuntoDesdeAlfresco(String uuid, Contexto contexto);
-    
+
     /**
      * Busca informes de renovación pendientes de aprobación con filtros
      * @param numeroExpediente Número de expediente
@@ -76,7 +78,7 @@ public interface InformeRenovacionService {
             Boolean soloAsignados,
             Pageable pageable,
             Contexto contexto);
-    
+
     /**
      * Lista el historial de aprobaciones de informes de renovación con filtros
      * @param numeroExpediente Número de expediente

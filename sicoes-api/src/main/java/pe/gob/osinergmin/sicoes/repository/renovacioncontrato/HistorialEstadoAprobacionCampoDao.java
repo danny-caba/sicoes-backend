@@ -31,4 +31,6 @@ public interface HistorialEstadoAprobacionCampoDao extends JpaRepository<Histori
     List<HistorialEstadoAprobacionCampo> listarPorGrupoAprobador(@Param("idGrupoAprobador") Long idGrupoAprobador);
 
     List<HistorialEstadoAprobacionCampo> findByEsRegistroOrderByFeFechaCambioDesc(String esRegistro);
+
+    List<HistorialEstadoAprobacionCampo> findByIdGrupoAprobadorLdAndIdReqAprobacionOrderByFeFechaCambioDesc(Long idGrupoAprobadorLd, Long idReqAprobacion);
 }
