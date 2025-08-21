@@ -1,112 +1,41 @@
-package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
+package pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-import pe.gob.osinergmin.sicoes.model.BaseModel;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Notificacion;
-import pe.gob.osinergmin.sicoes.model.Usuario;
-
-/**
- * Entidad para la tabla SICOES_TD_INFORME_RENOVACION
- * Representa los informes de renovación de contrato
- */
-@Entity
-@Table(name = "SICOES_TD_INFORME_RENOVACION")
-public class InformeRenovacion extends BaseModel implements Serializable {
+public class InformeRenovacionDTO extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_INF_RENOVACION")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_INF_RENOVACION", sequenceName = "SEQ_SICOES_TD_INF_RENOVACION", allocationSize = 1)
-    @Column(name = "ID_INFORME_RENOVACION")
     private Long idInformeRenovacion;
 
-    @Column(name = "ID_USUARIO", precision = 10, nullable = false)
-    private Long idUsuario;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_USUARIO", insertable = false, updatable = false)
+    @JsonIgnore
     private Usuario usuario;
-
-    @Column(name = "ID_NOTIFICACION", precision = 10)
-    private Long idNotificacion;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_NOTIFICACION", insertable = false, updatable = false)
     private Notificacion notificacion;
-
-    @Column(name = "ID_REQUERIMIENTO", nullable = false)
-    private Long idRequerimiento;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_REQUERIMIENTO", insertable = false, updatable = false)
     private RequerimientoRenovacion requerimientoRenovacion;
-
-    @Lob
-    @Column(name = "DE_OBJETO")
     private String deObjeto;
-
-    @Lob
-    @Column(name = "DE_BASE_LEGAL")
     private String deBaseLegal;
-
-    @Lob
-    @Column(name = "DE_ANTECEDENTES")
     private String deAntecedentes;
-
-    @Lob
-    @Column(name = "DE_JUSTIFICACION")
     private String deJustificacion;
-
-    @Lob
-    @Column(name = "DE_NECESIDAD")
     private String deNecesidad;
-
-    @Lob
-    @Column(name = "DE_CONCLUSIONES")
     private String deConclusiones;
-
-    @Column(name = "ES_VIGENTE", precision = 1, nullable = false)
     private Integer esVigente;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ES_APROBACION_INFORME", insertable = false, updatable = false)
     private ListadoDetalle estadoAprobacionInforme;
-
-    @Column(name = "DE_UUID_INFO_RENOVACION", length = 36, nullable = false)
     private String deUuidInfoRenovacion;
-
-    @Column(name = "DE_NOMBRE_ARCHIVO", length = 100)
     private String deNombreArchivo;
-
-    @Column(name = "DE_RUTA_ARCHIVO", length = 100)
     private String deRutaArchivo;
-
-    @Column(name = "ES_COMPLETADO", length = 1, nullable = false)
     private String esCompletado;
-
-    @Column(name = "ES_REGISTRO", length = 1, nullable = false)
     private String esRegistro;
+    private String supervisora;
 
     // Constructores
-    public InformeRenovacion() {
+    public InformeRenovacionDTO() {
     }
 
-    public InformeRenovacion(String deUuidInfoRenovacion, 
-                           Integer esVigente, String esCompletado, String esRegistro) {
+    public InformeRenovacionDTO(String deUuidInfoRenovacion,
+                                Integer esVigente, String esCompletado, String esRegistro) {
         this.deUuidInfoRenovacion = deUuidInfoRenovacion;
         this.esVigente = esVigente;
         this.esCompletado = esCompletado;
@@ -122,14 +51,6 @@ public class InformeRenovacion extends BaseModel implements Serializable {
         this.idInformeRenovacion = idInformeRenovacion;
     }
 
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
     public Usuario getUsuario() {
         return usuario;
     }
@@ -138,28 +59,12 @@ public class InformeRenovacion extends BaseModel implements Serializable {
         this.usuario = usuario;
     }
 
-    public Long getIdNotificacion() {
-        return idNotificacion;
-    }
-
-    public void setIdNotificacion(Long idNotificacion) {
-        this.idNotificacion = idNotificacion;
-    }
-
     public Notificacion getNotificacion() {
         return notificacion;
     }
 
     public void setNotificacion(Notificacion notificacion) {
         this.notificacion = notificacion;
-    }
-
-    public Long getIdRequerimiento() {
-        return idRequerimiento;
-    }
-
-    public void setIdRequerimiento(Long idRequerimiento) {
-        this.idRequerimiento = idRequerimiento;
     }
 
     public RequerimientoRenovacion getRequerimientoRenovacion() {
@@ -283,5 +188,13 @@ public class InformeRenovacion extends BaseModel implements Serializable {
                 + ", deRutaArchivo=" + deRutaArchivo 
                 + ", esCompletado=" + esCompletado 
                 + ", esRegistro=" + esRegistro + "]";
+    }
+
+    public String getSupervisora() {
+        return supervisora;
+    }
+
+    public void setSupervisora(String supervisora) {
+        this.supervisora = supervisora;
     }
 }

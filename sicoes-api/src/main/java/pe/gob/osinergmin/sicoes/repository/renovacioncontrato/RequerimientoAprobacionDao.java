@@ -12,27 +12,27 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion
 @Repository
 public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoAprobacion, Long> {
 
-    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.esRegistro = '1' ORDER BY r.feCreacion DESC")
+    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idEstadoLd = '1' ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarActivos();
 
-    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idReqAprobacion = :id AND r.esRegistro = '1'")
+    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idReqAprobacion = :id AND r.idEstadoLd = '1'")
     RequerimientoAprobacion obtenerPorId(@Param("id") Long id);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.esRegistro = '1' " +
+           "WHERE r.idEstadoLd = '1' " +
            "AND r.informeRenovacion.idInformeRenovacion = :idInforme " +
-           "ORDER BY r.feCreacion DESC")
+           "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorInforme(@Param("idInforme") Long idInforme);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.esRegistro = '1' " +
-           "AND r.estadoAprobacion.idListadoDetalle = :estadoId " +
-           "ORDER BY r.feCreacion DESC")
+           "WHERE r.idEstadoLd = '1' " +
+           "AND r.idEstadoLd = :estadoId " +
+           "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorEstado(@Param("estadoId") Long estadoId);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.esRegistro = '1' " +
-           "AND r.usuarioAprobador.idUsuario = :idUsuario " +
-           "ORDER BY r.feCreacion DESC")
+           "WHERE  r.idEstadoLd = '1' " +
+           "AND r.idGrupoAprobadorLd = :idUsuario " +
+           "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorAprobador(@Param("idUsuario") Long idUsuario);
 }

@@ -11,9 +11,28 @@ import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
 @Repository
 public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, Long> {
+
+    @Query(value = "select i from InformeRenovacion i "
+            + "join fetch i.requerimientoRenovacion c "
+            + "join fetch c.solicitudPerfil s "
+            + "join fetch s.propuesta p "
+            + "join fetch p.supervisora su "
+            + "where (:nuExpediente is null or lower(s.numeroExpediente) like lower(concat('%', :nuExpediente, '%'))) "
+            + "and (:contratista is null or lower(su.nombreRazonSocial) like lower(concat('%', :contratista, '%')))",
+
+            countQuery = "select count(i) from InformeRenovacion i "
+                    + "inner join i.requerimientoRenovacion c "
+                    + "inner join c.solicitudPerfil s "
+                    + "inner join s.propuesta p "
+                    + "inner join p.supervisora su "
+                    + "where (:nuExpediente is null or lower(s.numeroExpediente) like lower(concat('%', :nuExpediente, '%'))) "
+                    + "and (:contratista is null or lower(su.nombreRazonSocial) like lower(concat('%', :contratista, '%')))"
+    )
+    Page<InformeRenovacion> findByNuExpedienteContratistaEstado(String nuExpediente, String contratista, Pageable pageable);
 
     @Query("SELECT i FROM InformeRenovacion i WHERE i.esRegistro = '1' ORDER BY i.fecCreacion DESC")
     List<InformeRenovacion> listarActivos();
@@ -22,8 +41,8 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
     InformeRenovacion obtenerPorId(@Param("id") Long id);
 
     @Query("SELECT i FROM InformeRenovacion i " +
-           "WHERE i.esRegistro = '1' " +
-           "AND i.requerimientoRenovacion.idReqRenovacion = :idRequerimiento")
+            "WHERE i.esRegistro = '1' " +
+            "AND i.requerimientoRenovacion.idReqRenovacion = :idRequerimiento")
     List<InformeRenovacion> listarPorRequerimiento(@Param("idRequerimiento") Long idRequerimiento);
 
     @Query("SELECT i FROM InformeRenovacion i " +
@@ -53,7 +72,8 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
            "AND (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
            "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
            "AND (:nombreItem IS NULL OR UPPER(req.noItem) LIKE UPPER(CONCAT('%', :nombreItem, '%'))) " +
-           "AND (:rucSupervisora IS NULL OR s.nuRucSupervisora = :rucSupervisora) " +
+           "AND (:rucSupervisora IS NULL OR s.codigoRuc = :rucSupervisora) " +
+           "AND :grupoAprobador = :grupoAprobador " +
            "ORDER BY i.fecCreacion DESC")
     Page<InformeRenovacion> buscarInformesParaAprobar(@Param("estadoAprobacion") Long estadoAprobacion,
                                                       @Param("grupoAprobador") Long grupoAprobador,
@@ -65,7 +85,7 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
     @Query("SELECT h FROM HistorialEstadoAprobacionCampo h " +
            "LEFT JOIN RequerimientoAprobacion ra ON h.idReqAprobacion = ra.idReqAprobacion " +
            "WHERE h.esRegistro = '1' " +
-           "AND ra.informeRenovacion.idInformeRenovacion = :idInformeRenovacion " +
+           "AND ra.idInformeRenovacion = :idInformeRenovacion " +
            "ORDER BY h.feFechaCambio DESC")
     List<HistorialEstadoAprobacionCampo> buscarHistorialAprobaciones(@Param("idInformeRenovacion") Long idInformeRenovacion);
 }
