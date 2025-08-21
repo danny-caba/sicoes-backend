@@ -75,14 +75,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 			 "AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 			 "AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente)) " +
-		//	 "AND APRE.ID_ROL = 5 " +
+			 "AND APRE.ID_ROL = :param4 " +    //5
 			 "AND APRE.CO_TIPO_APROBACION = :param1 " +
 			 "AND APRE.ES_ESTADO_APROB  = :param2   " +
 			 "AND APRE.ES_ESTADO_APROB_GERENTE_DIV  =  :param3  " , nativeQuery = true)
 	public List<AprobacionReemp> buscarEvalInfAprobTecG2(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 
 		 @Query( value = "      WITH LISTADOS AS (   " +
@@ -149,14 +149,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 				 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))    " +
 				 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))    " +
 				 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))  " +
-				// " AND APRE.ID_ROL = 5  " +
+				 " AND APRE.ID_ROL = :param4  " +   //5
 				 " AND APRE.CO_TIPO_APROBACION = :param1  " +
 				 " AND APRE.ES_ESTADO_APROB  = :param2     " +
 				 " AND APRE.ES_ESTADO_APROB_GERENTE_LINEA  =  :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarEvalInfAprobTecG3(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente,  @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 	 @Query( value = " WITH LISTADOS AS (  " +
 			 " SELECT   " +
@@ -228,14 +228,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
-			// " AND APRE.ID_ROL = 12  " +
+			 " AND APRE.ID_ROL = :param4  " +  //12
 			 " AND APRE.CO_TIPO_APROBACION = :param1  " +
 			 " AND APRE.ES_ESTADO_APROB  = :param2      " +
 			 " AND ADEN.CO_ESTADO_APR_LOGISTICA =  :param3 " , nativeQuery = true)  //ASIGNADO
 	public List<AprobacionReemp> buscarAprobEvalRolContr(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 	 @Query( value =  " WITH LISTADOS AS (  " +
 		 "             SELECT   " +
@@ -307,14 +307,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "         AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 		 "         AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 		 "         AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
-		// "         AND APRE.ID_ROL = 18  " +
+		 "         AND APRE.ID_ROL = :param4 " +   //18
 		 "         AND APRE.CO_TIPO_APROBACION = :param1    " +
 		 "         AND APRE.ES_ESTADO_APROB  = :param2      " +
 		 "         AND ADEN.CO_ESTADO_VB_GAF =  :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarVBAprobG2Admin(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 	 @Query( value =   "  WITH LISTADOS AS (  " +
 			 " SELECT   " +
@@ -386,14 +386,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
-			// " AND APRE.ID_ROL = 17  " +
+			 " AND APRE.ID_ROL = :param4  " +  //17
 			 " AND APRE.CO_TIPO_APROBACION = :param1    " +
 			 " AND APRE.ES_ESTADO_APROB  = :param2      " +
 			 " AND ADEN.CO_ESTADO_FIRMA_JEFE = :param3", nativeQuery = true)
 	public List<AprobacionReemp> buscarFirmarAprobG3Admin(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 
 
@@ -465,12 +465,12 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud)) " +
 			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))  " +
 			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))  " +
-			// " AND APRE.ID_ROL = 16  " +
+			 " AND APRE.ID_ROL = :param4  " +  //16
 			 " AND APRE.CO_TIPO_APROBACION = :param1  " +
 			 " AND APRE.ES_ESTADO_APROB  = :param2   " +
 			 " AND ADEN.CO_ESTADO_FIRMA_GERENCIA = :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarAprobG4AdmGAF(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 }
