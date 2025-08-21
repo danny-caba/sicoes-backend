@@ -86,6 +86,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     @Autowired
     private SicoesSolicitudDao sicoesSolicitudDao;
 
+    @Autowired
+    private RolDao rolDao;
+
     @Override
     @Transactional
     public AdendaReemplazo guardar(AdendaReemplazo adenda, Contexto contexto) {
@@ -117,6 +120,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         //Buscar Aprobacion
         Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo)
                 .orElseThrow(()-> new ValidacionException(Constantes.CODIGO_MENSAJE.APROB_REEMPLAZO_NO_EXISTE));
+        Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
+        aprobacion.setIdRol(rolUsuarioInterno.getIdRol());
         AuditoriaUtil.setAuditoriaActualizacion(aprobacion,contexto);
         aprobacion.setEstadoAprob(estadoApro);
         aprobacionDao.save(aprobacion);
