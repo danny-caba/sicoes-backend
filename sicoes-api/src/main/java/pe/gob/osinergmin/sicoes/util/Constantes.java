@@ -947,6 +947,7 @@ public class Constantes {
 		public static final String USUARIO_RESPONSABLE_TECNICO_NO_EXISTE="V01042";
 		public static final String SOLICITUD_NO_EXISTE="V01043";
 		public static final String USUARIO_G4_NO_EXISTE="V01044";
+		public static final String APROB_REEMPLAZO_NO_EXISTE = "V01045";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

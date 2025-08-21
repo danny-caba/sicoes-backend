@@ -78,6 +78,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     private PerfilAprobadorDao perfilAprobadorDao;
 
     @Autowired
+    private AprobacionDao aprobacionDao;
+
+    @Autowired
     private NotificacionContratoService notificacionContratoService;
 
     @Autowired
@@ -111,9 +114,16 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
         ListadoDetalle estadoAsignado = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
 
+        //Buscar Aprobacion
+        Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo)
+                .orElseThrow(()-> new ValidacionException(Constantes.CODIGO_MENSAJE.APROB_REEMPLAZO_NO_EXISTE));
+        AuditoriaUtil.setAuditoriaActualizacion(aprobacion,contexto);
+        aprobacion.setEstadoAprob(estadoApro);
+        aprobacionDao.save(aprobacion);
+
         personalReemplazo.setEstadoAprobacionAdenda(estadoApro);
         personalReemplazoService.actualizar(personalReemplazo,contexto);
-        adenda.setEstadoAprobacion(estadoAsignado);
+        adenda.setEstadoAprobacion(estadoApro);
         adenda.setEstadoAprLogistica(estadoAsignado);
         AuditoriaUtil.setAuditoriaRegistro(adenda,contexto);
         AdendaReemplazo adendaReemplazo = adendaReemplazoDao.save(adenda);
