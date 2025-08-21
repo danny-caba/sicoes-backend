@@ -25,23 +25,11 @@ import org.thymeleaf.context.Context;
 
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
-import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.Asignacion;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Notificacion;
-import pe.gob.osinergmin.sicoes.model.OtroRequisito;
-import pe.gob.osinergmin.sicoes.model.Proceso;
-import pe.gob.osinergmin.sicoes.model.Propuesta;
-import pe.gob.osinergmin.sicoes.model.Solicitud;
-import pe.gob.osinergmin.sicoes.model.Usuario;
-import pe.gob.osinergmin.sicoes.model.UsuarioRol;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
-import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
-import pe.gob.osinergmin.sicoes.repository.ConfBandejaDao;
-import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
-import pe.gob.osinergmin.sicoes.repository.OtroRequisitoDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioRolDao;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
+import pe.gob.osinergmin.sicoes.repository.*;
+import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoInvitacionDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.AsignacionService;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -108,7 +96,11 @@ public class NotificacionServiceImpl implements NotificacionService{
 	
 	@Autowired
 	private UsuarioService usuarioService;
-	
+	@Autowired
+	private RequerimientoInvitacionDao requerimientoInvitacionDao;
+	@Autowired
+	private SupervisoraDao supervisoraDao;
+
 	@Override
 	public Notificacion obtener(Long idNotificacion, Contexto contexto) {
 		Notificacion notificacion= notificacionDao.obtener(idNotificacion);
@@ -591,7 +583,8 @@ public class NotificacionServiceImpl implements NotificacionService{
 	    notificacion.setEstado(estadoPendiente);
 	    notificacionDao.save(notificacion);
 	}
-	
+
+
 	@Override
 	public void enviarMensajeEvaluacionConcluida03(Solicitud solicitud,String type, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
@@ -1036,5 +1029,28 @@ public class NotificacionServiceImpl implements NotificacionService{
         }
 		
 		logger.info("enviarMensajeEvaluacionPendiente fin");
-	}	
+	}
+
+	@Override
+	public void enviarMensajeRequerimientoInvitacion(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+		requerimientoInvitacion= requerimientoInvitacionDao.findByIdReqInvitacion(requerimientoInvitacion.getIdReqInvitacion()).orElseThrow(()->new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO));
+		Notificacion notificacion = new Notificacion();
+		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getIdSupervisora());
+		notificacion.setCorreo(supervisora.getCorreo());
+		notificacion.setAsunto("INVITACION PARA RENOVACION");
+		final Context ctx = new Context();
+		ctx.setVariable("nroExpediente",requerimientoInvitacion.getRequerimientoRenovacion().getNuExpediente());
+		ctx.setVariable("razonSocial",supervisora.getNombreRazonSocial());
+		ctx.setVariable("sector", requerimientoInvitacion.getRequerimientoRenovacion().getTiSector());
+		ctx.setVariable("subSector", requerimientoInvitacion.getRequerimientoRenovacion().getTiSubSector());
+		ctx.setVariable("fecInvitacion", DateUtil.getDate(requerimientoInvitacion.getFeInvitacion(),"dd/MM/yyyy"));
+		ctx.setVariable("plazo", DateUtil.getDate(requerimientoInvitacion.getFeCaducidad(),"dd/MM/yyyy"));
+		String htmlContent = templateEngine.process("01-solicitud_inscripcion.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
 }

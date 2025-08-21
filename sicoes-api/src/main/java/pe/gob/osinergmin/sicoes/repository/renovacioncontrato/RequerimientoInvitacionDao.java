@@ -51,4 +51,6 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoInvitacion> buscarPorRangoFechas(@Param("fechaDesde") String fechaDesde,
                                                        @Param("fechaHasta") String fechaHasta);
+
+    Optional<RequerimientoInvitacion> findByIdReqInvitacion(Long idReqInvitacion);
 }

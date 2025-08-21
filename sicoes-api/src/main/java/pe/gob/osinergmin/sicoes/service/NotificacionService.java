@@ -8,6 +8,7 @@ import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface NotificacionService extends BaseService<Notificacion, Long> {
@@ -40,4 +41,5 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public void enviarMensajeSolicitudRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
 	public void enviarMensajeAprobacionRevertirEvaluacion(Long idOtroRequisito, Contexto contexto);
 
+	void enviarMensajeRequerimientoInvitacion(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
 }
