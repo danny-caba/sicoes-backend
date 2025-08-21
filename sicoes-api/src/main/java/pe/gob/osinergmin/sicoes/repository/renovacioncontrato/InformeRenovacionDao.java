@@ -65,7 +65,7 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
     @Query("SELECT h FROM HistorialEstadoAprobacionCampo h " +
            "LEFT JOIN RequerimientoAprobacion ra ON h.idReqAprobacion = ra.idReqAprobacion " +
            "WHERE h.esRegistro = '1' " +
-           "AND ra.idInformeRenovacion = :idInformeRenovacion " +
+           "AND ra.informeRenovacion.idInformeRenovacion = :idInformeRenovacion " +
            "ORDER BY h.feFechaCambio DESC")
     List<HistorialEstadoAprobacionCampo> buscarHistorialAprobaciones(@Param("idInformeRenovacion") Long idInformeRenovacion);
 }
