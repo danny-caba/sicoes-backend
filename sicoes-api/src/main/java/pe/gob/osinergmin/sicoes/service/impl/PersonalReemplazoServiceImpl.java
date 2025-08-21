@@ -1764,7 +1764,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(existe.getIdReemplazo(), listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME).get(0).getIdListadoDetalle()).get(0);
                     aprob.setDocumento(doc);
-                    Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
+                    Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.APROBADOR_TECNICO);
                     aprob.setIdRol(rolUsuarioInterno.getIdRol());
                     aprob.setDeTp(supervisora.getTipoPersona().getValor());
                     aprob.setIdContratista(supervisora.getIdSupervisora());
