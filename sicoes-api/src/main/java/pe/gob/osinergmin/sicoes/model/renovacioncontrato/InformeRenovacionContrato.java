@@ -79,15 +79,6 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     @Column(name = "ES_VIGENTE", nullable = false)
     private Boolean vigente;
 
-    @Column(name = "DE_UUID_INFO_RENOVACION", nullable = false, length = 36)
-    private String uuidInformeRenovacion;
-
-    @Column(name = "DE_NOMBRE_ARCHIVO", length = 100)
-    private String nombreArchivo;
-
-    @Column(name = "DE_RUTA_ARCHIVO", length = 100)
-    private String rutaArchivo;
-
     @Column(name = "ES_REGISTRO", nullable = false, length = 1)
     private String registro;
 

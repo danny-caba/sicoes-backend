@@ -65,7 +65,7 @@ public class NotificacionRenovacionContratoServiceImpl implements NotificacionRe
     public void notificacionInformePorAprobar(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
         logger.info(" notificarReemplazoPersonalByEmail para email: {} ",email);
-        String nombreRol = "ROl test";
+        String nombreRol = "ROl G1";
         Context ctx = new Context();
         ctx.setVariable("nombreRol", nombreRol);
         ctx.setVariable("numeroExpediente", numExpediente);
