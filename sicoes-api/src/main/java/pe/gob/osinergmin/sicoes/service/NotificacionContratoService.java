@@ -23,13 +23,13 @@ public interface NotificacionContratoService {
 
     void notificarRevisarDocumentacionPendiente(Usuario usuario, String numExpediente, String nombreRol, Contexto contexto);
 
-    void notificarRevDocumentos2(Usuario usuario, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
+    void notificarRevDocumentos2(Supervisora empresa, String nombrePersonal, String nombrePerfil, List<DocumentoReemplazo> listDocsAsociados, Contexto contexto);
 
     void notificarRevDocumentos15(Usuario usuario, String numeroExpediente, Contexto contexto);
 
     void notificarRevDocumentos12(Usuario usuario, Contexto contexto);
 
-    void notificarRevDocumentos122(Usuario usuario, String nombrePersonal, String nombrePerfil, Contexto contexto);
+    void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String nombrePerfil, Contexto contexto);
 
     void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
 
