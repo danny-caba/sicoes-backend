@@ -15,7 +15,7 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobaci
 @Repository
 public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, Long> {
 
-    @Query("SELECT i FROM InformeRenovacion i WHERE i.esRegistro = '1' ORDER BY i.feCreacion DESC")
+    @Query("SELECT i FROM InformeRenovacion i WHERE i.esRegistro = '1' ORDER BY i.fecCreacion DESC")
     List<InformeRenovacion> listarActivos();
 
     @Query("SELECT i FROM InformeRenovacion i WHERE i.idInformeRenovacion = :id AND i.esRegistro = '1'")
@@ -29,20 +29,20 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
     @Query("SELECT i FROM InformeRenovacion i " +
            "WHERE i.esRegistro = '1' " +
            "AND i.usuario.idUsuario = :idUsuario " +
-           "ORDER BY i.feCreacion DESC")
+           "ORDER BY i.fecCreacion DESC")
     List<InformeRenovacion> listarPorUsuario(@Param("idUsuario") Long idUsuario);
 
     @Query("SELECT i FROM InformeRenovacion i " +
            "WHERE i.esRegistro = '1' " +
            "AND i.estadoAprobacionInforme.idListadoDetalle = :estadoId " +
-           "ORDER BY i.feCreacion DESC")
+           "ORDER BY i.fecCreacion DESC")
     List<InformeRenovacion> listarPorEstadoAprobacion(@Param("estadoId") Long estadoId);
 
     @Query("SELECT i FROM InformeRenovacion i " +
            "WHERE i.esRegistro = '1' " +
            "AND i.esVigente = 1 " +
            "AND i.esCompletado = '1' " +
-           "ORDER BY i.feCreacion DESC")
+           "ORDER BY i.fecCreacion DESC")
     List<InformeRenovacion> listarVigentesCompletados();
 
     @Query("SELECT i FROM InformeRenovacion i " +
@@ -54,7 +54,7 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
            "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
            "AND (:nombreItem IS NULL OR UPPER(req.noItem) LIKE UPPER(CONCAT('%', :nombreItem, '%'))) " +
            "AND (:rucSupervisora IS NULL OR s.nuRucSupervisora = :rucSupervisora) " +
-           "ORDER BY i.feCreacion DESC")
+           "ORDER BY i.fecCreacion DESC")
     Page<InformeRenovacion> buscarInformesParaAprobar(@Param("estadoAprobacion") Long estadoAprobacion,
                                                       @Param("grupoAprobador") Long grupoAprobador,
                                                       @Param("numeroExpediente") String numeroExpediente,
