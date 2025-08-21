@@ -44,15 +44,11 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
         return requerimientoInvitacionService.guardar(requerimientoInvitacion, getContexto());
     }
 
-    @DeleteMapping("/{uid}/eliminar")
+    @DeleteMapping("/{uuid}/eliminar")
     @Raml("requerimientoInvitacion.eliminar.properties")
-    public Map<String, Object> eliminarRequerimientoInvitacion(@PathVariable("uid") String uuid) {
-        logger.info("Eliminando invitación con ID: {}", uuid);
-        requerimientoInvitacionService.eliminar(uuid, getContexto());
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 200);
-        response.put("mensaje", "Registro eliminado");
-        return response;
+    public RequerimientoInvitacion eliminarRequerimientoInvitacion(@PathVariable("uuid") String uuid) {
+        logger.info("Eliminando invitación con uuid: {}", uuid);
+        return requerimientoInvitacionService.eliminar(uuid, getContexto());
     }
 
     @GetMapping
@@ -61,8 +57,9 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
             @RequestParam(required = false) Long idEstado,
             @RequestParam(required = false) String fechaInicioInvitacion,
             @RequestParam(required = false) String fechaFinInvitacion,
+            @RequestParam(required = false) String requerimientoUuid,
             Pageable pageable) {
-        return requerimientoInvitacionService.obtener(idEstado, fechaInicioInvitacion, fechaFinInvitacion, getContexto(), pageable);
+        return requerimientoInvitacionService.obtener(idEstado, fechaInicioInvitacion, fechaFinInvitacion, requerimientoUuid,   getContexto(), pageable);
     }
 
     @PatchMapping("/{uuid}/evaluar")

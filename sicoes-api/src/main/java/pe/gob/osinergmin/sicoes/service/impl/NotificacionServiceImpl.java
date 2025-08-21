@@ -1059,8 +1059,8 @@ public class NotificacionServiceImpl implements NotificacionService{
 		Notificacion notificacion = new Notificacion();
 		notificacion.setAsunto((esAprobacion ? "ACEPTACIÓN" : "RECHAZO") + " DE INVITACIÓN SUPERVISOR PERSONA NATURAL");
 		final Context ctx = new Context();
-		ctx.setVariable("esAprobacion", esAprobacion);
-		ctx.setVariable("nombre", invitacion.getSupervisora().getNombreRazonSocial());
+		ctx.setVariable("accion", esAprobacion ? "ACEPTÓ" : "RECHAZÓ");
+		ctx.setVariable("nombre", invitacion.getSupervisora().getNombreCompleto());
 		ctx.setVariable("division", invitacion.getRequerimiento().getDivision().getDeDivision());
 		ctx.setVariable("fechaInvitacion", DateUtil.getDate(invitacion.getFechaInvitacion(), "dd/MM/yyyy"));
 		ctx.setVariable("fechaCaducidad", DateUtil.getDate(invitacion.getFechaCaducidad(), "dd/MM/yyyy"));

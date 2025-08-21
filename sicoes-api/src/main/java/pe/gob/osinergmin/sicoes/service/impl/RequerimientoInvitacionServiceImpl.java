@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
@@ -119,11 +120,11 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     }
 
     @Override
-    public void eliminar(String uuid, Contexto contexto) {
+    public RequerimientoInvitacion eliminar(String uuid, Contexto contexto) {
         logger.info("Eliminando RequerimientoInvitacion con ID {} - usuario: {}", uuid, contexto.getUsuario());
         Optional<RequerimientoInvitacion> optional = requerimientoInvitacionDao.obtenerPorUuid(uuid);
         if (!optional.isPresent()) {
-            throw new RuntimeException("RequerimientoInvitacion no encontrado con UUID: " + uuid);
+            throw new ValidacionException(INVITACION_NO_ENCONTRADA);
         }
         ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_INVITACION.ELIMINADO);
         if (estadoEliminado == null) {
@@ -131,13 +132,14 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
         RequerimientoInvitacion entidad = optional.get();
         entidad.setEstado(estadoEliminado);
+        entidad.setFlagActivo(Constantes.FLAG_INVITACION.INACTIVO);
         AuditoriaUtil.setAuditoriaActualizacion(entidad, contexto);
-        requerimientoInvitacionDao.save(entidad);
+        return requerimientoInvitacionDao.save(entidad);
     }
 
     @Override
     public Page<RequerimientoInvitacion> obtener(Long idEstado, String fechaInicioInvitacion,
-                                                 String fechaFinInvitacion, Contexto contexto, Pageable pageable) {
+                                                 String fechaFinInvitacion, String requerimientoUuid, Contexto contexto, Pageable pageable) {
         Long idSupervisora = null;
         Date fechaInicio = DateUtil.getInitDay(fechaInicioInvitacion);
         Date fechaFin = DateUtil.getEndDay(fechaFinInvitacion);
@@ -152,7 +154,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
             idSupervisora = supervisora.getIdSupervisora();
         }
-        return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, pageable);
+        return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, requerimientoUuid, pageable);
     }
 
     @Override

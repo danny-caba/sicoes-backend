@@ -96,7 +96,10 @@ public class RequerimientoContratoImpl implements RequerimientoContratoService {
         RequerimientoContrato contratoBD = requerimientoContratoDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_CONTRATO_NO_ENCONTRADO));
         Requerimiento requerimiento = contratoBD.getRequerimiento();
-        if(!requerimiento.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
+//        if(!requerimiento.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
+//            throw new ValidacionException(REQUERIMIENTO_EN_PROCESO);
+//        }
+        if(!contratoBD.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_CONTRATO.EN_PROCESO)) {
             throw new ValidacionException(REQUERIMIENTO_EN_PROCESO);
         }
         if(Objects.isNull(contrato.getArchivos()) || contrato.getArchivos().isEmpty()) {

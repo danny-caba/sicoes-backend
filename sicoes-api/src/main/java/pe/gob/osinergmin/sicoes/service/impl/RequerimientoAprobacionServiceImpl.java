@@ -174,7 +174,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
                 (requerimientoAprobacion.getGrupoAprobador().getCodigo().equals(
                         Constantes.LISTADO.GRUPO_APROBACION.GERENTE) &&
                     requerimientoAprobacion.getGrupo().getCodigo().equals(
-                            Constantes.LISTADO.GRUPOS.G2
+                            Constantes.LISTADO.GRUPOS.G3
                     ));
 
         requerimientoAprobacion.setAccionAprobar(esAsignado);

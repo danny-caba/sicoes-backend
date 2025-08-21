@@ -19,17 +19,20 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
             "and (:idEstado is null or i.estado.idListadoDetalle = :idEstado) " +
             "and (:fechaInicio is null or i.fechaInvitacion >= :fechaInicio) " +
             "and (:fechaFin is null or i.fechaInvitacion <= :fechaFin) " +
+            "and (:requerimientoUuid is null or i.requerimiento.requerimientoUuid = :requerimientoUuid) " +
             "order by i.fechaInvitacion desc ",
             countQuery = "select count(i) from RequerimientoInvitacion i " +
                     "left join i.supervisora s " +
                     "where (:idSupervisora is null or s.idSupervisora = :idSupervisora) " +
                     "and (:idEstado is null or i.estado.idListadoDetalle = :idEstado) " +
                     "and (:fechaInicio is null or i.fechaInvitacion >= :fechaInicio) " +
-                    "and (:fechaFin is null or i.fechaInvitacion <= :fechaFin) ")
+                    "and (:fechaFin is null or i.fechaInvitacion <= :fechaFin) " +
+                    "and (:requerimientoUuid is null or i.requerimiento.requerimientoUuid = :requerimientoUuid)")
     Page<RequerimientoInvitacion> obtenerInvitaciones(Long idSupervisora,
                                                       Long idEstado,
                                                       Date fechaInicio,
                                                       Date fechaFin,
+                                                      String requerimientoUuid,
                                                       Pageable pageable);
 
     @Query(value="select i from RequerimientoInvitacion i " +
