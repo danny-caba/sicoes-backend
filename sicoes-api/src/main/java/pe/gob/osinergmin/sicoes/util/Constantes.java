@@ -162,6 +162,8 @@ public class Constantes {
 
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
 
+			public static final String INFORME_RENOVACION_CONTRATO = "TA34";
+
 		}
 		
 		public static final class ESTADO_REQUISITO {
