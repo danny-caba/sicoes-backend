@@ -113,9 +113,12 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION;
-        String descAsignado = Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO;
-        ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
-        ListadoDetalle estadoAsignado = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
+        ListadoDetalle estadoAproGeneral = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
+
+        String listadoAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.CODIGO;
+        String descAsignadoAdenda = Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO;
+        ListadoDetalle estadoAproAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAprobacion);
+        ListadoDetalle estadoAsignadoAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignadoAdenda);
 
         //Buscar Aprobacion
         Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo)
@@ -123,13 +126,13 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
         aprobacion.setIdRol(rolUsuarioInterno.getIdRol());
         AuditoriaUtil.setAuditoriaActualizacion(aprobacion,contexto);
-        aprobacion.setEstadoAprob(estadoApro);
+        aprobacion.setEstadoAprob(estadoAproGeneral);
         aprobacionDao.save(aprobacion);
 
-        personalReemplazo.setEstadoAprobacionAdenda(estadoApro);
+        personalReemplazo.setEstadoAprobacionAdenda(estadoAproGeneral);
         personalReemplazoService.actualizar(personalReemplazo,contexto);
-        adenda.setEstadoAprobacion(estadoApro);
-        adenda.setEstadoAprLogistica(estadoAsignado);
+        adenda.setEstadoAprobacion(estadoAproAdenda);
+        adenda.setEstadoAprLogistica(estadoAsignadoAdenda);
         AuditoriaUtil.setAuditoriaRegistro(adenda,contexto);
         AdendaReemplazo adendaReemplazo = adendaReemplazoDao.save(adenda);
 
