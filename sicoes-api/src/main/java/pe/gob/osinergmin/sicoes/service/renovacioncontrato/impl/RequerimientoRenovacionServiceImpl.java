@@ -88,7 +88,7 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		if (requerimientoRenovacion.getSolicitudPerfil()==null || requerimientoRenovacion.getSolicitudPerfil().getIdSolicitud()==null) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_SOLICITUD_NO_ENVIADO);
 		}
-
+		//TODO: validar que o exista otro requerimiento renovacion con estado en Proceso
 		SicoesSolicitud solicitud = sicoesSolicitudService.obtener(requerimientoRenovacion.getSolicitudPerfil().getIdSolicitud(), contexto);
 		if(solicitud==null ){
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_SOLICITUD_NO_ENVIADO);
