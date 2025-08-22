@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service;
 
+import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.*;
@@ -46,6 +47,5 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion);
     PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo, Boolean conforme, Contexto contexto);
     PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto);
-
-
+    ExpedienteInRO crearExpedienteAgregarDocumentos(SicoesSolicitud solicitud, Contexto contexto);
 }

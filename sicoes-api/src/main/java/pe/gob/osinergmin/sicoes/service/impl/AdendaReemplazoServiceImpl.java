@@ -2,6 +2,8 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,22 +15,21 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
-import pe.gob.osinergmin.sicoes.service.AdendaReemplazoService;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
-import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
-import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
+import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
+import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
@@ -58,6 +59,15 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     @Autowired
     private SigedOldConsumer sigedOldConsumer;
+
+    @Autowired
+    private SigedApiConsumer sigedApiConsumer;
+
+    @Autowired
+    private ArchivoService archivoService;
+
+    @Autowired
+    private DocumentoReemService documentoReemService;
 
     @Autowired
     private PropuestaProfesionalDao propuestaProfesionalDao;
@@ -146,6 +156,40 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             notificacionContratoService.notificarAprobacionPendiente(evaluadorContratos.get(), numeroExpediente, contexto);
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
+        }
+
+        //Integrar documentacion en la plataforma SIGED
+        Long idPerfContrato = personalReemplazo.getIdSolicitud();
+        SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+        String listadoSeccion = Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL;
+        String descSeccion = Constantes.LISTADO.SECCION_DOC_REEMPLAZO.CARGAR_ADENDA;
+        ListadoDetalle detalleSeccion = listadoDetalleDao.obtenerListadoDetalle(listadoSeccion, descSeccion);
+
+        List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
+                personalReemplazo.getIdReemplazo(),
+                Collections.singletonList(detalleSeccion.getIdListadoDetalle()));
+        List<File> archivosAlfresco=null;
+        for (DocumentoReemplazo documento : documentos) {
+            ExpedienteInRO expedienteInRO = personalReemplazoService.crearExpedienteAgregarDocumentos(solicitud, contexto);
+            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
+            try {
+                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
+                if (documentoOutRO.getResultCode() != 1){
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
+                            documentoOutRO.getMessage());
+                }
+                Integer idArchivo = documentoOutRO.getArchivos().getArchivo().get(0).getIdArchivo();
+                Integer idDocumento = documentoOutRO.getCodigoDocumento();
+
+                documento.setIdArchivoSiged(String.valueOf(idArchivo));
+                documento.setIdDocumento(Long.valueOf(idDocumento));
+                documentoReemService.actualizar(documento,contexto);
+            } catch (ValidacionException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("ERROR {} ", e.getMessage(), e);
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
+            }
         }
         return adendaReemplazo;
     }
