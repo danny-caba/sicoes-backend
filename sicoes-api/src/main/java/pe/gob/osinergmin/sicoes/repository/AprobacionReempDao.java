@@ -52,9 +52,10 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "     NULL AS ESTADO_VISTO_BUENO_GAF,  " +
 			 "     NULL AS ID_ESTADO_FIRMA_JEFE,  " +
 			 "     NULL AS ESTADO_FIRMA_JEFE,  " +
-			 "    NULL AS ID_ESTADO_FIRMA_GERENCIA,  " +
+			 "     NULL AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 "     NULL AS ESTADO_FIRMA_GERENCIA,  " +
-			 "    ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 "     NULL AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 " LEFT JOIN LISTADOS TIPO_APROB   " +
 			 "     ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION' " +
@@ -126,9 +127,10 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 				 "      NULL AS ESTADO_VISTO_BUENO_GAF,   " +
 				 "      NULL AS ID_ESTADO_FIRMA_JEFE,   " +
 				 "      NULL AS ESTADO_FIRMA_JEFE,   " +
-				 "     NULL AS ID_ESTADO_FIRMA_GERENCIA,   " +
+				 "      NULL AS ID_ESTADO_FIRMA_GERENCIA,   " +
 				 "      NULL AS ESTADO_FIRMA_GERENCIA,   " +
-				 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO   " +
+				 "      ARCH.CO_ARCHIVO AS ID_ARCHIVO,   " +
+				 "      NULL AS ID_ADENDA  " +
 				 "  FROM SICOES_TZ_APROBACION_REEMP APRE   " +
 				 "  LEFT JOIN LISTADOS TIPO_APROB    " +
 				 "      ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -201,7 +203,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
 			 " ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 " GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
-			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 " ADEN.ID_ADENDA AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 " LEFT JOIN LISTADOS TIPO_APROB   " +
 			 " ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -280,7 +283,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "             JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
 		 "             ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
 		 "             GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
-		 "             ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+		 "             ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+		 "             ADEN.ID_ADENDA AS ID_ADENDA  " +
 		 "         FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 		 "         LEFT JOIN LISTADOS TIPO_APROB   " +
 		 "             ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -359,7 +363,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
 			 " ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 " GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
-			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 " ADEN.ID_ADENDA AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 "LEFT JOIN SICOES_TZ_DOCUMENTO_REEMP DORE   " +
 			 " ON APRE.ID_DOCUMENTO = DORE.ID_DOCUMENTO " +
@@ -442,7 +447,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "     NULL AS ESTADO_FIRMA_JEFE,  " +
 			 "     NULL AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 "     NULL AS ESTADO_FIRMA_GERENCIA,  " +
-			 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 "     ADEN.ID_ADENDA AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 " LEFT JOIN LISTADOS TIPO_APROB   " +
 			 "     ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
