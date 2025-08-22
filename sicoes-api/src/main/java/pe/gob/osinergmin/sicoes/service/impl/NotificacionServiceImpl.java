@@ -1032,20 +1032,15 @@ public class NotificacionServiceImpl implements NotificacionService{
 	}
 
 	@Override
-	public void enviarMensajeRequerimientoInvitacion(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+	public void enviarMensajeRequerimientoInvitacionGPPM(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
 		requerimientoInvitacion= requerimientoInvitacionDao.findByIdReqInvitacion(requerimientoInvitacion.getIdReqInvitacion()).orElseThrow(()->new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO));
 		Notificacion notificacion = new Notificacion();
 		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getIdSupervisora());
 		notificacion.setCorreo(supervisora.getCorreo());
-		notificacion.setAsunto("INVITACION PARA RENOVACION");
+		notificacion.setAsunto("EVALUAR PRESUPUESTO");
 		final Context ctx = new Context();
 		ctx.setVariable("nroExpediente",requerimientoInvitacion.getRequerimientoRenovacion().getNuExpediente());
-		ctx.setVariable("razonSocial",supervisora.getNombreRazonSocial());
-		ctx.setVariable("sector", requerimientoInvitacion.getRequerimientoRenovacion().getTiSector());
-		ctx.setVariable("subSector", requerimientoInvitacion.getRequerimientoRenovacion().getTiSubSector());
-		ctx.setVariable("fecInvitacion", DateUtil.getDate(requerimientoInvitacion.getFeInvitacion(),"dd/MM/yyyy"));
-		ctx.setVariable("plazo", DateUtil.getDate(requerimientoInvitacion.getFeCaducidad(),"dd/MM/yyyy"));
-		String htmlContent = templateEngine.process("01-solicitud_inscripcion.html", ctx);
+		String htmlContent = templateEngine.process("26-requerimiento-renovacion-gppm.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
@@ -1053,4 +1048,20 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacionDao.save(notificacion);
 	}
 
+	@Override
+	public void enviarMensajeRequerimientoInvitacionGSE(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
+		requerimientoInvitacion= requerimientoInvitacionDao.findByIdReqInvitacion(requerimientoInvitacion.getIdReqInvitacion()).orElseThrow(()->new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO));
+		Notificacion notificacion = new Notificacion();
+		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getIdSupervisora());
+		notificacion.setCorreo(supervisora.getCorreo());
+		notificacion.setAsunto("INFORME POR EVALUAR");
+		final Context ctx = new Context();
+		ctx.setVariable("nroExpediente",requerimientoInvitacion.getRequerimientoRenovacion().getNuExpediente());
+		String htmlContent = templateEngine.process("27-requerimiento-renovacion-gse.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
 }
