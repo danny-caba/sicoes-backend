@@ -1,8 +1,11 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
@@ -23,6 +26,7 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 @Service
 public class RechazarInformePresupuestalRenovacionContratoImpl {
+    private final Logger logger = LogManager.getLogger(RechazarInformePresupuestalRenovacionContratoImpl.class);
 
     private final SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
     private final InformeRenovacionContratoDao informeRenovacionContratoDao;
@@ -51,6 +55,7 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         InformeRenovacionContrato informeRenovacionContrato = informe.get();
         Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud(); 
 
+
         List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud  = 
          solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
         
@@ -66,17 +71,14 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
         listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoAprobacionInformeRC.getIdListadoDetalle());  
         informeRenovacionContrato.setEstadoAprobacionInforme(listadoDetalleRenovacionContrato);
-        //TODO: actualizar estado en tabla informe RC
 
-
-
-
+        actualizarEstadoInformeRenovacionContrato(informeRenovacionContrato, contexto);
+        
+    
         SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
 
-
         
-        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
-        requerimientoAprobacion.setIdRequerimiento(1L); //TODO: revisar 
+        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();        
         requerimientoAprobacion.setDeObservacion(requerimientoAprobacionDTO.getDeObservacion());
         requerimientoAprobacion.setIdInformeRenovacion(requerimientoAprobacionDTO.getIdReqInforme());
         Usuario usuario = contexto.getUsuario();
@@ -100,6 +102,18 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
             
         return RequerimientoAprobacionMapper.MAPPER.toDTO(requerimientoAprobacion);
     }
+    private void actualizarEstadoInformeRenovacionContrato(InformeRenovacionContrato informeRenovacionContrato,Contexto contexto) {
+        String usuarioCodigo=contexto.getUsuario().getIdUsuario().toString();
+        String ipUpdated = contexto.getIp();
 
+        int afectados =informeRenovacionContratoDao.actualizarEstadoEvaluacionPropuestPerfilPuestoPorId(
+            informeRenovacionContrato.getIdInformeRenovacion(), 
+            informeRenovacionContrato.getEstadoAprobacionInforme().getIdListadoDetalle(),
+             LocalDateTime.now(),
+              ipUpdated,
+              usuarioCodigo);
+
+        this.logger.info("actualizarEstadoInformeRenovacionContrato afectados {}", afectados);
+    }
 
 }

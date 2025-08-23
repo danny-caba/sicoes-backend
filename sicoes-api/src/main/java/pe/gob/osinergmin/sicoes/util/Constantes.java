@@ -908,6 +908,8 @@ public class Constantes {
 		public static final String TIPO_SOLICITUD_NO_PERMITIDO = "V01020";
 		public static final String INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO = "V02000";
 		public static final String PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO = "V02000";
+		public static final String USUARIO_SIN_PERMISO_RENOVACION_CONTRATO = "V02001";
+
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";
