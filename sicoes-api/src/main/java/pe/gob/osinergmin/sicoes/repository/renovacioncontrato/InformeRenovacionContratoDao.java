@@ -46,9 +46,9 @@ public interface InformeRenovacionContratoDao extends JpaRepository<InformeRenov
     @Modifying
     @Query("UPDATE InformeRenovacionContrato informeRC SET " +        
            "informeRC.estadoAprobacionInforme.idListadoDetalle = :estado, " +
-           "informeRC.feActualizacion = :fecha, " +
+           "informeRC.fecActualizacion = :fecha, " +
            "informeRC.ipActualizacion = :ip, " +
-           "informeRC.usActualizacion = :usActualizacion " +
+           "informeRC.usuActualizacion = :usActualizacion " +
            "WHERE informeRC.idInformeRenovacion = :idInformeRenovacion")
     int actualizarEstadoEvaluacionPropuestPerfilPuestoPorId(
         @Param("idInformeRenovacion") Long idInformeRenovacion,
