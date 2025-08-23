@@ -33,11 +33,11 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQ_INVITACION")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_INVITACION", sequenceName = "SEQ_SICOES_TC_REQ_INVITACION", allocationSize = 1)
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_INVITACION", sequenceName = "SICOES_SEQ_REQ_INVITACION", allocationSize = 1)
     @Column(name = "ID_REQ_INVITACION")
     private Long idReqInvitacion;
 
-    @Column(name = "ID_REQUERIMIENTO", precision = 38, nullable = false)
+    @Column(name = "ID_REQUERIMIENTO", precision = 38)
     private Long idRequerimiento;
 
 
