@@ -19,6 +19,7 @@ import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.IdsDocumentoArchivoDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -144,7 +145,6 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         adenda.setEstadoAprobacion(estadoAproAdenda);
         adenda.setEstadoAprLogistica(estadoAsignadoAdenda);
         AuditoriaUtil.setAuditoriaRegistro(adenda,contexto);
-        AdendaReemplazo adendaReemplazo = adendaReemplazoDao.save(adenda);
 
         //Notificacion
         Optional<Usuario> evaluadorContratos = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS)
@@ -165,6 +165,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         String descSeccion = Constantes.LISTADO.SECCION_DOC_REEMPLAZO.CARGAR_ADENDA;
         ListadoDetalle detalleSeccion = listadoDetalleDao.obtenerListadoDetalle(listadoSeccion, descSeccion);
 
+        logger.info("detalleSeccion:{}", detalleSeccion.getIdListadoDetalle());
+
         List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
                 personalReemplazo.getIdReemplazo(),
                 Collections.singletonList(detalleSeccion.getIdListadoDetalle()));
@@ -178,11 +180,13 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
                             documentoOutRO.getMessage());
                 }
-                Integer idArchivo = documentoOutRO.getArchivos().getArchivo().get(0).getIdArchivo();
-                Integer idDocumento = documentoOutRO.getCodigoDocumento();
-
-                documento.setIdArchivoSiged(String.valueOf(idArchivo));
-                documento.setIdDocumento(Long.valueOf(idDocumento));
+                //Buscamos los id de los archivos de SIGED
+                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO;
+                String nombreDocumento = archivosAlfresco.get(0).getName();
+                idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(solicitud.getNumeroExpediente(),
+                        contexto.getUsuario().getUsuario(),nombreDocumento);
+                documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
+                documento.setIdDocumentoSiged (String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
                 documentoReemService.actualizar(documento,contexto);
             } catch (ValidacionException e) {
                 throw e;
@@ -191,7 +195,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
             }
         }
-        return adendaReemplazo;
+        return adendaReemplazoDao.save(adenda);
     }
 
     @Override

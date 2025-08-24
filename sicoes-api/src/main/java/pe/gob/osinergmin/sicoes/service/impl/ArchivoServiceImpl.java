@@ -1229,6 +1229,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 			dir.mkdirs();
 		}
 
+		logger.info("archivo :{}", archivos);
 		// Verificar si hay archivos _v2
 		boolean tieneV2 = archivos.stream()
 				.anyMatch(a -> a.getNombre() != null &&
@@ -1240,14 +1241,23 @@ public class ArchivoServiceImpl implements ArchivoService {
 					archivo.getNombre().matches(".*_v2\\.pdf$"))) {
 
 				try {
+					logger.info("archivoAlfresco:{}",archivo.getNombreAlFresco());
 					byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
 					if (contenido == null || contenido.length == 0) {
 						logger.warn("Archivo {} sin contenido", archivo.getNombre());
 						continue;
 					}
 
+					logger.info("dirPath:{}",dirPath);
+					logger.info("separador:{}",File.separator);
+					logger.info("archivo:{}",archivo.getNombre());
+
 					String rutaCompleta = dirPath + File.separator + archivo.getNombre();
+
+					logger.info("rutaCompleta:{}",rutaCompleta);
 					File file = new File(rutaCompleta);
+
+					logger.info("file:{}",file);
 
 					FileUtils.writeByteArrayToFile(file, contenido);
 					files.add(file);

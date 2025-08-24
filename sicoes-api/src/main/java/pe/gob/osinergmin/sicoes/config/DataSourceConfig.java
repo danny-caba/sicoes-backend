@@ -21,8 +21,8 @@ import pe.gob.osinergmin.sicoes.service.impl.SolicitudServiceImpl;
 
 @Configuration
 //@PropertySource("file:D:/SICOES/data/sicoes/sicoes-api.properties")
-@PropertySource("file:/data/sicoes/sicoes-api.properties")
-//@PropertySource("file:C:/Contratos/sicoes-api.properties")
+//@PropertySource("file:/data/sicoes/sicoes-api.properties")
+@PropertySource("file:C:/Contratos/sicoes-api.properties")
 //@PropertySource("classpath:application.properties")
 //@PropertySource("file:C:/sicoes/sicoes/sicoes-api.properties")
 //@EnableTransactionManagement

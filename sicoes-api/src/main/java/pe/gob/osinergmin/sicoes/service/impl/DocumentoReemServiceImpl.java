@@ -93,6 +93,7 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
         archivo.setEstado(estadoLd);
 
         archivo.setNombreReal(originalFileName);
+        archivo.setNombre(originalFileName);
         archivo.setCodigo(uniqueCode);
         archivo.setTipo(file.getContentType());
         archivo.setPeso(file.getSize());
