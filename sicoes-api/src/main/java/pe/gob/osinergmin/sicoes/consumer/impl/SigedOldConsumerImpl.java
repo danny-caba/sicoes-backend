@@ -361,6 +361,8 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		Long idArchivo = null;
 		Long idDocumento = null;
 
+		IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = new IdsDocumentoArchivoDTO();
+
 
 		try {
 			RestTemplate restTemplate = new RestTemplate();
@@ -440,11 +442,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			logger.error("Invoking of web service " + url + " of siged was failed", ex);
 			throw ex;
 		}
-
+		idsDocumentoArchivoDTO.setIdArchivo(idArchivo);
+		idsDocumentoArchivoDTO.setIdDocumento(idDocumento);
 		logger.info("obtenerIdArchivo fin...");
-
-		return null;
-		//return idArchivo;
+		return idsDocumentoArchivoDTO;
 	}
 
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital() {
