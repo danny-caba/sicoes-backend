@@ -8,6 +8,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 public interface RequerimientoRenovacionService  {
 
 	public RequerimientoRenovacion guardar(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto)throws Exception;
-	public Page<RequerimientoRenovacion> buscar(String requerimientoRenovacion, Pageable pageable, Contexto contexto);
+	public Page<RequerimientoRenovacion> buscar(String requerimientoRenovacion,String sector,String subSector, Pageable pageable, Contexto contexto);
 
 }

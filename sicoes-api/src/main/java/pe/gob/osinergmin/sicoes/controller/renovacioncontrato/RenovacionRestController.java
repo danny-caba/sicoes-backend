@@ -20,9 +20,13 @@ public class RenovacionRestController extends BaseRestController {
     RequerimientoRenovacionService requerimientoRenovacionService;
 
     @GetMapping("/requerimientos")
-    public Page<RequerimientoRenovacion> buscar(@RequestParam(defaultValue = "") String numeroExpediente, Pageable pageable) {
-        logger.info("buscar {} ", numeroExpediente);
-        return requerimientoRenovacionService.buscar(numeroExpediente,pageable,getContexto());
+    public Page<RequerimientoRenovacion> buscar(
+            @RequestParam(required = false) String numeroExpediente,
+            @RequestParam(required = false) String sector,
+            @RequestParam(required = false) String subSector,
+            Pageable pageable) {
+        logger.info("buscar {} {} {}", numeroExpediente,sector,subSector);
+        return requerimientoRenovacionService.buscar(numeroExpediente,sector,subSector,pageable,getContexto());
     }
 
 	@PostMapping("/requerimiento")

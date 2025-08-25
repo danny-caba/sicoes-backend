@@ -18,7 +18,17 @@ import java.util.List;
 @Repository
 public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoRenovacion, Long> {
 
-    Page<RequerimientoRenovacion> findByNuExpedienteContains(String nuExpediente, Pageable pageable);
+    @Query("SELECT r FROM RequerimientoRenovacion r " +
+            "WHERE r.esRegistro = '1' " +
+            "AND (:numeroExpediente IS NULL OR r.nuExpediente LIKE %:numeroExpediente%) " +
+            "AND (:tipoSector IS NULL OR r.tiSector LIKE %:tipoSector%) " +
+            "AND (:tipoSubSector IS NULL OR r.tiSubSector LIKE %:tipoSubSector%) " +
+            "ORDER BY r.fecCreacion DESC")
+    Page<RequerimientoRenovacion> findByNuExpedienteContains(
+            @Param("numeroExpediente") String numeroExpediente,
+            @Param("tipoSector") String tipoSector,
+            @Param("tipoSubSector") String tipoSubSector,
+            Pageable pageable);
 
 
     @Query("SELECT r FROM RequerimientoRenovacion r WHERE r.esRegistro = '1' ORDER BY r.fecCreacion DESC")

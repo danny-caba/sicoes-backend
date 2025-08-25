@@ -76,12 +76,8 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 	Logger logger = LogManager.getLogger(RequerimientoRenovacionServiceImpl.class);
 
 	@Override
-	public Page<RequerimientoRenovacion> buscar(String numeroExpediente, Pageable pageable, Contexto contexto) {
-		if(Strings.isBlank(numeroExpediente)) {
-			return requerimientoRenovacionDao.findAll(pageable);
-		}else{
-			return requerimientoRenovacionDao.findByNuExpedienteContains(numeroExpediente,pageable);
-		}
+	public Page<RequerimientoRenovacion> buscar(String numeroExpediente,String sector,String subSector, Pageable pageable, Contexto contexto) {
+		return requerimientoRenovacionDao.findByNuExpedienteContains(numeroExpediente,sector,subSector,pageable);
 	}
 
 	public RequerimientoRenovacion guardar(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto) throws Exception {
