@@ -6,5 +6,5 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionCreateRes
 import java.util.List;
 
 public interface InvitacionService {
-    public InvitacionCreateResponseDTO registrarInvitacion(InvitacionCreateRequestDTO requestDTO, List<String> log);
+    public InvitacionCreateResponseDTO registrarInvitacion(InvitacionCreateRequestDTO requestDTO);
 }

@@ -32,14 +32,14 @@ public class InvitacionRestController extends BaseRestController {
     public ResponseEntity<ApiResponse> registrarInvitacion(@RequestBody InvitacionCreateRequestDTO request) {
         logger.info("registrarInvitacion - Request: {}", request);
         ApiResponse apiResponse = new ApiResponse();
-        List<String> log=new ArrayList<>();
+
         try {
-            InvitacionCreateResponseDTO response=invitacionService.registrarInvitacion(request,log);
+            InvitacionCreateResponseDTO response=invitacionService.registrarInvitacion(request);
             return ResponseBuilder.buildResponse(apiResponse, "SUCCESS", 201, "Se encontro registro la Invitacion", HttpStatus.CREATED, Arrays.asList(Collections.singletonMap("invitacion", response)));
         } catch (DataNotFoundException ex) {
             return ResponseBuilder.buildErrorResponse(apiResponse, "NOT_FOUND", 404, ex.getMessage(), HttpStatus.CREATED);
         } catch (Exception e) {
-            return ResponseBuilder.buildErrorResponse(apiResponse, "ERROR", 508, "Service Unavailable:" + e.getMessage()+" - "+log.toString(), HttpStatus.OK);
+            return ResponseBuilder.buildErrorResponse(apiResponse, "ERROR", 508, "Service Unavailable:" + e.getMessage()+" - ", HttpStatus.OK);
         }
     }
 }

@@ -48,42 +48,42 @@ public class InvitacionImplService implements InvitacionService {
     @Autowired
     private ListadoDetalleDao listadoDetalleDao;
 
-    public InvitacionCreateResponseDTO registrarInvitacion(InvitacionCreateRequestDTO requestDTO,List<String> log) {
+    public InvitacionCreateResponseDTO registrarInvitacion(InvitacionCreateRequestDTO requestDTO) {
         if (requestDTO.getIdReqRenovacion() == null) {
             throw new DataNotFoundException("El campo idReqRenovacion es obligatorio");
         }
-        log.add("PASO 1");
+
 
         if (requestDTO.getUsuario() == null || requestDTO.getUsuario().trim().isEmpty()) {
             throw new DataNotFoundException("El campo usuario es obligatorio");
         }
-        log.add("PASO 2");
+
         if (requestDTO.getIp() == null || requestDTO.getIp().trim().isEmpty()) {
             throw new DataNotFoundException("El campo ip es obligatorio");
         }
-        log.add("PASO 3");
+
         List<PlazoConfirmacion> plazosConfirmacion = plazoConfirmacionDao.buscarPorEstado(EstadoRegistro.ACTIVO.getCodigo());
         if (plazosConfirmacion == null || plazosConfirmacion.isEmpty()) {
             throw new DataNotFoundException("No se encontró plazo de confirmación activo");
         }
-        log.add("PASO 4");
+
         PlazoConfirmacion plazoConfirmacion = plazosConfirmacion.get(0);
 
         RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.obtenerPorId(requestDTO.getIdReqRenovacion());
         if (requerimientoRenovacion == null) {
             throw new DataNotFoundException("No se encontró el requerimiento de renovación con ID: " + requestDTO.getIdReqRenovacion());
         }
-        log.add("PASO 5");
+
         SicoesSolicitud solicitud = requerimientoRenovacion.getSolicitudPerfil();
         if (solicitud == null) {
             throw new DataNotFoundException("No se encontró la solicitud asociada al requerimiento");
         }
-        log.add("PASO 6");
+
         Supervisora supervisora = solicitud.getSupervisora();
         if (supervisora == null) {
             throw new DataNotFoundException("No se encontró la supervisora asociada a la solicitud");
         }
-        log.add("PASO 7");
+
         Date fechaInvitacion = new Date();
         
         String tipoPlazo;
@@ -92,14 +92,14 @@ public class InvitacionImplService implements InvitacionService {
         } else {
             tipoPlazo = Constantes.DIAS_HABILES;
         }
-        log.add("PASO 8");
+
         Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, plazoConfirmacion.getNuDias().longValue(), tipoPlazo);
-        log.add("PASO 9");
+
         ListadoDetalle estadoInvitacion = listadoDetalleDao.obtenerListadoDetalle(
             Constantes.LISTADO.ESTADO_INVITACION.CODIGO, 
             EstadoInvitacion.INVITACION.getCodigo()
         );
-        log.add("PASO 10");
+
         RequerimientoInvitacion nuevaInvitacion = new RequerimientoInvitacion();
         nuevaInvitacion.setRequerimientoRenovacion(requerimientoRenovacion);
         nuevaInvitacion.setIdSupervisora(supervisora.getIdSupervisora());
@@ -113,7 +113,7 @@ public class InvitacionImplService implements InvitacionService {
         nuevaInvitacion.setIpCreacion(requestDTO.getIp());
 
         RequerimientoInvitacion invitacionGuardada = requerimientoInvitacionDao.save(nuevaInvitacion);
-        log.add("PASO 11");
+
         InvitacionCreateResponseDTO response = new InvitacionCreateResponseDTO();
         response.setIdReqInvitacion(invitacionGuardada.getIdReqInvitacion());
         response.setRequerimientoRenovacion(requerimientoRenovacion);
@@ -127,7 +127,7 @@ public class InvitacionImplService implements InvitacionService {
         response.setFlActivo(invitacionGuardada.getFlActivo());
         response.setCoUuid(invitacionGuardada.getCoUuid());
         response.setFeCancelado(invitacionGuardada.getFeCancelado());
-        log.add("PASO 12");
+
         return response;
     }
 }
