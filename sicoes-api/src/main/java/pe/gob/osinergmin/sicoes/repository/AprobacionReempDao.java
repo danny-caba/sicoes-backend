@@ -225,7 +225,7 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS GERENCIA  " +
 			 " ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-			 " ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 " ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
 			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
@@ -255,8 +255,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "             TIPO_APROB.ID AS TIPO_APROBACION,  " +
 		 "             TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 		 "             APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-		 "             APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-		 "             DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+		 "             ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+		 "             'ADENDA' AS INFORME,  " +
 		 "             APRE.DE_TP AS TP,  " +
 		 "             APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 		 "             CASE   " +
@@ -305,7 +305,7 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "         LEFT JOIN LISTADOS GERENCIA  " +
 		 "             ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 		 "         LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-		 "             ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+		 "             ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 		 "         WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
 		 "         AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
 		 "         AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
@@ -335,8 +335,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " TIPO_APROB.ID AS TIPO_APROBACION,  " +
 			 " TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 			 " APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-			 " APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-			 " DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+	         " ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+			 " 'ADENDA' AS INFORME,  " +
 			 " APRE.DE_TP AS TP,  " +
 			 " APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 			 " CASE   " +
@@ -385,7 +385,7 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS GERENCIA  " +
 			 " ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-			 " ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 " ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
 			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
@@ -419,8 +419,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "     TIPO_APROB.ID AS TIPO_APROBACION,  " +
 			 "     TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 			 "     APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-			 "     APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-			 "     DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+			 "     ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+			 "     'ADENDA' AS INFORME,  " +
 			 "     APRE.DE_TP AS TP,  " +
 			 "     APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 			 "     CASE   " +
@@ -465,7 +465,7 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS GER_LIN   " +
 			 "     ON APRE.ES_ESTADO_APROB_GERENTE_LINEA = GER_LIN.ID AND GER_LIN.CD_LISTADO = 'ESTADO_APROBACION'  " +
 			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-			 "     ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 "     ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))  " +
 			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))  " +
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud)) " +
