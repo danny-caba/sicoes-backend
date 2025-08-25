@@ -52,9 +52,10 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "     NULL AS ESTADO_VISTO_BUENO_GAF,  " +
 			 "     NULL AS ID_ESTADO_FIRMA_JEFE,  " +
 			 "     NULL AS ESTADO_FIRMA_JEFE,  " +
-			 "    NULL AS ID_ESTADO_FIRMA_GERENCIA,  " +
+			 "     NULL AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 "     NULL AS ESTADO_FIRMA_GERENCIA,  " +
-			 "    ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 "     NULL AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 " LEFT JOIN LISTADOS TIPO_APROB   " +
 			 "     ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION' " +
@@ -75,14 +76,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 			 "AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 			 "AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente)) " +
-			 "AND APRE.ID_ROL = 5 " +
+			 "AND APRE.ID_ROL = :param4 " +    //5
 			 "AND APRE.CO_TIPO_APROBACION = :param1 " +
 			 "AND APRE.ES_ESTADO_APROB  = :param2   " +
 			 "AND APRE.ES_ESTADO_APROB_GERENTE_DIV  =  :param3  " , nativeQuery = true)
 	public List<AprobacionReemp> buscarEvalInfAprobTecG2(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 
 		 @Query( value = "      WITH LISTADOS AS (   " +
@@ -126,9 +127,10 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 				 "      NULL AS ESTADO_VISTO_BUENO_GAF,   " +
 				 "      NULL AS ID_ESTADO_FIRMA_JEFE,   " +
 				 "      NULL AS ESTADO_FIRMA_JEFE,   " +
-				 "     NULL AS ID_ESTADO_FIRMA_GERENCIA,   " +
+				 "      NULL AS ID_ESTADO_FIRMA_GERENCIA,   " +
 				 "      NULL AS ESTADO_FIRMA_GERENCIA,   " +
-				 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO   " +
+				 "      ARCH.CO_ARCHIVO AS ID_ARCHIVO,   " +
+				 "      NULL AS ID_ADENDA  " +
 				 "  FROM SICOES_TZ_APROBACION_REEMP APRE   " +
 				 "  LEFT JOIN LISTADOS TIPO_APROB    " +
 				 "      ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -149,14 +151,14 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 				 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))    " +
 				 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))    " +
 				 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))  " +
-				 " AND APRE.ID_ROL = 5  " +
+				 " AND APRE.ID_ROL = :param4  " +   //5
 				 " AND APRE.CO_TIPO_APROBACION = :param1  " +
 				 " AND APRE.ES_ESTADO_APROB  = :param2     " +
 				 " AND APRE.ES_ESTADO_APROB_GERENTE_LINEA  =  :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarEvalInfAprobTecG3(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente,  @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 	 @Query( value = " WITH LISTADOS AS (  " +
 			 " SELECT   " +
@@ -201,7 +203,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
 			 " ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 " GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
-			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 " ADEN.ID_ADENDA AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 " LEFT JOIN LISTADOS TIPO_APROB   " +
 			 " ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -214,7 +217,7 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS EST_APROB   " +
 			 " ON APRE.ES_ESTADO_APROB = EST_APROB.ID AND EST_APROB.CD_LISTADO = 'ESTADO_APROBACION'  " +
 			 " LEFT JOIN LISTADOS LOGISTICA   " +
-			 " ON ADEN.CO_ESTADO_APR_LOGISTICA = LOGISTICA.ID AND LOGISTICA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'  " +
+			 " ON ADEN.CO_ESTADO_APR_LOGISTICA = LOGISTICA.ID AND LOGISTICA.CD_LISTADO = 'ESTADO_APROBACION'  " +
 			 " LEFT JOIN LISTADOS VB_GAF   " +
 			 " ON ADEN.CO_ESTADO_VB_GAF = VB_GAF.ID AND VB_GAF.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 			 " LEFT JOIN LISTADOS JEFE   " +
@@ -222,20 +225,20 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS GERENCIA  " +
 			 " ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-			 " ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 " ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
 			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
-			 " AND APRE.ID_ROL = 12  " +
+			 " AND APRE.ID_ROL = :param4  " +  //12
 			 " AND APRE.CO_TIPO_APROBACION = :param1  " +
 			 " AND APRE.ES_ESTADO_APROB  = :param2      " +
 			 " AND ADEN.CO_ESTADO_APR_LOGISTICA =  :param3 " , nativeQuery = true)  //ASIGNADO
 	public List<AprobacionReemp> buscarAprobEvalRolContr(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 	 @Query( value =  " WITH LISTADOS AS (  " +
 		 "             SELECT   " +
@@ -252,8 +255,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "             TIPO_APROB.ID AS TIPO_APROBACION,  " +
 		 "             TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 		 "             APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-		 "             APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-		 "             DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+		 "             ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+		 "             'ADENDA' AS INFORME,  " +
 		 "             APRE.DE_TP AS TP,  " +
 		 "             APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 		 "             CASE   " +
@@ -280,7 +283,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "             JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
 		 "             ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
 		 "             GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
-		 "             ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+		 "             ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+		 "             ADEN.ID_ADENDA AS ID_ADENDA  " +
 		 "         FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 		 "         LEFT JOIN LISTADOS TIPO_APROB   " +
 		 "             ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -301,20 +305,20 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 		 "         LEFT JOIN LISTADOS GERENCIA  " +
 		 "             ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 		 "         LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-		 "             ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+		 "             ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 		 "         WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
 		 "         AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
 		 "         AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 		 "         AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 		 "         AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
-		 "         AND APRE.ID_ROL = 18  " +
+		 "         AND APRE.ID_ROL = :param4 " +   //18
 		 "         AND APRE.CO_TIPO_APROBACION = :param1    " +
 		 "         AND APRE.ES_ESTADO_APROB  = :param2      " +
 		 "         AND ADEN.CO_ESTADO_VB_GAF =  :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarVBAprobG2Admin(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 	 @Query( value =   "  WITH LISTADOS AS (  " +
 			 " SELECT   " +
@@ -331,8 +335,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " TIPO_APROB.ID AS TIPO_APROBACION,  " +
 			 " TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 			 " APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-			 " APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-			 " DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+	         " ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+			 " 'ADENDA' AS INFORME,  " +
 			 " APRE.DE_TP AS TP,  " +
 			 " APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 			 " CASE   " +
@@ -359,7 +363,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " JEFE.VALOR AS ESTADO_FIRMA_JEFE,  " +
 			 " ADEN.CO_ESTADO_FIRMA_GERENCIA AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 " GERENCIA.VALOR AS ESTADO_FIRMA_GERENCIA,  " +
-			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 " ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 " ADEN.ID_ADENDA AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 "LEFT JOIN SICOES_TZ_DOCUMENTO_REEMP DORE   " +
 			 " ON APRE.ID_DOCUMENTO = DORE.ID_DOCUMENTO " +
@@ -380,20 +385,20 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS GERENCIA  " +
 			 " ON ADEN.CO_ESTADO_FIRMA_GERENCIA = GERENCIA.ID AND GERENCIA.CD_LISTADO = 'ESTADO_ADENDA_REEMP'   " +
 			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-			 " ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 " ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))   " +
 			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))   " +
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud))   " +
 			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))   " +
 			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))   " +
-			 " AND APRE.ID_ROL = 17  " +
+			 " AND APRE.ID_ROL = :param4  " +  //17
 			 " AND APRE.CO_TIPO_APROBACION = :param1    " +
 			 " AND APRE.ES_ESTADO_APROB  = :param2      " +
 			 " AND ADEN.CO_ESTADO_FIRMA_JEFE = :param3", nativeQuery = true)
 	public List<AprobacionReemp> buscarFirmarAprobG3Admin(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 
 
 
@@ -414,8 +419,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "     TIPO_APROB.ID AS TIPO_APROBACION,  " +
 			 "     TIPO_APROB.VALOR AS NOM_TIPO_APROBACION,  " +
 			 "     APRE.NU_NUMERO_EXPEDIENTE AS NUMERO_EXPEDIENTE,  " +
-			 "     APRE.ID_DOCUMENTO AS ID_INFORME,  " +
-			 "     DORE.DE_NOMBRE_DOCUMENTO AS INFORME,  " +
+			 "     ADEN.ID_DOCUMENTO AS ID_INFORME,  " +
+			 "     'ADENDA' AS INFORME,  " +
 			 "     APRE.DE_TP AS TP,  " +
 			 "     APRE.ID_CONTRATISTA AS ID_CONTRATISTA,  " +
 			 "     CASE   " +
@@ -442,7 +447,8 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 "     NULL AS ESTADO_FIRMA_JEFE,  " +
 			 "     NULL AS ID_ESTADO_FIRMA_GERENCIA,  " +
 			 "     NULL AS ESTADO_FIRMA_GERENCIA,  " +
-			 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO  " +
+			 "     ARCH.CO_ARCHIVO AS ID_ARCHIVO,  " +
+			 "     ADEN.ID_ADENDA AS ID_ADENDA  " +
 			 " FROM SICOES_TZ_APROBACION_REEMP APRE  " +
 			 " LEFT JOIN LISTADOS TIPO_APROB   " +
 			 "     ON APRE.CO_TIPO_APROBACION = TIPO_APROB.ID AND TIPO_APROB.CD_LISTADO = 'TIPO_APROBACION'  " +
@@ -459,18 +465,18 @@ public interface AprobacionReempDao extends JpaRepository<AprobacionReemp, Long>
 			 " LEFT JOIN LISTADOS GER_LIN   " +
 			 "     ON APRE.ES_ESTADO_APROB_GERENTE_LINEA = GER_LIN.ID AND GER_LIN.CD_LISTADO = 'ESTADO_APROBACION'  " +
 			 " LEFT JOIN SICOES_TR_ARCHIVO ARCH  " +
-			 "     ON DORE.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
+			 "     ON ADEN.ID_DOCUMENTO = ARCH.ID_DOCUMENTO_REEMPLAZO  " +
 			 " WHERE  (:tipoaprob IS NULL OR APRE.CO_TIPO_APROBACION = TO_NUMBER(:tipoaprob))  " +
 			 " AND  (:estadoaprob IS NULL OR APRE.ES_ESTADO_APROB = TO_NUMBER(:estadoaprob))  " +
 			 " AND  (:tiposolicitud IS NULL OR APRE.CO_TIPO_SOLICITUD = TO_NUMBER(:tiposolicitud)) " +
 			 " AND  (:idcontratista IS NULL OR APRE.ID_CONTRATISTA = TO_NUMBER(:idcontratista))  " +
 			 " AND  (:numexpediente IS NULL OR APRE.NU_NUMERO_EXPEDIENTE = TO_NUMBER(:numexpediente))  " +
-			 " AND APRE.ID_ROL = 16  " +
+			 " AND APRE.ID_ROL = :param4  " +  //16
 			 " AND APRE.CO_TIPO_APROBACION = :param1  " +
 			 " AND APRE.ES_ESTADO_APROB  = :param2   " +
 			 " AND ADEN.CO_ESTADO_FIRMA_GERENCIA = :param3 " , nativeQuery = true)
 	public List<AprobacionReemp> buscarAprobG4AdmGAF(@Param("tipoaprob") Long tipoaprob ,  @Param("estadoaprob") Long estadoaprob,
 												  @Param("tiposolicitud")Long tiposolicitud,  @Param("idcontratista")Long idcontratista,
 												  @Param("numexpediente") Long numexpediente, @Param("param1") Long param1,
-	                                              @Param("param2") Long param2, @Param("param3") Long param3);
+	                                              @Param("param2") Long param2, @Param("param3") Long param3, @Param("param4") Long param4);
 }

@@ -40,8 +40,9 @@ public class EvaluarDocuReemplazo extends BaseModel implements Serializable {
     @Column(name = "DE_OBSERVACION", length = 4000)
     private String observacion;
 
-    @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
+
     @Column(name = "FE_FECHA_EVALUACION")
     private Date fechaEvaluacion;
 

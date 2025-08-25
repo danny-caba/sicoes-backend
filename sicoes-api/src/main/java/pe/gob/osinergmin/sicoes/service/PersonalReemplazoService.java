@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service;
 
+import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.*;
@@ -9,6 +10,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 
@@ -28,7 +30,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo, Contexto contexto);
     PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto);
     List<Combo> listarContratistas(String codigo);
-    List<AprobacionReemp> buscarAprobacion(String requerimeinto, Long tipoaprob , Long estadoaprob, Long tiposolicitud, Long idcontratista, Long numexpediente);
+    List<AprobacionReemp> buscarAprobacion(String requerimiento, String corol, Long tipoaprob , Long estadoaprob, Long tiposolicitud, Long idcontratista, Long numexpediente);
     Aprobacion updateAprobacion(AprobacionDTO aprobacion,Contexto contexto) ;
     EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol);
     EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol);
@@ -36,7 +38,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
     GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto);
     PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto);
-    GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto);
+    PersonalReemplazo registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto);
     Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable );
     EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(Long id);
     List<DocumentoInicioServ> obtenerDocumentosInicioServicio( Long id, String seccion);
@@ -46,6 +48,5 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion);
     PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo, Boolean conforme, Contexto contexto);
     PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto);
-
-
+    ExpedienteInRO crearExpedienteAgregarDocumentos(SicoesSolicitud solicitud, Contexto contexto);
 }

@@ -16,6 +16,7 @@ import pe.gob.osinergmin.sicoes.util.Raml;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -114,9 +115,10 @@ public class PersonalReemplazoRestController extends BaseRestController {
         return personalReemplazoService.listarContratistas(filtro);
     }
 
-    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/{requerimiento}")
+    @GetMapping("/interno/reemplazo/solicitud/aprobaciones/{requerimiento}/{corol}")
     public List<AprobacionReemp> buscarAprobacion(
             @PathVariable String requerimiento,
+            @PathVariable String corol,
             @RequestParam(required = false) Long tipoaprob,
             @RequestParam(required = false) Long estadoaprob,
             @RequestParam(required = false) Long tiposolicitud,
@@ -125,7 +127,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
         logger.info("buscar aprobaciones");
 
-        return personalReemplazoService.buscarAprobacion( requerimiento, tipoaprob, estadoaprob, tiposolicitud,  idcontratista, numexpediente
+        return personalReemplazoService.buscarAprobacion( requerimiento, corol, tipoaprob, estadoaprob, tiposolicitud,  idcontratista, numexpediente
         );
     }
 
@@ -144,7 +146,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PostMapping("/reemplazo/solicitud/registra/propuesto/revision")
     @Raml("generic.response.properties")
-    public GenericResponseDTO<String> registroRevisarDocumentacion(
+    public PersonalReemplazo registroRevisarDocumentacion(
             @RequestBody RegistrarRevDocumentosRequestDTO request){
         logger.info(" Request {}", request);
         return personalReemplazoService.registrarRevDocumentos(request, getContexto());

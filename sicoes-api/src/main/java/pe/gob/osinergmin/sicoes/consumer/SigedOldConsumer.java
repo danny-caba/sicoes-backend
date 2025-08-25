@@ -4,6 +4,7 @@ import java.util.List;
 
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Ubigeo;
+import pe.gob.osinergmin.sicoes.model.dto.IdsDocumentoArchivoDTO;
 import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
 public interface SigedOldConsumer {
@@ -19,6 +20,10 @@ public interface SigedOldConsumer {
 	public List<Ubigeo> distritos(String codigoProvincia);
 	
 	public Long obtenerIdArchivos(String numeroExpediente, String nombreUsuario) throws Exception;
-	
+
+	IdsDocumentoArchivoDTO obtenerIdArchivo(String numeroExpediente,
+											String nombreUsuario,
+											String nombreArchivo) throws Exception;
+
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital();
 }

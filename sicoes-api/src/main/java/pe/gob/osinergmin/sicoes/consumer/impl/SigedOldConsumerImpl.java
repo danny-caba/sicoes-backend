@@ -37,6 +37,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Ubigeo;
+import pe.gob.osinergmin.sicoes.model.dto.IdsDocumentoArchivoDTO;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.bean.AlfrescoFileOut;
@@ -349,7 +350,104 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		
 		return idArchivo;
 	}
-	
+
+	@Override
+	public IdsDocumentoArchivoDTO obtenerIdArchivo(String numeroExpediente,
+												   String nombreUsuario,
+												   String nombreArchivo) throws Exception {
+		logger.info("obtenerIdArchivo reemplazo..");
+
+		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + numeroExpediente + "/1";
+		Long idArchivo = null;
+		Long idDocumento = null;
+
+		IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = new IdsDocumentoArchivoDTO();
+
+
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			logger.info("url reemplazo [{}].", url);
+
+			String response = restTemplate.getForObject(url, String.class);
+			logger.info("response {}",response);
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(false);
+			dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+			DocumentBuilder db = dbf.newDocumentBuilder();
+            assert response != null;
+            org.w3c.dom.Document xml = db.parse(new org.xml.sax.InputSource(new java.io.StringReader(response)));
+
+			javax.xml.xpath.XPath xp = javax.xml.xpath.XPathFactory.newInstance().newXPath();
+			org.w3c.dom.NodeList archivos = (org.w3c.dom.NodeList)
+					xp.evaluate("//documento/archivos/archivo", xml, javax.xml.xpath.XPathConstants.NODESET);
+
+			org.w3c.dom.Node mejorArchivo = null;
+			java.time.OffsetDateTime mejorFecha = null;
+
+			for (int i = 0; i < archivos.getLength(); i++) {
+				org.w3c.dom.Node a = archivos.item(i);
+
+				String nombre = xp.evaluate("nombre", a);
+				if (nombre == null) continue;
+				nombre = nombre.trim();
+				if (nombre.isEmpty() || "null".equalsIgnoreCase(nombre)) continue;
+
+				if (!nombre.equalsIgnoreCase(nombreArchivo)) continue;
+
+				String fstr = xp.evaluate("fechaCreacion", a);
+				java.time.OffsetDateTime f = null;
+				try { f = java.time.OffsetDateTime.parse(fstr); } catch (Exception ignore) {}
+
+				if (mejorArchivo == null || (f != null && (mejorFecha == null || f.isAfter(mejorFecha)))) {
+					mejorArchivo = a;
+					mejorFecha = f;
+				}
+			}
+
+			if (mejorArchivo != null) {
+				// idArchivo
+				String idArchStr = xp.evaluate("idArchivo", mejorArchivo);
+				if (idArchStr != null) {
+					idArchStr = idArchStr.trim();
+					if (!idArchStr.isEmpty()) {
+						idArchivo = Long.parseLong(idArchStr);
+					}
+				}
+
+				// documento padre -> idDocumento
+				org.w3c.dom.Node docPadre = (org.w3c.dom.Node)
+						xp.evaluate("ancestor::documento[1]", mejorArchivo, javax.xml.xpath.XPathConstants.NODE);
+				if (docPadre != null) {
+					String idDocStr = xp.evaluate("idDocumento", docPadre);
+					if (idDocStr != null) {
+						idDocStr = idDocStr.trim();
+						if (!idDocStr.isEmpty()) {
+							idDocumento = Long.parseLong(idDocStr);
+						}
+					}
+				}
+			}
+
+			logger.info("idArchivo: {}", idArchivo);
+			logger.info("idDocumento: {}", idDocumento);
+		}
+		catch (HttpClientErrorException ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
+		}
+		catch (Exception ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw ex;
+		}
+		idsDocumentoArchivoDTO.setIdArchivo(idArchivo);
+		idsDocumentoArchivoDTO.setIdDocumento(idDocumento);
+		logger.info("obtenerIdArchivo fin...");
+		return idsDocumentoArchivoDTO;
+	}
+
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital() {
 		
 		AccessRequestInFirmaDigital parametros = new AccessRequestInFirmaDigital();
