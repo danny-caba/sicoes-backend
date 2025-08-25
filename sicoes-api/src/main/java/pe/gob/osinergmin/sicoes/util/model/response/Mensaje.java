@@ -3,6 +3,9 @@ package pe.gob.osinergmin.sicoes.util.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
@@ -11,7 +14,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @project sicoes-api
  * @date 15/08/2025
  **/
-
+@AllArgsConstructor
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Mensaje {
     /**
@@ -32,27 +37,5 @@ public class Mensaje {
     @JsonProperty("message")
     String message;
 
-    public String getCodigo() {
-        return codigo;
-    }
 
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }
