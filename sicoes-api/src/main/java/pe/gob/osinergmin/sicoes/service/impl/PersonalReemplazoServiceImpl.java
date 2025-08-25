@@ -866,7 +866,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazo, contexto);
             reemplazoDao.save(personalReemplazo);
 
-            Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo)
+            Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo.getIdReemplazo())
                     .orElseThrow(() -> new RuntimeException("Aprobacion no encontrada"));
             aprobacion.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_APROBACION.CODIGO,

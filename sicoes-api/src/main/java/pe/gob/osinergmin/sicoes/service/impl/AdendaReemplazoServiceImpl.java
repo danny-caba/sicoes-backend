@@ -132,7 +132,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         ListadoDetalle estadoAsignadoAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignadoAdenda);
 
         //Buscar Aprobacion
-        Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo)
+        Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo.getIdReemplazo())
                 .orElseThrow(()-> new ValidacionException(Constantes.CODIGO_MENSAJE.APROB_REEMPLAZO_NO_EXISTE));
         Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
         aprobacion.setIdRol(rolUsuarioInterno.getIdRol());
