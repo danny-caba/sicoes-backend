@@ -1428,6 +1428,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));  //desaprobado
                aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
                persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));  //preliminar
+
+                Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_TECNICO);
+                aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
+
            }
            persoReempFinal.setFecActualizacion(new Date());
            AuditoriaUtil.setAuditoriaRegistro(persoReempFinal,contexto);
@@ -1459,6 +1463,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));  //desaprobado
                aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO)); //desaprobado
                persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar
+
+                Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.RESPONSABLE_TECNICO);
+                aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
            }
            persoReempFinal.setFecActualizacion(new Date());
            AuditoriaUtil.setAuditoriaRegistro(persoReempFinal,contexto);
@@ -1515,6 +1522,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             }else{
                 aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //desaprobado
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO)); //rechazado
+
+                 Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
+                aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
             }
             adendaFinal.setFecActualizacion(new Date());
             AuditoriaUtil.setAuditoriaRegistro(adendaFinal,contexto);
