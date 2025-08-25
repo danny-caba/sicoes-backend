@@ -3,6 +3,9 @@ package pe.gob.osinergmin.sicoes.util.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 
 import java.util.List;
@@ -15,6 +18,9 @@ import java.util.Map;
  * @date 15/08/2025
  **/
 
+@AllArgsConstructor
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponseMeta {
 
@@ -48,44 +54,5 @@ public class ApiResponseMeta {
     @JsonProperty("atributos")
     private Map<String, Object> atributos;
 
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
-
-    public Integer getCantidadRegistros() {
-        return cantidadRegistros;
-    }
-
-    public void setCantidadRegistros(Integer cantidadRegistros) {
-        this.cantidadRegistros = cantidadRegistros;
-    }
-
-    public Integer getCantidadRegistrosTotal() {
-        return cantidadRegistrosTotal;
-    }
-
-    public void setCantidadRegistrosTotal(Integer cantidadRegistrosTotal) {
-        this.cantidadRegistrosTotal = cantidadRegistrosTotal;
-    }
-
-    public List<Mensaje> getMensajes() {
-        return mensajes;
-    }
-
-    public void setMensajes(List<Mensaje> mensajes) {
-        this.mensajes = mensajes;
-    }
-
-    public Map<String, Object> getAtributos() {
-        return atributos;
-    }
-
-    public void setAtributos(Map<String, Object> atributos) {
-        this.atributos = atributos;
-    }
 }
 

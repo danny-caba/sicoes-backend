@@ -12,7 +12,7 @@ import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.PlazoConfirmacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoInvitacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
-import pe.gob.osinergmin.sicoes.util.ValidacionException;
+import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
@@ -24,6 +24,7 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionCreateReq
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionCreateResponseDTO;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InvitacionService;
 import pe.gob.osinergmin.sicoes.util.Constantes;
+import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.util.renovacioncontrato.EstadoInvitacion;
 import pe.gob.osinergmin.sicoes.util.renovacioncontrato.EstadoRegistro;
 import pe.gob.osinergmin.sicoes.util.renovacioncontrato.TipoDia;
@@ -49,36 +50,38 @@ public class InvitacionImplService implements InvitacionService {
 
     public InvitacionCreateResponseDTO registrarInvitacion(InvitacionCreateRequestDTO requestDTO) {
         if (requestDTO.getIdReqRenovacion() == null) {
-            throw new ValidacionException("El campo idReqRenovacion es obligatorio");
+            throw new DataNotFoundException("El campo idReqRenovacion es obligatorio");
         }
 
+
         if (requestDTO.getUsuario() == null || requestDTO.getUsuario().trim().isEmpty()) {
-            throw new ValidacionException("El campo usuario es obligatorio");
+            throw new DataNotFoundException("El campo usuario es obligatorio");
         }
 
         if (requestDTO.getIp() == null || requestDTO.getIp().trim().isEmpty()) {
-            throw new ValidacionException("El campo ip es obligatorio");
+            throw new DataNotFoundException("El campo ip es obligatorio");
         }
 
         List<PlazoConfirmacion> plazosConfirmacion = plazoConfirmacionDao.buscarPorEstado(EstadoRegistro.ACTIVO.getCodigo());
         if (plazosConfirmacion == null || plazosConfirmacion.isEmpty()) {
-            throw new ValidacionException("No se encontró plazo de confirmación activo");
+            throw new DataNotFoundException("No se encontró plazo de confirmación activo");
         }
+
         PlazoConfirmacion plazoConfirmacion = plazosConfirmacion.get(0);
 
         RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.obtenerPorId(requestDTO.getIdReqRenovacion());
         if (requerimientoRenovacion == null) {
-            throw new ValidacionException("No se encontró el requerimiento de renovación con ID: " + requestDTO.getIdReqRenovacion());
+            throw new DataNotFoundException("No se encontró el requerimiento de renovación con ID: " + requestDTO.getIdReqRenovacion());
         }
 
         SicoesSolicitud solicitud = requerimientoRenovacion.getSolicitudPerfil();
         if (solicitud == null) {
-            throw new ValidacionException("No se encontró la solicitud asociada al requerimiento");
+            throw new DataNotFoundException("No se encontró la solicitud asociada al requerimiento");
         }
 
         Supervisora supervisora = solicitud.getSupervisora();
         if (supervisora == null) {
-            throw new ValidacionException("No se encontró la supervisora asociada a la solicitud");
+            throw new DataNotFoundException("No se encontró la supervisora asociada a la solicitud");
         }
 
         Date fechaInvitacion = new Date();
