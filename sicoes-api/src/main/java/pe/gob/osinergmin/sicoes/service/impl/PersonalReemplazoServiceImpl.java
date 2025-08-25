@@ -868,6 +868,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
             Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo.getIdReemplazo())
                     .orElseThrow(() -> new RuntimeException("Aprobacion no encontrada"));
+            aprobacion.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
             aprobacion.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                     Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
