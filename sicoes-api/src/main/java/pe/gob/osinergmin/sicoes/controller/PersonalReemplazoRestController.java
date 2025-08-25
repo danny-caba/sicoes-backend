@@ -16,6 +16,7 @@ import pe.gob.osinergmin.sicoes.util.Raml;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -145,7 +146,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PostMapping("/reemplazo/solicitud/registra/propuesto/revision")
     @Raml("generic.response.properties")
-    public GenericResponseDTO<String> registroRevisarDocumentacion(
+    public PersonalReemplazo registroRevisarDocumentacion(
             @RequestBody RegistrarRevDocumentosRequestDTO request){
         logger.info(" Request {}", request);
         return personalReemplazoService.registrarRevDocumentos(request, getContexto());

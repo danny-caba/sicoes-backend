@@ -775,7 +775,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto) {
+    public PersonalReemplazo registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto) {
         PersonalReemplazo personalReemplazoToUpdate = reemplazoDao
                 .findById(request.getIdReemplazo())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -792,10 +792,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .filter(eval -> Constantes.ROLES.RESPONSABLE_TECNICO.equals(eval.getRol().getCodigo()))
                     .collect(Collectors.toList());
 
-            return GenericResponseDTO.<String>builder()
-                    .resultado(flujoRevisionResponsableTecnico(
-                            contexto, personalReemplazoToUpdate, evaluacionesResTecnico, listDocsAsociados))
-                    .build();
+            return flujoRevisionResponsableTecnico(contexto, personalReemplazoToUpdate, evaluacionesResTecnico, listDocsAsociados);
         } else {
 
             List<EvaluarDocuReemplazo> listEvalInforme = listDocsAsociados
@@ -814,14 +811,11 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     .filter(eval -> Constantes.ROLES.EVALUADOR_CONTRATOS.equals(eval.getRol().getCodigo()))
                     .collect(Collectors.toList());
 
-            return GenericResponseDTO.<String>builder()
-                    .resultado(flujoRevisionEvaluadorContratos(
-                            contexto, personalReemplazoToUpdate, listEvalInforme, listEvalPersPropuestoSolSuperv))
-                    .build();
+            return flujoRevisionEvaluadorContratos(contexto, personalReemplazoToUpdate, listEvalInforme, listEvalPersPropuestoSolSuperv);
         }
     }
 
-    private String flujoRevisionResponsableTecnico(Contexto contexto,
+    private PersonalReemplazo flujoRevisionResponsableTecnico(Contexto contexto,
                                                    PersonalReemplazo personalReemplazo,
                                                    List<EvaluarDocuReemplazo> listEvaluaciones,
                                                    List<DocumentoReemplazo> listDocsAsociados) {
@@ -835,7 +829,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
         }
         logger.info("tipoArchivo: {}", tipoArchivo);
-        generarArchivoSigedRegistrarRevDocumentos(personalReemplazo, tipoArchivo, contexto);
+        Archivo archivo = generarArchivoSigedRegistrarRevDocumentos(personalReemplazo, tipoArchivo, contexto);
         if (allDocsConforme) {
             ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
                             Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
@@ -901,7 +895,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
             }
-            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK;
+            return personalReemplazo;
         } else {
             ListadoDetalle estadoPreliminar = listadoDetalleDao.listarListadoDetallePorCoodigo(
                             Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
@@ -1002,11 +996,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
             }
-            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR;
+            personalReemplazo.setArchivo(archivo);
+            return personalReemplazo;
         }
     }
 
-    private void generarArchivoSigedRegistrarRevDocumentos(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
+    private Archivo generarArchivoSigedRegistrarRevDocumentos(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
         Archivo archivo = generarReporteRegistrarRevDocumentos(personalReemplazo, ArchivoUtil.obtenerNombreArchivo(tipoArchivo));
         archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
@@ -1016,6 +1011,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } else {
             adjuntarDocumentoSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
         }
+        return archivoDB;
     }
 
     private Archivo generarReporteRegistrarRevDocumentos(PersonalReemplazo personalReemplazo, String nombreArchivo) {
@@ -1096,7 +1092,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return archivo;
     }
 
-    private String flujoRevisionEvaluadorContratos(Contexto contexto,
+    private PersonalReemplazo flujoRevisionEvaluadorContratos(Contexto contexto,
                                                    PersonalReemplazo personalReemplazo,
                                                    List<EvaluarDocuReemplazo> listEvalInforme,
                                                    List<EvaluarDocuReemplazo> listEvalPersPropuestoSolSuperv) {
@@ -1128,7 +1124,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazo, contexto);
             reemplazoDao.save(personalReemplazo);
 
-            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.SUBSANAR;
+            return personalReemplazo;
 
         } else {
             ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
@@ -1140,7 +1136,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             personalReemplazo.setEstadoRevisarEval(estadoEnProceso);
             AuditoriaUtil.setAuditoriaActualizacion(personalReemplazo, contexto);
 
-            return Constantes.ESTADO_REVISION_DOCS_REEMPLAZO.OK;
+            return personalReemplazo;
         }
     }
 

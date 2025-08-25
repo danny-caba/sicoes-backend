@@ -10,6 +10,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 
@@ -37,7 +38,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
     GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto);
     PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto);
-    GenericResponseDTO<String> registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto);
+    PersonalReemplazo registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto);
     Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable );
     EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(Long id);
     List<DocumentoInicioServ> obtenerDocumentosInicioServicio( Long id, String seccion);
