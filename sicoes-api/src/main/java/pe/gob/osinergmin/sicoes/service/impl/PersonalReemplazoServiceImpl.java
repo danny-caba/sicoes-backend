@@ -151,6 +151,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Value("${finalizacion.evaluacion}")
     private String FINALIZACION_EVALUACION;
 
+    @Value("${carga.documentos}")
+    private String CARGA_DOCUMENTOS;
+
+    @Value("${evaluacion}")
+    private String EVALUACION;
+
     @Value("${path.temporal}")
     private String pathTemporal;
 
@@ -879,9 +885,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             aprobacionDao.save(aprobacion);
 
             if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO) || rol.getCodigo().equals(Constantes.ROLES.INVITADO) || rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
-                if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.RESPONSABLE_TECNICO))) {
-                    logger.info("GENPDF:Revisar la documentación (Rol Responsable Técnico)");
-                } else if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.INVITADO))) {
+                if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.INVITADO))) {
                     Optional<Usuario> evaluadorContratos = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS).stream()
                             .findFirst()
                             .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
@@ -891,8 +895,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     } else {
                         throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
                     }
-                } else if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.EVALUADOR_CONTRATOS))) {
-                    logger.info("GENPDF:Revisar Documentación (Rol Evaluador de Contratos)");
                 }
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
@@ -1174,7 +1176,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR).get(0));
         if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.USUARIO_EXTERNO))) {
-           logger.info("GENPDF:USUARIO EXTERNO - Registrar documentación inicio de servicio (Rol Empresa Supervisora)");
             //Integrar documentacion en la plataforma SIGED
             List<ListadoDetalle> detalleSeccion = listadoDetalleDao.listarListadoDetalle(Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL);
             List<Long> idsSeccion = detalleSeccion.stream()
@@ -1219,7 +1220,107 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
         }
+        ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+                Constantes.LISTADO.TIPO_ARCHIVO.CARGA_DOCUMENTOS);
+        if (tipoArchivo == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
+        }
+        logger.info("tipoArchivo: {}", tipoArchivo);
+        Archivo archivo = generarArchivoSigedRegistrarDocIniServ(existe, tipoArchivo, contexto);
+        existe.setArchivo(archivo);
         return reemplazoDao.save(existe);
+    }
+
+    private Archivo generarArchivoSigedRegistrarDocIniServ(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
+        Archivo archivo = generarReporteRegistrarDocIniServ(personalReemplazo, ArchivoUtil.obtenerNombreArchivo(tipoArchivo));
+        archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
+        archivo.setTipoArchivo(tipoArchivo);
+        Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
+        if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CARGA_DOCUMENTOS)) {
+            registrarExpedienteSiged(archivoDB, personalReemplazo, CARGA_DOCUMENTOS);
+        } else {
+            adjuntarDocumentoSiged(archivoDB, personalReemplazo, CARGA_DOCUMENTOS);
+        }
+        return archivoDB;
+    }
+
+    private Archivo generarReporteRegistrarDocIniServ(PersonalReemplazo personalReemplazo, String nombreArchivo) {
+        Archivo archivo = new Archivo();
+        archivo.setNombre(nombreArchivo);
+        archivo.setNombreReal(nombreArchivo);
+        archivo.setTipo("application/pdf");
+        ByteArrayOutputStream output;
+        JasperPrint print;
+        InputStream isLogoSicoes = null;
+        InputStream isLogoOsinergmin = null;
+        try {
+            File jrxml = new File(pathJasper + "Formato_04_Personal_Reemplazo.jrxml");
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("SUBREPORT_DIR", pathJasper);
+            isLogoSicoes = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
+            parameters.put("P_LOGO_SICOES", isLogoSicoes);
+            isLogoOsinergmin = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
+            parameters.put("P_LOGO_OSINERGMIN", isLogoOsinergmin);
+            parameters.put("P_TITULO", "CARGAR DOCUMENTOS DE INICIO DE SERVICIO");
+            parameters.put("P_INTRODUCCION", "La carga de documentos de inicio de servicio ha sido ingresada satisfactoriamente. A continuación, la lista de documentos cargados.");
+            parameters.put("P_SUBTITULO_1", "1. PERSONA JURÍDICA");
+            parameters.put("P_SUBTITULO_2", "2. DOCUMENTOS PRESENTADOS");
+            parameters.put("P_MOSTRAR_CABECERA_2", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_CABECERA_4", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_DETALLE_2", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_DETALLE_4", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_ADICIONAL_2", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_ADICIONAL_4", Boolean.TRUE);
+            Long idSolicitud = personalReemplazo.getIdSolicitud();
+            if (idSolicitud == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+            }
+            logger.info("idSolicitud: {}", idSolicitud);
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+            logger.info("sicoesSolicitud: {}",sicoesSolicitud);
+            String numeroExpediente = sicoesSolicitud.getNumeroExpediente();
+            if (numeroExpediente == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.NUMERO_EXPEDIENTE_NO_ENVIADO);
+            }
+            logger.info("numeroExpediente: {}", numeroExpediente);
+            personalReemplazo.setNumeroExpediente(numeroExpediente);
+            Supervisora supervisora = sicoesSolicitud.getSupervisora();
+            logger.info("supervisora: {}", supervisora);
+            personalReemplazo.setSupervisora(supervisora);
+            List<Archivo> archivos = new ArrayList<>();
+            Archivo archivoBD = new Archivo();
+            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
+            logger.info("tipoArchivo: {}", tipoArchivo);
+            archivoBD.setTipoArchivo(tipoArchivo);
+            archivos.add(archivoBD);
+            personalReemplazo.setArchivos(archivos);
+            List<Archivo> adicionales = new ArrayList<>();
+            Archivo adicionalBD = new Archivo();
+            ListadoDetalle tipoArchivoAdicional = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_ADICIONAL", "CONTRATO_ALQUILER_CAMIONETA");
+            logger.info("tipoArchivoAdicional: {}", tipoArchivoAdicional);
+            adicionalBD.setTipoArchivo(tipoArchivoAdicional);
+            adicionales.add(adicionalBD);
+            personalReemplazo.setAdicionales(adicionales);
+            List<PersonalReemplazo> personalesReemplazo = java.util.Collections.singletonList(personalReemplazo);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(personalesReemplazo, true);
+            JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
+            print = JasperFillManager.fillReport(jasperReport, parameters, ds);
+            output = new ByteArrayOutputStream();
+            JasperExportManager.exportReportToPdfStream(print, output);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SICOES_SOLICITUD_GUARDAR_FORMATO_04, e);
+        } finally {
+            archivoUtil.close(isLogoSicoes);
+            archivoUtil.close(isLogoOsinergmin);
+        }
+        byte[] bytesSalida = output.toByteArray();
+        archivo.setPeso((long) bytesSalida.length);
+        archivo.setNroFolio(1L);
+        archivo.setContenido(bytesSalida);
+        return archivo;
     }
 
     @Override
@@ -1708,29 +1809,227 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         Long idPerfContrato = existe.getIdSolicitud();
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
-
+        Archivo archivo;
+        if(conforme==null){
+            conforme = Boolean.FALSE;
+        }
         if(conforme){
-
             solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.CONCLUIDO);
             solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.CONCLUIDO);
             existe.setEstadoReemplazo(listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0));
             existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                     Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO).get(0));
+            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+                    Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION);
+            if (tipoArchivo == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
+            }
+            logger.info("tipoArchivo: {}", tipoArchivo);
+            archivo = generarArchivoSigedregistrarInicioServicioSolContrSI(existe, tipoArchivo, contexto);
         }else{
             solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.PRELIMINAR);
             solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.PRELIMINAR);
-
-            //La plataforma SICOES descargará en formato PDF el resultado de la revisión de documentos de inicio de servicio.
-
-            //La plataforma SICOES notificará mediante email al rol Empresa Supervisora que tiene que subsanar la carga de documentos de inicio de servicio.
-
+            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+                    Constantes.LISTADO.TIPO_ARCHIVO.EVALUACION);
+            if (tipoArchivo == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
+            }
+            logger.info("tipoArchivo: {}", tipoArchivo);
+            archivo = generarArchivoSigedregistrarInicioServicioSolContrNO(existe, tipoArchivo, contexto);
         }
-
+        existe.setArchivo(archivo);
         AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
         return reemplazoDao.save(existe);
     }
 
+    private Archivo generarArchivoSigedregistrarInicioServicioSolContrSI(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
+        Archivo archivo = generarReporteRegistrarInicioServicioSolContrSI(personalReemplazo, ArchivoUtil.obtenerNombreArchivo(tipoArchivo));
+        archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
+        archivo.setTipoArchivo(tipoArchivo);
+        Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
+        if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION)) {
+            registrarExpedienteSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
+        } else {
+            adjuntarDocumentoSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
+        }
+        return archivoDB;
+    }
+
+    private Archivo generarReporteRegistrarInicioServicioSolContrSI(PersonalReemplazo personalReemplazo, String nombreArchivo) {
+        Archivo archivo = new Archivo();
+        archivo.setNombre(nombreArchivo);
+        archivo.setNombreReal(nombreArchivo);
+        archivo.setTipo("application/pdf");
+        ByteArrayOutputStream output;
+        JasperPrint print;
+        InputStream isLogoSicoes = null;
+        InputStream isLogoOsinergmin = null;
+        try {
+            File jrxml = new File(pathJasper + "Formato_04_Personal_Reemplazo.jrxml");
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("SUBREPORT_DIR", pathJasper);
+            isLogoSicoes = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
+            parameters.put("P_LOGO_SICOES", isLogoSicoes);
+            isLogoOsinergmin = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
+            parameters.put("P_LOGO_OSINERGMIN", isLogoOsinergmin);
+            parameters.put("P_TITULO", "FINALIZACIÓN DE EVALUACIÓN DE DOCUMENTOS DE INICIO DE SERVICIO");
+            parameters.put("P_INTRODUCCION", "La evaluación de documentos de inicio de servicio finalizó.");
+            parameters.put("P_SUBTITULO_1", "3. PERSONA JURÍDICA");
+            parameters.put("P_SUBTITULO_2", "4. DOCUMENTOS PRESENTADOS");
+            parameters.put("P_MOSTRAR_CABECERA_2", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_CABECERA_4", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_DETALLE_2", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_DETALLE_4", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_ADICIONAL_2", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_ADICIONAL_4", Boolean.FALSE);
+            Long idSolicitud = personalReemplazo.getIdSolicitud();
+            if (idSolicitud == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+            }
+            logger.info("idSolicitud: {}", idSolicitud);
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+            logger.info("sicoesSolicitud: {}",sicoesSolicitud);
+            String numeroExpediente = sicoesSolicitud.getNumeroExpediente();
+            if (numeroExpediente == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.NUMERO_EXPEDIENTE_NO_ENVIADO);
+            }
+            logger.info("numeroExpediente: {}", numeroExpediente);
+            personalReemplazo.setNumeroExpediente(numeroExpediente);
+            Supervisora supervisora = sicoesSolicitud.getSupervisora();
+            logger.info("supervisora: {}", supervisora);
+            personalReemplazo.setSupervisora(supervisora);
+            List<Archivo> archivos = new ArrayList<>();
+            Archivo archivoBD = new Archivo();
+            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
+            logger.info("tipoArchivo: {}", tipoArchivo);
+            archivoBD.setTipoArchivo(tipoArchivo);
+            archivoBD.setConforme("Conforme: Sí");
+            archivos.add(archivoBD);
+            personalReemplazo.setArchivos(archivos);
+            List<Archivo> adicionales = new ArrayList<>();
+            Archivo adicionalBD = new Archivo();
+            ListadoDetalle tipoArchivoAdicional = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_ADICIONAL", "CONTRATO_ALQUILER_CAMIONETA");
+            logger.info("tipoArchivoAdicional: {}", tipoArchivoAdicional);
+            adicionalBD.setTipoArchivo(tipoArchivoAdicional);
+            adicionalBD.setConforme("Conforme: Sí");
+            adicionales.add(adicionalBD);
+            personalReemplazo.setAdicionales(adicionales);
+            List<PersonalReemplazo> personalesReemplazo = java.util.Collections.singletonList(personalReemplazo);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(personalesReemplazo, true);
+            JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
+            print = JasperFillManager.fillReport(jasperReport, parameters, ds);
+            output = new ByteArrayOutputStream();
+            JasperExportManager.exportReportToPdfStream(print, output);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SICOES_SOLICITUD_GUARDAR_FORMATO_04, e);
+        } finally {
+            archivoUtil.close(isLogoSicoes);
+            archivoUtil.close(isLogoOsinergmin);
+        }
+        byte[] bytesSalida = output.toByteArray();
+        archivo.setPeso((long) bytesSalida.length);
+        archivo.setNroFolio(1L);
+        archivo.setContenido(bytesSalida);
+        return archivo;
+    }
+
+    private Archivo generarArchivoSigedregistrarInicioServicioSolContrNO(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
+        Archivo archivo = generarReporteRegistrarInicioServicioSolContrNO(personalReemplazo, ArchivoUtil.obtenerNombreArchivo(tipoArchivo));
+        archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
+        archivo.setTipoArchivo(tipoArchivo);
+        Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
+        if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.EVALUACION)) {
+            registrarExpedienteSiged(archivoDB, personalReemplazo, EVALUACION);
+        } else {
+            adjuntarDocumentoSiged(archivoDB, personalReemplazo, EVALUACION);
+        }
+        return archivoDB;
+    }
+
+    private Archivo generarReporteRegistrarInicioServicioSolContrNO(PersonalReemplazo personalReemplazo, String nombreArchivo) {
+        Archivo archivo = new Archivo();
+        archivo.setNombre(nombreArchivo);
+        archivo.setNombreReal(nombreArchivo);
+        archivo.setTipo("application/pdf");
+        ByteArrayOutputStream output;
+        JasperPrint print;
+        InputStream isLogoSicoes = null;
+        InputStream isLogoOsinergmin = null;
+        try {
+            File jrxml = new File(pathJasper + "Formato_04_Personal_Reemplazo.jrxml");
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("SUBREPORT_DIR", pathJasper);
+            isLogoSicoes = Files.newInputStream(Paths.get(pathJasper + "logo-sicoes.png"));
+            parameters.put("P_LOGO_SICOES", isLogoSicoes);
+            isLogoOsinergmin = Files.newInputStream(Paths.get(pathJasper + "logo-osinerming.png"));
+            parameters.put("P_LOGO_OSINERGMIN", isLogoOsinergmin);
+            parameters.put("P_TITULO", "EVALUACIÓN DE DOCUMENTOS DE INICIO DE SERVICIO");
+            parameters.put("P_INTRODUCCION", "La evaluación de documentos de inicio de servicio finalizó con el siguiente resultado.");
+            parameters.put("P_SUBTITULO_1", "3. PERSONA JURÍDICA");
+            parameters.put("P_SUBTITULO_2", "4. DOCUMENTOS PRESENTADOS");
+            parameters.put("P_MOSTRAR_CABECERA_2", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_CABECERA_4", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_DETALLE_2", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_DETALLE_4", Boolean.FALSE);
+            parameters.put("P_MOSTRAR_ADICIONAL_2", Boolean.TRUE);
+            parameters.put("P_MOSTRAR_ADICIONAL_4", Boolean.FALSE);
+            Long idSolicitud = personalReemplazo.getIdSolicitud();
+            if (idSolicitud == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+            }
+            logger.info("idSolicitud: {}", idSolicitud);
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                    .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+            logger.info("sicoesSolicitud: {}",sicoesSolicitud);
+            String numeroExpediente = sicoesSolicitud.getNumeroExpediente();
+            if (numeroExpediente == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.NUMERO_EXPEDIENTE_NO_ENVIADO);
+            }
+            logger.info("numeroExpediente: {}", numeroExpediente);
+            personalReemplazo.setNumeroExpediente(numeroExpediente);
+            Supervisora supervisora = sicoesSolicitud.getSupervisora();
+            logger.info("supervisora: {}", supervisora);
+            personalReemplazo.setSupervisora(supervisora);
+            List<Archivo> archivos = new ArrayList<>();
+            Archivo archivoBD = new Archivo();
+            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
+            logger.info("tipoArchivo: {}", tipoArchivo);
+            archivoBD.setTipoArchivo(tipoArchivo);
+            archivoBD.setConforme("Conforme: No");
+            archivos.add(archivoBD);
+            personalReemplazo.setArchivos(archivos);
+            List<Archivo> adicionales = new ArrayList<>();
+            Archivo adicionalBD = new Archivo();
+            ListadoDetalle tipoArchivoAdicional = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_ADICIONAL", "CONTRATO_ALQUILER_CAMIONETA");
+            logger.info("tipoArchivoAdicional: {}", tipoArchivoAdicional);
+            adicionalBD.setTipoArchivo(tipoArchivoAdicional);
+            adicionalBD.setConforme("Conforme: No");
+            adicionales.add(adicionalBD);
+            personalReemplazo.setAdicionales(adicionales);
+            List<PersonalReemplazo> personalesReemplazo = java.util.Collections.singletonList(personalReemplazo);
+            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(personalesReemplazo, true);
+            JasperReport jasperReport = archivoUtil.getJasperCompilado(jrxml);
+            print = JasperFillManager.fillReport(jasperReport, parameters, ds);
+            output = new ByteArrayOutputStream();
+            JasperExportManager.exportReportToPdfStream(print, output);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SICOES_SOLICITUD_GUARDAR_FORMATO_04, e);
+        } finally {
+            archivoUtil.close(isLogoSicoes);
+            archivoUtil.close(isLogoOsinergmin);
+        }
+        byte[] bytesSalida = output.toByteArray();
+        archivo.setPeso((long) bytesSalida.length);
+        archivo.setNroFolio(1L);
+        archivo.setContenido(bytesSalida);
+        return archivo;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1774,6 +2073,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
                 // enviar notificacion x email
                 notificacionContratoService.notificarSubsanacionDocumentos( supervisora, contexto);
+                ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
+                        Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION);
+                if (tipoArchivo == null) {
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
+                }
+                logger.info("tipoArchivo: {}", tipoArchivo);
+                Archivo archivo = generarArchivoSigedregistrarInicioServicioSolContrSI(existe, tipoArchivo, contexto);
+                existe.setArchivo(archivo);
             }
         } else {
             existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok

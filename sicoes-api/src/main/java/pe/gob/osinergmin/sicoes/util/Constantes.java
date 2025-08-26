@@ -188,8 +188,8 @@ public class Constantes {
 			public static final String SOLICITUD_PERFECCIONAMIENTO = "SOLICITUD_PERFECCIONAMIENTO";
 			public static final String CONSOLIDADO_DOCUMENTOS = "TA32";
 			public static final String FINALIZACION_EVALUACION = "TA33";
-			public static final String CARGA_DOCUMENTOS = "TA34";
-			public static final String EVALUACION = "TA35";
+			public static final String CARGA_DOCUMENTOS = "TA36";
+			public static final String EVALUACION = "TA37";
 
 		}
 		
