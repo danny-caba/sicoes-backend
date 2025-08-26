@@ -32,6 +32,7 @@ public class InformeRenovacionContratoController extends BaseRestController{
 
     @GetMapping("/informes")
     public Page<InformeRenovacionContratoDTO> listarInformes(
+            @RequestParam(required = true) String tipoAprobador,
             @RequestParam(required = false) String numeroExpediente,
             @RequestParam(required = false) Long estado,
             @RequestParam(required = false) Long idContratista,
@@ -40,6 +41,7 @@ public class InformeRenovacionContratoController extends BaseRestController{
         logger.info("get listarInformes: {} {} {}", numeroExpediente,estado,idContratista);
         
         return informeRenovacionContratoService.listaInformes(
+                tipoAprobador,
                 numeroExpediente, estado, idContratista, getContexto(), pageable);
     }
 

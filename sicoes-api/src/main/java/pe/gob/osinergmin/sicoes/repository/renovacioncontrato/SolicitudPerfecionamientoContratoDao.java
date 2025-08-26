@@ -42,7 +42,7 @@ public interface SolicitudPerfecionamientoContratoDao extends JpaRepository<Soli
     "LEFT JOIN SICOES_TR_PROCESO_ITEM procesoItem ON propuesta.ID_PROCESO_ITEM = procesoItem.ID_PROCESO_ITEM " +
     "LEFT JOIN SICOES_TR_PROCESO_ITEM_PERFIL procesoItemPerfil ON procesoItem.ID_PROCESO_ITEM = procesoItemPerfil.ID_PROCESO_ITEM " +
     "LEFT JOIN SICOES_TX_PERFIL_APROBADOR perfilAprobador ON procesoItemPerfil.ID_PERFIL_LD = perfilAprobador.ID_PERFIL " +
-    "WHERE perfilAprobador.ID_APROBADOR_G1 = idUsuario AND spc.DE_SOLICITUD = 'CONCLUIDO' " ,
+    "WHERE perfilAprobador.ID_APROBADOR_G1 = :idUsuario AND spc.DE_SOLICITUD = 'CONCLUIDO' " ,
     nativeQuery = true)
     List<SolicitudPerfecionamientoContrato> getPerfilAprobadorByIdUsuarioG1(
         @Param("idUsuario") Long idUsuario);
@@ -60,7 +60,7 @@ public interface SolicitudPerfecionamientoContratoDao extends JpaRepository<Soli
     "LEFT JOIN SICOES_TR_PROCESO_ITEM procesoItem ON propuesta.ID_PROCESO_ITEM = procesoItem.ID_PROCESO_ITEM " +
     "LEFT JOIN SICOES_TR_PROCESO_ITEM_PERFIL procesoItemPerfil ON procesoItem.ID_PROCESO_ITEM = procesoItemPerfil.ID_PROCESO_ITEM " +
     "LEFT JOIN SICOES_TX_PERFIL_APROBADOR perfilAprobador ON procesoItemPerfil.ID_PERFIL_LD = perfilAprobador.ID_PERFIL " +
-    "WHERE perfilAprobador.ID_APROBADOR_G2 = idUsuario AND spc.DE_SOLICITUD = 'CONCLUIDO' " ,
+    "WHERE perfilAprobador.ID_APROBADOR_G2 = :idUsuario AND spc.DE_SOLICITUD = 'CONCLUIDO' " ,
     nativeQuery = true)
     List<SolicitudPerfecionamientoContrato> getPerfilAprobadorByIdUsuarioG2(
         @Param("idUsuario") Long idUsuario);
