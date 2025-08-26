@@ -61,6 +61,9 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String ASUNTO_NOTIFICACION_EVALUACION_PENDIENTE = "TIENE UN PENDIENTE POR EVALUAR";
     private static final String NOMBRE_TEMPLATE_EVALUACION_PENDIENTE = "37-notificacion-evaluacion-pendiente.html";
 
+    private static final String ASUNTO_NOTIFICACION_FINALIZACION_CONTRATO_PERSONAL = "PENDIENTE EN CARGAR DOCUMENTOS DE INICIO DE SERVICIO";
+    private static final String NOMBRE_TEMPLATE_FINALIZACION_CONTRATO_PERSONAL ="38-notificacion-finalizacion-contrato-personal.html";
+
     private Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
     private final TemplateEngine templateEngine;
@@ -375,4 +378,27 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         }
         return nombreSupervisora;
     }
+
+
+    @Override
+    public void notificarFinalizacionContrato(Usuario usuario, String numeroExpediente, Contexto contexto ) {
+        String email = usuario.getCorreo();
+        if (email == null || email.isEmpty()) {
+            logger.warn("El correo del usuario es nulo o vacío");
+        } else {
+            logger.info("Correo del uuario: {}", email);
+        }
+        logger.info(" notificarFinalizacionContrato para email: {} ",email);
+        Context ctx = new Context();
+        ctx.setVariable("numeroExpediente", numeroExpediente);
+
+        Notificacion notificacion = buildNotification(
+                email,
+                ASUNTO_NOTIFICACION_FINALIZACION_CONTRATO_PERSONAL,
+                NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
+                ctx);
+        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+        saveNotificacion(notificacion);
+    }
+
 }

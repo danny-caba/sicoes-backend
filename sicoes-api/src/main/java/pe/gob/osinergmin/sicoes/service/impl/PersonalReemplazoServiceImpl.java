@@ -1132,17 +1132,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             logger.info("supervisora: {}", supervisora);
             personalReemplazo.setSupervisora(supervisora);
             List<Archivo> archivos = new ArrayList<>();
-            Archivo archivoBD = new Archivo();
             ListadoDetalle tipoArchivoContratoLaboral = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
             logger.info("tipoArchivoContratoLaboral: {}", tipoArchivoContratoLaboral);
-            archivoBD.setTipoArchivo(tipoArchivoContratoLaboral);
-            archivoBD.setConforme("Conforme:");
-            archivos.add(archivoBD);
+            Archivo archivoBDContratoLaboral = new Archivo();
+            archivoBDContratoLaboral.setTipoArchivo(tipoArchivoContratoLaboral);
+            archivoBDContratoLaboral.setConforme("Conforme:");
+            archivos.add(archivoBDContratoLaboral);
             ListadoDetalle tipoArchivoSctr = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "SCTR");
             logger.info("tipoArchivoSctr: {}", tipoArchivoSctr);
-            archivoBD.setTipoArchivo(tipoArchivoSctr);
-            archivoBD.setConforme("Conforme:");
-            archivos.add(archivoBD);
+            Archivo archivoBDSctr = new Archivo();
+            archivoBDSctr.setTipoArchivo(tipoArchivoSctr);
+            archivoBDSctr.setConforme("Conforme:");
+            archivos.add(archivoBDSctr);
             personalReemplazo.setArchivos(archivos);
             List<Archivo> adicionales = new ArrayList<>();
             Archivo adicionalBD = new Archivo();
@@ -1798,7 +1799,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
             PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
             if(persoReempFinal.getFeFechaFinalizacionContrato() == null) {
-                throw new ValidacionException("No se encuentra la fecha");
+                throw new ValidacionException("No se encuentra la fecha de finalización de contrato");
             }
             if(fecha.before(persoReempFinal.getFeFechaFinalizacionContrato()) || fecha.equals(persoReempFinal.getFeFechaFinalizacionContrato())){
               if (!fecha.equals(persoReempFinal.getFeFechaDesvinculacion())){
