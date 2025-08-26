@@ -1765,7 +1765,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
             PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
             if(persoReempFinal.getFeFechaFinalizacionContrato() == null) {
-                throw new ValidacionException("No se encuentra la fecha");
+                throw new ValidacionException("No se encuentra la fecha de finalización de contrato");
             }
             if(fecha.before(persoReempFinal.getFeFechaFinalizacionContrato()) || fecha.equals(persoReempFinal.getFeFechaFinalizacionContrato())){
               if (!fecha.equals(persoReempFinal.getFeFechaDesvinculacion())){
