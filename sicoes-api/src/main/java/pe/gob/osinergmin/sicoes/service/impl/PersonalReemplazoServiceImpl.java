@@ -836,6 +836,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         logger.info("tipoArchivo: {}", tipoArchivo);
         Archivo archivo = generarArchivoSigedRegistrarRevDocumentos(personalReemplazo, tipoArchivo, contexto);
+        personalReemplazo.setArchivo(archivo);
         if (allDocsConforme) {
             ListadoDetalle estadoEnProceso = listadoDetalleDao.listarListadoDetallePorCoodigo(
                             Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)
@@ -986,7 +987,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
             }
-            personalReemplazo.setArchivo(archivo);
             return personalReemplazo;
         }
     }
