@@ -10,6 +10,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 public interface InformeRenovacionContratoService {
 
     Page<InformeRenovacionContratoDTO> listaInformes(
+            String tipoAprobador,
         String numeroExpediente,
         Long estado,
         Long idContratista,
