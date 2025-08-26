@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
+import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
 import pe.gob.osinergmin.sicoes.repository.*;
@@ -81,6 +82,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Autowired
     private ArchivoService archivoService;
+
+    @Autowired
+    private SigedOldConsumer sigedOldConsumer;
 
     @Autowired
     private SigedApiConsumer sigedApiConsumer;
@@ -393,6 +397,17 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         logger.info("idReemplazo: {}", idReemplazo);
         PersonalReemplazo personalReemplazo = reemplazoDao.findById(idReemplazo)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.PERSONAL_REEMPLAZO_NO_EXISTE));
+        //Validar que exista un documento adjunto 3.Solicitud reemplazo supervisor
+        String listadoSeccion = Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL;
+        String descSeccion2 = Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PERSONAL_PROPUESTO;
+        String descSeccion3 = Constantes.LISTADO.SECCION_DOC_REEMPLAZO.SOLICITUD_REEMPLAZO_SUPERVISOR;
+        ListadoDetalle seccion2 = listadoDetalleDao.obtenerListadoDetalle(listadoSeccion,descSeccion2);
+        ListadoDetalle seccion3 = listadoDetalleDao.obtenerListadoDetalle(listadoSeccion,descSeccion3);
+        if (!documentoReemDao.existsByIdReemplazoPersonalAndSeccion_IdListadoDetalle(
+                personalReemplazo.getIdReemplazo(),seccion3.getIdListadoDetalle())) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.DOCUMENTO_REEMPLAZO_NO_EXISTE);
+        }
+
 
         String listadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
         personalReemplazo.setEstadoReemplazo (
@@ -445,6 +460,39 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         PersonalReemplazo personalReemplazoOUT = reemplazoDao.save(personalReemplazo);
         SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA));
+        //Agregar documentos adjuntos en SIGED
+        List<Long> idsSeccion = Arrays.asList(
+                seccion2.getIdListadoDetalle(),
+                seccion3.getIdListadoDetalle()
+        );
+        List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
+                personalReemplazoOUT.getIdReemplazo(),idsSeccion);
+        List<File> archivosAlfresco=null;
+        ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
+        for (DocumentoReemplazo documento : documentos) {
+            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
+            try {
+                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
+                if (documentoOutRO.getResultCode() != 1){
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
+                            documentoOutRO.getMessage());
+                }
+                //Buscamos los id de los archivos de SIGED
+                String nombreDocumento = archivosAlfresco.get(0).getName();
+                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(
+                        sicoesSolicitud.getNumeroExpediente(), contexto.getUsuario().getUsuario(),nombreDocumento);
+                documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
+                documento.setIdDocumentoSiged (String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
+                documentoReemService.actualizar(documento,contexto);
+            } catch (ValidacionException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("ERROR {} ", e.getMessage(), e);
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
+            }
+        }
+
+        //
         logger.info("sicoesSolicitud: {}", sicoesSolicitud);
         ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,

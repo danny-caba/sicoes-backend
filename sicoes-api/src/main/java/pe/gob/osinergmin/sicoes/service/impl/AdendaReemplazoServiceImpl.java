@@ -171,8 +171,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 personalReemplazo.getIdReemplazo(),
                 Collections.singletonList(detalleSeccion.getIdListadoDetalle()));
         List<File> archivosAlfresco=null;
+        ExpedienteInRO expedienteInRO = personalReemplazoService.crearExpedienteAgregarDocumentos(solicitud, contexto);
         for (DocumentoReemplazo documento : documentos) {
-            ExpedienteInRO expedienteInRO = personalReemplazoService.crearExpedienteAgregarDocumentos(solicitud, contexto);
             archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
             try {
                 DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
@@ -181,10 +181,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                             documentoOutRO.getMessage());
                 }
                 //Buscamos los id de los archivos de SIGED
-                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO;
                 String nombreDocumento = archivosAlfresco.get(0).getName();
-                idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(solicitud.getNumeroExpediente(),
-                        contexto.getUsuario().getUsuario(),nombreDocumento);
+                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(
+                        solicitud.getNumeroExpediente(), contexto.getUsuario().getUsuario(),nombreDocumento);
                 documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
                 documento.setIdDocumentoSiged (String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
                 documentoReemService.actualizar(documento,contexto);
@@ -256,7 +255,6 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         }
 
         AccessRequestInFirmaDigital accessRequestInFirmaDigital = sigedOldConsumer.obtenerParametrosfirmaDigital();
-
         // Propiedades de la firma digital
         String usuarioSiged = accessRequestInFirmaDigital.getLoginUsuario();
         String passwordSiged = accessRequestInFirmaDigital.getPasswordUsuario();
