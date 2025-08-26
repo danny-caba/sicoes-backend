@@ -804,6 +804,11 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                         Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                         Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
 
+                ListadoDetalle estadoDesaprobado = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
+                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
+                requerimiento.setEstado(estadoDesaprobado);
+
                 aprobacion.setFechaRechazo(new Date());
                 requerimiento.setEstadoRevision(revision);
                 Division division = divisionService.obtener(requerimiento.getDivision().getIdDivision(), contexto);
@@ -823,6 +828,11 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                         Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
                 aprobacion.setFechaRechazo(new Date());
                 requerimiento.setEstadoRevision(revision);
+
+                ListadoDetalle estadoDesaprobado = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
+                        Constantes.LISTADO.ESTADO_REQUERIMIENTO.DESAPROBADO);
+                requerimiento.setEstado(estadoDesaprobado);
             }
 
             Division division = divisionService.obtener(requerimiento.getDivision().getIdDivision(), contexto);

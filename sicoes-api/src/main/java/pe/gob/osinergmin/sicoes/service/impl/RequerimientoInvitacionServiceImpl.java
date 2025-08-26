@@ -239,7 +239,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
         //Enviar notificacion
         notificacionService.enviarMensajeAprobacionRechazoReqInvitacion(invitacion, correosNotificacion, esAprobacion, contexto);
-        return requerimiento;
+        return null;
     }
 
 }
