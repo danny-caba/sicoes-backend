@@ -43,7 +43,7 @@ public interface ListadoDetalleDao extends JpaRepository<ListadoDetalle, Long> {
 			+ "left join  Listado l on (ld.idListado=l.idListado)"
 			+ "where l.codigo=:codidoListado and ld.codigo=:codigoListadoDetalle order by ld.orden asc")
 	public ListadoDetalle obtenerListadoDetalle(String codidoListado,String codigoListadoDetalle);
-	
+
 	@Query("select new ListadoDetalle(ld,l) from ListadoDetalle ld "
 			+ "left join  Listado l on (ld.idListado=l.idListado)"
 			+ "where l.codigo=:codidoListado and ld.valor=:abreviaturaTitulo order by ld.orden asc")

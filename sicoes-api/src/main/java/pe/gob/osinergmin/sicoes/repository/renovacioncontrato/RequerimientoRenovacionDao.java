@@ -23,8 +23,10 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
             "AND (:numeroExpediente IS NULL OR r.nuExpediente LIKE %:numeroExpediente%) " +
             "AND (:tipoSector IS NULL OR r.tiSector LIKE %:tipoSector%) " +
             "AND (:tipoSubSector IS NULL OR r.tiSubSector LIKE %:tipoSubSector%) " +
+            "AND (:idSolicitud IS NULL OR r.idSoliPerfCont LIKE :idSolicitud) " +
             "ORDER BY r.fecCreacion DESC")
     Page<RequerimientoRenovacion> findByNuExpedienteContains(
+            @Param("idSolicitud") Long idSolicitud,
             @Param("numeroExpediente") String numeroExpediente,
             @Param("tipoSector") String tipoSector,
             @Param("tipoSubSector") String tipoSubSector,

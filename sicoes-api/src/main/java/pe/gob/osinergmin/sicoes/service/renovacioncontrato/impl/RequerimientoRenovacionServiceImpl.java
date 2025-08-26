@@ -24,11 +24,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoRenovacionListDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
+import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
+import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.HistorialEstadoAprobacionCampoDao;
+import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoRenovacionService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.RequerimientoRenovacionMapper;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -74,10 +81,50 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 	private String SIGLA_PROYECTO;
 
 	Logger logger = LogManager.getLogger(RequerimientoRenovacionServiceImpl.class);
+	@Autowired
+	private RequerimientoRenovacionMapper requerimientoRenovacionMapper;
+	@Autowired
+	private HistorialEstadoAprobacionCampoDao historialEstadoAprobacionCampoDao;
+	@Autowired
+	private InformeRenovacionDao informeRenovacionDao;
+	@Autowired
+	private ListadoDetalleDao listadoDetalleDao;
 
 	@Override
-	public Page<RequerimientoRenovacion> buscar(String numeroExpediente,String sector,String subSector, Pageable pageable, Contexto contexto) {
-		return requerimientoRenovacionDao.findByNuExpedienteContains(numeroExpediente,sector,subSector,pageable);
+	public Page<RequerimientoRenovacionListDTO> buscar(String idSolicitud, String numeroExpediente, String sector, String subSector, Pageable pageable, Contexto contexto) {
+		Page<RequerimientoRenovacion> lista = requerimientoRenovacionDao.findByNuExpedienteContains(idSolicitud==null?null:Long.parseLong(idSolicitud),numeroExpediente, sector, subSector, pageable);
+		return lista.map((r)->{
+			RequerimientoRenovacionListDTO requerimiento = new RequerimientoRenovacionListDTO();
+			requerimiento.setNuExpediente(r.getNuExpediente());
+			requerimiento.setTiSector(r.getTiSector());
+			requerimiento.setTiSubSector(r.getTiSubSector());
+			requerimiento.setNoItem(r.getNoItem());
+			requerimiento.setFeRegistro(r.getFeRegistro());
+			requerimiento.setFeRegistro(r.getFeRegistro());
+			//requerimiento.setEstadoReqRenovacion( r.getEstadoReqRenovacion());
+			//requerimiento.setEstadoAprobacionInforme();
+			List<InformeRenovacion> listaInforme = informeRenovacionDao.listarPorRequerimiento(requerimiento.getIdReqRenovacion());
+			if(!listaInforme.isEmpty()) {
+				requerimiento.setEstadoAprobacionInforme(listaInforme.get(listaInforme.size() - 1).getEstadoAprobacionInforme().getNombre());
+			}
+			ListadoDetalle ldGPPM = listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,Constantes.LISTADO.GRUPO_APROBACION.GPPM);
+			List<HistorialEstadoAprobacionCampo> listaGPPM = historialEstadoAprobacionCampoDao.listarPorRequerimientoAprobacion(requerimiento.getIdReqRenovacion(),ldGPPM.getIdListadoDetalle());
+			if(!listaGPPM.isEmpty()) {
+				ListadoDetalle estado = listadoDetalleDao.findById(listaGPPM.get(listaGPPM.size() - 1).getDeEstadoNuevoLd()).orElse(null);
+				if(estado!=null) {
+					requerimiento.setEstadoAprobacionGPPM(estado.getNombre());
+				}
+			}
+			ListadoDetalle ldGSE = listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,Constantes.LISTADO.GRUPO_APROBACION.GSE);
+			List<HistorialEstadoAprobacionCampo> listaGSE = historialEstadoAprobacionCampoDao.listarPorRequerimientoAprobacion(requerimiento.getIdReqRenovacion(),ldGSE.getIdListadoDetalle());
+			if(!listaGSE.isEmpty()) {
+				ListadoDetalle estado = listadoDetalleDao.findById(listaGSE.get(listaGSE.size() - 1).getDeEstadoNuevoLd()).orElse(null);
+				if(estado!=null) {
+					requerimiento.setEstadoAprobacionGSE(estado.getNombre());
+				}
+			}
+			return requerimiento;
+		});
 	}
 
 	public RequerimientoRenovacion guardar(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto) throws Exception {

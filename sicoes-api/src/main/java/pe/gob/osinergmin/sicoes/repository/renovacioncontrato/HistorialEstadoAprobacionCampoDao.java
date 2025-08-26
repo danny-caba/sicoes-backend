@@ -21,6 +21,15 @@ public interface HistorialEstadoAprobacionCampoDao extends JpaRepository<Histori
     List<HistorialEstadoAprobacionCampo> listarPorRequerimientoAprobacion(@Param("idReqAprobacion") Long idReqAprobacion);
 
     @Query("SELECT h FROM HistorialEstadoAprobacionCampo h " +
+            "WHERE h.idReqAprobacion = :idReqAprobacion " +
+            "AND h.idGrupoLd = :idGrupoLd " +
+            "AND h.esRegistro = '1' " +
+            "ORDER BY h.feFechaCambio DESC")
+    List<HistorialEstadoAprobacionCampo> listarPorRequerimientoAprobacion(@Param("idReqAprobacion") Long idReqAprobacion,
+                                                                          @Param("idGrupoLd") Long idGrupoLd);
+
+
+    @Query("SELECT h FROM HistorialEstadoAprobacionCampo h " +
            "WHERE h.idUsuario = :idUsuario AND h.esRegistro = '1' " +
            "ORDER BY h.feFechaCambio DESC")
     List<HistorialEstadoAprobacionCampo> listarPorUsuario(@Param("idUsuario") Long idUsuario);
