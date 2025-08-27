@@ -36,4 +36,6 @@ public interface NotificacionContratoService {
     void notificarEvaluacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
 
     void notificarFinalizacionContrato(Usuario usuario, String numeroExpediente, Contexto contexto );
+
+    void notificarFinalizacionContrato(Contexto contexto) ;
 }
