@@ -484,7 +484,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
             ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
             ListadoDetalle estadoAproAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAprobacionAdenda);
-            ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
+            ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignado);
             ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);
 
             logger.info("firmaRequest:{}",firmaRequestDTO);
