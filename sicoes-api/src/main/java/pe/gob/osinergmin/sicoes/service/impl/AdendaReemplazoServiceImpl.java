@@ -131,13 +131,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         ListadoDetalle estadoAsignadoAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignadoAdenda);
 
         //Buscar Aprobacion
-        Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(personalReemplazo.getIdReemplazo())
-                .orElseThrow(()-> new ValidacionException(Constantes.CODIGO_MENSAJE.APROB_REEMPLAZO_NO_EXISTE));
-        Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
-        aprobacion.setIdRol(rolUsuarioInterno.getIdRol());
-        AuditoriaUtil.setAuditoriaActualizacion(aprobacion,contexto);
-        aprobacion.setEstadoAprob(estadoAproGeneral);
-        aprobacionDao.save(aprobacion);
+        procesarAprobacion(personalReemplazo.getIdReemplazo(),
+                Constantes.ROLES.EVALUADOR_CONTRATOS,contexto,estadoAproGeneral);
 
         personalReemplazo.setEstadoAprobacionAdenda(estadoAproGeneral);
         personalReemplazoService.actualizar(personalReemplazo,contexto);
@@ -491,6 +486,10 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 adenda.setEstadoFirmaJefe(estadoAsig);
                 adenda.setObservacionVb(firmaRequestDTO.getObservacion());
 
+                //Buscar Aprobacion
+                procesarAprobacion(adenda.getIdReemplazoPersonal(),
+                        Constantes.ROLES.G3_APROBADOR_ADMINISTRATIVO,contexto,null);
+
                 //Notificacion
                 PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
                         .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -509,6 +508,11 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     adenda.setEstadoFirmaJefe(estadoApro);
                     adenda.setEstadoFirmaGerencia(estadoAsig);
                     adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
+
+                    //Buscar Aprobacion
+                    procesarAprobacion(adenda.getIdReemplazoPersonal(),
+                            Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO,contexto,null);
+
                     //Notificacion
                     PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
                             .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -699,5 +703,18 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_EXISTE));
         return Optional.ofNullable(solicitud.getNumeroExpediente())
                 .orElse("");
+    }
+
+    private void procesarAprobacion(Long idReemplazo, String codigoRol, Contexto contexto, ListadoDetalle estadoAprob) {
+        Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(idReemplazo)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.APROB_REEMPLAZO_NO_EXISTE));
+
+        Rol rolUsuarioInterno = rolDao.obtenerCodigo(codigoRol);
+        aprobacion.setIdRol(rolUsuarioInterno.getIdRol());
+        if (estadoAprob != null) {
+            aprobacion.setEstadoAprob(estadoAprob);
+        }
+        AuditoriaUtil.setAuditoriaActualizacion(aprobacion, contexto);
+        aprobacionDao.save(aprobacion);
     }
 }
