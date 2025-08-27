@@ -467,7 +467,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         );
         List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
                 personalReemplazoOUT.getIdReemplazo(),idsSeccion);
-        List<File> archivosAlfresco=null;
+        List<File> archivosAlfresco;
         ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
         for (DocumentoReemplazo documento : documentos) {
             archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
@@ -946,7 +946,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             List<Long> idsSeccion = Arrays.asList(seccion5.getIdListadoDetalle());
             List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
                     personalReemplazo.getIdReemplazo(),idsSeccion);
-            List<File> archivosAlfresco=null;
+            List<File> archivosAlfresco;
             ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
             for (DocumentoReemplazo documento : documentos) {
                 archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
@@ -1285,10 +1285,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         logger.info("idsSeccion: {}", idsSeccion);
         List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(existe.getIdReemplazo(),idsSeccion);
         logger.info("documentos: {}", documentos);
-        List<File> archivosAlfresco=null;
+        List<File> archivosAlfresco;
+        ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(solicitud, contexto);
+        logger.info("expedienteInRO: {}", expedienteInRO);
         for (DocumentoReemplazo documento : documentos) {
-            ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(solicitud, contexto);
-            logger.info("expedienteInRO: {}", expedienteInRO);
             archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
             try {
                 DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
@@ -1401,6 +1401,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
             logger.info("tipoArchivo: {}", tipoArchivo);
             archivoBD.setTipoArchivo(tipoArchivo);
+            archivoBD.setNombre("ContratoLaboral.PDF");
+            archivoBD.setNroFolio(1L);
+            archivoBD.setPeso(24576L);
             archivos.add(archivoBD);
             personalReemplazo.setArchivos(archivos);
             List<Archivo> adicionales = new ArrayList<>();
@@ -1408,6 +1411,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             ListadoDetalle tipoArchivoAdicional = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_ADICIONAL", "CONTRATO_ALQUILER_CAMIONETA");
             logger.info("tipoArchivoAdicional: {}", tipoArchivoAdicional);
             adicionalBD.setTipoArchivo(tipoArchivoAdicional);
+            adicionalBD.setNombre("Contratofinal.PDF");
+            adicionalBD.setNroFolio(1L);
+            adicionalBD.setPeso(24576L);
             adicionales.add(adicionalBD);
             personalReemplazo.setAdicionales(adicionales);
             List<PersonalReemplazo> personalesReemplazo = java.util.Collections.singletonList(personalReemplazo);
