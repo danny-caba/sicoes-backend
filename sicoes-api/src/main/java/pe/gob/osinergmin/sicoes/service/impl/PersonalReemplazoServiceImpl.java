@@ -173,6 +173,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Autowired
     private SupervisoraMovimientoDao supervisoraMovimientoDao;
 
+    @Autowired
+    private ContratoDao contratoDao;
+
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
                                                            String descRevisarDoc,
@@ -1810,13 +1813,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         logger.info("evaluarFechaDesvinculacion");
 
         Boolean resultado =false;
-        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
-            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
-            if(persoReempFinal.getFeFechaFinalizacionContrato() == null) {
+        PersonalReemplazo persoReemp = reemplazoDao.findById(id).orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+
+        Contrato contrato = contratoDao.obtenerSolicitudPerfCont(persoReemp.getIdSolicitud()).orElseThrow(()  -> new RuntimeException("contrato no encontrado"));
+
+            if(contrato.getFechaFinalContrato() == null) {
                 throw new ValidacionException("No se encuentra la fecha de finalización de contrato");
             }
-            if(fecha.before(persoReempFinal.getFeFechaFinalizacionContrato()) || fecha.equals(persoReempFinal.getFeFechaFinalizacionContrato())){
-              if (!fecha.equals(persoReempFinal.getFeFechaDesvinculacion())){
+            if(fecha.before(contrato.getFechaFinalContrato()) || fecha.equals(contrato.getFechaFinalContrato())){
+              if (!fecha.equals(persoReemp.getFeFechaDesvinculacion())){
                   resultado = true;
               }
             }
