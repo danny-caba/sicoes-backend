@@ -222,13 +222,13 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 				String cadenaEncriptada =usernameDTO.getToken().replaceAll(" ", "+");
 				System.out.println("cadenaEncriptada: " + cadenaEncriptada);
 				String produccion=env.getProperty("modo-produccion");
-//				if("1".equals(produccion)){
-					//Authentication authentication=getSissegAuthenticationProvider().authenticate(new SissegAuthenticationToken(env.getProperty("sisseg.encryption-key") + "::" + env.getProperty("sisseg.application-id") + "::" + cadenaEncriptada, cadenaEncriptada));
-					//System.out.println("authentication: " + authentication);
-					//usuarioStr=(String)authentication.getPrincipal();
-//				}else {
+				if("1".equals(produccion)){
+					Authentication authentication=getSissegAuthenticationProvider().authenticate(new SissegAuthenticationToken(env.getProperty("sisseg.encryption-key") + "::" + env.getProperty("sisseg.application-id") + "::" + cadenaEncriptada, cadenaEncriptada));
+					System.out.println("authentication: " + authentication);
+					usuarioStr=(String)authentication.getPrincipal();
+				}else {
 					usuarioStr=getUsuarioInterno(cadenaEncriptada);
-//				}
+				}
 			}
 			
 			boolean esExtrerno = usuarioBeanDTO!=null && usuarioBeanDTO.getRuc()!=null && !"".equals(usuarioBeanDTO.getRuc());
