@@ -17,7 +17,6 @@ import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.DocumentoReemDao;
-import pe.gob.osinergmin.sicoes.repository.EvaluarDocuReemDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.ArchivoService;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
@@ -124,10 +123,16 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DocumentoReemplazo obtener(Long idDocumento, Contexto contexto) {
         DocumentoReemplazo documento = documentoReemDao.obtenerPorIdDocumento(idDocumento);
+        logger.info("documento: {}",documento);
         List<Archivo> archivos = archivoDao.buscarPorDocumentoReemplazo(idDocumento);
+        logger.info("archivos: {}",archivos);
+        entityManager.detach(documento);
+        documento.setEvaluacion(null);
         documento.setArchivo(archivos.get(0));
+        logger.info("documentoFinal: {}",documento);
         return documento;
     }
 

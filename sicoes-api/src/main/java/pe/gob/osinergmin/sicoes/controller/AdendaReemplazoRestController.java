@@ -65,6 +65,12 @@ public class AdendaReemplazoRestController extends BaseRestController {
         return adendaReemplazoService.finalizarFirma(firmaRequestDTO,getContexto());
     }
 
+    @PostMapping("/reemplazo/solicitud/visto-firma/")
+    public AdendaReemplazo finalizarVistoFirma(@RequestBody FirmaRequestDTO firmaRequestDTO){
+        logger.info("visto-firma {}");
+        return adendaReemplazoService.finalizarFirmaAdenda(firmaRequestDTO,getContexto());
+    }
+
     @PutMapping("/reemplazo/solicitud/rechazar-firma")
     @Raml("adendaReemplazo.listar.properties")
     public AdendaReemplazo rechazarFirma(@RequestBody AdendaReemplazo adendaReemplazo,

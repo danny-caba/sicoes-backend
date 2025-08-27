@@ -30,7 +30,6 @@ import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
@@ -459,6 +458,107 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 responseBody.put("archivos", Collections.emptyList());
             }
             return responseBody;
+        } catch (Exception ex){
+            logger.error("Error inesperado en proceso de finalizar firma", ex);
+            throw new ValidacionException(
+                    Constantes.CODIGO_MENSAJE.ERROR_INESPERADO_FIRMA);
+        }
+    }
+
+    @Override
+    @Transactional
+    public AdendaReemplazo finalizarFirmaAdenda(FirmaRequestDTO firmaRequestDTO, Contexto contexto) {
+        logger.info("Inicio proceso finalizar para adenda con ID: {}",firmaRequestDTO.getIdAdenda());
+        Optional<AdendaReemplazo> adendaReemplazo = adendaReemplazoDao.findById(firmaRequestDTO.getIdAdenda());
+        if (!adendaReemplazo.isPresent()){
+            throw new ValidacionException(
+                    Constantes.CODIGO_MENSAJE.ADENDA_NO_EXISTE);
+        }
+        AdendaReemplazo adenda = adendaReemplazo.get();
+        try {
+            //Vamos actualizar adenda el flag visto bueno
+            String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
+            String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+            String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.APROBADO;
+            String descAsignado = Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO;
+            String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
+            ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
+            ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
+            ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);
+
+            if (firmaRequestDTO.getVisto()){ //Visto bueno
+                adenda.setEstadoVbGaf(estadoApro);
+                adenda.setEstadoFirmaJefe(estadoAsig);
+                adenda.setObservacionVb(firmaRequestDTO.getObservacion());
+
+                //Notificacion
+                PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
+                        .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+                Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G3_APROBADOR_ADMINISTRATIVO)
+                        .stream()
+                        .findFirst()
+                        .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                if (usuario.isPresent()) {
+                    String numeroExpediente = this.obtenerNumeroExpediente(personalReemplazo);
+                    notificacionContratoService.notificarAprobacionPendiente(usuario.get(), numeroExpediente, contexto);
+                } else {
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G3_NO_EXISTE);
+                }
+            } else { //Firma
+                if (firmaRequestDTO.getFirmaJefe()){
+                    adenda.setEstadoFirmaJefe(estadoApro);
+                    adenda.setEstadoFirmaGerencia(estadoAsig);
+                    adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
+                    //Notificacion
+                    PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
+                            .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
+                    Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO)
+                            .stream()
+                            .findFirst()
+                            .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+                    if (usuario.isPresent()) {
+                        String numeroExpediente = this.obtenerNumeroExpediente(personalReemplazo);
+                        notificacionContratoService.notificarAprobacionPendiente(usuario.get(), numeroExpediente, contexto);
+                    } else {
+                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G4_NO_EXISTE);
+                    }
+                }
+                if (firmaRequestDTO.getFirmaGerente()){
+                    Optional<PersonalReemplazo> personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal());
+                    if (!personalReemplazo.isPresent()){
+                        throw new ValidacionException(
+                                Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE);
+                    }
+                    PersonalReemplazo personalExiste = personalReemplazo.get();
+                    personalExiste.setEstadoRevisarEval(estadoConcluido);
+                    personalExiste.setFeFechaBaja(new Date()); //Verificar
+                    //Guardando cambio historico de estado
+                    Supervisora personalBaja = personalExiste.getPersonaBaja();
+                    SupervisoraMovimiento movi = new SupervisoraMovimiento();
+
+                    PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
+                        personalExiste.getIdSolicitud(),personalBaja.getIdSupervisora());
+                    profesional.setSupervisora(personalBaja);
+
+                    movi.setSector(profesional.getSector());
+                    movi.setSubsector(profesional.getSubsector());
+                    movi.setSupervisora(personalBaja); //Asignando codigo de personal baja
+                    movi.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
+                    movi.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
+                    movi.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
+                    movi.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.DESBLOQUEO));
+                    movi.setPropuestaProfesional(profesional);
+                    movi.setFechaRegistro(new Date());
+
+                    supervisoraMovimientoService.guardar(movi,contexto);
+                    personalReemplazoService.actualizar(personalExiste,contexto);
+
+                    adenda.setEstadoFirmaGerencia(estadoApro);
+                    adenda.setEstadoAprobacion(estadoConcluido);
+                    adenda.setObservacionFirmaGerencia(firmaRequestDTO.getObservacion());
+                }
+            }
+            return actualizar(adenda,contexto);
         } catch (Exception ex){
             logger.error("Error inesperado en proceso de finalizar firma", ex);
             throw new ValidacionException(
