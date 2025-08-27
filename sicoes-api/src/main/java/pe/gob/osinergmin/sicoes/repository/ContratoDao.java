@@ -13,6 +13,7 @@ import pe.gob.osinergmin.sicoes.model.SicoesTdSolPerConSec;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ContratoDao extends JpaRepository<Contrato, Long> {
@@ -63,5 +64,10 @@ public interface ContratoDao extends JpaRepository<Contrato, Long> {
 	@Query("UPDATE Contrato c SET c.numeroContrato = :numeroContrato, c.fechaSuscripcionContrato = :fechaSuscripcionContrato, c.fechaInicioContrato = :fechaInicioContrato, c.fechaFinalContrato = :fechaFinalContrato WHERE c.idContrato = :idContrato")
 	int actualizarContrato(Long idContrato, String numeroContrato, Date fechaSuscripcionContrato,
 			Date fechaInicioContrato, Date fechaFinalContrato);
+
+
+	@Query("select c from Contrato c "
+		+ "where c.solicitudPerfCont.idSolicitud=:id")
+	Optional<Contrato> obtenerSolicitudPerfCont(Long id);
 
 }
