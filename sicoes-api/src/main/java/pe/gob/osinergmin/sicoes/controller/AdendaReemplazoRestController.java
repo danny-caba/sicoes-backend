@@ -68,6 +68,8 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PostMapping("/reemplazo/solicitud/visto-firma/")
     public AdendaReemplazo finalizarVistoFirma(@RequestBody FirmaRequestDTO firmaRequestDTO){
         logger.info("visto-firma {}");
+        logger.info("firmaRequestDTO {}",firmaRequestDTO);
+        logger.info("contexto {}",getContexto());
         return adendaReemplazoService.finalizarFirmaAdenda(firmaRequestDTO,getContexto());
     }
 

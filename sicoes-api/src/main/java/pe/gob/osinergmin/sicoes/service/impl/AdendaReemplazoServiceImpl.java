@@ -487,7 +487,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
             ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);
 
-            if (firmaRequestDTO.getVisto()){ //Visto bueno
+            logger.info("firmaRequest:{}",firmaRequestDTO);
+
+            if (Boolean.TRUE.equals(firmaRequestDTO.getVisto())){ //Visto bueno
                 adenda.setEstadoVbGaf(estadoAproAdenda);
                 adenda.setEstadoFirmaJefe(estadoAsig);
                 adenda.setObservacionVb(firmaRequestDTO.getObservacion());
@@ -511,13 +513,18 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G3_NO_EXISTE);
                 }
             } else { //Firma
-                if (firmaRequestDTO.getFirmaJefe()){
+                logger.info("aqui - firma jefe");
+                logger.info("firma_jefe {}", firmaRequestDTO.getFirmaJefe());
+
+                if (Boolean.TRUE.equals(firmaRequestDTO.getFirmaJefe())){
                     adenda.setEstadoFirmaJefe(estadoAproAdenda);
                     adenda.setEstadoFirmaGerencia(estadoAsig);
                     adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
                     //Buscar Aprobacion
                     procesarAprobacion(adenda.getIdReemplazoPersonal(),
                             Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO,contexto,null,null);
+
+                    logger.info("adenda {}",adenda);
 
                     //Notificacion
                     PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
@@ -533,7 +540,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                         throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G4_NO_EXISTE);
                     }
                 }
-                if (firmaRequestDTO.getFirmaGerente()){
+                if (Boolean.TRUE.equals(firmaRequestDTO.getFirmaGerente())){
                     Optional<PersonalReemplazo> personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal());
                     if (!personalReemplazo.isPresent()){
                         throw new ValidacionException(
