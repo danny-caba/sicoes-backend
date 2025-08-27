@@ -1251,74 +1251,81 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     public PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto) {
+        logger.info("personalReemplazo: {}", personalReemplazo);
+        logger.info("contexto: {}", contexto);
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
         }
-
+        logger.info("personalReemplazo.getIdReemplazo(): {}", id);
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO));
         if (existe.getPersonaPropuesta() == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
-
+        logger.info("existe.getPersonaPropuesta: {}", existe.getPersonaPropuesta());
         if (existe.getPersonaBaja() == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
         }
-
+        logger.info("existe.getPersonaBaja: {}", existe.getPersonaBaja());
         Long idPerfContrato = existe.getIdSolicitud();
+        logger.info("idPerfContrato: {}", idPerfContrato);
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
-
+        logger.info("solicitud: {}", solicitud);
         //Validar que existan documentos de inicio de servicio
         existe.setEstadoDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).get(0));
         existe.setEstadoEvalDocIniServ(listadoDetalleDao.listarListadoDetallePorCoodigo(
                 Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR).get(0));
-        if (contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.USUARIO_EXTERNO))) {
-            //Integrar documentacion en la plataforma SIGED
-            List<ListadoDetalle> detalleSeccion = listadoDetalleDao.listarListadoDetalle(Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL);
-            List<Long> idsSeccion = detalleSeccion.stream()
-                    .map(ListadoDetalle::getIdListadoDetalle)
-                    .collect(Collectors.toList());
-            List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(existe.getIdReemplazo(),idsSeccion);
-            List<File> archivosAlfresco=null;
-
-            for (DocumentoReemplazo documento : documentos) {
-                ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(solicitud, contexto);
-                archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
-                try {
-                    DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
-                    if (documentoOutRO.getResultCode() != 1){
-                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
-                                documentoOutRO.getMessage());
-                    }
-                    Integer idArchivo = documentoOutRO.getArchivos().getArchivo().get(0).getIdArchivo();
-                    Integer idDocumento = documentoOutRO.getCodigoDocumento();
-
-                    documento.setIdArchivoSiged(String.valueOf(idArchivo));
-                    documento.setIdDocumento(Long.valueOf(idDocumento));
-                    documentoReemService.actualizar(documento,contexto);
-                } catch (ValidacionException e) {
-                    throw e;
-                } catch (Exception e) {
-                    logger.error("ERROR {} ", e.getMessage(), e);
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
+        List<ListadoDetalle> detalleSeccion = listadoDetalleDao.listarListadoDetalle(Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL);
+        logger.info("detalleSeccion: {}", detalleSeccion);
+        List<Long> idsSeccion = detalleSeccion.stream()
+                .map(ListadoDetalle::getIdListadoDetalle)
+                .collect(Collectors.toList());
+        logger.info("idsSeccion: {}", idsSeccion);
+        List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(existe.getIdReemplazo(),idsSeccion);
+        logger.info("documentos: {}", documentos);
+        List<File> archivosAlfresco=null;
+        for (DocumentoReemplazo documento : documentos) {
+            ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(solicitud, contexto);
+            logger.info("expedienteInRO: {}", expedienteInRO);
+            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
+            try {
+                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
+                logger.info("documentoOutRO: {}", documentoOutRO);
+                if (documentoOutRO.getResultCode() != 1){
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
+                            documentoOutRO.getMessage());
                 }
+                Integer idArchivo = documentoOutRO.getArchivos().getArchivo().get(0).getIdArchivo();
+                logger.info("idArchivo: {}", idArchivo);
+                Integer idDocumento = documentoOutRO.getCodigoDocumento();
+                logger.info("idDocumento: {}", idDocumento);
+                documento.setIdArchivoSiged(String.valueOf(idArchivo));
+                documento.setIdDocumento(Long.valueOf(idDocumento));
+                logger.info("documento: {}", documento);
+                documentoReemService.actualizar(documento,contexto);
+            } catch (ValidacionException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("ERROR {} ", e.getMessage(), e);
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
             }
-        } else {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
         }
-        //Notificacion
         String numeroExpediente = this.obtenerNroExpEmpresa(existe);
+        logger.info("numeroExpediente: {}", numeroExpediente);
         Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.RESPONSABLE_TECNICO)
                 .stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+        logger.info("usuario: {}", usuario);
         if (usuario.isPresent()) {
             notificacionContratoService.notificarEvaluacionPendiente(usuario.get(), numeroExpediente, contexto);
         } else {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
         }
+        logger.info("existe: {}", existe);
+        PersonalReemplazo personalReemplazoOUT = reemplazoDao.save(existe);
         ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
                 Constantes.LISTADO.TIPO_ARCHIVO.CARGA_DOCUMENTOS);
@@ -1327,8 +1334,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         logger.info("tipoArchivo: {}", tipoArchivo);
         Archivo archivo = generarArchivoSigedRegistrarDocIniServ(existe, tipoArchivo, contexto);
-        existe.setArchivo(archivo);
-        return reemplazoDao.save(existe);
+        logger.info("archivo: {}", archivo);
+        personalReemplazoOUT.setArchivo(archivo);
+        return personalReemplazoOUT;
     }
 
     private Archivo generarArchivoSigedRegistrarDocIniServ(PersonalReemplazo personalReemplazo, ListadoDetalle tipoArchivo, Contexto contexto) {
@@ -2133,22 +2141,29 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
+        logger.info("personalReemplazo: {}", personalReemplazo);
+        logger.info("conforme: {}", conforme);
+        logger.info("accion: {}", accion);
+        logger.info("contexto: {}", contexto);
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException("No existe id");
         }
+        logger.info("personalReemplazo.getIdReemplazo(): {}", id);
         PersonalReemplazo existe = reemplazoDao.findById(id)
                 .orElseThrow(() -> new ValidacionException("Id personal no enviado"));
         Long idPerfContrato = existe.getIdSolicitud();
+        logger.info("idPerfContrato: {}", idPerfContrato);
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+        logger.info("solicitud: {}", solicitud);
         Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
+        logger.info("supervisora: {}", supervisora);
         if (accion.equals("A")) {
             if (conforme) {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)); //en proceso  ---ok
                 existe.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO));  //en proceso
                 existe.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_APROBACION)); // en aprobacion  -ok
                 existe.setEstadoEvalDocIniServ(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); // preliminar
-
                 Aprobacion aprob = new Aprobacion();
                 aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,Constantes.LISTADO.TIPO_APROBACION.APROBAR));
                 aprob.setRemplazoPersonal(existe);
@@ -2157,6 +2172,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 Constantes.LISTADO.SECCION_DOC_REEMPLAZO.INFORME).get(0).getIdListadoDetalle()).get(0);
                 aprob.setDocumento(doc);
                 Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.APROBADOR_TECNICO);
+                logger.info("rolUsuarioInterno: {}", rolUsuarioInterno);
                 aprob.setIdRol(rolUsuarioInterno.getIdRol());
                 aprob.setDeTp(supervisora.getTipoPersona().getValor());
                 aprob.setIdContratista(supervisora.getIdSupervisora());
@@ -2165,13 +2181,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 aprob.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
                 aprob.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
                 aprob.setEstadoAprobGerenteLinea(null);
+                logger.info("aprob: {}", aprob);
                 AuditoriaUtil.setAuditoriaRegistro(aprob,contexto);
                 aprobacionDao.save(aprob);
                 notificacionContratoService.notificarCargarDocumentosInicioServicio(supervisora, contexto);
-            } else {
-                existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
-                // enviar notificacion x email
-                notificacionContratoService.notificarSubsanacionDocumentos( supervisora, contexto);
                 ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
                         Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION);
@@ -2179,8 +2192,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                     throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_ARCHIVO_NO_EXISTE);
                 }
                 logger.info("tipoArchivo: {}", tipoArchivo);
-                Archivo archivo = generarArchivoSigedregistrarInicioServicioSolContrSI(existe, tipoArchivo, contexto);
+                Archivo archivo = generarArchivoSigedRegistrarRevDocumentos(existe, tipoArchivo, contexto);
+                logger.info("archivo: {}", archivo);
                 existe.setArchivo(archivo);
+            } else {
+                existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)); //preliminar ---ok
+                notificacionContratoService.notificarSubsanacionDocumentos( supervisora, contexto);
             }
         } else {
             existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.ARCHIVADO)); //archivado   ---ok
@@ -2190,10 +2207,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             obSupMov.setEstado(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
             AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
             supervisoraMovimientoDao.save(obSupMov);
-
             notificacionContratoService.notificarRechazoPersonalPropuesto(solicitud.getSupervisora(), existe.getSupervisora(), contexto);
         }
         AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
+        logger.info("existe: {}", existe);
         return reemplazoDao.save(existe);
     }
 }
