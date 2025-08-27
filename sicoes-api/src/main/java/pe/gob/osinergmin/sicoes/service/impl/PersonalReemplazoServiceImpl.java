@@ -1904,7 +1904,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return result;
     }
 
-
         @Override
     @Transactional(rollbackFor = Exception.class)
     public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,Boolean conforme, Contexto contexto) {
@@ -1923,9 +1922,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Long idPerfContrato = existe.getIdSolicitud();
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
         Archivo archivo;
-        if(conforme==null){
-            conforme = Boolean.FALSE;
-        }
         if(conforme){
             solicitud.setEstadoProcesoSolicitud(Constantes.ESTADO_PROCESO_PERF_CONTRATO.CONCLUIDO);
             solicitud.setDescripcionSolicitud(Constantes.DESC_PROCESO_PERF_CONTRATO.CONCLUIDO);
@@ -2016,12 +2012,18 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             logger.info("supervisora: {}", supervisora);
             personalReemplazo.setSupervisora(supervisora);
             List<Archivo> archivos = new ArrayList<>();
-            Archivo archivoBD = new Archivo();
-            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
-            logger.info("tipoArchivo: {}", tipoArchivo);
-            archivoBD.setTipoArchivo(tipoArchivo);
-            archivoBD.setConforme("Conforme: Sí");
-            archivos.add(archivoBD);
+            ListadoDetalle tipoArchivoContratoLaboral = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
+            logger.info("tipoArchivoContratoLaboral: {}", tipoArchivoContratoLaboral);
+            Archivo archivoBDContratoLaboral = new Archivo();
+            archivoBDContratoLaboral.setTipoArchivo(tipoArchivoContratoLaboral);
+            archivoBDContratoLaboral.setConforme("Conforme: Sí");
+            archivos.add(archivoBDContratoLaboral);
+            ListadoDetalle tipoArchivoSctr = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "SCTR");
+            logger.info("tipoArchivoSctr: {}", tipoArchivoSctr);
+            Archivo archivoBDSctr = new Archivo();
+            archivoBDSctr.setTipoArchivo(tipoArchivoSctr);
+            archivoBDSctr.setConforme("Conforme: Si");
+            archivos.add(archivoBDSctr);
             personalReemplazo.setArchivos(archivos);
             List<Archivo> adicionales = new ArrayList<>();
             Archivo adicionalBD = new Archivo();
@@ -2109,19 +2111,25 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             logger.info("supervisora: {}", supervisora);
             personalReemplazo.setSupervisora(supervisora);
             List<Archivo> archivos = new ArrayList<>();
-            Archivo archivoBD = new Archivo();
-            ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
-            logger.info("tipoArchivo: {}", tipoArchivo);
-            archivoBD.setTipoArchivo(tipoArchivo);
-            archivoBD.setConforme("Conforme: No");
-            archivos.add(archivoBD);
+            ListadoDetalle tipoArchivoContratoLaboral = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "CONTRATO_LABORAL");
+            logger.info("tipoArchivoContratoLaboral: {}", tipoArchivoContratoLaboral);
+            Archivo archivoBDContratoLaboral = new Archivo();
+            archivoBDContratoLaboral.setTipoArchivo(tipoArchivoContratoLaboral);
+            archivoBDContratoLaboral.setConforme("Conforme: Sí");
+            archivos.add(archivoBDContratoLaboral);
+            ListadoDetalle tipoArchivoSctr = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO", "SCTR");
+            logger.info("tipoArchivoSctr: {}", tipoArchivoSctr);
+            Archivo archivoBDSctr = new Archivo();
+            archivoBDSctr.setTipoArchivo(tipoArchivoSctr);
+            archivoBDSctr.setConforme("Conforme: No");
+            archivos.add(archivoBDSctr);
             personalReemplazo.setArchivos(archivos);
             List<Archivo> adicionales = new ArrayList<>();
             Archivo adicionalBD = new Archivo();
             ListadoDetalle tipoArchivoAdicional = listadoDetalleService.obtenerListadoDetalle("DOCUMENTO_EVAL_INI_SERV_ADICIONAL", "CONTRATO_ALQUILER_CAMIONETA");
             logger.info("tipoArchivoAdicional: {}", tipoArchivoAdicional);
             adicionalBD.setTipoArchivo(tipoArchivoAdicional);
-            adicionalBD.setConforme("Conforme: No");
+            adicionalBD.setConforme("Conforme: Sí");
             adicionales.add(adicionalBD);
             personalReemplazo.setAdicionales(adicionales);
             List<PersonalReemplazo> personalesReemplazo = java.util.Collections.singletonList(personalReemplazo);
