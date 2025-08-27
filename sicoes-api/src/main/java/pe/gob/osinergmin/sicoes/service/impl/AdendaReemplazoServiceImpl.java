@@ -132,7 +132,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
         //Buscar Aprobacion
         procesarAprobacion(personalReemplazo.getIdReemplazo(),
-                Constantes.ROLES.EVALUADOR_CONTRATOS,contexto,estadoAproGeneral);
+                Constantes.ROLES.EVALUADOR_CONTRATOS,contexto,estadoAproGeneral,null);
 
         personalReemplazo.setEstadoAprobacionAdenda(estadoAproGeneral);
         personalReemplazoService.actualizar(personalReemplazo,contexto);
@@ -473,22 +473,29 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         try {
             //Vamos actualizar adenda el flag visto bueno
             String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
+            String listadoAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.CODIGO;
             String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
+            String listadoTipoAprob = Constantes.LISTADO.TIPO_APROBACION.CODIGO;
+
             String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.APROBADO;
-            String descAsignado = Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO;
+            String descAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.APROBADO;
+            String descAsignado = Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO;
             String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
+
             ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
+            ListadoDetalle estadoAproAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAprobacionAdenda);
             ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAsignado);
             ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);
 
             if (firmaRequestDTO.getVisto()){ //Visto bueno
-                adenda.setEstadoVbGaf(estadoApro);
+                adenda.setEstadoVbGaf(estadoAproAdenda);
                 adenda.setEstadoFirmaJefe(estadoAsig);
                 adenda.setObservacionVb(firmaRequestDTO.getObservacion());
-
+                ListadoDetalle tipoFirma = listadoDetalleDao.obtenerListadoDetalle(
+                        listadoTipoAprob,Constantes.LISTADO.TIPO_APROBACION.FIRMAR);
                 //Buscar Aprobacion
                 procesarAprobacion(adenda.getIdReemplazoPersonal(),
-                        Constantes.ROLES.G3_APROBADOR_ADMINISTRATIVO,contexto,null);
+                        Constantes.ROLES.G3_APROBADOR_ADMINISTRATIVO,contexto,null,tipoFirma);
 
                 //Notificacion
                 PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
@@ -505,13 +512,12 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 }
             } else { //Firma
                 if (firmaRequestDTO.getFirmaJefe()){
-                    adenda.setEstadoFirmaJefe(estadoApro);
+                    adenda.setEstadoFirmaJefe(estadoAproAdenda);
                     adenda.setEstadoFirmaGerencia(estadoAsig);
                     adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
-
                     //Buscar Aprobacion
                     procesarAprobacion(adenda.getIdReemplazoPersonal(),
-                            Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO,contexto,null);
+                            Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO,contexto,null,null);
 
                     //Notificacion
                     PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
@@ -557,7 +563,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     supervisoraMovimientoService.guardar(movi,contexto);
                     personalReemplazoService.actualizar(personalExiste,contexto);
 
-                    adenda.setEstadoFirmaGerencia(estadoApro);
+                    adenda.setEstadoFirmaGerencia(estadoAproAdenda);
                     adenda.setEstadoAprobacion(estadoConcluido);
                     adenda.setObservacionFirmaGerencia(firmaRequestDTO.getObservacion());
                 }
@@ -705,7 +711,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                 .orElse("");
     }
 
-    private void procesarAprobacion(Long idReemplazo, String codigoRol, Contexto contexto, ListadoDetalle estadoAprob) {
+    private void procesarAprobacion(Long idReemplazo, String codigoRol, Contexto contexto,
+                                    ListadoDetalle estadoAprob, ListadoDetalle tipoAprob) {
         Aprobacion aprobacion = aprobacionDao.findByRemplazoPersonal(idReemplazo)
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.APROB_REEMPLAZO_NO_EXISTE));
 
@@ -713,6 +720,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         aprobacion.setIdRol(rolUsuarioInterno.getIdRol());
         if (estadoAprob != null) {
             aprobacion.setEstadoAprob(estadoAprob);
+        }
+        if (tipoAprob != null){
+            aprobacion.setCoTipoAprobacion(tipoAprob);
         }
         AuditoriaUtil.setAuditoriaActualizacion(aprobacion, contexto);
         aprobacionDao.save(aprobacion);
