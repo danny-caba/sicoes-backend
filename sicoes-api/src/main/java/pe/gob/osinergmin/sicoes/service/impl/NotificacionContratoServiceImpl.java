@@ -54,7 +54,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private static final String ASUNTO_NOTIFICACION_REV_DOCUMENTOS_122 = "SUBSANAR DOCUMENTOS DE REEMPLAZO";
     private static final String NOMBRE_TEMPLATE_REV_DOCUMENTOS_122 = "34-notificacion-rev-documentos-12-2.html";
 
-    private static final String ASUNTO_NOTIFICACION_APROBACION_PENDIENTE = "DOCUMENTACION REVISADA";
+    private static final String ASUNTO_NOTIFICACION_APROBACION_PENDIENTE = "NOTIFICACIÓN PARA APROBAR";
     private static final String NOMBRE_TEMPLATE_APROBACION_PENDIENTE = "35-notificacion-aprobacion-pendiente.html";
 
     private static final String ASUNTO_NOTIFICACION_RECHAZO_PERSONAL = "RECHAZAR EL REEMPLAZO DE PERSONAL PROPUESTO";
