@@ -9,6 +9,6 @@ import pe.gob.osinergmin.sicoes.model.Adenda;
 public interface AdendaDao extends JpaRepository<Adenda, Long> {
 
 @Query("select a from Adenda a "
-        + "where  a.idDocumento  =:documento")
-	public Adenda obtenerAdenda(Long documento);
+        + "where  a.remplazoPersonal.idReemplazo  =:idreemplazo")
+	public Adenda obtenerAdenda(Long idreemplazo);
 }

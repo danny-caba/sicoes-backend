@@ -1602,7 +1602,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){ //Aprobación Rol Evaluador de contratos
 
-            Adenda adendaFinal = adendaDao.obtenerAdenda(aprobacion.getIdDocumento());
+            Adenda adendaFinal = adendaDao.obtenerAdenda(persoReempFinal.getIdReemplazo());
             if(adendaFinal == null) {
                 throw new ValidacionException("No se encuentra adenda");
             }
