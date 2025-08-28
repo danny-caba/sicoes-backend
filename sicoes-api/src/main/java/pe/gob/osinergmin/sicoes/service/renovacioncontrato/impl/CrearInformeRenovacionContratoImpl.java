@@ -221,6 +221,13 @@ public class CrearInformeRenovacionContratoImpl  {
     return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
 
+    public static String removerSufijoPdf(String nombreArchivo) {
+        if (nombreArchivo == null) {
+            return null;
+        }
+        // Remover .pdf al final, case insensitive
+        return nombreArchivo.replaceAll("(?i)\\.pdf$", "");
+    }
 
     private void adjuntarDocumentoSiged(InformeRenovacionContrato nuevoInformeRenovacionContrato, String nombre,byte[] bytesSalida) {
         List<File> archivosAlfresco = new ArrayList<>();
@@ -230,7 +237,8 @@ public class CrearInformeRenovacionContratoImpl  {
         );
         File file = null;
         try {
-            file = crearFileDesdeBytes(bytesSalida, nombre,"pdf");
+            String nombreSinExtension = removerSufijoPdf(nombre);
+            file = crearFileDesdeBytes(bytesSalida, nombreSinExtension,".pdf");
             archivosAlfresco.add(file);
         } catch (IOException e) {
             e.printStackTrace();
