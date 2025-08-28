@@ -2171,7 +2171,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
 
         for (DocumentoReemplazo documento : documentos) {
-            if (documento.getIdArchivoSiged() == null) {
+            if (documento.getIdArchivoSiged() != null) {
                 continue;
             }
             // Obtener los archivos de Alfresco relacionados con el documento
