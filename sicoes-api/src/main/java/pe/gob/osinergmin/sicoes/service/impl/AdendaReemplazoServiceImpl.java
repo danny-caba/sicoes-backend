@@ -158,36 +158,11 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         String listadoSeccion = Constantes.LISTADO.SECCIONES_REEMPLAZO_PERSONAL;
         String descSeccion = Constantes.LISTADO.SECCION_DOC_REEMPLAZO.CARGAR_ADENDA;
         ListadoDetalle detalleSeccion = listadoDetalleDao.obtenerListadoDetalle(listadoSeccion, descSeccion);
-
         logger.info("detalleSeccion:{}", detalleSeccion.getIdListadoDetalle());
-
         List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
                 personalReemplazo.getIdReemplazo(),
                 Collections.singletonList(detalleSeccion.getIdListadoDetalle()));
-        List<File> archivosAlfresco=null;
-        ExpedienteInRO expedienteInRO = personalReemplazoService.crearExpedienteAgregarDocumentos(solicitud, contexto);
-        for (DocumentoReemplazo documento : documentos) {
-            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
-            try {
-                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
-                if (documentoOutRO.getResultCode() != 1){
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
-                            documentoOutRO.getMessage());
-                }
-                //Buscamos los id de los archivos de SIGED
-                String nombreDocumento = archivosAlfresco.get(0).getName();
-                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(
-                        solicitud.getNumeroExpediente(), contexto.getUsuario().getUsuario(),nombreDocumento);
-                documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
-                documento.setIdDocumentoSiged (String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
-                documentoReemService.actualizar(documento,contexto);
-            } catch (ValidacionException e) {
-                throw e;
-            } catch (Exception e) {
-                logger.error("ERROR {} ", e.getMessage(), e);
-                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
-            }
-        }
+        personalReemplazoService.procesarDocumentosReemplazo(documentos, solicitud, contexto);
         return adendaReemplazoDao.save(adenda);
     }
 
