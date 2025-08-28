@@ -9,10 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,12 +35,18 @@ import net.sf.jasperreports.engine.JasperReport;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
+import pe.gob.osinergmin.sicoes.model.Contrato;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.ListadoDetalleRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.ContratoDao;
+import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
+import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -95,6 +99,12 @@ public class CrearInformeRenovacionContratoImpl  {
     @Value("${crear.expediente.parametros.crea.publico}")
     private String crearExpedienteParametrosCreaPublico;
 
+    @Value("${crear.expediente.parametros.tipo.cliente}")
+    private String crearExpedienteParametrosTipoCliente;
+
+    @Value("${crear.expediente.parametros.direccion.estado}")
+    private String crearExpedienteParametrosDireccionEstado;
+
     private final InformeRenovacionContratoDao informeRenovacionContratoDao;
     private final SigedOldConsumer sigedOldConsumer;
     private final SigedApiConsumer sigedApiConsumer;
@@ -102,6 +112,9 @@ public class CrearInformeRenovacionContratoImpl  {
     private final ArchivoDao archivoDao;
     private final ListadoDetalleService listadoDetalleService;
     private final SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
+    private final ContratoDao contratoDao;
+    private final SicoesSolicitudDao solicitudDao;
+    private final UsuarioDao usuarioDao;
 
 
     public CrearInformeRenovacionContratoImpl(
@@ -111,7 +124,10 @@ public class CrearInformeRenovacionContratoImpl  {
         NotificacionRenovacionContratoService notificacionRenovacionContratoService,
         ArchivoDao archivoDao,
         ListadoDetalleService listadoDetalleService,
-        SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao) {
+        SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao,
+        ContratoDao contratoDao,
+        SicoesSolicitudDao solicitudDao,
+        UsuarioDao usuarioDao) {
 
         this.informeRenovacionContratoDao = informeRenovacionContratoDao;
         this.sigedOldConsumer = sigedOldConsumer;
@@ -120,6 +136,9 @@ public class CrearInformeRenovacionContratoImpl  {
         this.archivoDao = archivoDao;
         this.listadoDetalleService = listadoDetalleService;
         this.solicitudPerfecionamientoContratoDao = solicitudPerfecionamientoContratoDao;
+        this.contratoDao = contratoDao;
+        this.solicitudDao = solicitudDao;
+        this.usuarioDao = usuarioDao;
     }
 
 
@@ -129,26 +148,46 @@ public class CrearInformeRenovacionContratoImpl  {
     Long idSolicitud = informeRenovacionContratoDTO.getRequerimiento().getSolicitudPerfil().getIdSolicitud(); 
     List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud  = 
         solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-    
+
+
     if (listaPerfilesAprobadoresBySolicitud.isEmpty()) {
-        return informeRenovacionContratoDTO;
+        throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IDSOlcitud: " + idSolicitud);       
     }
+
+    Contrato contrato = contratoDao.findBySolicitudPerfContId(idSolicitud)
+    .orElseThrow(() -> new ValidacionException(
+        Constantes.CODIGO_MENSAJE.CONTRATO_NO_ENCONTRADO,
+        "Contrato no encontrado para idSolicitud: " + idSolicitud
+    ));
+    String nombreEvaluador = contexto.getUsuario().getNombreUsuario();
+    String nombreEmpresaSupervisora = informeRenovacionContratoDTO.getRequerimiento().getSolicitudPerfil().getSupervisora().getNombres();
+    String numExpediente = informeRenovacionContratoDTO.getRequerimiento().getNuExpediente();
 
     InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
     informe.setVigente(Boolean.TRUE);
     informe.setRegistro(Constantes.ESTADO.ACTIVO);
     informe.setCompletado(Constantes.ESTADO.INACTIVO);
 
+    ListadoDetalle estadoIformeLd = listadoDetalleService.obtenerListadoDetalle(
+            Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO ,
+            Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO
+    );
+    ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
+    listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoIformeLd.getIdListadoDetalle());
+
+    informe.setEstadoAprobacionInforme(listadoDetalleRenovacionContrato);
+
+
     AuditoriaUtil.setAuditoriaRegistro(informe,contexto);
 
     File jrxml = new File(pathJasper + "Formato_Informe_RenovacionContrato.jrxml");
 
-    ByteArrayOutputStream output = generarPdfOutputStream(informe, jrxml);
+    ByteArrayOutputStream output = generarPdfOutputStream(informe,nombreEvaluador,nombreEmpresaSupervisora,numExpediente, jrxml);
     byte[] bytesSalida = output.toByteArray();
 
     Archivo archivoPdf = buidlArchivo(bytesSalida, informeRenovacionContratoDTO.getIdInformeRenovacion());
 
-    archivoPdf.setIdContrato(informeRenovacionContratoDTO.getRequerimiento().getIdReqRenovacion());
+    archivoPdf.setIdContrato(contrato.getIdContrato());
 
     String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(
         null, 
@@ -159,18 +198,25 @@ public class CrearInformeRenovacionContratoImpl  {
         null, 
         archivoPdf);
     archivoPdf.setNombreAlFresco(alfrescoPath);
+    AuditoriaUtil.setAuditoriaRegistro(archivoPdf,contexto);
 
+
+    adjuntarDocumentoSiged(informe,archivoPdf.getNombreReal(),bytesSalida);
+
+    UUID uuid = UUID.randomUUID();
+    String uuidString = uuid.toString();
+    informe.setUuiInfoRenovacion(uuidString);
+    InformeRenovacionContrato nuevoInformeRenovacionContrato =  informeRenovacionContratoDao.save(informe);
+
+    archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
     archivoPdf = archivoDao.save(archivoPdf);
+
 
     logger.info("Archivo registrado en DB con ID: {} y ruta Alfresco: {} " , archivoPdf.getIdArchivo() , alfrescoPath);
 
-    adjuntarDocumentoSiged(informe,archivoPdf.getNombre(),bytesSalida);
 
-    InformeRenovacionContrato nuevoInformeRenovacionContrato =  informeRenovacionContratoDao.save(informe);
-
-    Usuario usuario = contexto.getUsuario();
-    String numExpediente = informeRenovacionContratoDTO.getRequerimiento().getNuExpediente();
-    notificacionRenovacionContratoService.notificacionInformePorAprobar( usuario,  numExpediente, contexto);
+    Usuario usuarioG1=usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
+    notificacionRenovacionContratoService.notificacionInformePorAprobar( usuarioG1,  numExpediente, contexto);
 
     return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
@@ -199,7 +245,7 @@ public class CrearInformeRenovacionContratoImpl  {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, documentoOutRO.getMessage());
             }
         } catch (Exception e) {
-            logger.error("Error al agregar documento informe renovacion en SIGED", e);
+            logger.error("Error al agregar documento informe renovacion contrato en SIGED", e);
         }
     }
         
@@ -216,8 +262,10 @@ public class CrearInformeRenovacionContratoImpl  {
 
     private Archivo buidlArchivo(byte[] bytesSalida, Long idInformeRenovacion) {
         Archivo archivo = new Archivo();
-        archivo.setNombre("INFORME_RENOVACION_"+".pdf");
-        archivo.setNombreReal("INFORME_RENOVACION_REAL_"+".pdf");
+        archivo.setNombre("INFORME_RENOVACION_CONTRATO_"+".pdf");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("hhmmss");
+		String hora = sdf2.format(new Date());
+        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_"+hora+".pdf");
         archivo.setTipo("application/pdf");
 
         
@@ -239,14 +287,21 @@ public class CrearInformeRenovacionContratoImpl  {
         return archivo;
     }
 
-    private ByteArrayOutputStream generarPdfOutputStream(InformeRenovacionContrato informe, File jrxml) {
+    private ByteArrayOutputStream generarPdfOutputStream(InformeRenovacionContrato informe,
+    String nombreEvaluador,
+    String nombreEmpresaSupervisora,
+    String numExpediente,
+    File jrxml) {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     JasperPrint print = null;
 
     try {
     JasperReport jasperReport = getJasperCompilado(jrxml);
 
-    Map<String, Object> parameters = buildParameters(informe);
+    Map<String, Object> parameters = buildParameters(informe,
+     nombreEvaluador,
+     nombreEmpresaSupervisora,
+     numExpediente);
 
     print = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
     output = new ByteArrayOutputStream();
@@ -260,15 +315,17 @@ public class CrearInformeRenovacionContratoImpl  {
     return output;
     }
     
-    private Map<String, Object> buildParameters(InformeRenovacionContrato informe) {
+    private Map<String, Object> buildParameters(InformeRenovacionContrato informe, 
+    String nombreEvaluador,
+    String nombreEmpresaSupervisora,
+    String numExpediente
+    ) {
 
         InputStream isLogoSicoes = null;
         InputStream isLogoOsinergmin = null;
 
-        String nombreAreaSolicitud = "area";
-        String nombreEvaluador = "Evaluador";
-        String nombreEmpresaSupervisora = "Supervisora";
-        String numExpediente = "num expe";
+        String nombreAreaSolicitud = "G1";
+
 
         Map<String, Object> parameters = new HashMap<>();
         logger.info("SUBREPORT_DIR: {}", pathJasper);
@@ -320,6 +377,13 @@ public class CrearInformeRenovacionContratoImpl  {
 
 		expediente.setProceso(Integer.parseInt(crearExpedienteParametrosProceso));
 		expediente.setDocumento(documento);
+        SicoesSolicitud solicitud = solicitudDao.findSolicitudById(nuevoInformeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud())
+                                    .orElseThrow(
+                                            () -> new ValidacionException(
+                                                    Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA,
+                                                    "Solicitud para renovación no encontrado para idInformeRenovacion: " + nuevoInformeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud()
+                                            )
+                                    );
         String numExpediente = nuevoInformeRenovacionContrato.getRequerimiento().getNuExpediente();
         expediente.setNroExpediente(numExpediente); 
 
@@ -331,16 +395,16 @@ public class CrearInformeRenovacionContratoImpl  {
 		cs.setApellidoPaterno("-");
 		cs.setApellidoMaterno("-");
 		cs.setRepresentanteLegal("-");		
-		cs.setRazonSocial("solicitud.getPersona().getNombreRazonSocial()");
-		cs.setNroIdentificacion("solicitud.getPersona().getNumeroDocumento()");
-		cs.setTipoCliente(Integer.parseInt("crear.expediente.parametros.tipo.cliente"));
+		cs.setRazonSocial(solicitud.getSupervisora().getNombreRazonSocial());
+		cs.setNroIdentificacion(solicitud.getSupervisora().getNumeroDocumento());
+		cs.setTipoCliente(Integer.parseInt(crearExpedienteParametrosTipoCliente));
 		cliente.add(cs);
 		
         d.setDireccion("-");
 		d.setDireccionPrincipal(true);
-		d.setEstado('1');//"crear.expediente.parametros.direccion.estado"
+		d.setEstado(crearExpedienteParametrosDireccionEstado.charAt(0));
 		d.setTelefono("-");
-		d.setUbigeo(Integer.parseInt("-"));
+		d.setUbigeo(Integer.parseInt("150101"));
 		direccion.add(d);
 
 		direcciones.setDireccion(direccion);

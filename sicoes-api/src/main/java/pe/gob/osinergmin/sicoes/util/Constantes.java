@@ -914,6 +914,8 @@ public class Constantes {
 		public static final String PROPUESTA_NO_ENCONTRADA = "V02002";
 		public static final String LISTADO_DETALLE_NO_ENCONTRADO = "V02003";
 		public static final String APROBACION_NO_ENCONTRADA = "V02004";
+		public static final String CONTRATO_NO_ENCONTRADO = "V02005";
+		public static final String SOLICITUD_NO_ENCONTRADA = "V02006";
 
 	}
 	public static final class ROLES {
