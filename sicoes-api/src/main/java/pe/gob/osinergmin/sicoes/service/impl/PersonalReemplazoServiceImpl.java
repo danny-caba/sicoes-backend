@@ -470,31 +470,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         );
         List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
                 personalReemplazoOUT.getIdReemplazo(),idsSeccion);
-        List<File> archivosAlfresco;
-        ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
-        for (DocumentoReemplazo documento : documentos) {
-            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
-            try {
-                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
-                if (documentoOutRO.getResultCode() != 1){
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
-                            documentoOutRO.getMessage());
-                }
-                //Buscamos los id de los archivos de SIGED
-                String nombreDocumento = archivosAlfresco.get(0).getName();
-                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(
-                        sicoesSolicitud.getNumeroExpediente(), contexto.getUsuario().getUsuario(),nombreDocumento);
-                documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
-                documento.setIdDocumentoSiged (String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
-                documentoReemService.actualizar(documento,contexto);
-            } catch (ValidacionException e) {
-                throw e;
-            } catch (Exception e) {
-                logger.error("ERROR {} ", e.getMessage(), e);
-                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
-            }
-        }
-
+        procesarDocumentosReemplazo(documentos, sicoesSolicitud, contexto);
         //
         logger.info("sicoesSolicitud: {}", sicoesSolicitud);
         ListadoDetalle tipoArchivo = listadoDetalleService.obtenerListadoDetalle(
@@ -949,30 +925,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             List<Long> idsSeccion = Arrays.asList(seccion5.getIdListadoDetalle());
             List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(
                     personalReemplazo.getIdReemplazo(),idsSeccion);
-            List<File> archivosAlfresco;
-            ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
-            for (DocumentoReemplazo documento : documentos) {
-                archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
-                try {
-                    DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
-                    if (documentoOutRO.getResultCode() != 1){
-                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
-                                documentoOutRO.getMessage());
-                    }
-                    //Buscamos los id de los archivos de SIGED
-                    String nombreDocumento = archivosAlfresco.get(0).getName();
-                    IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(
-                            sicoesSolicitud.getNumeroExpediente(), contexto.getUsuario().getUsuario(),nombreDocumento);
-                    documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
-                    documento.setIdDocumentoSiged (String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
-                    documentoReemService.actualizar(documento,contexto);
-                } catch (ValidacionException e) {
-                    throw e;
-                } catch (Exception e) {
-                    logger.error("ERROR {} ", e.getMessage(), e);
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
-                }
-            }
+            procesarDocumentosReemplazo(documentos, sicoesSolicitud, contexto);
         } else {
             ListadoDetalle estadoPreliminar = listadoDetalleDao.listarListadoDetallePorCoodigo(
                             Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR)
@@ -1288,33 +1241,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         logger.info("idsSeccion: {}", idsSeccion);
         List<DocumentoReemplazo> documentos = documentoReemDao.obtenerPorIdReemplazoSecciones(existe.getIdReemplazo(),idsSeccion);
         logger.info("documentos: {}", documentos);
-        List<File> archivosAlfresco;
-        ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(solicitud, contexto);
-        logger.info("expedienteInRO: {}", expedienteInRO);
-        for (DocumentoReemplazo documento : documentos) {
-            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
-            try {
-                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO,archivosAlfresco);
-                logger.info("documentoOutRO: {}", documentoOutRO);
-                if (documentoOutRO.getResultCode() != 1){
-                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
-                            documentoOutRO.getMessage());
-                }
-                Integer idArchivo = documentoOutRO.getArchivos().getArchivo().get(0).getIdArchivo();
-                logger.info("idArchivo: {}", idArchivo);
-                Integer idDocumento = documentoOutRO.getCodigoDocumento();
-                logger.info("idDocumento: {}", idDocumento);
-                documento.setIdArchivoSiged(String.valueOf(idArchivo));
-                documento.setIdDocumento(Long.valueOf(idDocumento));
-                logger.info("documento: {}", documento);
-                documentoReemService.actualizar(documento,contexto);
-            } catch (ValidacionException e) {
-                throw e;
-            } catch (Exception e) {
-                logger.error("ERROR {} ", e.getMessage(), e);
-                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
-            }
-        }
+        procesarDocumentosReemplazo(documentos, solicitud, contexto);
+
         String numeroExpediente = this.obtenerNroExpEmpresa(existe);
         logger.info("numeroExpediente: {}", numeroExpediente);
         Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.RESPONSABLE_TECNICO)
@@ -2233,5 +2161,43 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
         logger.info("existe: {}", existe);
         return reemplazoDao.save(existe);
+    }
+
+    @Override
+    public void procesarDocumentosReemplazo(List<DocumentoReemplazo> documentos,
+                                            SicoesSolicitud sicoesSolicitud,
+                                            Contexto contexto) throws ValidacionException {
+        List<File> archivosAlfresco;
+        ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(sicoesSolicitud, contexto);
+
+        for (DocumentoReemplazo documento : documentos) {
+            if (documento.getIdArchivoSiged() == null) {
+                continue;
+            }
+            // Obtener los archivos de Alfresco relacionados con el documento
+            archivosAlfresco = archivoService.obtenerArchivosPorIdDocumentoReem(documento.getIdDocumento(), contexto);
+            try {
+                // Agregar documento a SIGED
+                DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
+                if (documentoOutRO.getResultCode() != 1) {
+                    throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE,
+                            documentoOutRO.getMessage());
+                }
+                // Obtener los IDs de los archivos de SIGED
+                String nombreDocumento = archivosAlfresco.get(0).getName();
+                IdsDocumentoArchivoDTO idsDocumentoArchivoDTO = sigedOldConsumer.obtenerIdArchivo(
+                        sicoesSolicitud.getNumeroExpediente(), contexto.getUsuario().getUsuario(), nombreDocumento);
+
+                // Actualizar los valores del documento con los IDs obtenidos
+                documento.setIdArchivoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdArchivo()));
+                documento.setIdDocumentoSiged(String.valueOf(idsDocumentoArchivoDTO.getIdDocumento()));
+                documentoReemService.actualizar(documento, contexto);
+            } catch (ValidacionException e) {
+                throw e; // Si es una excepción de validación, la volvemos a lanzar
+            } catch (Exception e) {
+                logger.error("ERROR {} ", e.getMessage(), e);
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_CREAR_EXPEDIENTE);
+            }
+        }
     }
 }
