@@ -64,10 +64,10 @@ public class NotificacionRenovacionContratoServiceImpl implements NotificacionRe
     @Override
     public void notificacionInformePorAprobar(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
-        logger.info(" notificarReemplazoPersonalByEmail para email: {} ",email);
-        String nombreRol = "ROl G1";
+        String nombreUsuario = usuario.getNombreUsuario();
+        logger.info(" notificacionInformePorAprobar para email: {} nombre: {} ",email,nombreUsuario);
         Context ctx = new Context();
-        ctx.setVariable("nombreRol", nombreRol);
+        ctx.setVariable("nombreRol", nombreUsuario);
         ctx.setVariable("numeroExpediente", numExpediente);
 
         Notificacion notificacion = buildNotification(
