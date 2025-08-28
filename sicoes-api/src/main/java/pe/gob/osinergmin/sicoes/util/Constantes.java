@@ -176,8 +176,6 @@ public class Constantes {
 			public static final String ARCHIVO_REQUERIMIENTO = "TA26";
 			public static final String ARCHIVO_APROBACION_REQUERIMIENTO = "TA27";
 			public static final String INFORME_REQUERIMIENTO = "TA28";
-			public static final String REQUERIMIENTO = "TA26";
-			public static final String APROBACION_REQUERIMIENTO = "TA27";
 			public static final String DOCUMENTO_REQUERIMIENTO = "TA29";
 			public static final String CONTRATO_REQUERIMIENTO = "TA30";
 			public static final String ARCHIVO_ARCHIVAR_REQUERIMIENTO = "TA31";
@@ -655,6 +653,7 @@ public class Constantes {
 
 		public static final class ESTADO_REQ_INVITACION {
 			public static final String CODIGO 						= "ESTADO_REQ_INVITACION";
+			public static final String INVITADO 					= "INVITADO";
 			public static final String ACEPTADO 					= "ACEPTADO";
 			public static final String RECHAZADO 					= "RECHAZADO";
 			public static final String CANCELADO 					= "CANCELADO";

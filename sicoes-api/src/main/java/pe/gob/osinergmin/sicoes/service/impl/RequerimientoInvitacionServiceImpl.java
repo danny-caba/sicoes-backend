@@ -82,20 +82,10 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Override
     @Transactional
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
-        ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
-                Constantes.LISTADO.ESTADO_INVITACION.ARCHIVADO
-        );
-        if (estadoArchivado == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ARCHIVADO_NO_CONFIGURADO_EN_LISTADO_DETALLE);
-        }
         ListadoDetalle estadoInvitado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
-                Constantes.LISTADO.ESTADO_INVITACION.INVITADO
+                Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_REQ_INVITACION.INVITADO
         );
-        if (estadoInvitado == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_INVITADO_NO_CONFIGURADO_EN_LISTADO_DETALLE);
-        }
         requerimientoInvitacion.setEstado(estadoInvitado);
         Date fechaInvitacion = new Date();
         requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
