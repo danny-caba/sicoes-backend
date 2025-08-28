@@ -8,7 +8,20 @@ import pe.gob.osinergmin.sicoes.service.renovacioncontrato.AprobacionInformeServ
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
-
+/**
+ * Controlador REST para la gestión de aprobaciones de informes de renovación de contrato.
+ * 
+ * Este controlador maneja los diferentes niveles de aprobación del flujo de renovación de contrato:
+ * - G1: Aprobación de Jefe de Unidad
+ * - G2: Aprobación de Gerente de División  
+ * - GPPM G3: Aprobación de Gerente de Procesos de Proyectos y Mantenimiento
+ * - GSE G3: Aprobación final de Gerencia de Supervisión de Electricidad
+ * 
+ * Cada endpoint valida permisos, procesa la lógica de negocio y envía notificaciones correspondientes.
+ * 
+ * @author Sistema SICOES
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/renovacion-contrato/aprobacion-informe")
 public class AprobacionInformeRestController extends BaseRestController {
@@ -61,5 +74,18 @@ public class AprobacionInformeRestController extends BaseRestController {
         // Obtener contexto (puede ser de sesión, request, etc.)
         Contexto contexto = getContexto();
         return aprobacionInformeService.aprobarInformeRenovacionGppmG3(requestDTO, contexto);
+    }
+
+    /**
+     * Endpoint para aprobar informe de renovación GSE G3.
+     * @param requestDTO DTO con datos de la aprobación
+     * @return DTO con el resultado de la aprobación
+     */
+    @PostMapping("/aprobar-informe-renovacion-gse-g3")
+    public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGseG3(
+            @RequestBody AprobacionInformeCreateRequestDTO requestDTO) {
+        // Obtener contexto (puede ser sesión, request, etc.)
+        Contexto contexto = getContexto();
+        return aprobacionInformeService.aprobarInformeRenovacionGseG3(requestDTO, contexto);
     }
 }

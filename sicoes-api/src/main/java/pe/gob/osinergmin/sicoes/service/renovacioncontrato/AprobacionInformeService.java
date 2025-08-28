@@ -31,4 +31,12 @@ public interface AprobacionInformeService {
      * @return DTO con el resultado de la aprobación
      */
     AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGppmG3(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto);
+
+    /**
+     * Aprueba el informe de renovación GSE G3 - Nivel final de aprobación.
+     * @param requestDTO DTO con datos de la aprobación
+     * @param contexto contexto de la petición
+     * @return DTO con el resultado de la aprobación
+     */
+    AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGseG3(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto);
 }

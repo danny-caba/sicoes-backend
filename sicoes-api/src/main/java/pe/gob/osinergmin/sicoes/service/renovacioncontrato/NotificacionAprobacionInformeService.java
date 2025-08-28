@@ -35,4 +35,13 @@ public interface NotificacionAprobacionInformeService {
      * @return ID de la notificación creada
      */
     Long notificacionInformePorEvaluar(Usuario usuario, String numExpediente, Contexto contexto);
+
+    /**
+     * Envía notificación de solicitud de contratos (flujo final GSE G3).
+     * @param usuario Usuario que recibirá la notificación
+     * @param numExpediente Número de expediente del requerimiento
+     * @param contexto Contexto de la operación
+     * @return ID de la notificación creada
+     */
+    Long notificacionSolicitudDeContratos(Usuario usuario, String numExpediente, Contexto contexto);
 }
