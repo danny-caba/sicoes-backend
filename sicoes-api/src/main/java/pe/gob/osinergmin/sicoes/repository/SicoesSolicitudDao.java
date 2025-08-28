@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
@@ -18,6 +20,14 @@ import pe.gob.osinergmin.sicoes.util.Constantes;
 
 @Repository
 public interface SicoesSolicitudDao extends JpaRepository<SicoesSolicitud, Long> {
+
+
+	@Query("SELECT s FROM SicoesSolicitud s " +
+			"LEFT JOIN FETCH s.propuesta p " +
+			"LEFT JOIN FETCH s.supervisora sup " +
+			"LEFT JOIN FETCH s.tipoContratacion tc " +
+			"WHERE s.idSolicitud = :idSolicitud")
+	Optional<SicoesSolicitud> findSolicitudById(@Param("idSolicitud") Long idSolicitud);
 
 	@Query(value = "select s from SicoesSolicitud s "
 			+ "left join fetch s.propuesta p "
