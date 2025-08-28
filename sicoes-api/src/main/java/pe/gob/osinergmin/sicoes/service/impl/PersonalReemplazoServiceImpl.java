@@ -2226,7 +2226,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             obSupMov.setEstado(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
             AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
             supervisoraMovimientoDao.save(obSupMov);
-            Supervisora personal = existe.getSupervisora();
+            Supervisora personal = existe.getPersonaPropuesta();
             logger.info("personal: {}", personal.getIdSupervisora());
             notificacionContratoService.notificarRechazoPersonalPropuesto(supervisora, personal, contexto);
         }
