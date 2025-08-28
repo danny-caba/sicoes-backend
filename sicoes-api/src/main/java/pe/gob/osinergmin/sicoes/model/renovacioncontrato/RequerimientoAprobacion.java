@@ -86,11 +86,9 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private InformeRenovacion informeRenovacion;
 
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_NOTIFICACION", insertable = false, updatable = false)
     private Notificacion notificacion;
-
 
 
     @Temporal(TemporalType.DATE)
