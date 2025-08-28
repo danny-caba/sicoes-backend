@@ -35,4 +35,12 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
            "AND r.idGrupoAprobadorLd = :idUsuario " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorAprobador(@Param("idUsuario") Long idUsuario);
+
+    @Query("SELECT r FROM RequerimientoAprobacion r " +
+           "WHERE r.idInformeRenovacion = :idInformeRenovacion " +
+           "AND r.idGrupoAprobadorLd = :idGrupoAprobadorLd " +
+           "ORDER BY r.fecCreacion DESC")
+    List<RequerimientoAprobacion> findByIdInformeRenovacionAndIdGrupoAprobadorLd(
+        @Param("idInformeRenovacion") Long idInformeRenovacion, 
+        @Param("idGrupoAprobadorLd") Long idGrupoAprobadorLd);
 }
