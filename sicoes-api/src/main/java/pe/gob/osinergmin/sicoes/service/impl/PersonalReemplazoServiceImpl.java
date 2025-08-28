@@ -2174,9 +2174,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Long idPerfContrato = existe.getIdSolicitud();
         logger.info("idPerfContrato: {}", idPerfContrato);
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
-        logger.info("solicitud: {}", solicitud);
+        logger.info("solicitud: {}", solicitud.getIdSolicitud());
         Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
-        logger.info("supervisora: {}", supervisora);
+        logger.info("supervisora: {}", supervisora.getIdSupervisora());
         if (accion.equals("A")) {
             if (conforme) {
                 existe.setEstadoReemplazo(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO)); //en proceso  ---ok
@@ -2226,7 +2226,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             obSupMov.setEstado(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
             AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
             supervisoraMovimientoDao.save(obSupMov);
-            notificacionContratoService.notificarRechazoPersonalPropuesto(solicitud.getSupervisora(), existe.getSupervisora(), contexto);
+            Supervisora personal = existe.getSupervisora();
+            logger.info("personal: {}", personal.getIdSupervisora());
+            notificacionContratoService.notificarRechazoPersonalPropuesto(supervisora, personal, contexto);
         }
         AuditoriaUtil.setAuditoriaRegistro(existe,contexto);
         logger.info("existe: {}", existe);
