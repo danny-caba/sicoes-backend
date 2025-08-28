@@ -15,4 +15,20 @@ public interface AprobacionInformeService {
      * @return DTO con el resultado de la aprobación
      */
     AprobacionInformeCreateResponseDTO aprobarInformeRenovacionG1(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto);
+
+    /**
+     * Aprueba el informe de renovación G2.
+     * @param requestDTO DTO con datos de la aprobación
+     * @param contexto contexto de la petición
+     * @return DTO con el resultado de la aprobación
+     */
+    AprobacionInformeCreateResponseDTO aprobarInformeRenovacionG2(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto);
+
+    /**
+     * Aprueba el informe de renovación GPPM G3.
+     * @param requestDTO DTO con datos de la aprobación
+     * @param contexto contexto de la petición
+     * @return DTO con el resultado de la aprobación
+     */
+    AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGppmG3(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto);
 }

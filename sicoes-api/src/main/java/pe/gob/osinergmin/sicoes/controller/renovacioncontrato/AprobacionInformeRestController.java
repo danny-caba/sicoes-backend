@@ -37,5 +37,29 @@ public class AprobacionInformeRestController extends BaseRestController {
         return aprobacionInformeService.aprobarInformeRenovacionG1(requestDTO, contexto);
     }
 
-    // ...existing code...
+    /**
+     * Endpoint para aprobar informe de renovación G2.
+     * @param requestDTO DTO con datos de la aprobación
+     * @return DTO con el resultado de la aprobación
+     */
+    @PostMapping("/aprobar-informe-renovacion-g2")
+    public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionG2(
+            @RequestBody AprobacionInformeCreateRequestDTO requestDTO) {
+        // Obtener contexto autenticado
+        Contexto contexto = getContexto();
+        return aprobacionInformeService.aprobarInformeRenovacionG2(requestDTO, contexto);
+    }
+
+    /**
+     * Endpoint para aprobar informe de renovación GPPM G3.
+     * @param requestDTO DTO con datos de la aprobación
+     * @return DTO con el resultado de la aprobación
+     */
+    @PostMapping("/aprobar-informe-renovacion-gppm-g3")
+    public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGppmG3(
+            @RequestBody AprobacionInformeCreateRequestDTO requestDTO) {
+        // Obtener contexto (puede ser de sesión, request, etc.)
+        Contexto contexto = getContexto();
+        return aprobacionInformeService.aprobarInformeRenovacionGppmG3(requestDTO, contexto);
+    }
 }
