@@ -732,9 +732,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     private static String obtenerNombreEmpresaSupervisora(SicoesSolicitud solicitud) {
         Supervisora empresa = solicitud.getSupervisora();
-        String razonSocial = empresa.getNombreRazonSocial();
+        String razonSocial = Optional.ofNullable(empresa.getNombreRazonSocial()).orElse("");
         String nombreSupervisora = null;
-        if(razonSocial!=null){
+        if(!razonSocial.isEmpty()){
             nombreSupervisora = razonSocial;
         }else{
             String apellidoPaterno = empresa.getApellidoPaterno();

@@ -380,10 +380,10 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     private String obtenerNombreSupervisora(Supervisora personaPropuesta) {
-        String razonSocial = personaPropuesta.getNombreRazonSocial();
+        String razonSocial = Optional.ofNullable(personaPropuesta.getNombreRazonSocial()).orElse("");
         this.logger.info("razon social juridica {} ", razonSocial);
         String nombreSupervisora = null;
-        if(razonSocial!=null){
+        if(!razonSocial.isEmpty()){
             nombreSupervisora = razonSocial;
         }else{
             String apellidoPaterno = personaPropuesta.getApellidoPaterno();
