@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.EvaluacionDocumentacion;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -33,7 +34,7 @@ public interface EvaluacionDocumentacionDao extends JpaRepository<EvaluacionDocu
             "        ) AS PERSONA, " +
             "    REPE.CO_PERFIL AS PERFIL, " +
             "    REPE.FE_FECHA_REGISTRO AS FECHA_REGISTRO, " +
-            "    REPE.ES_ESTADO_EVAL_DOC AS ID_ESTADO_EVAL_DOC_PERS_REEMP, " +
+            "    REPE.ES_ESTADO_REEMPLAZO AS ID_ESTADO_EVAL_DOC_PERS_REEMP, " +
             "    ESTADO_REEMP.VALOR  AS ESTADO_EVAL_DOC_PERS_REEMP, " +
             "    REPE.ES_ESTADO_APROBACION_INFORME AS ID_ESTADO_APROBACION_INFORME, " +
             "    ESTADO_APROB_INF.VALOR  AS ESTADO_APROBACION_INFORME, " +
@@ -53,8 +54,9 @@ public interface EvaluacionDocumentacionDao extends JpaRepository<EvaluacionDocu
             "LEFT JOIN LISTADOS ESTADO_EVAL_DOC " +
             "    ON REPE.ES_ESTADO_EVAL_DOC_INI_SERV = ESTADO_EVAL_DOC.ID AND ESTADO_EVAL_DOC.CD_LISTADO = 'ESTADO_SOLICITUD' " +
             "LEFT JOIN LISTADOS TIPO_DOC " +
-            "    ON SUP.ID_TIPO_DOCUMENTO_LD = TIPO_DOC.ID AND TIPO_DOC.CD_LISTADO = 'TIPO_DOCUMENTO' " +
-            "WHERE (:id IS NULL OR REPE.ID_REEMPLAZO_PERSONAL = :id) " +
-            "AND (:idsol IS NULL OR REPE.ID_SOLI_PERF_CONT = :idsol) ", nativeQuery = true)
-    public Optional<EvaluacionDocumentacion> obtenerListado(@Param("id") Long id, @Param("idsol") Long idsol);
+            "    ON SUP.ID_TIPO_DOCUMENTO_LD = TIPO_DOC.ID AND TIPO_DOC.CD_LISTADO = 'TIPO_DOCUMENTO' "+
+            "    WHERE (:id IS NULL OR REPE.ID_REEMPLAZO_PERSONAL = :id) " +
+            "    AND ( :param1 IS NULL OR REPE.ES_ESTADO_REEMPLAZO = :param1 ) "
+            , nativeQuery = true)
+    public List<EvaluacionDocumentacion> obtenerListado(@Param("id") Long id , @Param("param1") Long param1);
 }

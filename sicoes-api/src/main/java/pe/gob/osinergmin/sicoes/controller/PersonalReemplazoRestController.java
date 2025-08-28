@@ -138,9 +138,9 @@ public class PersonalReemplazoRestController extends BaseRestController {
 	}
 
     @GetMapping("/interno/reemplazo/solicitud/documentos")
-    public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(@RequestParam Long id, @RequestParam(required = false)  Long idsol) {
+    public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(@RequestParam Long id) {
         logger.info("obtener evaluacion documentacion");
-        return  personalReemplazoService.obtenerEvaluacionDocumentacion (id, idsol);
+        return  personalReemplazoService.obtenerEvaluacionDocumentacion (id);
     }
 
 

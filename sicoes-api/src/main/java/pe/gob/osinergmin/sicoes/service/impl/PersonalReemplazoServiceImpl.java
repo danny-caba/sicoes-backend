@@ -1759,11 +1759,16 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
 
-      @Override
-    public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol) {
+    @Override
+    public EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id) {
          logger.info("obtenerEvaluacionDocumentacion");
-         return evaluacionDocumentacionDao.obtenerListado(id, idsol)
-               .orElseThrow(() -> new RuntimeException("Evaluación de documentación no encontrada"));
+          List<EvaluacionDocumentacion> lista = evaluacionDocumentacionDao.obtenerListado(id,
+                         listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,
+                                 Constantes.LISTADO.ESTADO_SOLICITUD.EN_EVALUACION).getIdListadoDetalle());
+         if(!lista.isEmpty()){ return lista.get(0);}
+         else{return null;}
+
+
     }
 
     @Override

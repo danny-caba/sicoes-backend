@@ -32,7 +32,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     List<Combo> listarContratistas(String codigo);
     List<AprobacionReemp> buscarAprobacion(String requerimiento, String corol, Long tipoaprob , Long estadoaprob, Long tiposolicitud, Long idcontratista, Long numexpediente);
     Aprobacion updateAprobacion(AprobacionDTO aprobacion,Contexto contexto) ;
-    EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id , Long idsol);
+    EvaluacionDocumentacion obtenerEvaluacionDocumentacion(Long id );
     EvaluacionDocumentacionPP obtenerEvaluacionDocumentacionBPP(Long id , Long idsol);
     PersonalReemplazo obtenerPersonalReemplazo(Long idReemplazo);
     EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
