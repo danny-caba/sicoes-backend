@@ -23,7 +23,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/renovacion-contrato/aprobacion-informe")
+@RequestMapping("/api/informe/renovacion/aprobacion")
 public class AprobacionInformeRestController extends BaseRestController {
 
     /**
