@@ -132,10 +132,20 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		}
 		ListadoDetalle concluido = listadoDetalleService.obtenerListadoDetalle(
 				Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_RENOVACION.CONCLUIDO);
+		ListadoDetalle archivado = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_RENOVACION.ARCHIVADO);
+		// Crear una lista con los IDs a excluir
+		List<Long> estadosExcluidos = new ArrayList<>();
+		if (concluido != null) {
+			estadosExcluidos.add(concluido.getIdListadoDetalle());
+		}
+		if (archivado != null) {
+			estadosExcluidos.add(archivado.getIdListadoDetalle());
+		}
 		List<RequerimientoRenovacion> requerimientosActivos = requerimientoRenovacionDao
 				.listarNoConcluidos(
 						requerimientoRenovacion.getIdSoliPerfCont(),
-						concluido.getIdListadoDetalle()
+						estadosExcluidos
 				);
 
 		if (!requerimientosActivos.isEmpty()) {

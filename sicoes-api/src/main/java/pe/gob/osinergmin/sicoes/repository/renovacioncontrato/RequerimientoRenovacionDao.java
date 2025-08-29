@@ -16,10 +16,11 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
 
     @Query("SELECT rr FROM RequerimientoRenovacion rr " +
             "WHERE rr.solicitudPerfil.idSolicitud = :idSolicitud " +
-            "AND rr.estadoReqRenovacion.idListadoDetalle != :esRegistro")
+            "AND rr.estadoReqRenovacion.idListadoDetalle NOT IN :estadosExcluidos " +
+            "AND rr.esRegistro = '1'")
     List<RequerimientoRenovacion> listarNoConcluidos(
             @Param("idSolicitud") Long idSolicitud,
-            @Param("esRegistro") Long esRegistro
+            @Param("estadosExcluidos") List<Long> estadosExcluidos
     );
 
     @Query("SELECT r FROM RequerimientoRenovacion r " +
