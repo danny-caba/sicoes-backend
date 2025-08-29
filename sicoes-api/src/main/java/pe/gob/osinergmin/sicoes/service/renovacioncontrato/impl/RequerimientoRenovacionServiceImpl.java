@@ -13,7 +13,6 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Strings;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +100,7 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 			requerimiento.setNoItem(r.getNoItem());
 			requerimiento.setFeRegistro(r.getFeRegistro());
 			requerimiento.setFeRegistro(r.getFeRegistro());
-			//requerimiento.setEstadoReqRenovacion( r.getEstadoReqRenovacion());
+			requerimiento.setEstadoReqRenovacion(  r.getEstadoReqRenovacion().getCodigo());
 			//requerimiento.setEstadoAprobacionInforme();
 			List<InformeRenovacion> listaInforme = informeRenovacionDao.listarPorRequerimiento(requerimiento.getIdReqRenovacion());
 			if(!listaInforme.isEmpty()) {
@@ -128,19 +127,29 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 	}
 
 	public RequerimientoRenovacion guardar(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto) throws Exception {
-		if (requerimientoRenovacion.getSolicitudPerfil()==null || requerimientoRenovacion.getSolicitudPerfil().getIdSolicitud()==null) {
+		if (requerimientoRenovacion.getIdSoliPerfCont()==null) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_SOLICITUD_NO_ENVIADO);
 		}
-		//TODO: validar que o exista otro requerimiento renovacion con estado en Proceso
-		SicoesSolicitud solicitud = sicoesSolicitudService.obtener(requerimientoRenovacion.getSolicitudPerfil().getIdSolicitud(), contexto);
-		if(solicitud==null ){
+		ListadoDetalle concluido = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_RENOVACION.CONCLUIDO);
+		List<RequerimientoRenovacion> requerimientosActivos = requerimientoRenovacionDao
+				.listarNoConcluidos(
+						requerimientoRenovacion.getIdSoliPerfCont(),
+						concluido.getIdListadoDetalle()
+				);
+
+		if (!requerimientosActivos.isEmpty()) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.REQ_RENOVACION_ACTIVOS);
+		}
+		SicoesSolicitud sicoesSolicitud = sicoesSolicitudService.obtener(requerimientoRenovacion.getIdSoliPerfCont(), contexto);
+		if(sicoesSolicitud==null ){
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_SOLICITUD_NO_ENVIADO);
 		}
-		if(Constantes.ESTADO_PROCESO_PERF_CONTRATO.CONCLUIDO.equals(solicitud.getEstadoProcesoSolicitud())){
+		if(!Constantes.ESTADO_PROCESO_PERF_CONTRATO.CONCLUIDO.equals(sicoesSolicitud.getEstadoProcesoSolicitud())){
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_CONCLUIDA);
 		}
-		if(!(Constantes.TIPO_SOLICITUD_PERF_CONTRATO.INSCRIPCION.equals(solicitud.getTipoSolicitud()) ||
-		Constantes.TIPO_SOLICITUD_PERF_CONTRATO.SUBSANACION.equals(solicitud.getTipoSolicitud()))){
+		if(!(Constantes.TIPO_SOLICITUD_PERF_CONTRATO.INSCRIPCION.equals(sicoesSolicitud.getTipoSolicitud()) ||
+		Constantes.TIPO_SOLICITUD_PERF_CONTRATO.SUBSANACION.equals(sicoesSolicitud.getTipoSolicitud()))){
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.TIPO_SOLICITUD_NO_PERMITIDO);
 		}
 		//return null;
@@ -149,21 +158,20 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 				Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_RENOVACION.PRELIMINAR);
 		requerimientoRenovacion.setEstadoReqRenovacion(estadoPreliminar);
 
-		List<Archivo> archivosRegistrados = obtenerArchivosRegistrados(new ArrayList<>(), solicitud, contexto);
+		List<Archivo> archivosRegistrados = obtenerArchivosRegistrados(new ArrayList<>(), sicoesSolicitud, contexto);
 		List<File> archivosAlfresco = null;
-		archivosAlfresco = archivoService.obtenerArchivoContenidoPerfCont(archivosRegistrados, solicitud, contexto);
-		String expediente = enviarArchivos(archivosAlfresco, solicitud, contexto);
+		archivosAlfresco = archivoService.obtenerArchivoContenidoPerfCont(archivosRegistrados, sicoesSolicitud, contexto);
+		String expediente = enviarArchivos(archivosAlfresco, sicoesSolicitud, contexto);
 		requerimientoRenovacion.setNuExpediente(expediente);
-		Proceso proceso= solicitud.getPropuesta().getProcesoItem().getProceso();
+		Proceso proceso= sicoesSolicitud.getPropuesta().getProcesoItem().getProceso();
 		requerimientoRenovacion.setTiSector(proceso.getSector().getCodigo());
 		requerimientoRenovacion.setTiSubSector(proceso.getSubsector().getCodigo());
-		requerimientoRenovacion.setNoItem("Item"+solicitud.getPropuesta().getProcesoItem().getNumeroItem());
+		requerimientoRenovacion.setNoItem("Item"+sicoesSolicitud.getPropuesta().getProcesoItem().getNumeroItem());
 		requerimientoRenovacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
-
+		requerimientoRenovacion.setSolicitudPerfil(sicoesSolicitud);
 		AuditoriaUtil.setAuditoriaRegistro(requerimientoRenovacion,contexto);
 		return requerimientoRenovacionDao.save(requerimientoRenovacion);
 	}
-
 
 
 	private String enviarArchivos(List<File> archivosAlfresco, SicoesSolicitud solicitud, Contexto contexto) throws Exception {

@@ -21,7 +21,7 @@ public class RequerimientoRenovacionListDTO implements Serializable {
     private String tiSubSector;
     private String noItem;
     private Date feRegistro;
-    private ListadoDetalleDTO estadoReqRenovacion;
+    private String estadoReqRenovacion;
     private String deObservacion;
     private String esRegistro;
     private String estadoAprobacionInforme;

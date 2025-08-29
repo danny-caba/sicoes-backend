@@ -7,16 +7,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
-import java.util.List;
-
 @Repository
 public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoRenovacion, Long> {
+
+    @Query("SELECT rr FROM RequerimientoRenovacion rr " +
+            "WHERE rr.solicitudPerfil.idSolicitud = :idSolicitud " +
+            "AND rr.estadoReqRenovacion.idListadoDetalle != :esRegistro")
+    List<RequerimientoRenovacion> listarNoConcluidos(
+            @Param("idSolicitud") Long idSolicitud,
+            @Param("esRegistro") Long esRegistro
+    );
 
     @Query("SELECT r FROM RequerimientoRenovacion r " +
             "WHERE r.esRegistro = '1' " +
