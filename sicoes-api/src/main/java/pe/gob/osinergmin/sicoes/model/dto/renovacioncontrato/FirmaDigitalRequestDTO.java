@@ -10,7 +10,7 @@ public class FirmaDigitalRequestDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long idReqRenovacion;
+    private Long idInformeRenovacion;
     private String token;
     private String ip;
 }
