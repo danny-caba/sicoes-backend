@@ -5,7 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import gob.osinergmin.siged.remote.rest.ro.base.BaseOutRO;
+import gob.osinergmin.siged.remote.rest.ro.in.DocumentoAnularInRO;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.DocumentoAnularOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
@@ -22,5 +24,5 @@ public interface SigedApiConsumer {
 	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
 	public ClienteConsultaOutRO buscarCliente(Integer tipoIdentificacion, String nroIdentificacion);
 	public DocumentoOutRO agregarDocumentoVersionar(ExpedienteInRO expediente, List<File> archivos) throws Exception;
-	
+	public DocumentoAnularOutRO anularDocumento(DocumentoAnularInRO documento) throws Exception ;
 }

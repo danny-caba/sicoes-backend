@@ -115,9 +115,20 @@ public class Archivo extends BaseModel implements Serializable {
 	@Column(name = "ID_SOLI_PERF_CONT_LD")
 	private Long idSoliPerfCont;
 	
+	/**
+	 * Requerimiento 350 - Renovación de contratos.
+	 * ID del informe de renovación de contrato al que pertenece el archivo.
+	 */
 	@Column(name = "ID_INFORME_RENOVACION")
 	private Long idInformeRenovacion;
-	
+
+	/**
+	 * Requerimiento 350 - Renovación de contratos.
+	 * ID del documento en SIGED para operaciones de firma digital y gestión documental.
+	 */
+	@Column(name = "ID_DOCUMENTO_SIGED")
+	private Long idDocumentoSiged;
+
 	@Transient
 	private MultipartFile file;
 
@@ -404,5 +415,12 @@ public class Archivo extends BaseModel implements Serializable {
 	public void setIdSoliPerfCont(Long idSoliPerfCont) {
 		this.idSoliPerfCont = idSoliPerfCont;
 	}
-	
+
+	public Long getIdDocumentoSiged() {
+		return idDocumentoSiged;
+	}
+
+	public void setIdDocumentoSiged(Long idDocumentoSiged) {
+		this.idDocumentoSiged = idDocumentoSiged;
+	}
 }
