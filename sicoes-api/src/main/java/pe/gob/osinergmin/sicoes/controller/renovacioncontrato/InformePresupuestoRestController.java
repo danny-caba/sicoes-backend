@@ -1,0 +1,37 @@
+package pe.gob.osinergmin.sicoes.controller.renovacioncontrato;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import pe.gob.osinergmin.sicoes.controller.BaseRestController;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoResponseDTO;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformePresupuestoService;
+import pe.gob.osinergmin.sicoes.util.Contexto;
+
+@RestController
+@RequestMapping("/api/informe/renovacion/presupuesto")
+public class InformePresupuestoRestController extends BaseRestController {
+
+	private Logger logger = LogManager.getLogger(InformePresupuestoRestController.class);
+	
+	@Autowired
+	private InformePresupuestoService informePresupuestoService;
+
+	@PostMapping("/documento/agregar")
+	public DocumentoInformePresupuestoResponseDTO agregarDocumento(@RequestBody DocumentoInformePresupuestoRequestDTO documentoInformePresupuesto, Contexto contexto) throws Exception {
+		logger.info("agregarDocumento");
+		return informePresupuestoService.agregarDocumento(documentoInformePresupuesto, getContexto());
+	}
+
+	@PostMapping("/documento/anular")
+	public DocumentoInformePresupuestoResponseDTO anularDocumento(@RequestBody DocumentoInformePresupuestoRequestDTO documentoInformePresupuesto, Contexto contexto) throws Exception {
+		logger.info("anularDocumento");
+		return informePresupuestoService.anularDocumento(documentoInformePresupuesto, getContexto());
+	}
+}
