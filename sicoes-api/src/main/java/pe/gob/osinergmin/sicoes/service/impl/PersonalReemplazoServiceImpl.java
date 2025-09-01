@@ -432,18 +432,15 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
         }
         logger.info("personalBaja: {}", personalBaja);
-        /*
         PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
         if (propuestaProfesional == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
         }
         logger.info("propuestaProfesional: {}", propuestaProfesional);
-         */
         Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
         if (personaPropuesta == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
-        /*
         logger.info("personaPropuesta: {}", personaPropuesta);
         propuestaProfesional.setSupervisora(personaPropuesta);
         SupervisoraMovimiento supervisoraMovimiento = new SupervisoraMovimiento();
@@ -458,7 +455,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         supervisoraMovimiento.setFechaRegistro(new Date());
         logger.info("supervisoraMovimiento: {}", supervisoraMovimiento);
         supervisoraMovimientoService.guardar(supervisoraMovimiento,contexto);
-        */
         AuditoriaUtil.setAuditoriaActualizacion(personalReemplazo,contexto);
         PersonalReemplazo personalReemplazoOUT = reemplazoDao.save(personalReemplazo);
         SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
