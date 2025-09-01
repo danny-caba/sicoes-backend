@@ -28,7 +28,7 @@ import pe.gob.osinergmin.sicoes.service.impl.SolicitudServiceImpl;
 //@EnableTransactionManagement
 public class DataSourceConfig {
 	
-	Logger logger = LogManager.getLogger(DataSourceConfig.class);g
+	Logger logger = LogManager.getLogger(DataSourceConfig.class);
 	
     @Bean(name="empsanJdbcTemplate")
 	@ConfigurationProperties(prefix = "spring.datasource.secondary") // In the pro
