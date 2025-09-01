@@ -4,7 +4,7 @@ package pe.gob.osinergmin.sicoes.util.model.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import lombok.*;
 
 
 /**
@@ -14,6 +14,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @date 15/08/2025
  **/
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
 @JsonIgnoreProperties
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse {
@@ -30,19 +35,4 @@ public class ApiResponse {
     @JsonProperty("data")
     private Object data;
 
-    public ApiResponseMeta getMeta() {
-        return meta;
-    }
-
-    public void setMeta(ApiResponseMeta meta) {
-        this.meta = meta;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
-    }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionContratoService;
 
 
@@ -31,6 +32,7 @@ public class InformeRenovacionContratoController extends BaseRestController{
 
     @GetMapping("/informes")
     public Page<InformeRenovacionContratoDTO> listarInformes(
+            @RequestParam(required = true) String tipoAprobador,
             @RequestParam(required = false) String numeroExpediente,
             @RequestParam(required = false) Long estado,
             @RequestParam(required = false) Long idContratista,
@@ -39,6 +41,7 @@ public class InformeRenovacionContratoController extends BaseRestController{
         logger.info("get listarInformes: {} {} {}", numeroExpediente,estado,idContratista);
         
         return informeRenovacionContratoService.listaInformes(
+                tipoAprobador,
                 numeroExpediente, estado, idContratista, getContexto(), pageable);
     }
 
@@ -47,5 +50,12 @@ public class InformeRenovacionContratoController extends BaseRestController{
 		logger.info("crearInforme objecto: {} ",informeRenovacionContratoDTO.getObjeto());
 
 		return informeRenovacionContratoService.crearInforme(informeRenovacionContratoDTO, getContexto());
+	}
+
+    @PostMapping("/informes/presupuestal/rechazar")
+	public RequerimientoAprobacionDTO rechazarInforme(@RequestBody RequerimientoAprobacionDTO requerimientoAprobacionDTO) {
+		logger.info("rechazarInforme objecto: {} ",requerimientoAprobacionDTO.getDeObservacion());
+
+		return informeRenovacionContratoService.rechazarInformePresupuestal(requerimientoAprobacionDTO, getContexto());
 	}
 }
