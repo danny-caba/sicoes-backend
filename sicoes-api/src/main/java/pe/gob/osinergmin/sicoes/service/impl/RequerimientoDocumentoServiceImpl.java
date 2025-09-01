@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
@@ -36,6 +37,7 @@ import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoCoordinadorDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDocumentoDTO;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
+import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDocumentoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoInvitacionDao;
@@ -130,6 +132,8 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
 
     @Value("${path.temporal}")
     private String pathTemporal;
+    @Autowired
+    private RequerimientoDao requerimientoDao;
 
     public Page<RequerimientoDocumento> listarRequerimientosDocumentos(FiltroRequerimientoDocumentoDTO filtro, Pageable pageable, Contexto contexto) {
         Date fechaInicio = filtro.getFechaInicio();
@@ -731,6 +735,61 @@ public class RequerimientoDocumentoServiceImpl implements RequerimientoDocumento
             requerimientoDocumentoDetalleDao.save(requerimientoDocumentoDetalle);
         }
         return requerimientoDocumento;
+    }
+
+    @Transactional
+    @Override
+    public void actualizarEstadoDocumentosVencidos(Contexto contexto) {
+        List<RequerimientoDocumento> lista = requerimientoDocumentoDao.listarDocumentosVencidos();
+
+        if(lista.isEmpty()) {
+            logger.info("No hay requerimientos de documentos vencidos para actualizar.");
+        } else {
+            ListadoDetalle estadoArchivado = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.CODIGO,
+                    Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.ARCHIVADO);
+
+            for (RequerimientoDocumento requerimientoDocumento : lista) {
+                requerimientoDocumento.setEstado(estadoArchivado);
+                AuditoriaUtil.setAuditoriaRegistro(requerimientoDocumento, contexto);
+
+                Requerimiento requerimientoDB = requerimientoService.obtener(requerimientoDocumento.getRequerimiento().getIdRequerimiento(), contexto);
+                RequerimientoInvitacion invitacionDB = requerimientoInvitacionDao.buscarPorIdRequerimiento(requerimientoDB.getIdRequerimiento())
+                        .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.INVITACION_NO_ENCONTRADA));
+
+                // Actualizar la supervisora del requerimiento a null
+                requerimientoDB.setSupervisora(null);
+                AuditoriaUtil.setAuditoriaRegistro(requerimientoDB, contexto);
+
+                // Actualizar la invitación a cancelado
+                ListadoDetalle estadoCancelado = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                        Constantes.LISTADO.ESTADO_INVITACION.CANCELADO);
+                invitacionDB.setEstado(estadoCancelado);
+                AuditoriaUtil.setAuditoriaRegistro(invitacionDB, contexto);
+
+                requerimientoDocumentoDao.save(requerimientoDocumento);
+                requerimientoDao.save(requerimientoDB);
+                requerimientoInvitacionDao.save(invitacionDB);
+
+                logger.info("Requerimiento de documento con UUID {} actualizado a estado ARCHIVADO.", requerimientoDocumento.getRequerimientoDocumentoUuid());
+            }
+        }
+    }
+
+    @Override
+    public RequerimientoDocumento validarFechaPlazoEntrega(String uuid, Contexto contexto) {
+        RequerimientoDocumento requerimientoDocumento = requerimientoDocumentoDao.obtenerPorUuid(uuid)
+                .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_DOCUMENTO_NO_ENCONTRADO));
+        Date fechaPlazoEntrega = requerimientoDocumento.getFechaplazoEntrega();
+        if (fechaPlazoEntrega == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.FECHA_PLAZO_ENTREGA_NO_ASIGNADA);
+        }
+        Date fechaActual = new Date();
+        if (fechaActual.after(fechaPlazoEntrega)) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.FECHA_PLAZO_ENTREGA_VENCIDA);
+        }
+        return null;
     }
 
     @Override

@@ -14,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -44,22 +45,22 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     private Supervisora supervisora;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name="FE_INVITACION")
     private Date fechaInvitacion;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name="FE_CADUCIDAD")
     private Date fechaCaducidad;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name="FE_ACEPTACION")
     private Date fechaAceptacion;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     @Column(name="FE_RECHAZO")
     private Date fechaRechazo;
 
@@ -68,6 +69,9 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     @Column(name="FL_ACTIVO")
     private String flagActivo;
+
+    @Transient
+    private String descripcionSaldoContrato;
 
     public Long getIdRequerimientoInvitacion() {
         return idRequerimientoInvitacion;
@@ -155,6 +159,14 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     public void setFlagActivo(String flagActivo) {
         this.flagActivo = flagActivo;
+    }
+
+    public String getDescripcionSaldoContrato() {
+        return descripcionSaldoContrato;
+    }
+
+    public void setDescripcionSaldoContrato(String descripcionSaldoContrato) {
+        this.descripcionSaldoContrato = descripcionSaldoContrato;
     }
 
 }

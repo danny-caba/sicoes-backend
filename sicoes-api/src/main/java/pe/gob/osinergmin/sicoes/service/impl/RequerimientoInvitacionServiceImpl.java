@@ -9,8 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
@@ -39,6 +39,7 @@ import pe.gob.osinergmin.sicoes.util.DateUtil;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -68,9 +69,6 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     private RequerimientoAprobacionDao aprobacionDao;
 
     @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
     private RolService rolService;
 
     @Autowired
@@ -83,13 +81,23 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     @Transactional
     public RequerimientoInvitacion guardar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
         ListadoDetalle estadoInvitado = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO,
-                Constantes.LISTADO.ESTADO_REQ_INVITACION.INVITADO
+                Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_INVITACION.INVITADO
         );
+        ListadoDetalle plazoInvitacion = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.PLAZOS.CODIGO,
+                Constantes.LISTADO.PLAZOS.INVITACION_SUPERVISOR_S4);
         requerimientoInvitacion.setEstado(estadoInvitado);
         Date fechaInvitacion = new Date();
         requerimientoInvitacion.setFechaInvitacion(fechaInvitacion);
-        Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, 3L, "H");
+        Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, Long.parseLong(plazoInvitacion.getValor()), Constantes.DIAS_HABILES);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fechaCaducidad);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        fechaCaducidad = calendar.getTime();
         requerimientoInvitacion.setFechaCaducidad(fechaCaducidad);
         requerimientoInvitacion.setFlagActivo(Constantes.FLAG_INVITACION.ACTIVO);
         requerimientoInvitacion.setRequerimientoInvitacionUuid(UUID.randomUUID().toString());
@@ -116,7 +124,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         if (!optional.isPresent()) {
             throw new ValidacionException(INVITACION_NO_ENCONTRADA);
         }
-        ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_INVITACION.ELIMINADO);
+        ListadoDetalle estadoEliminado = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_INVITACION.ELIMINADO);
         if (estadoEliminado == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_ELIMINADO_NO_CONFIGURADO_EN_LISTADODETALLE);
         }
@@ -144,7 +153,25 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
             idSupervisora = supervisora.getIdSupervisora();
         }
-        return requerimientoInvitacionDao.obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, requerimientoUuid, pageable);
+
+        Page<RequerimientoInvitacion> lista = requerimientoInvitacionDao
+                .obtenerInvitaciones(idSupervisora, idEstado, fechaInicio, fechaFin, requerimientoUuid, pageable);
+
+        // Si es supervisora no incluir invitaciones eliminadas
+        if (contexto.getUsuario().getCodigoUsuarioInterno() == null) {
+            List<RequerimientoInvitacion> listaFiltrada = new ArrayList<>();
+            for (RequerimientoInvitacion invitacion : lista) {
+                if (!invitacion.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_INVITACION.ELIMINADO)) {
+                    listaFiltrada.add(invitacion);
+                }
+            }
+            listaFiltrada.forEach(this::setearDescripcionSaldo);
+            return new PageImpl<>(listaFiltrada, pageable, listaFiltrada.size());
+        }
+
+        lista.forEach(this::setearDescripcionSaldo);
+
+        return lista;
     }
 
     @Override
@@ -156,6 +183,13 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
         RequerimientoInvitacion invitacion = requerimientoInvitacionDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(INVITACION_NO_ENCONTRADA));
+
+        // Validar que invitacion este en fecha no caducada
+        Date fechaActual = new Date();
+        if(invitacion.getFechaCaducidad().before(fechaActual)) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.INVITACION_CADUCADA);
+        }
+
         Requerimiento requerimiento = invitacion.getRequerimiento();
         if(!requerimiento.getEstado().getCodigo()
                 .equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
@@ -164,8 +198,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         List<String> correosNotificacion = new ArrayList<>();
         boolean esAprobacion = false;
         ListadoDetalle estadoInvitacion = listadoDetalleService.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_REQ_INVITACION.CODIGO, estado.getCodigo());
-        if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.ACEPTADO)) {
+                Constantes.LISTADO.ESTADO_INVITACION.CODIGO, estado.getCodigo());
+        if(estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_INVITACION.ACEPTADO)) {
             //Obtener Supervisora
             Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
 
@@ -191,16 +225,18 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
             ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO);
+                    Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                    Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO);
+            ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPOS.G1);
+
             RequerimientoAprobacion aprobacion = new RequerimientoAprobacion();
             aprobacion.setRequerimiento(requerimiento);
             aprobacion.setTipo(tipoAprobacion);
             aprobacion.setGrupoAprobador(grupoAprobador);
             aprobacion.setTipoAprobador(tipoAprobador);
-            aprobacion.setUsuario(contexto.getUsuario());
             aprobacion.setEstado(estadoAprobacion);
-            AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
-            aprobacionDao.save(aprobacion);
+            aprobacion.setGrupo(grupo);
 
             //Flag notificacion aceptado
             esAprobacion = true;
@@ -212,10 +248,15 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_ROL_GPPM_NO_ENCONTRADO);
             }
 
+            aprobacion.setUsuario(usuarioGPPM.get(0).getUsuario());
+            aprobacion.setFechaAsignacion(new Date());
+            AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
+            aprobacionDao.save(aprobacion);
+
             //Notificacion Asignacion Requerimiento
             notificacionService.enviarMensajeRequerimientoPorAprobar(requerimiento, usuarioGPPM.get(0).getUsuario(), contexto);
 
-        } else if (estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_INVITACION.RECHAZADO)) {
+        } else if (estadoInvitacion.getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_INVITACION.RECHAZADO)) {
             //update estado y fechas a Aceptado o Rechazado a la Invitacion
             invitacion.setEstado(estadoInvitacion);
             invitacion.setFechaRechazo(new Date());
@@ -230,6 +271,45 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         //Enviar notificacion
         notificacionService.enviarMensajeAprobacionRechazoReqInvitacion(invitacion, correosNotificacion, esAprobacion, contexto);
         return null;
+    }
+
+    @Override
+    public void actualizarEstadoInvitaciones(Contexto contexto) {
+        List<RequerimientoInvitacion> lista  = requerimientoInvitacionDao.obtenerInvitacionesActivas();
+        if(!lista.isEmpty()) {
+            ListadoDetalle estadoCancelado = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_INVITACION.CANCELADO
+            );
+            for(RequerimientoInvitacion invitacion : lista) {
+                invitacion.setEstado(estadoCancelado);
+                AuditoriaUtil.setAuditoriaActualizacion(invitacion, contexto);
+                requerimientoInvitacionDao.save(invitacion);
+            }
+        }
+    }
+
+    private void setearDescripcionSaldo(RequerimientoInvitacion requerimientoInvitacion) {
+        Long saldo = requerimientoInvitacion.getSaldoContrato();
+        if(saldo != null && saldo > 0) {
+            Long anios = saldo / 365;
+            Long meses = (saldo % 365) / 30;
+            Long dias = (saldo % 365) % 30;
+            StringBuilder sb = new StringBuilder();
+            if(anios > 0) {
+                sb.append(anios).append(anios > 1 ? " años " : " año ");
+            }
+            if(meses > 0) {
+                sb.append(meses).append(meses > 1 ? " meses " : " mes ");
+            }
+            if(dias > 0) {
+                sb.append(dias).append(dias > 1 ? " días" : " día");
+            }
+            requerimientoInvitacion.setDescripcionSaldoContrato(sb.toString());
+        } else {
+            requerimientoInvitacion.setDescripcionSaldoContrato("0 días");
+        }
+
     }
 
 }

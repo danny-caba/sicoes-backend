@@ -222,12 +222,6 @@ public class Constantes {
 			public static final String ASOCIADO 	= "ASOCIADO";
 		}
 		
-		
-		
-//		public static final class OTROS_REQUISITOS {
-//			public static final String CODIGO 		= "OTROS_REQUISITOS";
-//		}
-		
 		public static final class OTROS_DOCUMENTOS_PN {
 			public static final String CODIGO 					= "OTROS_DOCUMENTOS_PN";
 			public static final String DJ						= "OPN03";
@@ -271,10 +265,7 @@ public class Constantes {
 			public static final String CODIGO 		= "TIPO_ESTUDIO";
 			public static final String ACADEMICOS 		= "ACADEMICOS";
 			public static final String CAPACITACION = "CAPACITACION";
-			
-			
 		}
-		
 		
 		public static final class GRADO_ACADEMICO {
 			public static final String CODIGO 		= "GRADO_ACADEMICO";
@@ -299,9 +290,9 @@ public class Constantes {
 			public static final String TECNICO 						= "TECNICO";
 			public static final String APROBADOR_TECNICO 			= "APROBADOR_TECNICO";
 			public static final String APROBADOR_ADMINISTRATIVO 	= "APROBADOR_ADMINISTRATIVO";
-			
-			
-			
+
+
+
 		}
 		
 		public static final class RESULTADO_APROBACION {
@@ -311,8 +302,8 @@ public class Constantes {
 			public static final String ASIGNADO 		= "ASIGNADO";
 			public static final String CANCELADO 		= "CANCELADO";
 			public static final String REGISTRADO 		= "REGISTRADO";
-			
-			
+
+
 		}
 		
 		
@@ -330,6 +321,9 @@ public class Constantes {
 			public static final String EVALUACION_9_DIAS					= "PLAZO-17";
 			public static final String PRESENTAR_PERFECCIONAMIENTO			= "PLAZO-18";
 			public static final String SUBSANAR_PERFECCIONAMIENTO			= "PLAZO-19";
+
+			public static final String ENTREGA_DOCUMENTO_REQUERIMIENTO		= "PLAZO-21";
+			public static final String INVITACION_SUPERVISOR_S4				= "PLAZO-22";
 
 		}
 		
@@ -507,7 +501,8 @@ public class Constantes {
 			public static final String ACEPTADO			= "ACEPTADO";
 			public static final String RECHAZADO		= "RECHAZADO";
 			public static final String CADUCADO			= "CADUCADO";	
-			public static final String ARCHIVADO			= "ARCHIVADO";
+			public static final String ARCHIVADO		= "ARCHIVADO";
+			public static final String ELIMINADO		= "ELIMINADO";
 		}
 
 		public static final class ETAPA_PROCESO {
@@ -651,15 +646,6 @@ public class Constantes {
 			public static final String DESAPROBADO 					= "DESAPROBADO";
 		}
 
-		public static final class ESTADO_REQ_INVITACION {
-			public static final String CODIGO 						= "ESTADO_REQ_INVITACION";
-			public static final String INVITADO 					= "INVITADO";
-			public static final String ACEPTADO 					= "ACEPTADO";
-			public static final String RECHAZADO 					= "RECHAZADO";
-			public static final String CANCELADO 					= "CANCELADO";
-			public static final String ELIMINADO 					= "ELIMINADO";
-		}
-
 		public static final class TIPO_APROBACION {
 			public static final String CODIGO 						= "TIPO_APROBACION";
 			public static final String APROBAR 						= "APROBAR";
@@ -693,6 +679,7 @@ public class Constantes {
 			public static final String CONCLUIDO	                = "CONCLUIDO";
 			public static final String SOLICITUD_PRELIMINAR 	    = "SOLICITUD_PRELIMINAR";
 			public static final String OBSERVADO	                = "OBSERVADO";
+			public static final String ARCHIVADO	                = "ARCHIVADO";
 		}
 
 		public static final class ESTADO_REQ_DOCUMENTO_DETALLE {
@@ -1034,7 +1021,9 @@ public class Constantes {
 		public static final String PERFIL_APROBADOR_G2_NO_ENCONTRADO = "V01045";
 		public static final String PERFIL_APROBADOR_G3_NO_ENCONTRADO = "V01046";
 		public static final String ESTADO_APROBACION_INCORRECTO = "V01047";
-
+		public static final String INVITACION_CADUCADA = "V01048";
+		public static final String FECHA_PLAZO_ENTREGA_NO_ASIGNADA = "V01049";
+		public static final String FECHA_PLAZO_ENTREGA_VENCIDA = "V01050";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

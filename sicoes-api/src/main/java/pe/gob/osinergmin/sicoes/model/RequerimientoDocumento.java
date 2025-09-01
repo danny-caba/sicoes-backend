@@ -46,7 +46,7 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     private String flagActivo;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss", timezone = "America/Lima")
     @Column(name = "FE_INGRESO")
     private Date fechaIngreso;
 
@@ -55,7 +55,7 @@ public class RequerimientoDocumento extends BaseModel implements Serializable {
     private ListadoDetalle tipo;
 
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss", timezone = "America/Lima")
     @Column(name = "FE_PLAZO_ENTREGA")
     private Date fechaplazoEntrega;
 

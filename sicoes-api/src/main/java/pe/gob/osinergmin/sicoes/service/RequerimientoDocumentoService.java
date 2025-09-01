@@ -25,4 +25,9 @@ public interface RequerimientoDocumentoService extends BaseService<Requerimiento
     RequerimientoDocumento evaluarRequerimientosDocumento(String uuid, Contexto contextos);
 
     RequerimientoDocumento revisar(String documentoUuid, List<RequerimientoDocumentoDetalle> listRequerimientoDocumentoDetalle, Contexto contexto);
+
+    void actualizarEstadoDocumentosVencidos(Contexto contexto);
+
+    RequerimientoDocumento validarFechaPlazoEntrega(String uuid, Contexto contexto);
+
 }

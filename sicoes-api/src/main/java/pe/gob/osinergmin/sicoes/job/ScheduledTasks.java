@@ -58,11 +58,16 @@ public class ScheduledTasks {
 
 	@Autowired
 	private SicoesSolicitudService sicoesSolicitudService;
-	
+
+	@Autowired
+	private RequerimientoInvitacionService requerimientoInvitacionService;
+
+	@Autowired
+	private RequerimientoDocumentoService requerimientoDocumentoService;
 	
 	@Value("${path.temporal}")
 	private String path;
-	
+
 	@Scheduled(fixedRate = 5*60*1000)
 	public void reportCurrentTime() throws Exception {
 		logger.info("Inicio el Job");
@@ -72,6 +77,8 @@ public class ScheduledTasks {
 		suspensionCancelacionService.procesarSupencionCancelacion();
 		procesoService.actualizarProcesoAdmision(getContextoAnonimo());
 		procesoService.actualizarProcesoPresentacion(getContextoAnonimo());
+		requerimientoInvitacionService.actualizarEstadoInvitaciones(getContextoAnonimo());
+		requerimientoDocumentoService.actualizarEstadoDocumentosVencidos(getContextoAnonimo());
 		logger.info("Fin Job");
 		
 	}

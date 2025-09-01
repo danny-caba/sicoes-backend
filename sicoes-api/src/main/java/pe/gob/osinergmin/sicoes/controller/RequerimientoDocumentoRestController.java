@@ -91,4 +91,11 @@ public class RequerimientoDocumentoRestController extends BaseRestController {
         logger.info("Obteniendo detalle de requerimiento documento con UUID: {}", uuid);
         return requerimientoDocumentoDetalleDao.buscarPorUuid(uuid);
     }
+
+    @GetMapping("/{uuid}/validar-fecha-plazo-entrega")
+    public RequerimientoDocumento validarFechaPlazoEntrega(@PathVariable("uuid") String uuid) {
+        logger.info("validarFechaPlazoEntrega de requerimiento documento con UUID: {}", uuid);
+        return requerimientoDocumentoService.validarFechaPlazoEntrega(uuid, getContexto());
+    }
+
 }

@@ -24,6 +24,7 @@ public class RequerimientoInformeRestController extends BaseRestController {
     @PostMapping
     @Raml("informe.guardar.properties")
     public RequerimientoInforme guardarInforme(@RequestBody RequerimientoInformeDetalle requerimientoInformeDetalle) {
+        logger.info("Guardar requerimientoInforme {}", requerimientoInformeDetalle);
         return requerimientoInformeService.guardar(requerimientoInformeDetalle, getContexto());
     }
 

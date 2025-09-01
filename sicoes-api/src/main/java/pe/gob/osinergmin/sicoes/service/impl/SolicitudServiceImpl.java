@@ -2238,8 +2238,8 @@ public class SolicitudServiceImpl implements SolicitudService {
 		Long idSolicitud = solicitud.getIdSolicitud();
 		Archivo archivo = new Archivo();
 		if (Constantes.LISTADO.TIPO_ARCHIVO.RESULTADO.equals(tipo)) {
-			archivo.setNombre("Respuesta_Solicitud_PN_" + solicitud.getPersona().getNumeroDocumento() + ".pdf");
-			archivo.setNombreReal("Respuesta_Solicitud_PN_" + solicitud.getPersona().getNumeroDocumento() + ".pdf");
+			archivo.setNombre("Respuesta_Solicitud_PN_" + solicitud.getPersona().getNumeroDocumento() + (new Date().getTime()) + ".pdf");
+			archivo.setNombreReal("Respuesta_Solicitud_PN_" + solicitud.getPersona().getNumeroDocumento() + (new Date().getTime()) + ".pdf");
 		} else {
 			archivo.setNombre(
 					"Respuesta_Solicitud_Subsanacion_PN_" + solicitud.getPersona().getNumeroDocumento() + ".pdf");

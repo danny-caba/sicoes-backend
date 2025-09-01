@@ -38,6 +38,18 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
     @Autowired
     private RequerimientoInvitacionService requerimientoInvitacionService;
 
+    @GetMapping
+    @Raml("requerimientoInvitacion.obtener.properties")
+    public Page<RequerimientoInvitacion> obtener(
+            @RequestParam(required = false) Long idEstado,
+            @RequestParam(required = false) String fechaInicioInvitacion,
+            @RequestParam(required = false) String fechaFinInvitacion,
+            @RequestParam(required = false) String requerimientoUuid,
+            Pageable pageable) {
+        logger.info("Obtener lista de invitaciones");
+        return requerimientoInvitacionService.obtener(idEstado, fechaInicioInvitacion, fechaFinInvitacion, requerimientoUuid,   getContexto(), pageable);
+    }
+
     @PostMapping
     @Raml("invitacion.guardar.properties")
     public RequerimientoInvitacion guardarRequerimientoInvitacion(@RequestBody RequerimientoInvitacion requerimientoInvitacion) {
@@ -51,22 +63,12 @@ public class RequerimientoInvitacionRestController extends BaseRestController {
         return requerimientoInvitacionService.eliminar(uuid, getContexto());
     }
 
-    @GetMapping
-    @Raml("requerimientoInvitacion.obtener.properties")
-    public Page<RequerimientoInvitacion> obtener(
-            @RequestParam(required = false) Long idEstado,
-            @RequestParam(required = false) String fechaInicioInvitacion,
-            @RequestParam(required = false) String fechaFinInvitacion,
-            @RequestParam(required = false) String requerimientoUuid,
-            Pageable pageable) {
-        return requerimientoInvitacionService.obtener(idEstado, fechaInicioInvitacion, fechaFinInvitacion, requerimientoUuid,   getContexto(), pageable);
-    }
-
     @PatchMapping("/{uuid}/evaluar")
     @Raml("requerimiento.obtener.properties")
     public Requerimiento evaluarInvitacion(
             @PathVariable String  uuid,
             @RequestBody ListadoDetalleDTO estado) {
+        logger.info("Evaluacion invitacion con uuid: {}", uuid);
         return requerimientoInvitacionService.evaluar(uuid, estado, getContexto());
     }
 }

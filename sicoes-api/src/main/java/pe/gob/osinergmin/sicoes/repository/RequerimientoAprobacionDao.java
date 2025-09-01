@@ -22,8 +22,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                                                                     @Param("idListadoDetalle") Long idListadoDetalle,
                                                                     @Param("estadoAprobacion") String estadoAprobacion);
     @Query(value = "SELECT r FROM RequerimientoAprobacion r " +
-            "WHERE r.requerimiento.requerimientoUuid = :uuid " +
-            "order by r.grupo.orden",
+            "WHERE r.requerimiento.requerimientoUuid = :uuid ",
             countQuery = "SELECT r FROM RequerimientoAprobacion r " +
                     "WHERE r.requerimiento.requerimientoUuid = :uuid ")
     Page<RequerimientoAprobacion> obtenerAprobaciones(@Param("uuid") String uuid,

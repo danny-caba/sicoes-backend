@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -38,7 +39,7 @@ public class Notificacion extends BaseModel implements Serializable {
 	
 	@Column(name="ASUNTO")
 	private String asunto;
-	
+
 	@Column(name="MENSAJE")
 	private String mensaje;
 

@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -75,4 +77,12 @@ public interface RequerimientoDocumentoDao extends JpaRepository<RequerimientoDo
     @Query("SELECT rd FROM RequerimientoDocumento rd " +
             "WHERE rd.requerimientoDocumentoUuid = :uuid")
     Optional<RequerimientoDocumento> obtenerPorUuid(@Param("uuid") String uuid);
+
+    @Query("SELECT rd FROM RequerimientoDocumento rd "
+            + "JOIN FETCH rd.estado e "
+            + "JOIN FETCH rd.requerimiento r "
+            + "WHERE rd.fechaplazoEntrega < sysdate "
+            + "AND rd.flagActivo = '1' "
+            + "AND e.codigo =" + "'" + Constantes.LISTADO.ESTADO_REQ_DOCUMENTO.SOLICITUD_PRELIMINAR + "'")
+    List<RequerimientoDocumento> listarDocumentosVencidos();
 }

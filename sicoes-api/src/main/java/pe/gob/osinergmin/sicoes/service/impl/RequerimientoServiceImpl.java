@@ -81,6 +81,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -355,15 +356,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         } else if (isAprobacionInforme(aprobacionBD)) {
             return aprobarInforme(requerimientoBD, aprobacionBD, contexto);
         } else {
-//        Requerimiento requerimientoBD = requerimientoDao.obtenerPorUuid(uuid)
-//                .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_NO_ENCONTRADO));
-//        RequerimientoAprobacion reqAprobacion = aprobacionDao.findById(aprobacion.getIdReqAprobacion())
-//                .orElseThrow(() -> new ValidacionException(APROBACION_NO_ENCONTRADA));
-
-//            if (!aprobacionBD.getEstado().getCodigo().equals(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
-//                throw new ValidacionException(ESTADO_APROBACION_INCORRECTO);
-//            }
-
             boolean esGppm = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GPPM));
             boolean esGse = contexto.getUsuario().getRoles().stream().anyMatch(rol -> rol.getCodigo().equals(APROBADOR_GSE));
 
@@ -379,7 +371,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                     ListadoDetalle estadoAprobacion = listadoDetalleService.obtenerListadoDetalle(
                             Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
                     ListadoDetalle tipoAprobador = listadoDetalleService.obtenerListadoDetalle(
-                            Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+                            Constantes.LISTADO.TIPO_EVALUADOR.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_ADMINISTRATIVO);
+                    ListadoDetalle grupo = listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.GRUPOS.CODIGO, Constantes.LISTADO.GRUPOS.G1);
                     RequerimientoAprobacion aprobacionGse = new RequerimientoAprobacion();
                     aprobacionGse.setRequerimiento(requerimientoBD);
                     aprobacionGse.setTipo(tipoAprobacion);
@@ -387,6 +381,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                     aprobacionGse.setUsuario(contexto.getUsuario());
                     aprobacionGse.setTipoAprobador(tipoAprobador);
                     aprobacionGse.setEstado(estadoAprobacion);
+                    aprobacionGse.setGrupo(grupo);
 
                     //Actualizar NuSiaf Requerimiento
                     if (Objects.isNull(aprobacion.getRequerimiento().getNuSiaf()) || aprobacion.getRequerimiento().getNuSiaf().isEmpty()) {
@@ -480,6 +475,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 Constantes.LISTADO.TIPO_REQ_DOCUMENTO.CODIGO, Constantes.LISTADO.TIPO_REQ_DOCUMENTO.REGISTRO);
         ListadoDetalle revision = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.REVISION_DOCUMENTO.CODIGO, Constantes.LISTADO.REVISION_DOCUMENTO.PENDIENTE);
+        ListadoDetalle plazoEntrega = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.PLAZOS.CODIGO, Constantes.LISTADO.PLAZOS.ENTREGA_DOCUMENTO_REQUERIMIENTO);
         RequerimientoDocumento reqDoc = new RequerimientoDocumento();
         reqDoc.setRequerimiento(requerimiento);
         reqDoc.setRequerimientoDocumentoUuid(UUID.randomUUID().toString());
@@ -488,6 +485,14 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         reqDoc.setFechaIngreso(new Date());
         reqDoc.setTipo(tipo);
         reqDoc.setRevision(revision);
+        Date fechaIngreso = new Date();
+        Date fechaPlazo = sigedApiConsumer.calcularFechaFin(fechaIngreso, Long.parseLong(plazoEntrega.getValor()), Constantes.DIAS_HABILES);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fechaPlazo);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        reqDoc.setFechaplazoEntrega(calendar.getTime());
         AuditoriaUtil.setAuditoriaRegistro(reqDoc, contexto);
         reqDoc = requerimientoDocumentoDao.save(reqDoc);
 
@@ -818,6 +823,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
         } else { // Si es aprobacion de Gerente G3
             if (Objects.equals(Constantes.LISTADO.ESTADO_APROBACION.APROBADO,
                     aprobacion.getEstado().getCodigo())) {
+                aprobacion.setFechaAprobacion(new Date());
                 ListadoDetalle estadoEnProceso = listadoDetalleService.obtenerListadoDetalle(
                         Constantes.LISTADO.ESTADO_REQUERIMIENTO.CODIGO,
                         Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO);

@@ -18,4 +18,6 @@ public interface RequerimientoInvitacionService extends BaseService<Requerimient
 
     Requerimiento evaluar(String  uuid, ListadoDetalleDTO estado, Contexto contexto);
 
+    void actualizarEstadoInvitaciones(Contexto contexto);
+
 }

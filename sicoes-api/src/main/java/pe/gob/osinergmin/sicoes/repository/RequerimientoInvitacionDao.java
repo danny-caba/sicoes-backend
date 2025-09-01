@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoInvitacion;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoInvitacion, Long> {
@@ -45,4 +47,12 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
             "where i.requerimiento.idRequerimiento = :idRequerimiento " +
             "and i.flagActivo = '1'")
     Optional<RequerimientoInvitacion> buscarPorIdRequerimiento(@Param("idRequerimiento") Long idRequerimiento);
+
+
+    @Query(value="select i from RequerimientoInvitacion i "
+            + "left join fetch i.estado e "
+            + "where e.codigo =" + "'" + Constantes.LISTADO.ESTADO_INVITACION.INVITADO + "'"
+            + "and i.fechaCaducidad < sysdate "
+            + "and i.flagActivo = '1'" )
+    List<RequerimientoInvitacion> obtenerInvitacionesActivas();
 }
