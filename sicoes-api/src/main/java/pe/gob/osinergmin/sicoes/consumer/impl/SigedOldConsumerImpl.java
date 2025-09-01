@@ -419,4 +419,44 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		
 		return parametros;
 	}
+
+	/**
+	 * Obtiene el identificador de archivos asociados a la renovación de contrato (Requerimiento 350) 
+	 * a partir del número de expediente proporcionado.
+	 *
+	 * @param numeroExpediente El número de expediente para el cual se requiere obtener el ID de archivo.
+	 * @return El identificador del archivo relacionado con la renovación de contrato.
+	 * @throws Exception Si ocurre un error al invocar el servicio web de SIGED.
+	 * 
+	 * Requerimiento: 350 - Renovación de contrato.
+	 */
+	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente) throws Exception{
+
+		logger.info("obtenerIdArchivos inicio...");
+
+		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + numeroExpediente + "/1";
+		Long idArchivo = 0L;
+
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			logger.info("url [{}].", url);
+			String response = restTemplate.getForObject(url, String.class);
+			logger.info("response: " + response);
+
+			logger.info("idArchivo: " + idArchivo);
+		}
+		catch (HttpClientErrorException ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
+		}
+		catch (Exception ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw ex;
+		}
+
+		logger.info("obtenerIdArchivos fin...");
+
+		return idArchivo;
+	}
+
 }

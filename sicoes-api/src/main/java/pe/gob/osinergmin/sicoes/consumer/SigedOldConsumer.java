@@ -22,4 +22,6 @@ public interface SigedOldConsumer {
 	public Long obtenerIdArchivos(String numeroExpediente, String nombreUsuario) throws Exception;
 	
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital();
+
+	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente) throws Exception;
 }

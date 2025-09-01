@@ -29,14 +29,14 @@ public class FirmaDigitalImplService implements FirmaDigitalService {
     @Autowired
     private SigedOldConsumer sigedOldConsumer;
 
-    @Autowired
-    private SissegApiConsumer sissegApiConsumer;
 
     @Autowired
     private RequerimientoRenovacionDao requerimientoRenovacionDao;
 
     @Autowired
     private InformeRenovacionContratoDao informeRenovacionContratoDao;
+
+
 
     @Override
     public FirmaDigitalResponseDTO obtenerParametrosfirmaDigital(FirmaDigitalRequestDTO firmaDigitalRequestDTO, Contexto contexto) throws Exception {
@@ -54,10 +54,10 @@ public class FirmaDigitalImplService implements FirmaDigitalService {
         if (!requerimientoOpt.isPresent()) {
             throw new DataNotFoundException("No se encontró el requerimiento de renovación con ID: " + informeRenovacionContrato.getRequerimiento().getIdReqRenovacion());
         }
+
         RequerimientoRenovacion requerimiento = requerimientoOpt.get();
 
-        // 3. Obtener ID del archivo para firma usando número de expediente
-        Long idArchivo = obtenerIdArchivos(requerimiento.getNuExpediente(), contexto.getUsuario().getUsuario());
+        Long idArchivo=sigedOldConsumer.obtenerIdArchivosRenovacionContrato(requerimiento.getNuExpediente());
 
         // 4. Crear y devolver la respuesta
         FirmaDigitalResponseDTO response = new FirmaDigitalResponseDTO();

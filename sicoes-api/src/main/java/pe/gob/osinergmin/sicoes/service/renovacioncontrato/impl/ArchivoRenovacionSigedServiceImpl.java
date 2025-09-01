@@ -13,12 +13,12 @@ import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoAnularOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
-import pe.gob.osinergmin.sicoes.service.renovacioncontrato.ArchivoRenovSigedService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.ArchivoRenovacionSigedService;
 
 @Service
-public class ArchivoRenovSigedServiceImpl implements ArchivoRenovSigedService {
+public class ArchivoRenovacionSigedServiceImpl implements ArchivoRenovacionSigedService {
 
-    private static final Logger logger = LogManager.getLogger(ArchivoRenovSigedServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(ArchivoRenovacionSigedServiceImpl.class);
 
     @Autowired
     private SigedApiConsumer sigedApiConsumer;

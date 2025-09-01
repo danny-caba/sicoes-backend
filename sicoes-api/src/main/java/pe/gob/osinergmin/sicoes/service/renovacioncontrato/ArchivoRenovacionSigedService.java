@@ -8,7 +8,7 @@ import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoAnularOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 
-public interface ArchivoRenovSigedService {
+public interface ArchivoRenovacionSigedService {
 
     DocumentoOutRO agregarDocumento(ExpedienteInRO expediente, List<File> archivos) throws Exception;
     
