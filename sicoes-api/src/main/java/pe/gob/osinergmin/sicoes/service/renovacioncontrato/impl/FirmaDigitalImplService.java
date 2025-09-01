@@ -56,28 +56,11 @@ public class FirmaDigitalImplService implements FirmaDigitalService {
         }
         RequerimientoRenovacion requerimiento = requerimientoOpt.get();
 
-        // 3. Obtener parámetros base de SIGED
-        AccessRequestInFirmaDigital acceso = sigedOldConsumer.obtenerParametrosfirmaDigital();
-
-        // 4. Obtener token de acceso desde SISSEG
-        String accessToken = sissegApiConsumer.obtenerAccessToken(firmaDigitalRequestDTO.getToken().replaceAll(" ", "+"));
-
-        // 5. Obtener ID del usuario desde SISSEG
-        Long idUsuario = sissegApiConsumer.obtenerIdUsuario(contexto.getUsuario().getUsuario());
-
-        // 6. Obtener datos completos del usuario desde SISSEG
-        Usuario user = sissegApiConsumer.obtenerUsuario(idUsuario, accessToken);
-
-        // 7. Configurar credenciales del usuario en el objeto de acceso
-        acceso.setLoginUsuario(user.getUsuario());
-        acceso.setPasswordUsuario(user.getContrasenia());
-
-        // 8. Obtener ID del archivo para firma usando número de expediente
+        // 3. Obtener ID del archivo para firma usando número de expediente
         Long idArchivo = obtenerIdArchivos(requerimiento.getNuExpediente(), contexto.getUsuario().getUsuario());
 
-        // 9. Crear y devolver la respuesta
+        // 4. Crear y devolver la respuesta
         FirmaDigitalResponseDTO response = new FirmaDigitalResponseDTO();
-        response.setAcceso(acceso);
         response.setIdArchivo(idArchivo);
 
         logger.info("Parámetros de firma digital obtenidos exitosamente para idReqRenovacion: {}, idArchivo: {}", 
