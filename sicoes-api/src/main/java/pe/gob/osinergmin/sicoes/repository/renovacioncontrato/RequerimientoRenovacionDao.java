@@ -7,18 +7,35 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
-import java.util.List;
-
 @Repository
 public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoRenovacion, Long> {
 
-    Page<RequerimientoRenovacion> findByNuExpedienteContains(String nuExpediente, Pageable pageable);
+    @Query("SELECT rr FROM RequerimientoRenovacion rr " +
+            "WHERE rr.solicitudPerfil.idSolicitud = :idSolicitud " +
+            "AND rr.estadoReqRenovacion.idListadoDetalle NOT IN :estadosExcluidos " +
+            "AND rr.esRegistro = '1'")
+    List<RequerimientoRenovacion> listarNoConcluidos(
+            @Param("idSolicitud") Long idSolicitud,
+            @Param("estadosExcluidos") List<Long> estadosExcluidos
+    );
+
+    @Query("SELECT r FROM RequerimientoRenovacion r " +
+            "WHERE r.esRegistro = '1' " +
+            "AND (:numeroExpediente IS NULL OR r.nuExpediente LIKE %:numeroExpediente%) " +
+            "AND (:tipoSector IS NULL OR r.tiSector LIKE %:tipoSector%) " +
+            "AND (:tipoSubSector IS NULL OR r.tiSubSector LIKE %:tipoSubSector%) " +
+            "AND (:idSolicitud IS NULL OR r.idSoliPerfCont LIKE :idSolicitud) " +
+            "ORDER BY r.fecCreacion DESC")
+    Page<RequerimientoRenovacion> findByNuExpedienteContains(
+            @Param("idSolicitud") Long idSolicitud,
+            @Param("numeroExpediente") String numeroExpediente,
+            @Param("tipoSector") String tipoSector,
+            @Param("tipoSubSector") String tipoSubSector,
+            Pageable pageable);
 
 
     @Query("SELECT r FROM RequerimientoRenovacion r WHERE r.esRegistro = '1' ORDER BY r.fecCreacion DESC")

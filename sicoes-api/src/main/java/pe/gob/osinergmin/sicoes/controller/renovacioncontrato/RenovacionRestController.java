@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoRenovacionListDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoRenovacionService;
 
@@ -20,9 +21,14 @@ public class RenovacionRestController extends BaseRestController {
     RequerimientoRenovacionService requerimientoRenovacionService;
 
     @GetMapping("/requerimientos")
-    public Page<RequerimientoRenovacion> buscar(@RequestParam(defaultValue = "") String numeroExpediente, Pageable pageable) {
-        logger.info("buscar {} ", numeroExpediente);
-        return requerimientoRenovacionService.buscar(numeroExpediente,pageable,getContexto());
+    public Page<RequerimientoRenovacionListDTO> buscar(
+            @RequestParam(required = false) String idSolicitud,
+            @RequestParam(required = false) String nuExpediente,
+            @RequestParam(required = false) String sector,
+            @RequestParam(required = false) String subSector,
+            Pageable pageable) {
+        logger.info("buscar{} {} {} {}", idSolicitud,nuExpediente,sector,subSector);
+        return requerimientoRenovacionService.buscar(idSolicitud,nuExpediente,sector,subSector,pageable,getContexto());
     }
 
 	@PostMapping("/requerimiento")

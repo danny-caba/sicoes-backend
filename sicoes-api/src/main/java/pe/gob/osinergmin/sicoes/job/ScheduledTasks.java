@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.job;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.service.*;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ExcelUtils;
@@ -58,8 +60,11 @@ public class ScheduledTasks {
 
 	@Autowired
 	private SicoesSolicitudService sicoesSolicitudService;
-	
-	
+
+	@Autowired
+	private RequerimientoInvitacionService requerimientoInvitacionService;
+
+
 	@Value("${path.temporal}")
 	private String path;
 	
@@ -167,5 +172,12 @@ public class ScheduledTasks {
 		logger.info("Inicio archivarSolicitudesPerfContNoPresentadas");
 		sicoesSolicitudService.archivarSolicitudesPerfContNoPresentadas(getContextoAnonimo());
 		logger.info("Fin archivarSolicitudesPerfContNoPresentadas");
+	}
+
+	//TODO: definir el timepo de ejecucion @Scheduled(fixedRate = 5*60*1000)  @Scheduled(cron = "0 3 18 * * ?")
+	public void cancelarInvitacionesCaducada()throws Exception{
+		logger.info("Ini cancelarInvitacionesCaducada");
+		int i=requerimientoInvitacionService.cancelarCaducados(new Date(),getContextoAnonimo());
+		logger.info("Fin cancelarInvitacionesCaducada {}",i);
 	}
 }

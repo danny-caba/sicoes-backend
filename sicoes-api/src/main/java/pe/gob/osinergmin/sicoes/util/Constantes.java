@@ -907,6 +907,7 @@ public class Constantes {
 		public static final String FECHA_FINAL_CONTRATO = "V01018";
 		public static final String SOLICITUD_NO_CONCLUIDA = "V01019";
 		public static final String TIPO_SOLICITUD_NO_PERMITIDO = "V01020";
+        public static final String REQ_RENOVACION_ACTIVOS = "V01021";
 
 		public static final String INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO = "V02000";
 		public static final String PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO = "V02000";

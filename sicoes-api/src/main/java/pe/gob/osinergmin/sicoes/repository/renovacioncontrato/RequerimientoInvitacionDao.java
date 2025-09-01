@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.repository.renovacioncontrato;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,4 +52,15 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoInvitacion> buscarPorRangoFechas(@Param("fechaDesde") String fechaDesde,
                                                        @Param("fechaHasta") String fechaHasta);
+
+    Optional<RequerimientoInvitacion> findByIdReqInvitacion(Long idReqInvitacion);
+
+
+    @Query("SELECT ri FROM RequerimientoInvitacion ri " +
+                "WHERE ri.estadoInvitacion.codigo = :estadoInvitado " +
+                "AND ri.feCaducidad < :fechaReferencia " +
+                "AND ri.flActivo = '1'")
+    List<RequerimientoInvitacion> findInvitacionesCaducadas(@Param("fechaReferencia") Date fechaReferencia,
+                @Param("estadoInvitado") String estadoInvitado);
+
 }

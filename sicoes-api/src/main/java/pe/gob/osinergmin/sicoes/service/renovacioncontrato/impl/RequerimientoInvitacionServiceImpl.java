@@ -80,5 +80,64 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         return requerimientoInvitacion;
     }
 
+    @Override
+    @Transactional
+    public int cancelarCaducados(Date fecha, Contexto contexto) throws Exception {
+        logger.info("Iniciando cancelación de invitaciones caducadas. Fecha: {}", fecha);
+        int invitacionesActualizadas = 0;
+        try {
+            ListadoDetalle estadoCaducado = listadoDetalleDao.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_INVITACION.CODIGO,Constantes.LISTADO.ESTADO_INVITACION.CADUCADO);
+
+            ListadoDetalle estadoArchivado = listadoDetalleDao.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_INVITACION.CODIGO,Constantes.LISTADO.ESTADO_INVITACION.CADUCADO);
+
+            List<RequerimientoInvitacion> invitacionesCaducadas = requerimientoInvitacionDao
+                    .findInvitacionesCaducadas(fecha, Constantes.LISTADO.ESTADO_INVITACION.INVITADO);
+
+            if (invitacionesCaducadas.isEmpty()) {
+                logger.info("No se encontraron invitaciones caducadas para la fecha: {}", fecha);
+                return 0;
+            }
+
+            logger.info("Encontradas {} invitaciones caducadas", invitacionesCaducadas.size());
+
+
+            for (RequerimientoInvitacion invitacion : invitacionesCaducadas) {
+                try {
+                    ListadoDetalle estadoActual = invitacion.getEstadoInvitacion();
+
+                    invitacion.setEstadoInvitacion(estadoCaducado);
+                    invitacion.setFeCancelado(new Date());
+                    AuditoriaUtil.setAuditoriaActualizacion(invitacion, contexto);
+
+                    HistorialEstadoInvitacion historialInvitacion = new HistorialEstadoInvitacion();
+                    historialInvitacion.setDeEstadoAnterior(estadoActual.getDescripcion());
+                    historialInvitacion.setDeEstadoNuevo(estadoCaducado.getDescripcion());
+                    historialInvitacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
+                    historialInvitacion.setIdReqInvitacion(invitacion.getIdReqInvitacion());
+                    historialInvitacion.setIdUsuario(contexto.getUsuario().getIdUsuario());
+                    historialInvitacion.setFeFechaCambio(new Timestamp(System.currentTimeMillis()));
+                    AuditoriaUtil.setAuditoriaRegistro(historialInvitacion, contexto);
+                    historialEstadoInvitacionDao.save(historialInvitacion);
+
+                    requerimientoInvitacionDao.save(invitacion);
+                    invitacionesActualizadas++;
+                } catch (Exception e) {
+                    logger.error("Error al procesar invitación caducada ID: {}", invitacion.getIdReqInvitacion(), e);
+                }
+            }
+
+            logger.info("Proceso de cancelación por caducidad completado. Invitaciones procesadas: {}/{}",
+                    invitacionesActualizadas,invitacionesCaducadas.size());
+
+            return invitacionesActualizadas;
+
+        } catch (Exception e) {
+            logger.error("Error general en el proceso de cancelación por caducidad", e);
+            throw new Exception("Error al cancelar invitaciones caducadas: " + e.getMessage(), e);
+        }
+    }
+
 
 }
