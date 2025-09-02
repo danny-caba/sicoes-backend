@@ -35,7 +35,7 @@ import java.util.Collections;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/renovacion-contrato/aprobacion-informe")
+@RequestMapping("/api/informe/renovacion/aprobacion-informe")
 public class AprobacionInformeRestController extends BaseRestController {
 
     /**
