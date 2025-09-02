@@ -92,4 +92,11 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
             + " where ( :idDocIniServ is null or e5.idListadoDetalle = :idDocIniServ)"
     )
     List<PersonalReemplazo> obtenerxEstadoDocuIniServ(@Param("idDocIniServ") Long idDocIniServ);
+
+
+
+    @Query(value= "  SELECT * FROM SICOES_TZ_REEMPLAZO_PERSONAL " +
+            "        WHERE FE_FECHA_DESVINCULACION IS NOT NULL " +
+            "        AND FE_FECHA_DESVINCULACION <= SYSDATE", nativeQuery = true)
+    List<PersonalReemplazo> obtenerParaDesvinculacion();
 }

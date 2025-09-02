@@ -10,10 +10,7 @@ import org.thymeleaf.context.Context;
 
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.repository.*;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
-import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
-import pe.gob.osinergmin.sicoes.service.SicoesSolicitudService;
+import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -85,7 +82,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private SupervisoraMovimientoDao supervisoraMovimientoDao;
 
     @Autowired
-    private SupervisoraDao supervisoraDao;
+    private SupervisoraService supervisoraService;
 
     @Autowired
     private UsuarioRolDao usuarioRolDao;
@@ -412,7 +409,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_FINALIZACION_CONTRATO_PERSONAL,
-                NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
+                NOMBRE_TEMPLATE_FINALIZACION_CONTRATO_PERSONAL,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         saveNotificacion(notificacion);
@@ -423,27 +420,29 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Transactional
     public void notificarFinalizacionContrato(Contexto contexto) {
 
-       	Date hoy = new Date();
-		List<PersonalReemplazo> bajas = personalReemplazoDao.findAll().stream()
-            .filter(r -> r.getFeFechaDesvinculacion() != null)
-            .filter(r -> !r.getFeFechaDesvinculacion().after(hoy))
-            .collect(Collectors.toList());
+        Date hoy = new Date();
+		List<PersonalReemplazo> reemplazos = personalReemplazoDao.obtenerParaDesvinculacion();
 
-       Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
+        Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
 
-        for(PersonalReemplazo rempBaja:bajas) {
+        for(PersonalReemplazo reemplazo:reemplazos) {
 
-            Long id = rempBaja.getPersonaBaja().getIdSupervisora();
-            Supervisora superv = supervisoraDao.obtener(id);
+            Long idsolicitud = reemplazo.getIdSolicitud();
 
-			SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(superv.getIdSupervisora());
+            SicoesSolicitud solicitud = sicoesSolicitudService.obtener(idsolicitud, contexto);
+
+            Long idsupervisora = solicitud.getSupervisora().getIdSupervisora();
+
+            Supervisora supervisora = supervisoraService.obtener(idsupervisora, contexto);
+
+			SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(supervisora.getIdSupervisora());
             obSupMov.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
                                                                            Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
             AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
 
-            notificarFinalizacionContrato(usuario.get(), superv.getNumeroExpediente(), contexto);
+            notificarFinalizacionContrato(usuario.get(), supervisora.getNumeroExpediente(), contexto);
 		}
 
 
