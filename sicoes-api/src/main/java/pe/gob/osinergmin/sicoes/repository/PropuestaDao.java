@@ -127,4 +127,14 @@ public interface PropuestaDao extends JpaRepository<Propuesta, Long> {
 			+ "where i.procesoItemUuid=:procesoItemUuid "
 			+ "and g.codigo='"+Constantes.LISTADO.SI_NO.SI+"' ")	
 	public Propuesta obtenerPropuestaGanadora(String procesoItemUuid);
+
+	@Query("select p from Propuesta p "
+			+ "left join fetch p.supervisora s "
+			+ "left join fetch p.procesoItem i "
+			+ "left join fetch p.estado e "
+			+ "left join fetch p.propuestaTecnica pt "
+			+ "left join fetch p.propuestaEconomica pe "
+			+ "where i.idProcesoItem=:idProcesoItem "
+			+ "and e.codigo='"+Constantes.LISTADO.ESTADO_PRESENTACION.PRESENTADO+"' ")
+	Propuesta obtenerPropuestaPorItem(Long idProcesoItem);
 }

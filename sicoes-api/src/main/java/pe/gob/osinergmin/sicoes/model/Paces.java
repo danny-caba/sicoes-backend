@@ -8,7 +8,7 @@ import javax.persistence.*;
  * The persistent class for the SICOES_TM_PACES database table.
  */
 @Entity
-@Table(name = "SICOES_TM_PACES", schema = "ES_SICOES")
+@Table(name = "SICOES_TM_PACES")
 public class Paces extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 

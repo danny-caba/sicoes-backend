@@ -392,6 +392,76 @@ public class ProcesoServiceImpl implements ProcesoService {
 		logger.info("actualizarProcesoAdmision Fin");
 	}
 
+	@Transactional(rollbackFor = Exception.class)
+	public void actualizarProcesoDesignacion(Contexto contexto) {
+		logger.info("Iniciando actualización batch de procesos a estado designación");
+		try {
+			String diaInicioJob = DateUtil.getDate("02/09/2025", "dd/MM/yyyy");
+			Date fechaInicioJob = DateUtil.getInitDay(diaInicioJob);
+            logger.info("Consultando procesos para designación desde fecha: {}", diaInicioJob);
+			List<Proceso> procesosParaDesignacion = procesoDao.obtenerProcesoAdmisionCalificacion(fechaInicioJob);
+			if (procesosParaDesignacion.isEmpty()) {
+				logger.info("No se encontraron procesos para actualizar a designación");
+				return;
+			}
+			ListadoDetalle estadoDesignacion = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_PROCESO.CODIGO, Constantes.LISTADO.ESTADO_PROCESO.DESIGNACION);
+			for (Proceso proceso : procesosParaDesignacion) {
+                logger.info("Inicio proceso a designación: {}", proceso.getIdProceso());
+				Proceso procesoBD = procesoDao.obtener(proceso.getIdProceso());
+				procesoBD.setEstado(estadoDesignacion);
+				AuditoriaUtil.setAuditoriaRegistro(procesoBD, contexto);
+				procesoBD = procesoDao.save(procesoBD);
+				procesoItemService.actualizarProcesoItemDesignacion(procesoBD, contexto);
+                logger.info("Fin proceso a designación: {}", proceso.getIdProceso());
+			}
+			logger.info("Actualización batch completada: {} procesos actualizados", procesosParaDesignacion.size());
+		} catch (Exception e) {
+			logger.error("Error en actualización batch de procesos: {}", e.getMessage(), e);
+		}
+	}
+
+	@Transactional
+	public void actualizarProcesoConsentimiento(Contexto contexto) {
+		logger.info("Iniciando actualización batch de procesos a estado consentido");
+		try {
+			List<Proceso> procesosParaConsentimiento = procesoDao.obtenerProcesoDesignado();
+			if (procesosParaConsentimiento.isEmpty()) {
+				logger.info("No se encontraron procesos para actualizar a consentido");
+				return;
+			}
+			ListadoDetalle estadoCerrado = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_PROCESO.CODIGO, Constantes.LISTADO.ESTADO_PROCESO.CERRADO);
+				for (Proceso proceso : procesosParaConsentimiento) {
+                    logger.info("Procesando consentimiento para proceso: {}", proceso.getIdProceso());
+					Proceso procesoBD = procesoDao.obtener(proceso.getIdProceso());
+					ProcesoEtapa etapaConsentido = procesoEtapaService.obtenerEtapaPorOrden(procesoBD.getProcesoUuid(),
+							Constantes.LISTADO.ETAPA_PROCESO.ETAPA_CONSENTIDO);
+					ProcesoEtapa etapaDesignado = procesoEtapaService.obtenerEtapaPorOrden(procesoBD.getProcesoUuid(),
+							Constantes.LISTADO.ETAPA_PROCESO.ETAPA_DESIGNADO);
+					Date fechaFinEtapaConsentido = etapaConsentido != null ? DateUtil.getInitDayMs(etapaConsentido.getFechaFin()) : null;
+					Date fechaDia2EtapaDesignado = etapaDesignado != null ? DateUtil.getInitDayMs(DateUtil.sumarDia(etapaDesignado.getFechaInicio(), 1L)) : null;
+					Date fechaActual = DateUtil.getInitDayMs(new Date());
+					if (fechaActual.equals(fechaDia2EtapaDesignado) &&
+							Constantes.LISTADO.ESTADO_PROCESO.DESIGNACION.equals(procesoBD.getEstado().getCodigo())) {
+                        logger.info("Procesando consentimiento automático (un postulante) para proceso: {}", proceso.getIdProceso());
+						procesoItemService.actualizarProcesoItemConsentido(procesoBD, contexto, "U"); // Un solo postulante
+					}
+					if (fechaActual.equals(fechaFinEtapaConsentido) &&
+							Constantes.LISTADO.ESTADO_PROCESO.DESIGNACION.equals(procesoBD.getEstado().getCodigo())) {
+                        logger.info("Cerrando proceso por fin de etapa de consentimiento: {}", proceso.getIdProceso());
+						procesoBD.setEstado(estadoCerrado);
+						AuditoriaUtil.setAuditoriaRegistro(procesoBD, contexto);
+						procesoBD = procesoDao.save(procesoBD);
+						procesoItemService.actualizarProcesoItemConsentido(procesoBD, contexto, "M"); // Muchos postulantes
+					}
+				}
+			logger.info("Actualización batch completada: {} procesos actualizados", procesosParaConsentimiento.size());
+		} catch (Exception e) {
+			logger.error("Error en actualización batch de procesos: {}", e.getMessage(), e);
+		}
+	}
+
 	@Override
 	public void validacionVerProfesionales(String procesoUuid, Contexto contexto) {
 		if(procesoUuid == null) {

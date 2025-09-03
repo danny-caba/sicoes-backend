@@ -136,4 +136,7 @@ public interface UsuarioDao extends PagingAndSortingRepository<Usuario, Long> {
 	@Query(value="update Usuario set estadoUsuario = :estadoUsuario, usuActualizacion = :usuActualizacion, fecActualizacion = sysdate, ipActualizacion = :ipActualizacion where idUsuario=:idUsuario")
 	public void actualizarEstadoUsuario(Long idUsuario, String estadoUsuario, String usuActualizacion, String ipActualizacion);
 
+	@Query("select u from Usuario u "
+			+ "where u.codigoUsuarioInterno = :codigoInterno ")
+	Usuario obtenerUsuarioPorCodigoInterno(Long codigoInterno);
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -306,9 +307,11 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "and e.idListadoDetalle = :idAprobado")
 	public List<Asignacion> obtenerAsignacionesPorGrupoYSolicitud(Long idTipo, Long idGrupo, Long idSolicitud, Long idAprobado);
 
-
-
-
+	@Query(value = "SELECT a FROM Asignacion a LEFT JOIN a.tipo t LEFT JOIN a.evaluacion e "
+			+ "WHERE t.codigo LIKE '" + Constantes.LISTADO.TIPO_EVALUADOR.ADMINISTRATIVO + "' "
+			+ "AND a.solicitud.idSolicitud = :idSolicitud ")
+	List<Asignacion> obtenerAsignacionesEvalAdm(
+			@Param("idSolicitud") Long idSolicitud);
 	
 }
 

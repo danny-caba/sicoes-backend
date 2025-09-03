@@ -117,6 +117,11 @@ public class Estudio extends BaseModel implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_ESTADO_LD")
 	private ListadoDetalle estado;
+	
+	@Temporal(TemporalType.DATE)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+	@Column(name="FE_EGRESO")
+	private Date fechaEgreso;
 
 	@Transient
 	private List<Archivo> archivos;
@@ -312,4 +317,14 @@ public class Estudio extends BaseModel implements Serializable {
 	public void setEstado(ListadoDetalle estado) {
 		this.estado = estado;
 	}
+
+	public Date getFechaEgreso() {
+		return fechaEgreso;
+	}
+
+	public void setFechaEgreso(Date fechaEgreso) {
+		this.fechaEgreso = fechaEgreso;
+	}
+	
+	
 }

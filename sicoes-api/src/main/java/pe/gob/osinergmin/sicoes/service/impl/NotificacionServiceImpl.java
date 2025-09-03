@@ -31,6 +31,7 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.OtroRequisito;
 import pe.gob.osinergmin.sicoes.model.Proceso;
+import pe.gob.osinergmin.sicoes.model.ProcesoItem;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Usuario;
@@ -591,7 +592,25 @@ public class NotificacionServiceImpl implements NotificacionService{
 	    notificacion.setEstado(estadoPendiente);
 	    notificacionDao.save(notificacion);
 	}
-	
+
+	@Override
+	public void enviarMensajeEleccionGanador(String correos, List<ProcesoItem> items, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		notificacion.setCorreo(correos);
+		notificacion.setAsunto("Seleccionar ganador item del proceso");
+		ProcesoItem primerItem = items.get(0);
+		String numeroProceso = primerItem.getProceso() != null ? primerItem.getProceso().getNumeroProceso() : "N/A";
+		final Context ctx = new Context();
+		ctx.setVariable("numeroProceso", numeroProceso);
+		ctx.setVariable("items", items);
+		String htmlContent = templateEngine.process("26-seleccion-ganador-item.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
 	@Override
 	public void enviarMensajeEvaluacionConcluida03(Solicitud solicitud,String type, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();

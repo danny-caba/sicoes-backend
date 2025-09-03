@@ -29,5 +29,8 @@ public interface ProcesoService extends BaseService<Proceso, Long> {
 	
 	public Proceso obtenerPublico(String uuid, Contexto contexto);
 
+	void actualizarProcesoDesignacion(Contexto contexto);
+
+	void actualizarProcesoConsentimiento(Contexto contexto);
 
 }

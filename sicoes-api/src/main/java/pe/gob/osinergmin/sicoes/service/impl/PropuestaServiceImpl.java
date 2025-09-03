@@ -194,7 +194,7 @@ public class PropuestaServiceImpl implements PropuestaService {
 	public Propuesta obtener(String propuestaUuid, Contexto contexto) {
 		
 		Propuesta propuestaBD = propuestaDao.obtener(propuestaUuid);
-		Long idPropuestaTecnica = propuestaBD.getIdPropuesta();
+		Long idPropuestaTecnica = propuestaBD.getPropuestaTecnica().getIdPropuestaTecnica();
 	    Long idSectorListadoDetalle = propuestaBD.getProcesoItem().getProceso().getSector().getIdListadoDetalle();
 
 		List<PropuestaConsorcio> consorcio = propuestaConsorcioDao.obtenerConsorcios(idPropuestaTecnica);
@@ -337,13 +337,18 @@ public class PropuestaServiceImpl implements PropuestaService {
 
 	@Override
 	public Propuesta obtenerPropuestaXProcesoItem(Long idProcesoItem,Contexto contexto) {
-		Supervisora supervisora= supervisoraService.obtenerSupervisoraXNroDocumento(contexto.getUsuario().getCodigoRuc());
+		Supervisora supervisora = null;
+		if (contexto.getUsuario() != null) {
+			supervisora = supervisoraService.obtenerSupervisoraXNroDocumento(contexto.getUsuario().getCodigoRuc());
+		}
 		if(supervisora!=null) {
 			return propuestaDao.obtenerPropuestaXProcesoItem(idProcesoItem,supervisora.getIdSupervisora());
-		}else {
+		} else if (contexto.getUsuarioApp() != null) {
+			return propuestaDao.obtenerPropuestaPorItem(idProcesoItem);
+		} else {
 			return null;
 		}
-	}  
+	}
 	
 	@Override
 	public List<Propuesta> obtenerTodasPropuestaXProcesoItem(Long idProcesoItem,Contexto contexto) {
@@ -518,13 +523,15 @@ public class PropuestaServiceImpl implements PropuestaService {
 				Constantes.LISTADO.CARGO_MIEMBRO.C_MIEMBRO, contexto);
 		
 		Usuario usuario = contexto.getUsuario();
-		if (!((presidente.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
-				|| (primerMiembro.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
-				|| (miembro3.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno())))) {
-			throw new ValidacionException(Constantes.CODIGO_MENSAJE.SELECCIONAR_GANADOR);
-		}
+        if (usuario != null) {
+            if (!((presidente.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
+                    || (primerMiembro.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno()))
+                    || (miembro3.getCodigoUsuario().equals(usuario.getCodigoUsuarioInterno())))) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SELECCIONAR_GANADOR);
+            }
+        }
 
-		List<Propuesta> propuestas = propuestaDao.listar(propuestaBD.getProcesoItem().getProcesoItemUuid());
+        List<Propuesta> propuestas = propuestaDao.listar(propuestaBD.getProcesoItem().getProcesoItemUuid());
 		if(propuestaBD.getGanador()==null) {
 			for(Propuesta prop:propuestas) {
 				if(prop.getIdPropuesta()==propuestaBD.getIdPropuesta()) {

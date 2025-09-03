@@ -55,5 +55,7 @@ public interface ArchivoService extends BaseService<Archivo, Long> {
 	List<File> obtenerArchivoDj(Long idOtroRequisito, String procedimiento, Contexto contexto);
 	List<File> obtenerArchivoModificacion(Long idOtroRequisito, Contexto contexto);
 	List<Archivo> buscarArchivosPendientes(Long idSolicitud, Contexto contexto);
+	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto);
+
 
 }

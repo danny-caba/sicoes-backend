@@ -85,4 +85,6 @@ public interface AsignacionService extends BaseService<Asignacion, Long> {
 
 	public List<Integer> obtenerIdsPerfilesAsignadosAprobador(Long idAprobador);
 
+	List<Asignacion> obtenerEvaluadoresAdministrativos(Long idSolicitud);
+
 }

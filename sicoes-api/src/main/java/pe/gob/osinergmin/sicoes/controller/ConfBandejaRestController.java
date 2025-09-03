@@ -25,6 +25,7 @@ import pe.gob.osinergmin.sicoes.model.ConfiguracionBandeja;
 import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioReasignacion;
+import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.service.ConfBandejaService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -121,7 +122,7 @@ public class ConfBandejaRestController extends BaseRestController {
     }
 	
 	@GetMapping("/obtener-divisiones")
-    public List<Division> obtenerDivisiones(HttpServletRequest request) throws Exception {
+    public List<DivisionDTO> obtenerDivisiones(HttpServletRequest request) throws Exception {
 		
     	return confBandejaService.obtenerDivisiones();
     }

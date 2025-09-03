@@ -81,8 +81,15 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getMessage());
 		return doc;
 	}
-
 	
+	@Override
+	public DocumentoOutRO agregarDocumentoVersionar(ExpedienteInRO expediente, List<File> archivos) throws Exception {
+		DocumentoOutRO doc =ExpedienteInvoker.addDocument(SIGED_WS_URL+SIGED_PATH_AGREGAR_DOCUMENTO, expediente, archivos, true);
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getResultCode());
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getErrorCode());
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getMessage());
+		return doc;
+	}
 	
 	private SOAPMessage sendPidoRequest(String xmlRequest, String URL) {
 		RestTemplate restTemplate = new RestTemplate();

@@ -175,4 +175,13 @@ public class ProcesoEtapaServiceImpl implements ProcesoEtapaService {
 		return procesoEtapaDao.obtenerProcesosEtapaFormulacionConsulta(idListadoDetalle);
 	}
 
+	@Override
+	public ProcesoEtapa obtenerEtapaPorOrden(String uuidProceso, Long orden) {
+		List<ProcesoEtapa> etapas = procesoEtapaDao.buscarEtapaConsentimiento(uuidProceso, orden);
+		if (etapas != null && !etapas.isEmpty()) {
+			return etapas.get(0);
+		}
+		return null;
+	}
+
 }

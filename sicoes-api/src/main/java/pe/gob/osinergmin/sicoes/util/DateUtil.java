@@ -135,4 +135,14 @@ static SimpleDateFormat sdf=new SimpleDateFormat("dd/MM/yyyy");
 		calendar.add(Calendar.DATE, dia.intValue());
 		return calendar.getTime();
 	}
+
+	public static Date getInitDayMs(Date fecha) {
+		Calendar calendar = Calendar.getInstance(Locale.forLanguageTag("es_PE"));
+		calendar.setTime(fecha);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		return calendar.getTime();
+	}
 }

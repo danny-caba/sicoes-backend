@@ -41,7 +41,7 @@ public interface UsuarioService extends UserDetailsService{
 	public Usuario obtener(Long idUsuario);
 	public List<ResponseUserListDto.Usuario> listarUsuariosSiged() throws Exception;
 	public UsuarioDetalleSigedDTO obtenerUsuarioSiged(Long idUsuario) throws Exception;
-	public Page<Usuario> buscar(String nombreUsuario, Pageable pageable);
+	public Page<Usuario> buscar(String nombreUsuario, Pageable pageable, Contexto contexto);
 	public Page<UsuarioRol> listarUsuarioRol(Long idUsuario, Pageable pageable);
 	public Usuario registrarUsuario(Usuario usuario, Contexto contexto);
 	public Usuario modificarUsuario(Usuario usuario,Contexto contexto);
@@ -53,4 +53,5 @@ public interface UsuarioService extends UserDetailsService{
 	public UsuarioRolConfiguracion registrarUsuarioRolConfiguracion(UsuarioRolConfiguracion usuarioRolConfiguracion,Contexto contexto);
 	public void actualizarEstadoUsuarioRolConf(UsuarioRolConfiguracion usuarioRolConfiguracion,Contexto contexto);
 	public List<Usuario> listarUsuariosXCodigoRol(String codigoRol, Long idUsuario);
+	Usuario obtenerUsuarioPorCodigoInterno(Long codigoInterno);
 }

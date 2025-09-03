@@ -575,7 +575,15 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 	}
 	
 	@Override
-	public Page<Usuario> buscar(String nombreUsuario, Pageable pageable) {
+	public Page<Usuario> buscar(String nombreUsuario, Pageable pageable, Contexto contexto) {
+
+		boolean esRolAdmBloqueos = contexto.getUsuario().getRoles()
+				.stream()
+				.anyMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.ADMINISTRADOR_BLOQUEOS));
+
+		if (!esRolAdmBloqueos) {
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
+		}
 		
 		Page<Usuario> pageUsuario = usuarioDao.buscar2(nombreUsuario,pageable);
 		
@@ -695,8 +703,13 @@ public class UsuarioServiceImpl extends BaseService implements UsuarioService {
 	public List<Usuario> listarUsuariosXCodigoRol(String codigoRol, Long idUsuario) {
 		return usuarioEvaluacionDao.obtenerUsuariosXCodigoRol(codigoRol,idUsuario);
 	}
-	
-	 public static void main(String[] args) {
+
+	@Override
+	public Usuario obtenerUsuarioPorCodigoInterno(Long codigoInterno) {
+		return usuarioDao.obtenerUsuarioPorCodigoInterno(codigoInterno);
+	}
+
+	public static void main(String[] args) {
 		    
 			
 		 if (PASSWORD_PATTERN.matcher("a1Bd6.").matches()) {

@@ -540,7 +540,12 @@ public class AsignacionServiceImpl implements AsignacionService{
     public List<Integer> obtenerIdsPerfilesAsignadosAprobador(Long idAprobador) {
         return perfilAprobadorDao.obtenerIdsPerfilesAsignadosAprobador(idAprobador);
     }
-	
+
+	@Override
+	public List<Asignacion> obtenerEvaluadoresAdministrativos(Long idSolicitud) {
+		return asignacionDao.obtenerAsignacionesEvalAdm(idSolicitud);
+	}
+
 	public void generarArchivoSubirAlfresco(Asignacion asignacionBD,Contexto contexto) {
 			Archivo informeVT=null;
 			try {

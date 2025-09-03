@@ -656,11 +656,9 @@ public class DocumentoServiceImpl implements DocumentoService {
 			}
 
 			if (registrarAsignacion) {
-				ListadoDetalle tipo = new ListadoDetalle();
-				tipo.setCodigo(Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
-				List<ListadoDetalle> tipos = listadoDetalleService
-						.listarListadoDetallePorCoodigo(Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO, contexto);
-				tipo.setIdListadoDetalle(tipos.get(0).getIdListadoDetalle());
+				// Obtenemos el tipo aprobador por codigo
+				ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+						Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
 
 				// Diferente de GSM
 				if (!perfilDivision.getDivision().getIdDivision().equals(Constantes.DIVISION.IDENTIFICADOR.ID_GSM)) {

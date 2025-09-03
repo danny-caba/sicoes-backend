@@ -228,11 +228,19 @@ public interface ArchivoDao extends JpaRepository<Archivo, Long> {
 	@Query(value="update Archivo set flagSiged=flagSiged+:estado where idArchivo=:idArchivo  ")
 	public void actualizarEstado(Long idArchivo,Long estado);
 
-	@Query("select a from Archivo a "
+	/*@Query("select a from Archivo a "
 			+"left join fetch a.estado e "
 			+ "left join fetch a.tipoArchivo ta "
 			+ "where a.idProceso = :idProceso "
 			+ "and ta.idListadoDetalle = :idListadoDetalle ")
+	public Archivo obtenerArchivoXlsPorProceso(Long idProceso, Long idListadoDetalle);*/
+	
+	@Query("select a from Archivo a "
+		     + "left join fetch a.estado e "
+		     + "left join fetch a.tipoArchivo ta "
+		     + "where a.idProceso = :idProceso "
+		     + "and ta.idListadoDetalle = :idListadoDetalle "
+		     + "and a.idArchivo = (select max(a2.idArchivo) from Archivo a2 where a2.idProceso = :idProceso and a2.tipoArchivo.idListadoDetalle = :idListadoDetalle)")
 	public Archivo obtenerArchivoXlsPorProceso(Long idProceso, Long idListadoDetalle);
 
 	@Query("select a from Archivo a "
