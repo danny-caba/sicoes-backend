@@ -42,12 +42,14 @@ import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.ListadoDetalleRenovacionContrato;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.ContratoDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
+import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.NotificacionRenovacionContratoService;
@@ -115,6 +117,7 @@ public class CrearInformeRenovacionContratoImpl  {
     private final ContratoDao contratoDao;
     private final SicoesSolicitudDao solicitudDao;
     private final UsuarioDao usuarioDao;
+    private final RequerimientoRenovacionDao requerimientoRenovacionDao;
 
 
     public CrearInformeRenovacionContratoImpl(
@@ -127,7 +130,8 @@ public class CrearInformeRenovacionContratoImpl  {
         SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao,
         ContratoDao contratoDao,
         SicoesSolicitudDao solicitudDao,
-        UsuarioDao usuarioDao) {
+        UsuarioDao usuarioDao,
+        RequerimientoRenovacionDao requerimientoRenovacionDao) {
 
         this.informeRenovacionContratoDao = informeRenovacionContratoDao;
         this.sigedOldConsumer = sigedOldConsumer;
@@ -139,6 +143,7 @@ public class CrearInformeRenovacionContratoImpl  {
         this.contratoDao = contratoDao;
         this.solicitudDao = solicitudDao;
         this.usuarioDao = usuarioDao;
+        this.requerimientoRenovacionDao = requerimientoRenovacionDao;
     }
 
 
@@ -160,7 +165,10 @@ public class CrearInformeRenovacionContratoImpl  {
         "Contrato no encontrado para idSolicitud: " + idSolicitud
     ));
     String nombreEvaluador = contexto.getUsuario().getNombreUsuario();
-    String nombreEmpresaSupervisora = informeRenovacionContratoDTO.getRequerimiento().getSolicitudPerfil().getSupervisora().getNombres();
+        RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(informeRenovacionContratoDTO.getRequerimiento().getNuExpediente()).orElseThrow(()->
+        new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IDSOlcitud: " + idSolicitud)
+                );
+    String nombreEmpresaSupervisora = requerimientoRenovacion.getSolicitudPerfil().getSupervisora().getNombres();
     String numExpediente = informeRenovacionContratoDTO.getRequerimiento().getNuExpediente();
 
     InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
@@ -172,6 +180,7 @@ public class CrearInformeRenovacionContratoImpl  {
             Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO ,
             Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO
     );
+
     ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
     listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoIformeLd.getIdListadoDetalle());
 
@@ -206,6 +215,9 @@ public class CrearInformeRenovacionContratoImpl  {
     UUID uuid = UUID.randomUUID();
     String uuidString = uuid.toString();
     informe.setUuiInfoRenovacion(uuidString);
+    Usuario usuario = usuarioDao.obtener(Long.parseLong(informe.getUsuCreacion()));
+    informe.setUsuario(usuario);
+
     InformeRenovacionContrato nuevoInformeRenovacionContrato =  informeRenovacionContratoDao.save(informe);
 
     archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
