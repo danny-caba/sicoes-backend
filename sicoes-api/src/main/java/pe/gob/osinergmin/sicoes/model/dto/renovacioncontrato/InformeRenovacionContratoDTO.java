@@ -43,4 +43,6 @@ public class InformeRenovacionContratoDTO {
     private String completado;
 
     private ListadoDetalleDTO estadoAprobacionInforme;
+
+    private String uuiInfoRenovacion;
 }

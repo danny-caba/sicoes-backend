@@ -41,5 +41,11 @@ public class RenovacionRestController extends BaseRestController {
         }
     }
 
+    @GetMapping("/requerimientoPorNuExpediente/{nuExpediente}")
+    public RequerimientoRenovacion obtener(
+            @PathVariable("nuExpediente") String nuExpediente) {
+        logger.info("obtener{}", nuExpediente);
+        return requerimientoRenovacionService.obtener(nuExpediente,getContexto());
+    }
 
 }

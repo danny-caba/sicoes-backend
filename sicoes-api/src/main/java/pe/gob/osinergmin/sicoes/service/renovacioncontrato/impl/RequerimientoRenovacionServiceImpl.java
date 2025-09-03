@@ -28,6 +28,7 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobaci
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
+import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.HistorialEstadoAprobacionCampoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
@@ -88,6 +89,8 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 	private InformeRenovacionDao informeRenovacionDao;
 	@Autowired
 	private ListadoDetalleDao listadoDetalleDao;
+	@Autowired
+	private UsuarioDao usuarioDao;
 
 	@Override
 	public Page<RequerimientoRenovacionListDTO> buscar(String idSolicitud, String numeroExpediente, String sector, String subSector, Pageable pageable, Contexto contexto) {
@@ -124,6 +127,13 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 			}
 			return requerimiento;
 		});
+	}
+
+	@Override
+	public RequerimientoRenovacion obtener(String nuExpediente, Contexto contexto) {
+		return requerimientoRenovacionDao.findByNuExpediente(nuExpediente).orElseThrow( ()->
+			new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_CONCLUIDA)
+		);
 	}
 
 	public RequerimientoRenovacion guardar(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto) throws Exception {
@@ -180,6 +190,8 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
 		requerimientoRenovacion.setSolicitudPerfil(sicoesSolicitud);
 		AuditoriaUtil.setAuditoriaRegistro(requerimientoRenovacion,contexto);
+		Usuario usuario = usuarioDao.obtener(Long.parseLong(requerimientoRenovacion.getUsuCreacion()));
+		requerimientoRenovacion.setUsuario(usuario);
 		return requerimientoRenovacionDao.save(requerimientoRenovacion);
 	}
 
