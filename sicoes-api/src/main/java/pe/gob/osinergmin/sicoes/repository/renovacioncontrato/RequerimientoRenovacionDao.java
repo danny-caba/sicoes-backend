@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository.renovacioncontrato;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,5 +80,7 @@ public interface RequerimientoRenovacionDao extends JpaRepository<RequerimientoR
             "AND r.estadoReqRenovacion.idListadoDetalle = :estadoId " +
             "ORDER BY r.fecCreacion DESC")
     List<RequerimientoRenovacion> listarPorEstado(@Param("estadoId") Long estadoId);
+
+    Optional<RequerimientoRenovacion> findByNuExpediente(String nuExpediente);
 }
 
