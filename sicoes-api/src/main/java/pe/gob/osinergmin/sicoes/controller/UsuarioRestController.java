@@ -166,7 +166,7 @@ public class UsuarioRestController extends BaseRestController{
     		@RequestParam(value = "pageSize",required = false) int pageSize, Pageable pageable, HttpServletRequest request) {
 		
 		pageable = PageRequest.of(offset, pageSize);
-    	return usuarioService.buscar(nombreUsuario, pageable);
+    	return usuarioService.buscar(nombreUsuario, pageable, getContexto());
     }
 	
 	@PostMapping("/listar-usuario")

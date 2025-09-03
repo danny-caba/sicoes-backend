@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import pe.gob.osinergmin.sicoes.model.ProcesoEtapa;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 
 @Repository
 public interface ProcesoEtapaDao extends JpaRepository<ProcesoEtapa, Long> {
@@ -73,6 +74,14 @@ public interface ProcesoEtapaDao extends JpaRepository<ProcesoEtapa, Long> {
 			"where e.etapa.idListadoDetalle = :idListadoDetalle and p.estado.idListadoDetalle <> 722" +
 			"and trunc(e.fechaFin) = trunc(sysdate - 1)")
 	List<Object[]> obtenerProcesosEtapaFormulacionConsulta(Long idListadoDetalle);
+
+	@Query("select e from ProcesoEtapa e "
+			+ "left join fetch e.etapa et "
+			+ "left join fetch e.proceso p "
+			+ "where p.procesoUuid=:procesoUuid "
+			+ "and et.codigo ='"+ Constantes.LISTADO.ETAPA_PROCESO.ETAPA_PRESENTADO+"' "
+			+ "and et.orden = :orden ")
+	List<ProcesoEtapa> buscarEtapaConsentimiento(String procesoUuid, Long orden);
 
 }
  

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.ProcesoItem;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
@@ -16,6 +17,8 @@ import pe.gob.osinergmin.sicoes.model.Solicitud;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+
+import java.util.List;
 
 import java.util.List;
 
@@ -60,4 +63,5 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	void enviarMensajeFinalizacionContratacion(Supervisora supervisoraPN, Contexto contexto);
 	void enviarMensajeArchivarRequerimiento(RequerimientoAprobacion aprobacion, Contexto contexto);
 	void enviarMensajeAprobacionInforme(RequerimientoAprobacion aprobacion, Long usuarioANotificar, Contexto contexto);
+	void enviarMensajeEleccionGanador(String correos, List<ProcesoItem> items, Contexto contexto);
 }

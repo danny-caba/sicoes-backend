@@ -129,7 +129,7 @@ public class ConfBandejaRestController extends BaseRestController {
 	*/
 	@GetMapping("/obtener-divisiones")
 	public List<DivisionDTO> obtenerDivisiones() {
-	    return confBandejaService.obtenerDivisiones();
+	  return confBandejaService.obtenerDivisiones();
 	}
 	
 }

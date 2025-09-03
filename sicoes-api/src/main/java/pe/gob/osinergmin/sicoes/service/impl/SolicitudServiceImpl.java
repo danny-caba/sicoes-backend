@@ -258,7 +258,7 @@ public class SolicitudServiceImpl implements SolicitudService {
 	}
 	
 	
-//	@Transactional(rollbackFor = { Exception.class, ValidacionException.class })
+	@Transactional(rollbackFor = { Exception.class, ValidacionException.class })
 	private Solicitud enviar(Solicitud solicitud,Solicitud solicitudBD,List<File> archivosAlfresco, Contexto contexto) {
 		Long inicioTotal=getDate();
 		Long inicioParcial=getDate();
@@ -1294,7 +1294,11 @@ public class SolicitudServiceImpl implements SolicitudService {
 								logger.info("Cambio en flagElectronico: BD={} | Nuevo={}", otroRequisitoBD.getFlagElectronico(), otroRequisito.getFlagElectronico());
 								otroRequisitosActualizados.add(otroRequisito);
 							}
-							if (!Objects.equals(otroRequisitoBD.getArchivo(),otroRequisito.getArchivo())) {
+
+							Long idArchivoBD = otroRequisitoBD.getArchivo() != null ? otroRequisitoBD.getArchivo().getIdArchivo() : null;
+							Long idArchivoNuevo = otroRequisito.getArchivo() != null ? otroRequisito.getArchivo().getIdArchivo() : null;
+
+							if (!Objects.equals(idArchivoBD, idArchivoNuevo)) {
 								logger.info("Cambio en Archivo: BD={} | Nuevo={}", otroRequisitoBD.getArchivo(), otroRequisito.getArchivo());
 								otroRequisitosActualizados.add(otroRequisito);
 							}
@@ -3574,10 +3578,13 @@ public class SolicitudServiceImpl implements SolicitudService {
 			}
 			
 			removerTerminosCondiciones(otrosRequisitos);
+
+			aprobadores = usuario == null
+					? asignacionService.obtenerEvaluadoresAdministrativos(idSolicitud)
+					: asignacionService.buscarAprobadoresAdministrativos(idSolicitud, Long.parseLong(usuario));
 			
 			solicitud.setObservacionAdmnistrativa(observacionesConcatenadas.substring(0));
 			solicitud.setOtrosRequisitos(otrosRequisitos);
-			aprobadores = asignacionService.buscarAprobadoresAdministrativos(idSolicitud,Long.parseLong(usuario));
 			solicitud.setAsignados(aprobadores);
 			File jrxml = new File(pathJasper + "Formato_informe_PN_admin.jrxml");
 			
@@ -3678,12 +3685,14 @@ public class SolicitudServiceImpl implements SolicitudService {
 			
 			}
 			
-			
 			removerTerminosCondiciones(otrosRequisitos);
+
+			aprobadores = usuario == null
+					? asignacionService.obtenerEvaluadoresAdministrativos(idSolicitud)
+					: asignacionService.buscarAprobadoresAdministrativos(idSolicitud, Long.parseLong(usuario));
 			
 			solicitud.setObservacionAdmnistrativa(observacionesConcatenadas.substring(0));
 			solicitud.setOtrosRequisitos(otrosRequisitos);
-			aprobadores = asignacionService.buscarAprobadoresAdministrativos(idSolicitud,Long.parseLong(usuario));
 			solicitud.setAsignados(aprobadores);
 
 			File jrxml = new File(pathJasper + "Formato_Informe_PJ_admin.jrxml");

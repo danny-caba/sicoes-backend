@@ -110,7 +110,7 @@ pipelines:
     master:                                                                                                                                                                                             
       - parallel:                                                                                                                                                                                       
           - step: *MVNTest                                                                                                                                                                              
-          - step: *sonarqube                                                                                                                                                                           
+#          - step: *#sonarqube                                                                                                                                                                           
           - step: *SecurityScan                                                                                                                                                                         
       - step: *MVNBuild                                                                                                                                                                                 
       - step: *TagsVersion                                                                                                                                                                              

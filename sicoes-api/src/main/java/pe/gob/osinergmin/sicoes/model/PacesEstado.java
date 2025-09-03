@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "SICOES_TM_PACES_ESTADO", schema = "ES_SICOES")
+@Table(name = "SICOES_TM_PACES_ESTADO")
 public class PacesEstado extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 

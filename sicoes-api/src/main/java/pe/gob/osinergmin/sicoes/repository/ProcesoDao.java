@@ -119,6 +119,23 @@ public interface ProcesoDao extends JpaRepository<Proceso, Long> {
 
 	@Query("select p from Proceso p where UPPER(p.numeroProceso)=:numeroProceso")
 	public List<Proceso> obtenerProcesosNumero(String numeroProceso);
-	
 
+	@Query("select distinct p from ProcesoEtapa pe "
+			+ "left join pe.proceso p "
+			+ "left join pe.etapa et "
+			+ "left join p.estado e "
+			+ "where e.codigo='"+Constantes.LISTADO.ESTADO_PROCESO.ADMISION_CALIFICACION+"' "
+			+ "and p.fechaPublicacion is not null "
+			+ "and trunc(pe.fechaFin) < trunc(sysdate) "
+			+ "and trunc(p.fechaPublicacion) >= trunc(:fechaInicioJob) ")
+	List<Proceso> obtenerProcesoAdmisionCalificacion(Date fechaInicioJob);
+
+	@Query("select distinct p from ProcesoEtapa pe "
+			+ "left join pe.proceso p "
+			+ "left join pe.etapa et "
+			+ "left join p.estado e "
+			+ "where e.codigo='"+Constantes.LISTADO.ESTADO_PROCESO.DESIGNACION+"' "
+			+ "and p.fechaPublicacion is not null "
+			+ "and trunc(sysdate) > trunc(pe.fechaInicio) ")
+	List<Proceso> obtenerProcesoDesignado();
 }

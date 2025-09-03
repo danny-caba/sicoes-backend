@@ -175,4 +175,12 @@ public class ScheduledTasks {
 		sicoesSolicitudService.archivarSolicitudesPerfContNoPresentadas(getContextoAnonimo());
 		logger.info("Fin archivarSolicitudesPerfContNoPresentadas");
 	}
+
+	@Scheduled(cron = "0 0 1 * * ?")
+	public void actualizarProcesos() throws Exception {
+		logger.info("Inicio el Job actualizarProcesos");
+		procesoService.actualizarProcesoDesignacion(getContextoAnonimo());
+		procesoService.actualizarProcesoConsentimiento(getContextoAnonimo());
+		logger.info("Fin Job actualizarProcesos");
+	}
 }

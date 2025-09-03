@@ -148,9 +148,9 @@ sisseg.ws.path.obtener.usuario=/sisseg-resources/api/usuario
 sisseg.ws.path.obtener.id.usuario=/sisseg-pgim/rest/obteneridusuario
 
 #AFC
-osce.ws.url=http://11.160.124.169:9505
-osce.bus.server.usuario=UserBusGeneric
-osce.bus.server.password=weblogic1
+osce.ws.url=${osce_ws_url}
+osce.bus.server.usuario=${osce_bus_server_usuario}
+osce.bus.server.password=${osce_bus_server_password}
 osce.ws.path.sancion.vigente=/SRV_AP0404-58_OSCE/osce/obtenerSancionVigente/v1.1 
 osce.ws.path.sancion.vigente.PN=${sancion_vigente_pn}
 

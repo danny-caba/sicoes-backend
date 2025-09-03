@@ -18,4 +18,6 @@ public interface ProcesoItemService extends BaseService<ProcesoItem, Long> {
 	void actualizarProcesoPresentacion(Proceso procesoBD, Contexto contexto);
 	void actualizarProcesoAdmision(Proceso procesoBD, Contexto contexto);
 	void generarArchivoDescarga(ProcesoItem procesoItem, Contexto contexto);
+	void actualizarProcesoItemDesignacion(Proceso procesoBD, Contexto contexto);
+	void actualizarProcesoItemConsentido(Proceso procesoBD, Contexto contexto, String postulantes);
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -337,5 +338,7 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "WHERE a.id_contrato_ld = :contratoId " 
 			+ "AND a.FL_ACTIVO      = 1", nativeQuery = true)
 	public List<Object[]> findHistorialByContrato(Long contratoId);
+
+	
 }
 

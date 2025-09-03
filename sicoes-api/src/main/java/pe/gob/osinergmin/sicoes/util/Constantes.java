@@ -510,6 +510,9 @@ public class Constantes {
 			public static final String ETAPA_PRESENTADO 	= "ETAPA_PRESENTADO";
 			public static final Long ETAPA_ABSOLUCION_ORDEN = 5L;
 			public static final Long ETAPA_FORMULACION_ORDEN = 4L;
+			public static final Long ETAPA_PRESENTACION_ORDEN = 6L;
+			public static final Long ETAPA_DESIGNADO = 8L;
+			public static final Long ETAPA_CONSENTIDO = 9L;
 		}
 		
 		public static final class ESTADO_PRESENTACION{
@@ -1034,6 +1037,7 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
+		public static final String ADMINISTRADOR_BLOQUEOS		= "09";
 		public static final String EVALUADOR_CONTRATOS 			= "12";
 		public static final String APROBADOR_GPPM 				= "13";
 		public static final String APROBADOR_GSE 				= "14";

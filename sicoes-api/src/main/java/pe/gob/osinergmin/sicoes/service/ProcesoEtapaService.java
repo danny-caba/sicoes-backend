@@ -24,4 +24,5 @@ public interface ProcesoEtapaService extends BaseService<ProcesoEtapa, Long> {
 
 	List<Object[]> listarEtapasFormulacionConsultas(Long idListadoDetalle);
 
+	ProcesoEtapa obtenerEtapaPorOrden(String uuidProceso, Long orden);
 }

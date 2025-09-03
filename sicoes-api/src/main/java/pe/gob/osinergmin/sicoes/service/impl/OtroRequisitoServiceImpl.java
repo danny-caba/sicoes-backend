@@ -486,6 +486,14 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 	public List<OtroRequisito> listarOtroRequisito(String tipo, Long idSolicitud) {
 		List<OtroRequisito> otroRequisitos = otroRequisitoDao.listarOtroRequisito(tipo, idSolicitud);
 
+		otroRequisitos.forEach((otroRequisito) -> {
+			// Cargar Archivo
+			List<Archivo> archivos = archivoService.buscar(null, null, otroRequisito.getIdOtroRequisito(), null);
+			if (archivos != null && !archivos.isEmpty()) {
+				otroRequisito.setArchivo(archivos.get(0));
+			}
+		});
+
 		return otroRequisitos;
 	}
 
@@ -693,11 +701,9 @@ public class OtroRequisitoServiceImpl implements OtroRequisitoService {
 			}
 
 			if (registrarAsignacion) {
-				ListadoDetalle tipo = new ListadoDetalle();
-				tipo.setCodigo(Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
-				List<ListadoDetalle> tipos = listadoDetalleService
-						.listarListadoDetallePorCoodigo(Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO, contexto);
-				tipo.setIdListadoDetalle(tipos.get(0).getIdListadoDetalle());
+				// Obtenemos el tipo aprobador por codigo
+				ListadoDetalle tipo = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+						Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
 
 				// Diferente de GSM
 				if (!perfilDivision.getDivision().getIdDivision().equals(Constantes.DIVISION.IDENTIFICADOR.ID_GSM)) {
