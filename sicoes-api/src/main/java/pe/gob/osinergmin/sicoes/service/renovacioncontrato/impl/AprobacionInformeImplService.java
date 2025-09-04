@@ -62,9 +62,9 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
     @Override
     public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionG1(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto) {
         // Validación 3.0: idUsuario obligatorio
-        if (requestDTO.getIdUsuario() == null) {
+        /*if (requestDTO.getIdUsuario() == null) {
             throw new DataNotFoundException("El campo id Usuario es obligatorio");
-        }
+        }*/
         // Validación 3.1: observacion obligatorio
         if (requestDTO.getObservacion() == null || requestDTO.getObservacion().trim().isEmpty()) {
             throw new DataNotFoundException("El campo observacion es obligatorio");
@@ -84,7 +84,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeDTO.getIdInformeRenovacion());
             if (!informeOpt.isPresent()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO);
+                throw new DataNotFoundException("Código informe renovación no encontrado "+informeDTO.getIdInformeRenovacion().toString());
             }
             InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
             Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
@@ -93,10 +93,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             if (listaPerfilesAprobadoresBySolicitud == null || listaPerfilesAprobadoresBySolicitud.isEmpty()) {
                 throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO);
             }
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
+            /*SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
             if (!solicitudPerfecionamientoContrato.getIdAprobadorG1().equals(requestDTO.getIdUsuario())) {
                 throw new DataNotFoundException("El usuario no coincide con el perfil aprobador G1");
-            }
+            }*/
         }
 
         // 3.5 Iniciar iteración de lógica de negocio de Aprobación
