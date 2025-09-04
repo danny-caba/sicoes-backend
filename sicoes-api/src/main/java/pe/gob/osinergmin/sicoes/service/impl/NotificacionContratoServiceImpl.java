@@ -14,6 +14,8 @@ import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SicoesSolicitudService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -24,7 +26,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificacionContratoServiceImpl implements NotificacionContratoService{
