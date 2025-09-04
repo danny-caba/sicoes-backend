@@ -652,6 +652,15 @@ public class Constantes {
 			public static final String MODIFICACION		= "MODIFICACION";
 		}
 
+		public static final class DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO {
+			public static final String CODIGO				= "DOCUMENTO_EVAL_INI_SERV_PERSONAL_PROPUESTO";
+			public static final String CONTRATO_LABORAL		= "CONTRATO_LABORAL";
+			public static final String SCTR					= "SCTR";
+			public static final String POLIZA				= "POLIZA";
+			public static final String EXAMEN_MEDICO		= "EXAMEN_MEDICO";
+		}
+
+
 		public static final String SECCIONES_REEMPLAZO_PERSONAL = "SECCIONES_REEMPLAZO_PERSONAL";
 		public static final class SECCION_DOC_REEMPLAZO {
 			public static final String INFORME = "INFORME";

@@ -29,7 +29,17 @@
 				</tr>
 				<tr>
 					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${nombrePersonal}]]</td>
-					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${nombrePerfil}]]</td>
+					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">SCTR</td>
+				</tr>
+				<tr>
+					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${sctr1}]]</td>
+					<td style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${sctr2}]]</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="border: 2px solid #0984C2; padding: 8px; text-align: center;">DOCUMENTOS ADICIONALES</td>
+				</tr>
+				<tr th:each="doc : ${docAdicional}">
+					<td colspan="2" style="border: 2px solid #0984C2; padding: 8px; text-align: center;">[[${doc.nombreDocumento}]]</td>
 				</tr>
 			</table>
 			<br>

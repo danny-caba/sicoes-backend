@@ -14,16 +14,18 @@ import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.NotificacionContratoService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.service.SicoesSolicitudService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraMovimientoService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.transaction.Transactional;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificacionContratoServiceImpl implements NotificacionContratoService{
@@ -85,13 +87,22 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private SupervisoraMovimientoDao supervisoraMovimientoDao;
 
     @Autowired
-    private SupervisoraDao supervisoraDao;
+    private SupervisoraService supervisoraService;
+
+    @Autowired
+    private PropuestaProfesionalDao propuestaProfesionalDao;
+
+     @Autowired
+    private SupervisoraMovimientoService supervisoraMovimientoService;
 
     @Autowired
     private UsuarioRolDao usuarioRolDao;
 
     @Autowired
     private UsuarioDao usuarioDao;
+
+    @Autowired
+    private SicoesSolicitudDao sicoesSolicitudDao;
 
     public NotificacionContratoServiceImpl(
         TemplateEngine templateEngine, 
@@ -164,13 +175,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarSubsanacionDocumentos(Supervisora personaPropuesta,Contexto contexto) {
+    public void notificarSubsanacionDocumentos(Supervisora empresa, Supervisora personaPropuesta, Contexto contexto) {
         String email = personaPropuesta.getCorreo();
         logger.info(" notificarSubsanacionDocumentos para email: {} ",email);
-        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
+        String nombreSupervisora = obtenerNombreSupervisora(empresa);
+        String nombrePersonal = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("nombrePersonal", nombrePersonal);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -328,13 +341,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String nombrePerfil, Contexto contexto) {
+    public void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String sctr1, String sctr2, List<DocumentoInicioServ> docAdicional, Contexto contexto) {
         String email = empresa.getCorreo();
         logger.info(" notificarRevDocumentos122 para email: {} ",email);
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", this.obtenerNombreSupervisora(empresa));
         ctx.setVariable("nombrePersonal", nombrePersonal);
-        ctx.setVariable("nombrePerfil", nombrePerfil);
+        ctx.setVariable("docAdicional", docAdicional);
+        ctx.setVariable("sctr1", sctr1);
+        ctx.setVariable("sctr2", sctr2);
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_REV_DOCUMENTOS_122,
@@ -412,7 +427,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_FINALIZACION_CONTRATO_PERSONAL,
-                NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
+                NOMBRE_TEMPLATE_FINALIZACION_CONTRATO_PERSONAL,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         saveNotificacion(notificacion);
@@ -423,27 +438,71 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Transactional
     public void notificarFinalizacionContrato(Contexto contexto) {
 
-       	Date hoy = new Date();
-		List<PersonalReemplazo> bajas = personalReemplazoDao.findAll().stream()
-            .filter(r -> r.getFeFechaDesvinculacion() != null)
-            .filter(r -> !r.getFeFechaDesvinculacion().after(hoy))
-            .collect(Collectors.toList());
+        Date hoy = new Date();
+		List<PersonalReemplazo> reemplazos = personalReemplazoDao.obtenerParaDesvinculacion();
 
-       Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
+        Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
 
-        for(PersonalReemplazo rempBaja:bajas) {
+        for(PersonalReemplazo personalReemplazo:reemplazos) {
 
-            Long id = rempBaja.getPersonaBaja().getIdSupervisora();
-            Supervisora superv = supervisoraDao.obtener(id);
+            //Long idsolicitud = personalReemplazo.getIdSolicitud();
 
-			SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(superv.getIdSupervisora());
-            obSupMov.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
-                                                                           Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
-            AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
+            logger.info("personalReemplazo: {}", personalReemplazo);
+            Long idSolicitud = personalReemplazo.getIdSolicitud();
+            if (idSolicitud == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+            }
 
-            notificarFinalizacionContrato(usuario.get(), superv.getNumeroExpediente(), contexto);
+          //  SicoesSolicitud solicitud = sicoesSolicitudService.obtener(idsolicitud, contexto);
+
+           // Long idsupervisora = solicitud.getSupervisora().getIdSupervisora();
+
+            //Supervisora supervisora = supervisoraService.obtener(idsupervisora, contexto);
+
+
+
+            logger.info("idSolicitud: {}", idSolicitud);
+            Supervisora personalBaja = personalReemplazo.getPersonaBaja();
+            if (personalBaja == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
+            }
+            logger.info("personalBaja: {}", personalBaja);
+            PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
+            if (propuestaProfesional == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
+            }
+            logger.info("propuestaProfesional: {}", propuestaProfesional);
+            Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
+            if (personaPropuesta == null){
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
+            }
+            logger.info("personaPropuesta: {}", personaPropuesta);
+            propuestaProfesional.setSupervisora(personaPropuesta);
+            SupervisoraMovimiento supervisoraMovimiento = new SupervisoraMovimiento();
+            supervisoraMovimiento.setSector(propuestaProfesional.getSector());
+            supervisoraMovimiento.setSubsector(propuestaProfesional.getSubsector());
+            supervisoraMovimiento.setSupervisora(personaPropuesta);
+            supervisoraMovimiento.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO));
+            supervisoraMovimiento.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
+            supervisoraMovimiento.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
+            supervisoraMovimiento.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
+            supervisoraMovimiento.setPropuestaProfesional(propuestaProfesional);
+            supervisoraMovimiento.setFechaRegistro(new Date());
+            logger.info("supervisoraMovimiento: {}", supervisoraMovimiento);
+            supervisoraMovimientoService.guardar(supervisoraMovimiento,contexto);
+
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
+                    .orElse(new SicoesSolicitud());
+            String numeroExpediente = Optional.ofNullable(sicoesSolicitud.getNumeroExpediente()).orElse("");
+
+            //SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(supervisora.getIdSupervisora());
+           // obSupMov.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
+            //                                                               Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
+           // AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
+
+            notificarFinalizacionContrato(usuario.get(), numeroExpediente, contexto);
 		}
 
 
