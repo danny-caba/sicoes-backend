@@ -17,6 +17,7 @@ import pe.gob.osinergmin.sicoes.service.SicoesSolicitudService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.transaction.Transactional;
 import java.util.Calendar;
@@ -85,7 +86,13 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private SupervisoraMovimientoDao supervisoraMovimientoDao;
 
     @Autowired
-    private SupervisoraDao supervisoraDao;
+    private SupervisoraService supervisoraService;
+
+    @Autowired
+    private PropuestaProfesionalDao propuestaProfesionalDao;
+
+     @Autowired
+    private SupervisoraMovimientoService supervisoraMovimientoService;
 
     @Autowired
     private UsuarioRolDao usuarioRolDao;
@@ -419,7 +426,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_FINALIZACION_CONTRATO_PERSONAL,
-                NOMBRE_TEMPLATE_NOTIFICACION_DESVINCULACION_PERSONAL,
+                NOMBRE_TEMPLATE_FINALIZACION_CONTRATO_PERSONAL,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
         saveNotificacion(notificacion);
@@ -430,28 +437,69 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Transactional
     public void notificarFinalizacionContrato(Contexto contexto) {
 
-       	Date hoy = new Date();
-		List<PersonalReemplazo> bajas = personalReemplazoDao.findAll().stream()
-            .filter(r -> r.getFeFechaDesvinculacion() != null)
-            .filter(r -> !r.getFeFechaDesvinculacion().after(hoy))
-            .collect(Collectors.toList());
+        Date hoy = new Date();
+		List<PersonalReemplazo> reemplazos = personalReemplazoDao.obtenerParaDesvinculacion();
 
-       Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
+        Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
 
-        for(PersonalReemplazo rempBaja:bajas) {
+        for(PersonalReemplazo personalReemplazo:reemplazos) {
 
-            Long id = rempBaja.getPersonaBaja().getIdSupervisora();
-            Supervisora superv = supervisoraDao.obtener(id);
-            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(rempBaja.getIdSolicitud())
+            //Long idsolicitud = personalReemplazo.getIdSolicitud();
+
+            logger.info("personalReemplazo: {}", personalReemplazo);
+            Long idSolicitud = personalReemplazo.getIdSolicitud();
+            if (idSolicitud == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA);
+            }
+
+          //  SicoesSolicitud solicitud = sicoesSolicitudService.obtener(idsolicitud, contexto);
+
+           // Long idsupervisora = solicitud.getSupervisora().getIdSupervisora();
+
+            //Supervisora supervisora = supervisoraService.obtener(idsupervisora, contexto);
+
+
+
+            logger.info("idSolicitud: {}", idSolicitud);
+            Supervisora personalBaja = personalReemplazo.getPersonaBaja();
+            if (personalBaja == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_BAJA);
+            }
+            logger.info("personalBaja: {}", personalBaja);
+            PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
+            if (propuestaProfesional == null) {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
+            }
+            logger.info("propuestaProfesional: {}", propuestaProfesional);
+            Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
+            if (personaPropuesta == null){
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
+            }
+            logger.info("personaPropuesta: {}", personaPropuesta);
+            propuestaProfesional.setSupervisora(personaPropuesta);
+            SupervisoraMovimiento supervisoraMovimiento = new SupervisoraMovimiento();
+            supervisoraMovimiento.setSector(propuestaProfesional.getSector());
+            supervisoraMovimiento.setSubsector(propuestaProfesional.getSubsector());
+            supervisoraMovimiento.setSupervisora(personaPropuesta);
+            supervisoraMovimiento.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO));
+            supervisoraMovimiento.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
+            supervisoraMovimiento.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
+            supervisoraMovimiento.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
+            supervisoraMovimiento.setPropuestaProfesional(propuestaProfesional);
+            supervisoraMovimiento.setFechaRegistro(new Date());
+            logger.info("supervisoraMovimiento: {}", supervisoraMovimiento);
+            supervisoraMovimientoService.guardar(supervisoraMovimiento,contexto);
+
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(idSolicitud)
                     .orElse(new SicoesSolicitud());
             String numeroExpediente = Optional.ofNullable(sicoesSolicitud.getNumeroExpediente()).orElse("");
 
-			SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(superv.getIdSupervisora());
-            obSupMov.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
-                                                                           Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
-            AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
+            //SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(supervisora.getIdSupervisora());
+           // obSupMov.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
+            //                                                               Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
+           // AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
 
             notificarFinalizacionContrato(usuario.get(), numeroExpediente, contexto);
 		}

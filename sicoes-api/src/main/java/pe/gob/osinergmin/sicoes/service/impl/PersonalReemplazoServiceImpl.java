@@ -1465,7 +1465,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Optional<Aprobacion> aprobOpt = aprobacionDao.findById(aprobacion.getIdAprobacion());
         Aprobacion aprobacionFinal = aprobOpt.orElseThrow(() -> new RuntimeException("aprobacion no encontrada"));
 
-        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(aprobacionFinal.getRemplazoPersonal().getIdReemplazo());
+        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.obtenerXIdAprobacion(aprobacionFinal.getIdAprobacion());
         PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()
                 -> new RuntimeException("reemplazo personal no encontrada"));
 
@@ -1543,10 +1543,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         if(aprobacion.getRequerimiento().equals(Constantes.REQUERIMIENTO.APROB_EVAL_CONTR)){ //Aprobación Rol Evaluador de contratos
 
-            Adenda adendaFinal = adendaDao.obtenerAdenda(persoReempFinal.getIdReemplazo());
-            if(adendaFinal == null) {
-                throw new ValidacionException("No se encuentra adenda");
-            }
+            Adenda adendaFinal = adendaDao.obtenerAdenda(persoReempFinal.getIdReemplazo()).stream().findFirst().orElseThrow(()
+                -> new RuntimeException("No se encuentra adenda"));;
 
             if(aprobacion.getAccion().equals("A")) {
                 adendaFinal.setEstadoAprobacionLogistica(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.APROBADO));  //aprobado
