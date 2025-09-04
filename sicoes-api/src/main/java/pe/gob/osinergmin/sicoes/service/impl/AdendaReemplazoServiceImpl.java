@@ -488,7 +488,6 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G3_NO_EXISTE);
                 }
             } else { //Firma
-                logger.info("aqui - firma jefe");
                 logger.info("firma_jefe {}", firmaRequestDTO.getFirmaJefe());
 
                 if (Boolean.TRUE.equals(firmaRequestDTO.getFirmaJefe())){
@@ -498,9 +497,6 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     //Buscar Aprobacion
                     procesarAprobacion(adenda.getIdReemplazoPersonal(),
                             Constantes.ROLES.G4_APROBADOR_ADMINISTRATIVO,contexto,null,null);
-
-                    logger.info("adenda {}",adenda);
-
                     //Notificacion
                     PersonalReemplazo personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal())
                             .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE));
@@ -530,16 +526,18 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
                     PropuestaProfesional profesional = propuestaProfesionalDao.listarXSolicitud(
                         personalExiste.getIdSolicitud(),personalBaja.getIdSupervisora());
-                    profesional.setSupervisora(personalBaja);
 
-                    movi.setSector(profesional.getSector());
-                    movi.setSubsector(profesional.getSubsector());
+                    if (profesional !=null){
+                        profesional.setSupervisora(personalBaja);
+                        movi.setSector(profesional.getSector());
+                        movi.setSubsector(profesional.getSubsector());
+                        movi.setPropuestaProfesional(profesional);
+                    }
                     movi.setSupervisora(personalBaja); //Asignando codigo de personal baja
                     movi.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
                     movi.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
                     movi.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
                     movi.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.DESBLOQUEO));
-                    movi.setPropuestaProfesional(profesional);
                     movi.setFechaRegistro(new Date());
 
                     supervisoraMovimientoService.guardar(movi,contexto);

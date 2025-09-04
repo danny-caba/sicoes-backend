@@ -492,11 +492,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
         Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
+        /*
         if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)) {
             registrarExpedienteSiged(archivoDB, personalReemplazo, CONSOLIDADO_DOCUMENTOS);
         } else {
             adjuntarDocumentoSiged(archivoDB, personalReemplazo, CONSOLIDADO_DOCUMENTOS);
-        }
+        }*/
         return archivoDB;
     }
 
@@ -1031,11 +1032,12 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
         Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
+        /*
         if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION)) {
             registrarExpedienteSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
         } else {
             adjuntarDocumentoSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
-        }
+        }*/
         return archivoDB;
     }
 
