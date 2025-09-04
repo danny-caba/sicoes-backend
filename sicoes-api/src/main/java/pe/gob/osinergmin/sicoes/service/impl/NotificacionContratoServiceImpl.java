@@ -93,6 +93,9 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Autowired
     private UsuarioDao usuarioDao;
 
+    @Autowired
+    private SicoesSolicitudDao sicoesSolicitudDao;
+
     public NotificacionContratoServiceImpl(
         TemplateEngine templateEngine, 
         ListadoDetalleService listadoDetalleService, 
@@ -164,13 +167,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarSubsanacionDocumentos(Supervisora personaPropuesta,Contexto contexto) {
+    public void notificarSubsanacionDocumentos(Supervisora empresa, Supervisora personaPropuesta, Contexto contexto) {
         String email = personaPropuesta.getCorreo();
         logger.info(" notificarSubsanacionDocumentos para email: {} ",email);
-        String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
+        String nombreSupervisora = obtenerNombreSupervisora(empresa);
+        String nombrePersonal = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable("nombrePersonal", nombrePersonal);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -328,13 +333,15 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     }
 
     @Override
-    public void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String nombrePerfil, Contexto contexto) {
+    public void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String sctr1, String sctr2, List<DocumentoInicioServ> docAdicional, Contexto contexto) {
         String email = empresa.getCorreo();
         logger.info(" notificarRevDocumentos122 para email: {} ",email);
         Context ctx = new Context();
         ctx.setVariable("nombreSupervisora", this.obtenerNombreSupervisora(empresa));
         ctx.setVariable("nombrePersonal", nombrePersonal);
-        ctx.setVariable("nombrePerfil", nombrePerfil);
+        ctx.setVariable("docAdicional", docAdicional);
+        ctx.setVariable("sctr1", sctr1);
+        ctx.setVariable("sctr2", sctr2);
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_REV_DOCUMENTOS_122,
@@ -437,13 +444,16 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
             Long id = rempBaja.getPersonaBaja().getIdSupervisora();
             Supervisora superv = supervisoraDao.obtener(id);
+            SicoesSolicitud sicoesSolicitud = sicoesSolicitudDao.findById(rempBaja.getIdSolicitud())
+                    .orElse(new SicoesSolicitud());
+            String numeroExpediente = Optional.ofNullable(sicoesSolicitud.getNumeroExpediente()).orElse("");
 
 			SupervisoraMovimiento obSupMov = supervisoraMovimientoDao.obtener(superv.getIdSupervisora());
             obSupMov.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
                                                                            Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO ));
             AuditoriaUtil.setAuditoriaRegistro(obSupMov,contexto);
 
-            notificarFinalizacionContrato(usuario.get(), superv.getNumeroExpediente(), contexto);
+            notificarFinalizacionContrato(usuario.get(), numeroExpediente, contexto);
 		}
 
 

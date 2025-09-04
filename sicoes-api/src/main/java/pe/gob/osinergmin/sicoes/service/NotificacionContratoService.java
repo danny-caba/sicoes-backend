@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service;
 
+import pe.gob.osinergmin.sicoes.model.DocumentoInicioServ;
 import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
@@ -13,7 +14,7 @@ public interface NotificacionContratoService {
 
     void notificarDesvinculacionEmpresa(Usuario usuario, String nummeroExpediente, String nombreSupervisora, Contexto contexto);
 
-    void notificarSubsanacionDocumentos(Supervisora personaPropuesta, Contexto contexto);
+    void notificarSubsanacionDocumentos(Supervisora empresa, Supervisora personaPropuesta, Contexto contexto);
 
     void notificarCargarDocumentosInicioServicio(Supervisora personaPropuesta, Contexto contexto);
 
@@ -29,7 +30,7 @@ public interface NotificacionContratoService {
 
     void notificarRevDocumentos12(Usuario usuario, Contexto contexto);
 
-    void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String nombrePerfil, Contexto contexto);
+    void notificarRevDocumentos122(Supervisora empresa, String nombrePersonal, String sctr1, String sctr2, List<DocumentoInicioServ> docAdicional, Contexto contexto);
 
     void notificarAprobacionPendiente(Usuario usuario, String numeroExpediente, Contexto contexto);
 
