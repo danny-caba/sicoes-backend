@@ -99,4 +99,13 @@ public interface PersonalReemplazoDao extends JpaRepository<PersonalReemplazo, L
             "        WHERE FE_FECHA_DESVINCULACION IS NOT NULL " +
             "        AND FE_FECHA_DESVINCULACION <= SYSDATE", nativeQuery = true)
     List<PersonalReemplazo> obtenerParaDesvinculacion();
+
+
+    @Query(value= "  SELECT * FROM SICOES_TZ_REEMPLAZO_PERSONAL REEMP " +
+                  "  LEFT JOIN SICOES_TZ_APROBACION_REEMP APROB  " +
+                  "  ON REEMP.ID_REEMPLAZO_PERSONAL = APROB.ID_REEMPLAZO_PERSONAL " +
+                  "  WHERE ( APROB.ID_APROBACION = :idaprob )", nativeQuery = true)
+    Optional<PersonalReemplazo> obtenerXIdAprobacion(@Param("idaprob") Long idaprob);
+
+
 }
