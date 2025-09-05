@@ -11,6 +11,7 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RechazoInformeDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ActualizacionBandejaDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeAprobacionResponseDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionesResponse;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface InformeRenovacionService {
@@ -115,6 +116,26 @@ public interface InformeRenovacionService {
             Boolean soloAprobados,
             Boolean soloRechazados,
             Boolean soloMisAcciones,
+            Pageable pageable,
+            Contexto contexto);
+            
+    /**
+     * Lista el historial de aprobaciones con formato personalizado
+     * @param documentoId ID del documento de contrato
+     * @param fechaDesde Fecha desde
+     * @param fechaHasta Fecha hasta
+     * @param resultado Filtro por resultado
+     * @param grupo Filtro por grupo
+     * @param pageable Parámetros de paginación
+     * @param contexto Contexto del usuario
+     * @return Respuesta formateada con historial de aprobaciones
+     */
+    HistorialAprobacionesResponse listarHistorialAprobacionesFormateado(
+            String documentoId,
+            String fechaDesde,
+            String fechaHasta,
+            String resultado,
+            String grupo,
             Pageable pageable,
             Contexto contexto);
 }

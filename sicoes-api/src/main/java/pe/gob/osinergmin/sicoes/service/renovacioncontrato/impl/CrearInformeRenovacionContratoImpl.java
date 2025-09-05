@@ -183,14 +183,12 @@ public class CrearInformeRenovacionContratoImpl  {
 
     ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
     listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoIformeLd.getIdListadoDetalle());
-
     informe.setEstadoAprobacionInforme(listadoDetalleRenovacionContrato);
-
 
     AuditoriaUtil.setAuditoriaRegistro(informe,contexto);
 
     File jrxml = new File(pathJasper + "Formato_Informe_RenovacionContrato.jrxml");
-
+    Usuario usuarioG1=usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
     ByteArrayOutputStream output = generarPdfOutputStream(informe,nombreEvaluador,nombreEmpresaSupervisora,numExpediente, jrxml);
     byte[] bytesSalida = output.toByteArray();
 
@@ -198,14 +196,9 @@ public class CrearInformeRenovacionContratoImpl  {
 
     archivoPdf.setIdContrato(contrato.getIdContrato());
 
-    String alfrescoPath = sigedOldConsumer.subirArchivosAlfresco(
-        null, 
-        null, 
-        null, 
-        null, 
-        archivoPdf.getIdContrato(), 
-        null, 
-        archivoPdf);
+    String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContrato(
+            requerimientoRenovacion.getIdReqRenovacion(),
+            archivoPdf);
     archivoPdf.setNombreAlFresco(alfrescoPath);
     AuditoriaUtil.setAuditoriaRegistro(archivoPdf,contexto);
 
@@ -227,7 +220,7 @@ public class CrearInformeRenovacionContratoImpl  {
     logger.info("Archivo registrado en DB con ID: {} y ruta Alfresco: {} " , archivoPdf.getIdArchivo() , alfrescoPath);
 
 
-    Usuario usuarioG1=usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
+
     notificacionRenovacionContratoService.notificacionInformePorAprobar( usuarioG1,  numExpediente, contexto);
 
     return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
@@ -344,7 +337,7 @@ public class CrearInformeRenovacionContratoImpl  {
         InputStream isLogoSicoes = null;
         InputStream isLogoOsinergmin = null;
 
-        String nombreAreaSolicitud = "G1";
+        String nombreAreaSolicitud = "Área de contrataciones";
 
 
         Map<String, Object> parameters = new HashMap<>();

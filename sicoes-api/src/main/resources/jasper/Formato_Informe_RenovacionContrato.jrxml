@@ -25,7 +25,8 @@
 			<textField>
 				<reportElement x="0" y="0" width="555" height="20"/>
 				<textElement textAlignment="Left"><font size="12"/></textElement>
-				<textFieldExpression><![CDATA["Lima, " + new java.text.SimpleDateFormat("dd 'de' MMMM 'de' yyyy").format(new java.util.Date())]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Lima, " + new java.text.SimpleDateFormat("dd 'de' MMMM 'de' yyyy", new java.util.Locale("es", "PE")).format(new java.util.Date())]]></textFieldExpression>
+
 			</textField>
 
 			<textField>
@@ -156,11 +157,6 @@
 				<textElement><font size="12"/></textElement>
 				<text><![CDATA[• En relación al Plan Operativo y Programa Anual de Supervisión]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="30" y="410" width="525" height="30"/>
-				<textElement><font size="12"/></textElement>
-				<textFieldExpression><![CDATA[$P{justificacion}]]></textFieldExpression>
-			</textField>
 
 			<!-- Necesidad -->
 			<staticText>
@@ -185,11 +181,6 @@
 				<textElement><font size="12"/></textElement>
 				<text><![CDATA[• En relación al plazo a renovar.]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="30" y="520" width="525" height="30"/>
-				<textElement><font size="12"/></textElement>
-				<textFieldExpression><![CDATA[$P{necesidad}]]></textFieldExpression>
-			</textField>
 
 			<!-- Conclusiones -->
 			<staticText>
@@ -224,12 +215,6 @@
 				<textElement><font size="12"/></textElement>
 				<text><![CDATA[• La renovación no excede el plazo máximo de la Directiva.]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="30" y="660" width="525" height="30"/>
-				<textElement><font size="12"/></textElement>
-				<textFieldExpression><![CDATA[$P{conclusiones}]]></textFieldExpression>
-			</textField>
-
 			<!-- Firma -->
 			<staticText>
 				<reportElement x="0" y="700" width="555" height="20"/>

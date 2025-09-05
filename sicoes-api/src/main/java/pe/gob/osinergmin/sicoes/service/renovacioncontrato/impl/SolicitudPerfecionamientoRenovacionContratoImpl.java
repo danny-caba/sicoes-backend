@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
@@ -40,17 +41,19 @@ public class SolicitudPerfecionamientoRenovacionContratoImpl {
     private final SicoesSolicitudDao sicoesSolicitudDao;
     private final InformeRenovacionContratoDao informeRenovacionContratoDao;
     private final ListadoDetalleService listadoDetalleService;
+    private final SigedApiConsumer sigedApiConsumer;
     
     public  SolicitudPerfecionamientoRenovacionContratoImpl (
         PropuestaDao propuestaDao,
         SicoesSolicitudDao sicoesSolicitudDao,
         InformeRenovacionContratoDao informeRenovacionContratoDao,
-        ListadoDetalleService listadoDetalleService) {
+        ListadoDetalleService listadoDetalleService,
+        SigedApiConsumer sigedApiConsumer) {
         this.propuestaDao = propuestaDao;
         this.sicoesSolicitudDao = sicoesSolicitudDao;
         this.informeRenovacionContratoDao = informeRenovacionContratoDao;
         this.listadoDetalleService = listadoDetalleService;
-        
+        this.sigedApiConsumer = sigedApiConsumer;
     }
 
     public SicoesSolicitud crearSolicitudPerfecionamientoRenovacionContrato(SolicitudPerfRenovacionContratoDTO solicitudPerfRenovacionContratoDTO, Contexto contexto) {
@@ -72,7 +75,9 @@ public class SolicitudPerfecionamientoRenovacionContratoImpl {
         sicoesSolicitud.setEstado(ESTADO_PRELIMINAR); 
         sicoesSolicitud.setEstadoProcesoSolicitud(ESTADO_SOLICITUD_PERF_CONTRATO_ACTIVO);
         sicoesSolicitud.setTipoSolicitud(TIPO_SOLICITUD_PERF_CONTRATO);
-        sicoesSolicitud.setFechaHoraPresentacion(DateUtil.sumarDia(dateUltimaFechaAprobacion, PRESENTACION_DIAS_HABILES) );
+
+        Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(dateUltimaFechaAprobacion, PRESENTACION_DIAS_HABILES, Constantes.DIAS_HABILES);
+        sicoesSolicitud.setFechaHoraPresentacion(fechaCaducidad);
         sicoesSolicitud.setNumeroExpediente(solicitudPerfRenovacionContratoDTO.getNuExpediente());
 
         AuditoriaUtil.setAuditoriaRegistro(sicoesSolicitud,contexto);
