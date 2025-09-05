@@ -459,4 +459,63 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		return idArchivo;
 	}
 
+	@Override
+	public String subirArchivosAlfrescoRenovacionContrato(Long idReqRenovacion, Archivo archivo) {
+
+		try {
+
+			RestTemplate restTemplate=new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+			MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+			ContentDisposition contentDisposition = ContentDisposition
+					.builder("form-data")
+					.name("file")
+					.filename(archivo.getNombreReal())
+					.build();
+			fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+			HttpEntity<byte[]> fileEntity=null;
+
+			if(archivo.getFile()!=null) {
+				fileEntity = new HttpEntity<>(archivo.getFile().getBytes(), fileMap);
+			}else {
+				fileEntity = new HttpEntity<>(archivo.getContenido(), fileMap);
+			}
+
+			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+			body.add("file", fileEntity);
+
+			HttpEntity<MultiValueMap<String, Object>> requestEntity =
+					new HttpEntity<>(body, headers);
+			String path="";
+			 if(archivo.getIdSeccionRequisito()!=null) {
+				 path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO_RENOVACION/"+idReqRenovacion;
+			}else {
+				logger.info("Sin path enviar idSolicitud o idPropuesta "+path);
+			}
+
+			logger.info("Enviado a alfresco : "+path);
+			logger.info("nombre Archivo: "+archivo.getNombreReal());
+			if(archivo.getFile()!=null) {
+				logger.info("contenido Archivo: "+archivo.getFile().getBytes().length);
+			}else {
+				logger.info("contenido Archivo: "+archivo.getContenido().length);
+			}
+			ResponseEntity<String> response = restTemplate.exchange(
+					path,
+					HttpMethod.POST,
+					requestEntity,
+					String.class);
+
+			XmlMapper xmlMapper = new XmlMapper();
+			AlfrescoFileOut fileOut=xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
+			logger.info("respuesta: "+fileOut);
+			return  fileOut.getFiles().getFullFilePath();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_SUBIR_ALFRESCO,e);
+		}
+	}
+
 }
