@@ -12,6 +12,8 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.PlazoConfirmacionRe
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.PlazoConfirmacion;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.PlazoConfirmacionDao;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.PlazoConfirmacionService;
+import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 
 @Service
 public class PlazoConfirmacionImplService implements PlazoConfirmacionService {
@@ -29,7 +31,7 @@ public class PlazoConfirmacionImplService implements PlazoConfirmacionService {
     }
 
     @Override
-    public PlazoConfirmacionResponseDTO registrarPlazoConfirmacion(PlazoConfirmacionRequestDTO requestDTO) {
+    public PlazoConfirmacionResponseDTO registrarPlazoConfirmacion(PlazoConfirmacionRequestDTO requestDTO, Contexto contexto) {
         if (requestDTO.getTipoDia() == null || (requestDTO.getTipoDia() != 1 && requestDTO.getTipoDia() != 2)) {
             throw new IllegalArgumentException("tipoDia debe ser 1 o 2");
         }
@@ -72,7 +74,7 @@ public class PlazoConfirmacionImplService implements PlazoConfirmacionService {
             plazoConfirmacion.setFecActualizacion(new Date());
             plazoConfirmacion.setIpActualizacion(requestDTO.getIp());
         }
-        
+        AuditoriaUtil.setAuditoriaRegistro(plazoConfirmacion,contexto);
         PlazoConfirmacion savedEntity = plazoConfirmacionDao.save(plazoConfirmacion);
         return plazoConfirmacionMapper.toResponseDTO(savedEntity);
     }

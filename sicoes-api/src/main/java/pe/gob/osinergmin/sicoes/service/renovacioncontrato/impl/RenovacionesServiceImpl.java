@@ -2,6 +2,8 @@ package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.Bitacora;
+import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
@@ -24,6 +28,7 @@ import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoInvitacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.service.BitacoraService;
+import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RenovacionesService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -46,6 +51,9 @@ public class RenovacionesServiceImpl implements RenovacionesService {
     
     @Autowired
     private BitacoraDao bitacoraDao;
+
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Override
     @Transactional(readOnly = true)
@@ -358,20 +366,28 @@ public class RenovacionesServiceImpl implements RenovacionesService {
             return new PageImpl<>(new ArrayList<>(), pageable, 0);
         }
     }
-    
+
     private boolean validarPermisosConsultaInvitaciones(Contexto contexto) {
         try {
             if (contexto.getUsuario() == null) {
                 return false;
             }
-            
-            String usuario = contexto.getUsuario().getUsuario();
-            return usuario != null && (
-                usuario.contains("EVALUADOR") || 
-                usuario.contains("TECNICO") || 
-                usuario.contains("ADMIN") ||
-                usuario.contains("CONSULTOR")
-            );
+
+            Usuario usu = usuarioService.obtener(contexto.getUsuario().getIdUsuario());
+            if (usu == null) {
+                return false;
+            }
+
+            return usu.getRoles().stream()
+                    .map(Rol::getNombre)
+                    .anyMatch(d ->
+                            d.toUpperCase().contains("EVALUADOR") ||
+                            d.toUpperCase().contains("TECNICO")||
+                            d.toUpperCase().contains("TÉCNICO")||
+                            d.toUpperCase().contains("ADMIN") ||
+                            d.toUpperCase().contains("CONSULTOR")
+                    );
+
         } catch (Exception e) {
             logger.warn("Error al validar permisos de consulta de invitaciones", e);
             return false;
@@ -455,7 +471,7 @@ public class RenovacionesServiceImpl implements RenovacionesService {
     
     private List<InvitacionResponseDTO> convertirAInvitacionResponseDTO(List<RequerimientoInvitacion> invitaciones) {
         List<InvitacionResponseDTO> invitacionesDTO = new ArrayList<>();
-        
+
         for (RequerimientoInvitacion invitacion : invitaciones) {
             InvitacionResponseDTO dto = new InvitacionResponseDTO();
             
@@ -474,14 +490,22 @@ public class RenovacionesServiceImpl implements RenovacionesService {
             
             if (invitacion.getEstadoInvitacion() != null) {
                 dto.setEstadoInvitacion(invitacion.getEstadoInvitacion().getIdListadoDetalle().intValue());
+                dto.setEstado(invitacion.getEstadoInvitacion());
                 dto.setDescripcionEstado(invitacion.getEstadoInvitacion().getDescripcion());
             }
             
             dto.setFechaCreacion(invitacion.getFecCreacion() != null ? 
                 invitacion.getFecCreacion().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
-            dto.setFechaVencimiento(invitacion.getFeCaducidad() != null ? 
-                invitacion.getFeCaducidad().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
-            
+            if (invitacion.getFeCaducidad() != null) {
+                dto.setFechaVencimiento(
+                        Instant.ofEpochMilli(invitacion.getFeCaducidad().getTime())
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()
+                );
+            }
+            dto.setFeInvitacion(invitacion.getFeInvitacion());
+            dto.setFeAceptacion(invitacion.getFeAceptacion());
+
             // Observaciones no están en el modelo base
             // dto.setObservaciones(invitacion.getDeObservaciones());
             
@@ -489,7 +513,10 @@ public class RenovacionesServiceImpl implements RenovacionesService {
             if (invitacion.getUsuCreacion() != null) {
                 dto.setNombreUsuarioCreacion(invitacion.getUsuCreacion());
             }
-            
+            if(invitacion.getRequerimientoRenovacion()!=null){
+                dto.setSector(invitacion.getRequerimientoRenovacion().getTiSector());
+                dto.setSubSector(invitacion.getRequerimientoRenovacion().getTiSubSector());
+            }
             invitacionesDTO.add(dto);
         }
         

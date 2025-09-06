@@ -60,30 +60,7 @@ public class RenovacionesController extends BaseRestController {
         }
     }
 
-    @GetMapping("/invitaciones")
-    @Raml("renovacioncontrato.invitaciones.listar.properties")
-    public ResponseEntity<Page<InvitacionResponseDTO>> listarInvitaciones(
-            @RequestParam(required = false) String numeroExpediente,
-            @RequestParam(required = false) String nombreItem,
-            @RequestParam(required = false) Integer estadoInvitacion,
-            @RequestParam(required = false) String fechaDesde,
-            @RequestParam(required = false) String fechaHasta,
-            Pageable pageable) {
-        
-        logger.info("listarInvitaciones - Evaluar Invitación - Usuario: {}", 
-                    getContexto().getUsuario().getIdUsuario());
-        
-        try {
-            Page<InvitacionResponseDTO> invitaciones = renovacionesService.listarInvitaciones(
-                    numeroExpediente, nombreItem, estadoInvitacion, 
-                    fechaDesde, fechaHasta, pageable, getContexto());
-            
-            return new ResponseEntity<>(invitaciones, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error("Error al listar invitaciones", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
 
     @PostMapping("/invitacion/eliminar")
     @Raml("renovacioncontrato.invitacion.eliminar.properties")
