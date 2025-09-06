@@ -419,4 +419,103 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		
 		return parametros;
 	}
+
+	/**
+	 * Obtiene el identificador de archivos asociados a la renovación de contrato (Requerimiento 350) 
+	 * a partir del número de expediente proporcionado.
+	 *
+	 * @param numeroExpediente El número de expediente para el cual se requiere obtener el ID de archivo.
+	 * @return El identificador del archivo relacionado con la renovación de contrato.
+	 * @throws Exception Si ocurre un error al invocar el servicio web de SIGED.
+	 * 
+	 * Requerimiento: 350 - Renovación de contrato.
+	 */
+	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente) throws Exception{
+
+		logger.info("obtenerIdArchivos inicio...");
+
+		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + numeroExpediente + "/1";
+		Long idArchivo = 0L;
+
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			logger.info("url [{}].", url);
+			String response = restTemplate.getForObject(url, String.class);
+			logger.info("response: " + response);
+
+			logger.info("idArchivo: " + idArchivo);
+		}
+		catch (HttpClientErrorException ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
+		}
+		catch (Exception ex) {
+			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			throw ex;
+		}
+
+		logger.info("obtenerIdArchivos fin...");
+
+		return idArchivo;
+	}
+
+	@Override
+	public String subirArchivosAlfrescoRenovacionContrato(Long idReqRenovacion, Archivo archivo) {
+
+		try {
+
+			RestTemplate restTemplate=new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+			MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+			ContentDisposition contentDisposition = ContentDisposition
+					.builder("form-data")
+					.name("file")
+					.filename(archivo.getNombreReal())
+					.build();
+			fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+			HttpEntity<byte[]> fileEntity=null;
+
+			if(archivo.getFile()!=null) {
+				fileEntity = new HttpEntity<>(archivo.getFile().getBytes(), fileMap);
+			}else {
+				fileEntity = new HttpEntity<>(archivo.getContenido(), fileMap);
+			}
+
+			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+			body.add("file", fileEntity);
+
+			HttpEntity<MultiValueMap<String, Object>> requestEntity =
+					new HttpEntity<>(body, headers);
+			String path="";
+			 if(idReqRenovacion!=null) {
+				 path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO_RENOVACION/"+idReqRenovacion;
+			}else {
+				logger.info("Sin path enviar idReqRenovacion "+path);
+			}
+
+			logger.info("Enviado a alfresco : "+path);
+			logger.info("nombre Archivo: "+archivo.getNombreReal());
+			if(archivo.getFile()!=null) {
+				logger.info("contenido Archivo: "+archivo.getFile().getBytes().length);
+			}else {
+				logger.info("contenido Archivo: "+archivo.getContenido().length);
+			}
+			ResponseEntity<String> response = restTemplate.exchange(
+					path,
+					HttpMethod.POST,
+					requestEntity,
+					String.class);
+
+			XmlMapper xmlMapper = new XmlMapper();
+			AlfrescoFileOut fileOut=xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
+			logger.info("respuesta: "+fileOut);
+			return  fileOut.getFiles().getFullFilePath();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_SUBIR_ALFRESCO,e);
+		}
+	}
+
 }

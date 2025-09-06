@@ -12,6 +12,7 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.PlazoConfirmacionRe
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.PlazoConfirmacion;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.PlazoConfirmacionDao;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.PlazoConfirmacionService;
+import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
@@ -33,15 +34,15 @@ public class PlazoConfirmacionImplService implements PlazoConfirmacionService {
     @Override
     public PlazoConfirmacionResponseDTO registrarPlazoConfirmacion(PlazoConfirmacionRequestDTO requestDTO, Contexto contexto) {
         if (requestDTO.getTipoDia() == null || (requestDTO.getTipoDia() != 1 && requestDTO.getTipoDia() != 2)) {
-            throw new IllegalArgumentException("tipoDia debe ser 1 o 2");
+            throw new DataNotFoundException("tipoDia debe ser 1 o 2");
         }
         
         if (requestDTO.getFechaBase() == null) {
-            throw new IllegalArgumentException("fechaBase no puede ser nulo");
+            throw new DataNotFoundException("fechaBase no puede ser nulo");
         }
         
         if (requestDTO.getNumeroDias() == null || requestDTO.getNumeroDias() <= 1) {
-            throw new IllegalArgumentException("numeroDias debe ser diferente de null y mayor de 1");
+            throw new DataNotFoundException("numeroDias debe ser diferente de null y mayor de 1");
         }
         
         PlazoConfirmacion plazoConfirmacion;
@@ -64,7 +65,7 @@ public class PlazoConfirmacionImplService implements PlazoConfirmacionService {
         } else {
             plazoConfirmacion = plazoConfirmacionDao.obtener(requestDTO.getIdPlazoConfirmacion());
             if (plazoConfirmacion == null) {
-                throw new IllegalArgumentException("No se encontró el registro con ID: " + requestDTO.getIdPlazoConfirmacion());
+                throw new DataNotFoundException("No se encontró el registro con ID: " + requestDTO.getIdPlazoConfirmacion());
             }
             plazoConfirmacion.setFeBase(requestDTO.getFechaBase());
             plazoConfirmacion.setInTipoDia(requestDTO.getTipoDia());

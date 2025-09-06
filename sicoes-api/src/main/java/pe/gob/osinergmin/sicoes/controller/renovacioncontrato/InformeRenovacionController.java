@@ -27,6 +27,8 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RechazoInformeDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ActualizacionBandejaDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeAprobacionResponseDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacionesResponse;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionService;
@@ -238,25 +240,16 @@ public class InformeRenovacionController extends BaseRestController {
 
     @GetMapping("/historial-aprobaciones")
     @Raml("renovacioncontrato.informe.historial.aprobaciones.properties")
-    public ResponseEntity<Page<HistorialAprobacionDTO>> listarHistorialAprobaciones(
-            @RequestParam(required = false) String numeroExpediente,
-            @RequestParam(required = false) String tipoSector,
-            @RequestParam(required = false) String tipoSubSector,
-            @RequestParam(required = false) String nombreItem,
-            @RequestParam(required = false) String razSocialSupervisora,
-            @RequestParam(required = false) Integer estadoFinal,
-            @RequestParam(required = false) String tipoAccion,
-            @RequestParam(required = false) Integer grupoAprobador,
-            @RequestParam(required = false) Integer idUsuarioAccion,
-            @RequestParam(required = false) String fechaDesde,
-            @RequestParam(required = false) String fechaHasta,
-            @RequestParam(required = false) Boolean soloAprobados,
-            @RequestParam(required = false) Boolean soloRechazados,
-            @RequestParam(required = false) Boolean soloMisAcciones,
+    public ResponseEntity<HistorialAprobacionesResponse> listarHistorialAprobaciones(
+            @RequestParam(required = false) String documento_id,
+            @RequestParam(required = false) String fecha_desde,
+            @RequestParam(required = false) String fecha_hasta,
+            @RequestParam(required = false) String resultado,
+            @RequestParam(required = false) String grupo,
             Pageable pageable) {
 
-        logger.info("listarHistorialAprobaciones - Historial de Aprobaciones Grupo 8 - Usuario: {}",
-                getContexto().getUsuario().getIdUsuario());
+        logger.info("listarHistorialAprobaciones - Historial de Aprobaciones - Usuario: {}, DocumentoId: {}",
+                getContexto().getUsuario().getIdUsuario(), documento_id);
 
         try {
             // Validar permisos del usuario para acceder al historial
@@ -266,16 +259,15 @@ public class InformeRenovacionController extends BaseRestController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            // Listar historial de aprobaciones
-            Page<HistorialAprobacionDTO> historial = informeRenovacionService.listarHistorialAprobaciones(
-                    numeroExpediente, tipoSector, tipoSubSector, nombreItem, razSocialSupervisora,
-                    estadoFinal, tipoAccion, grupoAprobador, idUsuarioAccion, fechaDesde, fechaHasta,
-                    soloAprobados, soloRechazados, soloMisAcciones, pageable, getContexto());
+            // Obtener historial de aprobaciones con el nuevo formato
+            HistorialAprobacionesResponse response = informeRenovacionService.listarHistorialAprobacionesFormateado(
+                    documento_id, fecha_desde, fecha_hasta, resultado, grupo, pageable, getContexto());
 
-            logger.info("Consulta de historial de aprobaciones completada - Encontrados: {}, Usuario: {}",
-                    historial.getTotalElements(), getContexto().getUsuario().getIdUsuario());
+            logger.info("Consulta de historial de aprobaciones completada - Total: {}, Usuario: {}",
+                    response.getData() != null ? response.getData().getTotalRegistros() : 0,
+                    getContexto().getUsuario().getIdUsuario());
 
-            return ResponseEntity.ok(historial);
+            return ResponseEntity.ok(response);
 
         } catch (SecurityException e) {
             logger.warn("Error de seguridad al consultar historial de aprobaciones: {}", e.getMessage());

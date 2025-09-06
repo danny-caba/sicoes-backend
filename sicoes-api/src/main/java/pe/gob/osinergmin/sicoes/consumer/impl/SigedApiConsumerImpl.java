@@ -15,8 +15,11 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
 import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.DocumentoAnularInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.DocumentoAnularOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.query.ClienteConsultaOutRO;
 import gob.osinergmin.siged.rest.util.ClienteInvoker;
+import gob.osinergmin.siged.rest.util.DocumentoInvoker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -80,7 +83,24 @@ public class SigedApiConsumerImpl implements SigedApiConsumer {
 		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getMessage());
 		return doc;
 	}
-	
+
+	/**
+	 * Requerimiento 350 - Renovación de contrato.
+	 * Anula un documento en SIGED.
+	 * Este método invoca el servicio web de SIGED para anular un documento específico.
+	 *
+	 * @param documento DocumentoAnularInRO con los datos del documento a anular
+	 * @return DocumentoAnularOutRO resultado de la operación de anulación
+	 * @throws Exception si ocurre un error durante la invocación del servicio web
+	 */
+	@Override
+	public DocumentoAnularOutRO anularDocumento(DocumentoAnularInRO documento) throws Exception {
+		DocumentoAnularOutRO doc = DocumentoInvoker.anularDocumento(SIGED_WS_URL+SIGED_PATH_AGREGAR_DOCUMENTO, documento);
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getResultCode());
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getErrorCode());
+		LOG.info("EXPEDIENTE_INFORME_TEC :"+doc.getMessage());
+		return doc;
+	}
 	@Override
 	public DocumentoOutRO agregarDocumentoVersionar(ExpedienteInRO expediente, List<File> archivos) throws Exception {
 		DocumentoOutRO doc =ExpedienteInvoker.addDocument(SIGED_WS_URL+SIGED_PATH_AGREGAR_DOCUMENTO, expediente, archivos, true);
