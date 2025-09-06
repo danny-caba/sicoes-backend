@@ -379,13 +379,11 @@ public class RenovacionesServiceImpl implements RenovacionesService {
             }
 
             return usu.getRoles().stream()
-                    .map(Rol::getNombre)
+                    .map(Rol::getCodigo)
                     .anyMatch(d ->
-                            d.toUpperCase().contains("EVALUADOR") ||
-                            d.toUpperCase().contains("TECNICO")||
-                            d.toUpperCase().contains("TÉCNICO")||
-                            d.toUpperCase().contains("ADMIN") ||
-                            d.toUpperCase().contains("CONSULTOR")
+                            d.equals(Constantes.ROLES.EVALUADOR_TECNICO) ||
+                            d.equals(Constantes.ROLES.ADMINISTRADOR_PROCESOS) ||
+                            d.equals(Constantes.ROLES.USUARIO_EXTERNO)
                     );
 
         } catch (Exception e) {
