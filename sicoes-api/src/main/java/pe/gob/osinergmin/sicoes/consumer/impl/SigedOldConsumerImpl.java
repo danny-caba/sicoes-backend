@@ -488,10 +488,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			HttpEntity<MultiValueMap<String, Object>> requestEntity =
 					new HttpEntity<>(body, headers);
 			String path="";
-			 if(archivo.getIdSeccionRequisito()!=null) {
+			 if(idReqRenovacion!=null) {
 				 path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO_RENOVACION/"+idReqRenovacion;
 			}else {
-				logger.info("Sin path enviar idSolicitud o idPropuesta "+path);
+				logger.info("Sin path enviar idReqRenovacion "+path);
 			}
 
 			logger.info("Enviado a alfresco : "+path);
