@@ -199,10 +199,6 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 	private String enviarArchivos(List<File> archivosAlfresco, SicoesSolicitud solicitud, Contexto contexto) throws Exception {
 		ExpedienteInRO expedienteInRO = null;
 		String codExpediente = null;
-		if (solicitud.getIdSolicitudPadre() != null) {
-			SicoesSolicitud solicitudPadre = sicoesSolicitudDao.findById(solicitud.getIdSolicitudPadre()).orElse(null);
-			codExpediente = solicitudPadre.getNumeroExpediente();
-		}
 		expedienteInRO = crearExpedientePresentacion(solicitud, codExpediente, contexto);
 		ExpedienteOutRO expedienteOutRO = null;
 		DocumentoOutRO documentoSubsanacionOutRO = null;
@@ -223,34 +219,6 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		}
 
 		codExpediente = codExpediente != null ? codExpediente : expedienteOutRO.getCodigoExpediente();
-
-		if (false) {
-			throw new ValidacionException("Error al guardar archivos en SIGED");
-		} else {
-			expedienteInRO = crearExpedientePresentacion(solicitud, codExpediente, contexto);
-			Archivo formato_22 = null;
-
-			formato_22 = generarReportePresentacion(solicitud, codExpediente, contexto);
-
-			archivosAlfresco = new ArrayList<>();
-			File file = null;
-
-			File dir = new File(pathTemporal + File.separator+"temporales" + File.separator + solicitud.getIdSolicitud());
-			if (!dir.exists()) {
-				dir.mkdirs();
-			}
-			file = new File(
-					pathTemporal + File.separator + "temporales" + File.separator + solicitud.getIdSolicitud() + File.separator + formato_22.getNombre());
-			FileUtils.writeByteArrayToFile(file, formato_22.getContenido());
-			formato_22.setContenido(Files.readAllBytes(file.toPath()));
-
-			archivosAlfresco.add(file);
-			DocumentoOutRO documentoOutRO = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
-			if (documentoOutRO.getResultCode() != 1) {
-				throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_AGREGAR_DOCUMENTOS,
-						codExpediente);
-			}
-		}
 		return codExpediente;
 	}
 

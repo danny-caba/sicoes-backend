@@ -40,8 +40,6 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQUERIMIENTO", precision = 38)
     private Long idRequerimiento;
 
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_NOTIFICACION")
     private Notificacion notificacion;
@@ -56,7 +54,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @JsonIgnore
     private RequerimientoRenovacion requerimientoRenovacion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_ESTADO_LD", insertable = false, updatable = false)
     private ListadoDetalle estadoInvitacion;
 
