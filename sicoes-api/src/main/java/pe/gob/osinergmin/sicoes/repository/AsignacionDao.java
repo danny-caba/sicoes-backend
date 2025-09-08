@@ -339,6 +339,11 @@ public interface AsignacionDao extends JpaRepository<Asignacion, Long> {
 			+ "AND a.FL_ACTIVO      = 1", nativeQuery = true)
 	public List<Object[]> findHistorialByContrato(Long contratoId);
 
+	@Query(value = "SELECT a FROM Asignacion a LEFT JOIN a.tipo t LEFT JOIN a.evaluacion e "
+			+ "WHERE t.codigo LIKE '" + Constantes.LISTADO.TIPO_EVALUADOR.ADMINISTRATIVO + "' "
+			+ "AND a.solicitud.idSolicitud = :idSolicitud ")
+	List<Asignacion> obtenerAsignacionesEvalAdm(
+			@Param("idSolicitud") Long idSolicitud);
 	
 }
 

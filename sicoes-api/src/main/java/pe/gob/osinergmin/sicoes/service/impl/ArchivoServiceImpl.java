@@ -831,24 +831,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Archivo guardarExcelEnSiged(Long idProceso, Archivo archivo, Contexto contexto) {
-		boolean nuevo = archivo.getIdArchivo() == null;
-		if(archivo.getSolicitudUuid() != null) {
-			archivo.setIdSolicitud(solicitudService.obtenerId(archivo.getSolicitudUuid()));
-		}
-		if(archivo.getPropuestaUuid() != null) {
-			archivo.setIdPropuesta(propuestaService.obtener(archivo.getPropuestaUuid(),contexto).getIdPropuesta());
-		}
-		if (nuevo) {
-			cargarAbsolucionExcel(idProceso, archivo, contexto);
-			return registrar(archivo, contexto);
-		} else {
-			return modificar(archivo, contexto);
-		}
-	}
-
-	@Override
 	public Archivo obtenerArchivoXlsPorProceso(Long idProceso) {
 
 		Archivo archivo;
@@ -1003,62 +985,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 			}
 	    }
 	    
-	    if (doc.getResultCode() != 1) {
-	        throw new ValidacionException(
-	            Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO,
-	            doc.getMessage()
-	        );
-	    }
-	}
-
-	public File convertirMultipartFileAFileExcel(Archivo archivo) throws IOException {
-	    MultipartFile mf = archivo.getFile();
-	    File file = new File(mf.getOriginalFilename());
-
-	    boolean existiaAntes = file.exists();
-
-	    try (FileOutputStream fos = new FileOutputStream(file)) {
-	        fos.write(mf.getBytes());
-	    } catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	    if (existiaAntes) {
-	        logger.info("El archivo ya existía y se va a versionar: " + file.getName());
-	    }
-
-	    return file;
-	}
-
-	public void cargarAbsolucionExcel(Long idProceso, Archivo archivo, Contexto contexto) {
-	    Proceso procesoDB = procesoService.obtener(idProceso, contexto);
-	    ExpedienteInRO expedienteInRO = crearExpedienteAgregarDocumentos(procesoDB);
-
-	    File fichero = null;
-		try {
-			fichero = convertirMultipartFileAFileExcel(archivo);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	    boolean existiaAntes = fichero.exists();
-
-	    List<File> archivosAlfresco = Collections.singletonList(fichero);
-
-	    DocumentoOutRO doc = null;
-	    if (existiaAntes) {
-	        try {
-				doc = sigedApiConsumer.agregarDocumentoVersionar(expedienteInRO, archivosAlfresco);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	    } else {
-	        try {
-				doc = sigedApiConsumer.agregarDocumento(expedienteInRO, archivosAlfresco);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	    }
-
 	    if (doc.getResultCode() != 1) {
 	        throw new ValidacionException(
 	            Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO,
