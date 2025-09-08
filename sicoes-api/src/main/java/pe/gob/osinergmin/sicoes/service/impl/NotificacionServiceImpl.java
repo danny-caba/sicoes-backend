@@ -1064,4 +1064,68 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacion.setEstado(estadoPendiente);
 		notificacionDao.save(notificacion);
 	}
+
+	@Override
+	public void enviarNotificacionRenovacion(Integer idTipoNotifica, String mensaje, Contexto contexto) {
+		logger.info("enviarNotificacionRenovacion - Tipo: {}, Usuario: {}", idTipoNotifica, 
+		           contexto.getUsuario() != null ? contexto.getUsuario().getIdUsuario() : "N/A");
+		
+		try {
+			// Validar parámetros
+			if (idTipoNotifica == null) {
+				throw new IllegalArgumentException("El tipo de notificación es requerido");
+			}
+			
+			if (mensaje == null || mensaje.trim().isEmpty()) {
+				throw new IllegalArgumentException("El mensaje de notificación no puede estar vacío");
+			}
+
+			// Crear la notificación
+			Notificacion notificacion = new Notificacion();
+			
+			// Configurar destinatario según el contexto
+			if (contexto.getUsuario() != null && contexto.getUsuario().getCorreo() != null) {
+				notificacion.setCorreo(contexto.getUsuario().getCorreo());
+			}
+			
+			// Configurar asunto según el tipo de notificación
+			String asunto = "";
+			switch (idTipoNotifica) {
+				case 1:
+					asunto = "SICOES - Notificación de Aprobación de Informe de Renovación";
+					break;
+				case 2:
+					asunto = "SICOES - Notificación de Rechazo de Informe de Renovación";
+					break;
+				case 3:
+					asunto = "SICOES - Notificación de Solicitud de Perfeccionamiento de Contrato";
+					break;
+				default:
+					asunto = "SICOES - Notificación de Renovación de Contrato";
+			}
+			
+			notificacion.setAsunto(asunto);
+			notificacion.setMensaje(mensaje);
+			
+			// Configurar estado como pendiente
+			ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+				Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE
+			);
+			notificacion.setEstado(estadoPendiente);
+			
+			// Configurar auditoría
+			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+			
+			// Guardar notificación
+			notificacionDao.save(notificacion);
+			
+			logger.info("Notificación de renovación creada exitosamente - Tipo: {}, ID: {}", 
+			           idTipoNotifica, notificacion.getIdNotificacion());
+
+		} catch (Exception e) {
+			logger.error("Error al enviar notificación de renovación - Tipo: " + idTipoNotifica, e);
+			throw new RuntimeException("Error al procesar la notificación de renovación", e);
+		}
+	}
 }

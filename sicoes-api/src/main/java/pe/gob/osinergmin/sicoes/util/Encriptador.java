@@ -77,7 +77,6 @@ public class Encriptador {
             return Base64.getEncoder().encodeToString(enc);
         } catch (BadPaddingException e) {
         } catch (IllegalBlockSizeException e) {
-        } catch (UnsupportedEncodingException e) {
         } catch (IOException e) {
         }
         return null;
@@ -90,7 +89,6 @@ public class Encriptador {
             return new String(utf8, "UTF8");
         } catch (BadPaddingException e) {
         } catch (IllegalBlockSizeException e) {
-        } catch (UnsupportedEncodingException e) {
         } catch (IOException e) {
         }
         return null;
