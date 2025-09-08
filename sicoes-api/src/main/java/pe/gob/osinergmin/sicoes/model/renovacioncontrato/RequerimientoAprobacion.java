@@ -87,7 +87,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_NOTIFICACION", insertable = false, updatable = false)
+    @JoinColumn(name = "ID_NOTIFICACION")
     private Notificacion notificacion;
 
 

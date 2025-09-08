@@ -47,7 +47,7 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
     }
 
     @Override
-    public Long notificacionInformePorAprobaryFirmar(Usuario usuario, String numExpediente, Contexto contexto) {
+    public Notificacion notificacionInformePorAprobaryFirmar(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
         String nombreUsuario = usuario.getNombreUsuario();
         logger.info("notificacionInformePorAprobaryFirmar para email: {} nombre: {}", email, nombreUsuario);
@@ -62,8 +62,8 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
                 NOMBRE_TEMPLATE_NOTIFICACION_INFORME_POR_APROBAR_Y_FIRMAR,
                 ctx);
         
-        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        return saveNotificacion(notificacion);
+    AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+    return saveNotificacion(notificacion);
     }
 
     private Notificacion buildNotification(String email, String subject, String template, Context context) {
@@ -76,24 +76,20 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
         notificacion.setMensaje(msjLimpio);
         return notificacion;
     }
-
-    private Long saveNotificacion(Notificacion notificacion) {
+    private Notificacion saveNotificacion(Notificacion notificacion) {
         ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
                 Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
-        
         if (pendiente == null) {
             throw new RuntimeException("Estado 'Pendiente' no encontrado en listado detalle");
         }
-        
         notificacion.setEstado(pendiente);
-        Notificacion notificacionGuardada = notificacionDao.save(notificacion);
-        
-        return notificacionGuardada.getIdNotificacion();
+        return notificacionDao.save(notificacion);
     }
 
+
     @Override
-    public Long notificacionInformePorRevisar(Usuario usuario, String numExpediente, Contexto contexto) {
+    public Notificacion notificacionInformePorRevisar(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
         String nombreUsuario = usuario.getNombreUsuario();
         logger.info("notificacionInformePorRevisar para email: {} nombre: {}", email, nombreUsuario);
@@ -108,12 +104,12 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
                 NOMBRE_TEMPLATE_NOTIFICACION_INFORME_POR_REVISAR,
                 ctx);
         
-        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        return saveNotificacion(notificacion);
+    AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+    return saveNotificacion(notificacion);
     }
 
     @Override
-    public Long notificacionInformePorEvaluar(Usuario usuario, String numExpediente, Contexto contexto) {
+    public Notificacion notificacionInformePorEvaluar(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
         String nombreUsuario = usuario.getNombreUsuario();
         logger.info("notificacionInformePorEvaluar para email: {} nombre: {}", email, nombreUsuario);
@@ -128,8 +124,8 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
                 NOMBRE_TEMPLATE_NOTIFICACION_INFORME_POR_EVALUAR,
                 ctx);
         
-        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        return saveNotificacion(notificacion);
+    AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+    return saveNotificacion(notificacion);
     }
 
     /**
@@ -140,7 +136,7 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
      * @return ID de la notificación creada
      */
     @Override
-    public Long notificacionSolicitudDeContratos(Usuario usuario, String numExpediente, Contexto contexto) {
+    public Notificacion notificacionSolicitudDeContratos(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
         String nombreUsuario = usuario.getNombreUsuario();
         logger.info("notificacionSolicitudDeContratos para email: {} nombre: {}", email, nombreUsuario);
@@ -155,7 +151,7 @@ public class NotificacionAprobacionInformeServiceImpl implements NotificacionApr
                 NOMBRE_TEMPLATE_NOTIFICACION_SOLICITUD_DE_CONTRATOS,
                 ctx);
         
-        AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        return saveNotificacion(notificacion);
+    AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+    return saveNotificacion(notificacion);
     }
 }

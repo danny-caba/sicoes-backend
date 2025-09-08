@@ -1,7 +1,8 @@
+
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato;
+import pe.gob.osinergmin.sicoes.model.Notificacion;
 
 import pe.gob.osinergmin.sicoes.model.Usuario;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.NotificacionRCDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 /**
@@ -16,7 +17,7 @@ public interface NotificacionAprobacionInformeService {
      * @param contexto Contexto de la operación
      * @return ID de la notificación creada
      */
-    Long notificacionInformePorAprobaryFirmar(Usuario usuario, String numExpediente, Contexto contexto);
+    Notificacion notificacionInformePorAprobaryFirmar(Usuario usuario, String numExpediente, Contexto contexto);
 
     /**
      * Envía notificación cuando un informe está por revisar.
@@ -25,7 +26,7 @@ public interface NotificacionAprobacionInformeService {
      * @param contexto Contexto de la operación
      * @return ID de la notificación creada
      */
-    Long notificacionInformePorRevisar(Usuario usuario, String numExpediente, Contexto contexto);
+    Notificacion notificacionInformePorRevisar(Usuario usuario, String numExpediente, Contexto contexto);
 
     /**
      * Envía notificación cuando un informe está por evaluar.
@@ -34,7 +35,7 @@ public interface NotificacionAprobacionInformeService {
      * @param contexto Contexto de la operación
      * @return ID de la notificación creada
      */
-    Long notificacionInformePorEvaluar(Usuario usuario, String numExpediente, Contexto contexto);
+    Notificacion notificacionInformePorEvaluar(Usuario usuario, String numExpediente, Contexto contexto);
 
     /**
      * Envía notificación de solicitud de contratos (flujo final GSE G3).
@@ -43,5 +44,5 @@ public interface NotificacionAprobacionInformeService {
      * @param contexto Contexto de la operación
      * @return ID de la notificación creada
      */
-    Long notificacionSolicitudDeContratos(Usuario usuario, String numExpediente, Contexto contexto);
+    Notificacion notificacionSolicitudDeContratos(Usuario usuario, String numExpediente, Contexto contexto);
 }
