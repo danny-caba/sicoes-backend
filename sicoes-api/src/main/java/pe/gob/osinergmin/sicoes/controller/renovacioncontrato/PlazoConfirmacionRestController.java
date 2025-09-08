@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.PlazoConfirmacionRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.PlazoConfirmacionResponseDTO;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.PlazoConfirmacionService;
 
 @RestController
 @RequestMapping("/api/renovacion")
-public class PlazoConfirmacionRestController {
+public class PlazoConfirmacionRestController extends BaseRestController {
     
     private static final Logger logger = LogManager.getLogger(PlazoConfirmacionRestController.class);
     
@@ -41,7 +42,7 @@ public class PlazoConfirmacionRestController {
     @PostMapping("/registrarPlazoConfirmacion")
     public ResponseEntity<PlazoConfirmacionResponseDTO> registrarPlazoConfirmacion(@RequestBody PlazoConfirmacionRequestDTO requestDTO) {
         try {
-            PlazoConfirmacionResponseDTO response = plazoConfirmacionService.registrarPlazoConfirmacion(requestDTO);
+            PlazoConfirmacionResponseDTO response = plazoConfirmacionService.registrarPlazoConfirmacion(requestDTO,getContexto());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
             logger.error("Error de validacion: ", e);

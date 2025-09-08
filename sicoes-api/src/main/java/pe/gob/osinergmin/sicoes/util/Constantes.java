@@ -928,6 +928,12 @@ public class Constantes {
 		public static final String USUARIO_EXTERNO				= "06";
 		public static final String APROBADOR_ADMINISTRATIVO		= "07";
 		public static final String ADMINISTRADOR_PROCESOS		= "08";
+		public static final String ADMINISTRADOR_BLOQUEOS		= "09";
+		public static final String JEFE_LOGISTICA				= "10";
+		public static final String ADMINISTRADOR_CONFIGURACIONES= "11";
+		public static final String EVALUADOR_CONTRATOS			= "12";
+		public static final String RESPONSABLE_APROBADOR_GPPM	= "13";
+		public static final String RESPONSABLE_APROBADOR_GSE	= "14";
 	}
 	
 	public static final class OPCIONES_EXTERNO {

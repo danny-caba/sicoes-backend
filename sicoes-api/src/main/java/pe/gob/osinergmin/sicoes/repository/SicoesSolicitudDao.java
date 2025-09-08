@@ -29,6 +29,12 @@ public interface SicoesSolicitudDao extends JpaRepository<SicoesSolicitud, Long>
 			"WHERE s.idSolicitud = :idSolicitud")
 	Optional<SicoesSolicitud> findSolicitudById(@Param("idSolicitud") Long idSolicitud);
 
+	@Query(value = "SELECT s.*, sup.* FROM SICOES_TC_SOLI_PERF_CONT s " +
+			"LEFT JOIN SICOES_TM_SUPERVISORA sup ON s.ID_SUPERVISORA = sup.ID_SUPERVISORA " +
+			"WHERE s.ID_SOLI_PERF_CONT = :idSolicitud",
+			nativeQuery = true)
+	Optional<SicoesSolicitud> findSolicitudWithSupervisoraNative(@Param("idSolicitud") Long idSolicitud);
+
 	@Query(value = "select s from SicoesSolicitud s "
 			+ "left join fetch s.propuesta p "
             + "left join fetch p.procesoItem pi "

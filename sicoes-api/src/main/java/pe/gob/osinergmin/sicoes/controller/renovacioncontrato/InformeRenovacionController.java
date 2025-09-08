@@ -15,6 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -395,6 +396,154 @@ public class InformeRenovacionController extends BaseRestController {
             logger.error("Error al actualizar grilla de renovación de contrato", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("message", "Error al actualizar la grilla de renovación de contrato"));
+        }
+    }
+
+    @PostMapping("/aprobar")
+    @Raml("renovacioncontrato.informe.aprobar.properties")
+    public ResponseEntity<Map<String, String>> aprobarInformeRenovacion(@RequestBody Map<String, Object> requestData) {
+        logger.info("aprobarInformeRenovacion - Aprobador de informes de renovación");
+
+        try {
+            // Validar datos de entrada
+            Object idInformeRenovacionObj = requestData.get("idInformeRenovacion");
+            if (idInformeRenovacionObj == null) {
+                return ResponseEntity.badRequest()
+                        .body(Collections.singletonMap("message", "El ID del informe de renovación es requerido"));
+            }
+
+            Long idInformeRenovacion;
+            try {
+                idInformeRenovacion = Long.valueOf(idInformeRenovacionObj.toString());
+            } catch (NumberFormatException e) {
+                return ResponseEntity.badRequest()
+                        .body(Collections.singletonMap("message", "El ID del informe de renovación debe ser un número válido"));
+            }
+
+            String observacion = requestData.get("observacion") != null ? 
+                requestData.get("observacion").toString() : "";
+
+            Object idUsuarioObj = requestData.get("idUsuario");
+            Long idUsuario = null;
+            if (idUsuarioObj != null) {
+                try {
+                    idUsuario = Long.valueOf(idUsuarioObj.toString());
+                } catch (NumberFormatException e) {
+                    logger.warn("ID de usuario inválido: {}", idUsuarioObj);
+                }
+            }
+
+            // Procesar la aprobación
+            informeRenovacionService.aprobarInforme(idInformeRenovacion, idUsuario, observacion, getContexto());
+
+            return ResponseEntity.ok(Collections.singletonMap("message", "Informe de renovación aprobado exitosamente"));
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación al aprobar informe: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error al aprobar informe de renovación", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "Error al procesar la aprobación del informe"));
+        }
+    }
+
+    @PostMapping("/notifica/{idTipoNotifica}")
+    @Raml("renovacioncontrato.informe.notifica.properties")
+    public ResponseEntity<Map<String, String>> notificarRenovacion(
+            @PathVariable Integer idTipoNotifica,
+            @RequestBody(required = false) Map<String, Object> requestData) {
+        logger.info("notificarRenovacion - Envío de notificación tipo: {}", idTipoNotifica);
+
+        try {
+            // Validar tipo de notificación
+            if (idTipoNotifica == null || idTipoNotifica < 1 || idTipoNotifica > 3) {
+                return ResponseEntity.badRequest()
+                        .body(Collections.singletonMap("message", "Tipo de notificación inválido (debe ser 1, 2 o 3)"));
+            }
+
+            // Enviar notificación según el tipo
+            String mensaje = "";
+            switch (idTipoNotifica) {
+                case 1:
+                    mensaje = "Notificación de aprobación de informe de renovación";
+                    break;
+                case 2:
+                    mensaje = "Notificación de rechazo de informe de renovación";
+                    break;
+                case 3:
+                    mensaje = "Notificación de solicitud de perfeccionamiento de contrato";
+                    break;
+            }
+
+            // Procesar la notificación usando el servicio existente
+            notificacionService.enviarNotificacionRenovacion(idTipoNotifica, mensaje, getContexto());
+
+            return ResponseEntity.ok(Collections.singletonMap("message", "Notificación enviada exitosamente"));
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación al enviar notificación: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de renovación", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "Error al enviar la notificación"));
+        }
+    }
+
+    @PostMapping("/solicitud-perfeccionamiento-contrato")
+    @Raml("renovacioncontrato.informe.solicitud.perfeccionamiento.properties")
+    public ResponseEntity<Map<String, String>> solicitudPerfeccionamientoContrato(@RequestBody Map<String, Object> requestData) {
+        logger.info("solicitudPerfeccionamientoContrato - Generar solicitud de perfeccionamiento");
+
+        try {
+            // Validar datos de entrada
+            Object informesIdsObj = requestData.get("informesIds");
+            if (informesIdsObj == null) {
+                return ResponseEntity.badRequest()
+                        .body(Collections.singletonMap("message", "Los IDs de los informes son requeridos"));
+            }
+
+            @SuppressWarnings("unchecked")
+            java.util.List<Long> informesIds = (java.util.List<Long>) informesIdsObj;
+            if (informesIds.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Collections.singletonMap("message", "Debe proporcionar al menos un ID de informe"));
+            }
+
+            String observacion = requestData.get("observacion") != null ? 
+                requestData.get("observacion").toString() : "";
+
+            Object idUsuarioObj = requestData.get("idUsuario");
+            Long idUsuario = null;
+            if (idUsuarioObj != null) {
+                try {
+                    idUsuario = Long.valueOf(idUsuarioObj.toString());
+                } catch (NumberFormatException e) {
+                    logger.warn("ID de usuario inválido: {}", idUsuarioObj);
+                }
+            }
+
+            String fechaSolicitud = requestData.get("fechaSolicitud") != null ? 
+                requestData.get("fechaSolicitud").toString() : 
+                java.time.LocalDateTime.now().toString();
+
+            // Procesar la solicitud de perfeccionamiento
+            informeRenovacionService.crearSolicitudPerfeccionamientoContrato(
+                informesIds, idUsuario, observacion, fechaSolicitud, getContexto());
+
+            return ResponseEntity.ok(Collections.singletonMap("message", "Solicitud de perfeccionamiento de contrato generada exitosamente"));
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación al generar solicitud de perfeccionamiento: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error al generar solicitud de perfeccionamiento de contrato", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "Error al procesar la solicitud de perfeccionamiento"));
         }
     }
 

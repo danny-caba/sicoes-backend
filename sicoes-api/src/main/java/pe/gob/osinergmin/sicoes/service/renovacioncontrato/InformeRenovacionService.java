@@ -138,4 +138,28 @@ public interface InformeRenovacionService {
             String grupo,
             Pageable pageable,
             Contexto contexto);
+
+    /**
+     * Aprueba un informe de renovación
+     * @param idInformeRenovacion ID del informe de renovación
+     * @param idUsuario ID del usuario aprobador
+     * @param observacion Observación de la aprobación
+     * @param contexto Contexto del usuario
+     */
+    void aprobarInforme(Long idInformeRenovacion, Long idUsuario, String observacion, Contexto contexto);
+
+    /**
+     * Crea una solicitud de perfeccionamiento de contrato
+     * @param informesIds Lista de IDs de informes
+     * @param idUsuario ID del usuario solicitante
+     * @param observacion Observación de la solicitud
+     * @param fechaSolicitud Fecha de la solicitud
+     * @param contexto Contexto del usuario
+     */
+    void crearSolicitudPerfeccionamientoContrato(
+        java.util.List<Long> informesIds, 
+        Long idUsuario, 
+        String observacion, 
+        String fechaSolicitud, 
+        Contexto contexto);
 }

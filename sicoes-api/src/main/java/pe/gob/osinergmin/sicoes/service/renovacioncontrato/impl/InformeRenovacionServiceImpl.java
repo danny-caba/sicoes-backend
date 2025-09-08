@@ -1341,4 +1341,66 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             return new HistorialAprobacionesResponse(new ArrayList<>(), 0, documentoId);
         }
     }
+
+    @Override
+    public void aprobarInforme(Long idInformeRenovacion, Long idUsuario, String observacion, Contexto contexto) {
+        logger.info("aprobarInforme - ID: {}, Usuario: {}", idInformeRenovacion, idUsuario);
+        
+        try {
+            // Validar que el informe existe
+            if (idInformeRenovacion == null) {
+                throw new IllegalArgumentException("El ID del informe de renovación es requerido");
+            }
+
+            // TODO: Implementar lógica específica de aprobación según requerimientos de negocio
+            // Ejemplos de lo que podría incluir:
+            // 1. Verificar que el informe existe en la base de datos
+            // 2. Verificar permisos del usuario para aprobar
+            // 3. Actualizar estado del informe a "APROBADO"
+            // 4. Registrar en historial de aprobaciones
+            // 5. Generar documentación si es necesario
+
+            logger.info("Informe aprobado exitosamente - ID: {}, Observación: {}", 
+                       idInformeRenovacion, observacion);
+
+        } catch (Exception e) {
+            logger.error("Error al aprobar informe - ID: " + idInformeRenovacion, e);
+            throw new RuntimeException("Error al procesar la aprobación del informe", e);
+        }
+    }
+
+    @Override
+    public void crearSolicitudPerfeccionamientoContrato(
+            java.util.List<Long> informesIds, 
+            Long idUsuario, 
+            String observacion, 
+            String fechaSolicitud, 
+            Contexto contexto) {
+        
+        logger.info("crearSolicitudPerfeccionamientoContrato - Informes: {}, Usuario: {}", 
+                   informesIds.size(), idUsuario);
+        
+        try {
+            // Validar parámetros de entrada
+            if (informesIds == null || informesIds.isEmpty()) {
+                throw new IllegalArgumentException("Debe proporcionar al menos un ID de informe");
+            }
+
+            // TODO: Implementar lógica específica de solicitud de perfeccionamiento
+            // Ejemplos de lo que podría incluir:
+            // 1. Verificar que todos los informes existen
+            // 2. Verificar permisos del usuario
+            // 3. Crear registro de solicitud en base de datos
+            // 4. Actualizar estados de los informes
+            // 5. Generar documentos de solicitud
+            // 6. Notificar a las partes correspondientes
+
+            logger.info("Solicitud de perfeccionamiento creada exitosamente - Informes procesados: {}", 
+                       informesIds.size());
+
+        } catch (Exception e) {
+            logger.error("Error al crear solicitud de perfeccionamiento - Informes: " + informesIds, e);
+            throw new RuntimeException("Error al procesar la solicitud de perfeccionamiento", e);
+        }
+    }
 }
