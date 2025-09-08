@@ -179,8 +179,8 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setEstadoReqRenovacion(estadoPreliminar);
 
 		List<Archivo> archivosRegistrados = obtenerArchivosRegistrados(new ArrayList<>(), sicoesSolicitud, contexto);
-		List<File> archivosAlfresco = null;
-		archivosAlfresco = archivoService.obtenerArchivoContenidoPerfCont(archivosRegistrados, sicoesSolicitud, contexto);
+		List<File> archivosAlfresco = new ArrayList<>();
+        archivosAlfresco.add(new File(pathJasper + "vacio.pdf"));
 		String expediente = enviarArchivos(archivosAlfresco, sicoesSolicitud, contexto);
 		requerimientoRenovacion.setNuExpediente(expediente);
 		Proceso proceso= sicoesSolicitud.getPropuesta().getProcesoItem().getProceso();
