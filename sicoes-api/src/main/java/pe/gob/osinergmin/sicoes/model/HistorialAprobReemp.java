@@ -31,5 +31,5 @@ public class HistorialAprobReemp {
     @Column(name = "RESULTADO")
     private String resultado;
     @Column(name = "OBSERVACION")
-    private String Observacion;
+    private String observacion;
 }

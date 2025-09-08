@@ -1692,7 +1692,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Contrato contrato = contratoDao.obtenerSolicitudPerfCont(persoReemp.getIdSolicitud()).orElseThrow(()  -> new RuntimeException("contrato no encontrado"));
 
             if(contrato.getFechaFinalContrato() == null) {
-                throw new ValidacionException("No se encuentra la fecha de finalización de contrato");
+                throw new ValidacionException("No se encuentra la Fecha de Finalización de Contrato");
+            }
+             if (contrato.getFechaFinalContrato().before(persoReemp.getFeFechaDesvinculacion())) {
+               throw new ValidacionException("La Fecha Desvinculación no puede ser posterior a la fecha de finalización del Contrato");
             }
             if(fecha.before(contrato.getFechaFinalContrato()) || fecha.equals(contrato.getFechaFinalContrato())){
               if (!fecha.equals(persoReemp.getFeFechaDesvinculacion())){
@@ -1709,7 +1712,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
        logger.info("evaluarDocumentoInforme");
 
        Optional<PersonalReemplazo> persoReempOpt = reemplazoDao.findById(id);
-            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("reemplazo personal no encontrada"));
+            PersonalReemplazo persoReempFinal = persoReempOpt.orElseThrow(()  -> new RuntimeException("Reemplazo personal no encontrada"));
             if(fecha == null) {
                 throw new ValidacionException("No se encuentra la fecha");
             }
@@ -1749,10 +1752,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-	public Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion) {
+	public Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion, Contexto contexto) {
        logger.info("evaluarDocumReemplazo");
            Boolean result = false;
-           Usuario usu = usuarioDao.obtener(evaluacion.getIdEvaluadoPor());
 
            DocumentoReemplazo doc = documentoReemDao.findById(evaluacion.getIdDocumento())
                    .orElseThrow(()  -> new RuntimeException("documento no encontrado"));
@@ -1763,20 +1765,14 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
            evalFinal.setDocumento(doc);
            evalFinal.setConforme(evaluacion.getConforme());
            evalFinal.setFechaEvaluacion(evaluacion.getFechaEvaluacion());
-           evalFinal.setEvaluadoPor(usu);
-           evalFinal.setFecActualizacion(new Date());
-           evalFinal.setIpActualizacion(evaluacion.getIpActualizacion());
-           evalFinal.setUsuActualizacion(evaluacion.getUsuActualizacion());
+           AuditoriaUtil.setAuditoriaActualizacion(evalFinal,contexto);
            evaluarDocuReemDao.save(evalFinal);
            result = true;
        }else{
            EvaluarDocuReemplazo evalNuevo = new EvaluarDocuReemplazo();
            evalNuevo.setConforme(evaluacion.getConforme());
            evalNuevo.setFechaEvaluacion(evaluacion.getFechaEvaluacion());
-           evalNuevo.setEvaluadoPor(usu);
-           evalNuevo.setFecActualizacion(new Date());
-           evalNuevo.setIpActualizacion(evaluacion.getIpActualizacion());
-           evalNuevo.setUsuActualizacion(evaluacion.getUsuActualizacion());
+           AuditoriaUtil.setAuditoriaRegistro(evalNuevo,contexto);
            evaluarDocuReemDao.save(evalNuevo);
            result = true;
        }

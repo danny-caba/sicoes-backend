@@ -19,6 +19,4 @@ public class EvaluarDocuDTO {
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date fechaEvaluacion;
-    private String ipActualizacion;
-    private String usuActualizacion;
 }

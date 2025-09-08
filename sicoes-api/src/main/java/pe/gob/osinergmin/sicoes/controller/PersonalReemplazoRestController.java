@@ -215,7 +215,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @PostMapping("/interno/reemplazo/solicitud/propuesto/evalua")
     public Boolean evaluarConformidad(@RequestBody EvaluarDocuDTO evaluacion){
         logger.info("evaluar conformidad");
-        return personalReemplazoService.evaluarDocumReemplazo(evaluacion);
+        return personalReemplazoService.evaluarDocumReemplazo(evaluacion, getContexto());
     }
 
     @PutMapping("/interno/reemplazo/solicitud/registra/inicio-servicio")
