@@ -237,27 +237,52 @@ public class CrearInformeRenovacionContratoImpl  {
 
     notificacionRenovacionContratoService.notificacionInformePorAprobar( usuarioG1,  numExpediente, contexto);
 
-    RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(nuevoInformeRenovacionContrato.getIdInformeRenovacion()); 
+    RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(nuevoInformeRenovacionContrato.getIdInformeRenovacion(),
+            listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1(),
+            contexto.getUsuario().getIdUsuario());
+
     AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1,contexto);
     requerimientoAprobacionDao.save(requerimientoAprobacionG1);
 
     return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
 
-    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion) {
-        RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
-        requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
-        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-            "GRUPOS", 
-            "G1"
-        );
-        requerimientoAprobacionG1.setIdTipoLd(g1GrupoLD.getIdListadoDetalle()); 
+    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion,Long idUsuarioG1,Long idUsuario) {
 
+        RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
+        requerimientoAprobacionG1.setFeAsignacion(new Date());
+        requerimientoAprobacionG1.setFecCreacion(new Date());
+        requerimientoAprobacionG1.setUsuCreacion(idUsuario.toString());
+        requerimientoAprobacionG1.setIdUsuario(idUsuarioG1);
+        requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
+
+        ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPOS",
+                "G1"
+        );
+        requerimientoAprobacionG1.setIdGrupoLd(g2GrupoLD.getIdListadoDetalle());
         ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-            "ESTADO_APROBACION", 
-            "ASIGNADO"
+                "ESTADO_APROBACION",
+                "ASIGNADO"
         );
         requerimientoAprobacionG1.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
+
+        ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
+                "TIPO_EVALUADOR",
+                "APROBADOR_TECNICO"
+        );
+        requerimientoAprobacionG1.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
+
+        ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPO_APROBACION",
+                "JEFE_UNIDAD"
+        );
+        requerimientoAprobacionG1.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
+        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+            "TIPO_APROBACION",
+            "APROBAR"
+        );
+        requerimientoAprobacionG1.setIdTipoLd(g1GrupoLD.getIdListadoDetalle()); 
 
         return requerimientoAprobacionG1;
     }

@@ -35,7 +35,7 @@ public class InformeRenovacionContratoDTO {
 
     private String conclusiones;
 
-    private Boolean vigente;
+    private Long vigente;
 
     private String registro;
 

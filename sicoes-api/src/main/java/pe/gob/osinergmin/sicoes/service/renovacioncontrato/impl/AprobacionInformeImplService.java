@@ -149,8 +149,13 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionG2.setUsuCreacion(solicitudPerfecionamientoContrato.getIdAprobadorG1().toString());
 
             requerimientoAprobacionG2.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
-            requerimientoAprobacionG2.setIdTipoLd(null); // revisar si aplica
-            
+
+            ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+                    "TIPO_APROBACION",
+                    "FIRMAR"
+            );
+            requerimientoAprobacionG2.setIdTipoLd(g1GrupoLD.getIdListadoDetalle());
+
             ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPOS", 
                 "G2"
@@ -166,8 +171,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionG2.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
             
             ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "TIPO_EVALUADOR", 
-                "TECNICO"
+                    "TIPO_EVALUADOR",
+                    "APROBADOR_TECNICO"
             );
             requerimientoAprobacionG2.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
             
@@ -406,7 +411,12 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             RequerimientoAprobacion requerimientoAprobacionGseG3 = new RequerimientoAprobacion();
             
             requerimientoAprobacionGseG3.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
-            requerimientoAprobacionGseG3.setIdTipoLd(null); // revisar si aplica
+            ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+                    "TIPO_APROBACION",
+                    "APROBAR"
+            );
+            requerimientoAprobacionGseG3.setIdTipoLd(g1GrupoLD.getIdListadoDetalle());
+
             
             ListadoDetalle g3GrupoLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPOS", 
@@ -423,8 +433,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionGseG3.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
             
             ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "TIPO_EVALUADOR", 
-                "TECNICO"
+                    "TIPO_EVALUADOR",
+                    "APROBADOR_TECNICO"
             );
             requerimientoAprobacionGseG3.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
             
