@@ -433,25 +433,31 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         logger.info("personalBaja: {}", personalBaja);
         PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
+        /*
         if (propuestaProfesional == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
         }
-        logger.info("propuestaProfesional: {}", propuestaProfesional);
+         */
         Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
         if (personaPropuesta == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
         }
         logger.info("personaPropuesta: {}", personaPropuesta);
-        propuestaProfesional.setSupervisora(personaPropuesta);
+
         SupervisoraMovimiento supervisoraMovimiento = new SupervisoraMovimiento();
-        supervisoraMovimiento.setSector(propuestaProfesional.getSector());
-        supervisoraMovimiento.setSubsector(propuestaProfesional.getSubsector());
+
+        if (propuestaProfesional != null){
+            propuestaProfesional.setSupervisora(personaPropuesta);
+            supervisoraMovimiento.setSector(propuestaProfesional.getSector());
+            supervisoraMovimiento.setSubsector(propuestaProfesional.getSubsector());
+            supervisoraMovimiento.setPropuestaProfesional(propuestaProfesional);
+        }
+
         supervisoraMovimiento.setSupervisora(personaPropuesta);
         supervisoraMovimiento.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.BLOQUEADO));
         supervisoraMovimiento.setTipoMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.CODIGO, Constantes.LISTADO.TIPO_MOTIVO_BLOQUEO.AUTOMATICO));
         supervisoraMovimiento.setMotivo(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.MOTIVO_BLOQUEO_DESBLOQUEO.REEMPLAZO_PERSONAL));
         supervisoraMovimiento.setAccion(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.CODIGO, Constantes.LISTADO.ACCION_BLOQUEO_DESBLOQUEO.BLOQUEO));
-        supervisoraMovimiento.setPropuestaProfesional(propuestaProfesional);
         supervisoraMovimiento.setFechaRegistro(new Date());
         logger.info("supervisoraMovimiento: {}", supervisoraMovimiento);
         supervisoraMovimientoService.guardar(supervisoraMovimiento,contexto);
