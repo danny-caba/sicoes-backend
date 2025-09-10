@@ -41,7 +41,6 @@ import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
-import pe.gob.osinergmin.sicoes.model.renovacioncontrato.ListadoDetalleRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
@@ -153,95 +152,99 @@ public class CrearInformeRenovacionContratoImpl  {
     }
 
 
-    public InformeRenovacionContratoDTO ejecutar(InformeRenovacionContratoDTO informeRenovacionContratoDTO, Contexto contexto) {
-        
+    public InformeRenovacionContratoDTO ejecutar(InformeRenovacionContratoDTO dto, Contexto contexto) {
 
-    Long idSolicitud = informeRenovacionContratoDTO.getRequerimiento().getSolicitudPerfil().getIdSolicitud(); 
-    List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud  = 
-        solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
+        Long idSolicitud = dto.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
+        List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud =
+                solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
 
+        if (listaPerfilesAprobadoresBySolicitud.isEmpty()) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IdSolcitud: " + idSolicitud);
+        }
 
-    if (listaPerfilesAprobadoresBySolicitud.isEmpty()) {
-        throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IDSOlcitud: " + idSolicitud);       
-    }
+        Contrato contrato = contratoDao.findBySolicitudPerfContId(idSolicitud).orElseThrow(() -> new ValidacionException(
+                Constantes.CODIGO_MENSAJE.CONTRATO_NO_ENCONTRADO,
+                "Contrato no encontrado para idSolicitud: " + idSolicitud
+        ));
 
-    Contrato contrato = contratoDao.findBySolicitudPerfContId(idSolicitud)
-    .orElseThrow(() -> new ValidacionException(
-        Constantes.CODIGO_MENSAJE.CONTRATO_NO_ENCONTRADO,
-        "Contrato no encontrado para idSolicitud: " + idSolicitud
-    ));
-    String nombreEvaluador = contexto.getUsuario().getNombreUsuario();
-    String nombreRol = contexto.getUsuario().getRoles().get(0).getNombre();
-        RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(informeRenovacionContratoDTO.getRequerimiento().getNuExpediente()).orElseThrow(()->
-        new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IDSOlcitud: " + idSolicitud)
-                );
-    String nombreEmpresaSupervisora = requerimientoRenovacion.getSolicitudPerfil().getSupervisora().getNombres();
-    String numExpediente = informeRenovacionContratoDTO.getRequerimiento().getNuExpediente();
+        InformeRenovacionContrato nuevoInformeRenovacionContrato;
+        InformeRenovacionContrato informe;
+        if(dto.getIdInformeRenovacion()==null) {
+            informe = InformeRenovacionContratoMapper.MAPPER.toEntity(dto);
+        }else{
+            informe = informeRenovacionContratoDao.findById(dto.getIdInformeRenovacion()).orElseThrow(
+                    ()->new ValidacionException(Constantes.CODIGO_MENSAJE.INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO)
+            );
+        }
+        UUID uuid = UUID.randomUUID();
+        String uuidString = uuid.toString();
+        informe.setUuiInfoRenovacion(uuidString);
+        AuditoriaUtil.setAuditoriaRegistro(informe, contexto);
+        Usuario usuario = usuarioDao.obtener(Long.parseLong(informe.getUsuCreacion()));
+        informe.setUsuario(usuario);
+        if (Constantes.INFORME_RENOVACION.ESTADO_INCOMPLETO.equals(dto.getCompletado())) {
+            informe.setVigente(Boolean.FALSE);
+            informe.setRegistro(Constantes.ESTADO.ACTIVO);
+            ListadoDetalle estadoInformeEnProceso = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
+            informe.setEstadoAprobacionInforme(estadoInformeEnProceso);
+            nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
+        }else if (Constantes.INFORME_RENOVACION.ESTADO_COMPLETO.equals(dto.getCompletado())){
+            RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(
+                    dto.getRequerimiento().getNuExpediente()).orElseThrow(() ->
+                    new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO,
+                            "No se encuentra el listado de detalle para IDSolcitud: " + idSolicitud));
+            String nombreEmpresaSupervisora = requerimientoRenovacion.getSolicitudPerfil().getSupervisora().getNombres();
+            String numExpediente = requerimientoRenovacion.getNuExpediente();
+            informe.setVigente(Boolean.TRUE);
+            informe.setRegistro(Constantes.ESTADO.ACTIVO);
 
-    InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
-    informe.setVigente(Boolean.TRUE);
-    informe.setRegistro(Constantes.ESTADO.ACTIVO);
-    informe.setCompletado(Constantes.ESTADO.INACTIVO);
+            ListadoDetalle estadoInformeEnProceso = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
+            informe.setEstadoAprobacionInforme(estadoInformeEnProceso);
 
-    ListadoDetalle estadoIformeLd = listadoDetalleService.obtenerListadoDetalle(
-            Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO ,
-            Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO
-    );
+            File jrxml = new File(pathJasper + "Formato_Informe_RenovacionContrato.jrxml");
+            Usuario usuarioG1 = usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
 
-    ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
-    listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoIformeLd.getIdListadoDetalle());
-    informe.setEstadoAprobacionInforme(listadoDetalleRenovacionContrato);
+            SicoesSolicitud solicitud = solicitudDao.findSolicitudWithSupervisoraNative(informe.getRequerimiento().getSolicitudPerfil().getIdSolicitud())
+                    .orElseThrow(
+                            () -> new ValidacionException(
+                                    Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA,
+                                    "Solicitud para renovación no encontrado para idInformeRenovacion: " + informe.getRequerimiento().getSolicitudPerfil().getIdSolicitud()
+                            )
+                    );
+            nombreEmpresaSupervisora = solicitud.getSupervisora().getNombreRazonSocial();
 
-    AuditoriaUtil.setAuditoriaRegistro(informe,contexto);
+            ByteArrayOutputStream output = generarPdfOutputStream(informe, contexto.getUsuario().getNombreUsuario(), nombreEmpresaSupervisora, numExpediente, jrxml, contexto.getUsuario().getRoles().get(0).getNombre());
+            byte[] bytesSalida = output.toByteArray();
 
-    File jrxml = new File(pathJasper + "Formato_Informe_RenovacionContrato.jrxml");
-    Usuario usuarioG1=usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
+            Archivo archivoPdf = buidlArchivo(bytesSalida, dto.getIdInformeRenovacion());
+            archivoPdf.setIdContrato(contrato.getIdContrato());
 
-    SicoesSolicitud solicitud = solicitudDao.findSolicitudWithSupervisoraNative(informe.getRequerimiento().getSolicitudPerfil().getIdSolicitud())
-                .orElseThrow(
-                        () -> new ValidacionException(
-                                Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA,
-                                "Solicitud para renovación no encontrado para idInformeRenovacion: " + informe.getRequerimiento().getSolicitudPerfil().getIdSolicitud()
-                        )
-                );
-        nombreEmpresaSupervisora =  solicitud.getSupervisora().getNombreRazonSocial();
+            String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContrato(
+                    requerimientoRenovacion.getIdReqRenovacion(),
+                    archivoPdf);
+            archivoPdf.setNombreAlFresco(alfrescoPath);
+            AuditoriaUtil.setAuditoriaRegistro(archivoPdf, contexto);
 
-    ByteArrayOutputStream output = generarPdfOutputStream(informe,nombreEvaluador,nombreEmpresaSupervisora,numExpediente, jrxml,nombreRol);
-    byte[] bytesSalida = output.toByteArray();
+            adjuntarDocumentoSiged(informe, archivoPdf.getNombreReal(), bytesSalida, solicitud);
 
-    Archivo archivoPdf = buidlArchivo(bytesSalida, informeRenovacionContratoDTO.getIdInformeRenovacion());
+            nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
 
-    archivoPdf.setIdContrato(contrato.getIdContrato());
+            archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
+            archivoPdf = archivoDao.save(archivoPdf);
 
-    String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContrato(
-            requerimientoRenovacion.getIdReqRenovacion(),
-            archivoPdf);
-    archivoPdf.setNombreAlFresco(alfrescoPath);
-    AuditoriaUtil.setAuditoriaRegistro(archivoPdf,contexto);
+            logger.info("Archivo registrado en DB con ID: {} y ruta Alfresco: {} ", archivoPdf.getIdArchivo(), alfrescoPath);
 
+            notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
 
-    adjuntarDocumentoSiged(informe,archivoPdf.getNombreReal(),bytesSalida,solicitud);
+            RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1, contexto);
+            requerimientoAprobacionDao.save(requerimientoAprobacionG1);
 
-    UUID uuid = UUID.randomUUID();
-    String uuidString = uuid.toString();
-    informe.setUuiInfoRenovacion(uuidString);
-    Usuario usuario = usuarioDao.obtener(Long.parseLong(informe.getUsuCreacion()));
-    informe.setUsuario(usuario);
-
-    InformeRenovacionContrato nuevoInformeRenovacionContrato =  informeRenovacionContratoDao.save(informe);
-
-    archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
-    archivoPdf = archivoDao.save(archivoPdf);
-
-    logger.info("Archivo registrado en DB con ID: {} y ruta Alfresco: {} " , archivoPdf.getIdArchivo() , alfrescoPath);
-
-    notificacionRenovacionContratoService.notificacionInformePorAprobar( usuarioG1,  numExpediente, contexto);
-
-    RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(nuevoInformeRenovacionContrato.getIdInformeRenovacion()); 
-    AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1,contexto);
-    requerimientoAprobacionDao.save(requerimientoAprobacionG1);
-
-    return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
+        }else{
+            throw new ValidacionException(
+                Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
+        }
+        return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
 
     private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion) {
