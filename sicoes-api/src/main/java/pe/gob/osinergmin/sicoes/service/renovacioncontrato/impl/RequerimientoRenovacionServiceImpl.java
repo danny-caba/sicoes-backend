@@ -189,8 +189,7 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
 		requerimientoRenovacion.setSolicitudPerfil(sicoesSolicitud);
 		AuditoriaUtil.setAuditoriaRegistro(requerimientoRenovacion,contexto);
-		Usuario usuario = usuarioDao.obtener(Long.parseLong(requerimientoRenovacion.getUsuCreacion()));
-		requerimientoRenovacion.setUsuario(usuario);
+		requerimientoRenovacion.setIdUsuario(contexto.getUsuario().getIdUsuario());
 		return requerimientoRenovacionDao.save(requerimientoRenovacion);
 	}
 
