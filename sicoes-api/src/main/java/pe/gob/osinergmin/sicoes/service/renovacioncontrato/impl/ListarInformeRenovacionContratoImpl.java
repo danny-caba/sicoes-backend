@@ -47,118 +47,56 @@ public class ListarInformeRenovacionContratoImpl {
     public Page<InformeRenovacionContratoDTO> ejecutar(
             String tipoAprobador,
             String numeroExpediente, 
-            Long estado,
+            Long estadoAprobacionInforme,
             Long idContratista ,
             Contexto contexto,
             Pageable pageable) {
 
         Usuario usuarioCtx = contexto.getUsuario();
-
         if (usuarioCtx.getRoles().stream().noneMatch(rol -> rol.getCodigo().equals(Constantes.ROLES.APROBADOR_TECNICO))){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_SIN_PERMISO_RENOVACION_CONTRATO);
         }
-
         this.logger.info("Tipo aprobador {}", tipoAprobador);
-/*
-        switch (tipoAprobador) {
-            case Constantes.LISTADO.GRUPOS.G1:                */
-                return flujoG1(usuarioCtx, numeroExpediente, estado, idContratista, pageable);
-/*
-            case Constantes.LISTADO.GRUPOS.G2:                
-                return flujoG2(usuarioCtx, numeroExpediente, estado, idContratista, pageable);
+        return flujoG1(usuarioCtx, numeroExpediente, estadoAprobacionInforme, idContratista, pageable);
 
-            default:
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_SIN_PERMISO_RENOVACION_CONTRATO);
-        }*/
 }
 
-private Page<InformeRenovacionContratoDTO> flujoG2(
-    Usuario usuarioCtx,
-    String numeroExpediente, 
-    Long estado,
-    Long idContratista ,
-    Pageable pageable
-    ) {
-        Long esVigente = new Long(1);
-        Page<InformeRenovacionContrato> listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins(
-            numeroExpediente,
-            esVigente,
-            estado,
-            idContratista,
-            pageable
-        );    
-
-        List<SolicitudPerfecionamientoContrato> perfilesG2   = 
-        solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdUsuarioG2(usuarioCtx.getIdUsuario());
-        
-        
-        if (!perfilesG2 .isEmpty()) {
-            ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO    ,
-                    Constantes.LISTADO.ESTADO_APROBACION.APROBADO
-            );
-            ListadoDetalle grupoG2 = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.GRUPOS.CODIGO    ,
-                    Constantes.LISTADO.GRUPOS.G2
-            );
-
-
-            listInforme = filtrarAprobaciones(listInforme, estadoLd.getIdListadoDetalle(), grupoG2.getIdListadoDetalle());
-            return listInforme.map(InformeRenovacionContratoMapper.MAPPER::toDTO);
-        }else {
-            this.logger.info("Usuario {} sin permiso G2 ",usuarioCtx.getIdUsuario());
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_SIN_PERMISO_RENOVACION_CONTRATO);
-        }
-    }
-    
     private Page<InformeRenovacionContratoDTO> flujoG1(
         Usuario usuarioCtx,
         String numeroExpediente, 
-        Long estado,
+        Long estadoAprobacionInforme,
         Long idContratista ,
         Pageable pageable
         ) {
-        Long esVigente =new Long(1);
+        Long esVigente =new Long(Constantes.ESTADO.ACTIVO);
         Page<InformeRenovacionContrato> listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins(
             numeroExpediente,
             esVigente,
-            estado,
+            estadoAprobacionInforme,
             idContratista,
             pageable
         );
-        /*List<SolicitudPerfecionamientoContrato> perfilesG1   =
-            solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdUsuarioG1(usuarioCtx.getIdUsuario());*/
+         listInforme = filtrarAprobacionesBandeja(listInforme,usuarioCtx.getIdUsuario());
 
-        //if (!perfilesG1 .isEmpty()) {
-            /*ListadoDetalle estadoLd = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO    ,
-                    Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO
-            );*/
-            /*ListadoDetalle grupoG1 = listadoDetalleService.obtenerListadoDetalle(
-                    Constantes.LISTADO.GRUPOS.CODIGO    ,
-                    Constantes.LISTADO.GRUPOS.G1
-            );*/
-/*
-            if (estadoLd == null || grupoG1 == null) {
-                throw new ValidacionException("Configuración de listado detalle no encontrada para estado o grupo");
-            }*/
-            listInforme = filtrarAprobacionesBandeja(listInforme,usuarioCtx.getIdUsuario());
-            return listInforme.map(InformeRenovacionContratoMapper.MAPPER::toDTO);
-        /*}else{
-            this.logger.warn("Usuario {} sin permiso G1 ",usuarioCtx.getIdUsuario());
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_SIN_PERMISO_RENOVACION_CONTRATO);
-        }*/
+         return listInforme.map(InformeRenovacionContratoMapper.MAPPER::toDTO);
+
     }
     private Page<InformeRenovacionContrato> filtrarAprobacionesBandeja(Page<InformeRenovacionContrato> informes, Long idUsuario) {
-        return informes.map(informe -> {
-            List<RequerimientoAprobacion> aprobacionesFiltradas = informe.getAprobaciones().stream()
-                    .filter(aprobacion -> aprobacion != null 
-                        && aprobacion.getIdUsuario() != null 
+        // Filtra las aprobaciones por usuario y elimina informes sin aprobaciones válidas
+        List<InformeRenovacionContrato> filtrados = informes.stream()
+            .map(informe -> {
+                List<RequerimientoAprobacion> aprobacionesFiltradas = informe.getAprobaciones().stream()
+                    .filter(aprobacion -> aprobacion != null
+                        && aprobacion.getIdUsuario() != null
                         && aprobacion.getIdUsuario().equals(idUsuario))
                     .collect(Collectors.toList());
-            informe.setAprobaciones(aprobacionesFiltradas);
-            return informe;
-        });
+                informe.setAprobaciones(aprobacionesFiltradas);
+                return informe;
+            })
+            .filter(informe -> informe.getAprobaciones() != null && !informe.getAprobaciones().isEmpty())
+            .collect(Collectors.toList());
+        // Retorna una página simulada (puedes ajustar según tu implementación de Page)
+        return new org.springframework.data.domain.PageImpl<>(filtrados, informes.getPageable(), filtrados.size());
     }
 
     private Page<InformeRenovacionContrato> filtrarAprobaciones(Page<InformeRenovacionContrato> informes,Long a,Long b) {

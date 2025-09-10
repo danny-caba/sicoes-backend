@@ -27,9 +27,9 @@ public class InformeRenovacionContratoAdapter implements InformeRenovacionContra
 
 
     @Override
-    public Page<InformeRenovacionContratoDTO> listaInformes(String tipoAprobador,String numeroExpediente, Long estado, Long idContratista,
+    public Page<InformeRenovacionContratoDTO> listaInformes(String tipoAprobador,String numeroExpediente, Long estadoAprobacionInforme, Long idContratista,
             Contexto contexto, Pageable pageable) {
-        return listarInformeRenovacionContratoImpl.ejecutar(tipoAprobador,numeroExpediente, estado, idContratista, contexto, pageable);
+        return listarInformeRenovacionContratoImpl.ejecutar(tipoAprobador,numeroExpediente, estadoAprobacionInforme, idContratista, contexto, pageable);
     }
 
     @Override

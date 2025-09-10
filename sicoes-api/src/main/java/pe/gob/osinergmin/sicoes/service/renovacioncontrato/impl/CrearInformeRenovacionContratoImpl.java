@@ -179,7 +179,7 @@ public class CrearInformeRenovacionContratoImpl  {
     String numExpediente = informeRenovacionContratoDTO.getRequerimiento().getNuExpediente();
 
     InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
-    informe.setVigente(Boolean.TRUE);
+    informe.setVigente(new Long(Constantes.ESTADO.ACTIVO));
     informe.setRegistro(Constantes.ESTADO.ACTIVO);
     informe.setCompletado(Constantes.ESTADO.INACTIVO);
 
