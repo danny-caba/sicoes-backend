@@ -16,6 +16,14 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 	public Notificacion obtener(Long idNotificacion,Contexto contexto);
 	public Page<Notificacion> buscar(Pageable pageable,Contexto contexto);
 	void enviarCorreos();
+	
+	/**
+	 * Envía notificación específica para procesos de renovación
+	 * @param idTipoNotifica Tipo de notificación (1: Aprobación, 2: Rechazo, 3: Perfeccionamiento)
+	 * @param mensaje Mensaje de la notificación
+	 * @param contexto Contexto del usuario
+	 */
+	void enviarNotificacionRenovacion(Integer idTipoNotifica, String mensaje, Contexto contexto);
 	public void enviarMensajeSolicitudInscripcion01(Solicitud solicitud,Contexto contexto);
 	public void enviarMensajeAsignacionEvaluacion02(Asignacion asignacionBD,Contexto contexto);
 	public void enviarMensajeEvaluacionConcluida03(Solicitud solicitud,String type,Contexto contexto);
