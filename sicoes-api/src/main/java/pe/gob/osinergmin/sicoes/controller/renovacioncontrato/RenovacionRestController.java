@@ -34,6 +34,7 @@ public class RenovacionRestController extends BaseRestController {
             @RequestParam(required = false) String sector,
             @RequestParam(required = false) String subSector,
             Pageable pageable) {
+
         logger.info("buscar{} {} {} {}", idSolicitud,nuExpediente,sector,subSector);
         return requerimientoRenovacionService.buscar(idSolicitud,nuExpediente,sector,subSector,pageable,getContexto());
     }

@@ -6,6 +6,7 @@ import lombok.Setter;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 
 
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -39,7 +40,7 @@ public class InformeRenovacionContratoDTO {
 
     private String registro;
 
-
+    @NotEmpty
     private String completado;
 
     private ListadoDetalleDTO estadoAprobacionInforme;
