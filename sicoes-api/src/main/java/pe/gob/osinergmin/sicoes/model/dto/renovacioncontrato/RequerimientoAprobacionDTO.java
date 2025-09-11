@@ -2,7 +2,7 @@ package pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato;
 
 import lombok.Getter;
 import lombok.Setter;
-import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -43,12 +43,16 @@ public class RequerimientoAprobacionDTO {
 
     private InformeRenovacionContratoDTO informeRenovacion;
 
-    private Notificacion notificacion;
+    private NotificacionRCDTO notificacion;
 
     private Date feAsignacion;
 
     private Long idTipoAprobadorLd;
 
     private Long idGrupoAprobadorLd;
+
+    private ListadoDetalleDTO grupoLd;
+    private ListadoDetalleDTO tipoAprobadorLd;
+    private ListadoDetalleDTO grupoAprobadorLd;
 
 }
