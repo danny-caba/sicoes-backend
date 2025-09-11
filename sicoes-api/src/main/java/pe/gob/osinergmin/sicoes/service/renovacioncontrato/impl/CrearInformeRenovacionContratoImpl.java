@@ -185,8 +185,6 @@ public class CrearInformeRenovacionContratoImpl  {
         if (Constantes.INFORME_RENOVACION.ESTADO_INCOMPLETO.equals(dto.getCompletado())) {
             informe.setVigente(Boolean.FALSE);
             informe.setRegistro(Constantes.ESTADO.ACTIVO);
-            ListadoDetalle estadoInformeEnProceso = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
-            informe.setEstadoAprobacionInforme(estadoInformeEnProceso);
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
         }else if (Constantes.INFORME_RENOVACION.ESTADO_COMPLETO.equals(dto.getCompletado())){
             RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(

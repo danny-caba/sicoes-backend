@@ -105,7 +105,7 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 			requerimiento.setFeRegistro(r.getFeRegistro());
 			requerimiento.setEstadoReqRenovacion(  r.getEstadoReqRenovacion().getCodigo());
 			List<InformeRenovacion> listaInforme = informeRenovacionDao.listarPorRequerimiento(r.getIdReqRenovacion());
-			if(!listaInforme.isEmpty()) {
+			if(!listaInforme.isEmpty() && listaInforme.get(listaInforme.size() - 1).getEstadoAprobacionInforme()!=null) {
 				requerimiento.setEstadoAprobacionInforme(listaInforme.get(listaInforme.size() - 1).getEstadoAprobacionInforme().getNombre());
 			}
 			ListadoDetalle ldGPPM = listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,Constantes.LISTADO.GRUPO_APROBACION.GPPM);
