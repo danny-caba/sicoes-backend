@@ -93,6 +93,6 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     @JoinColumn(name = "ES_APROBACION_INFORME", referencedColumnName = "ID_LISTADO_DETALLE", nullable = true)
     private ListadoDetalle estadoAprobacionInforme;
 
-    private ListadoDetalleRenovacionContrato estadoAprobacionInforme;
+
  
 }
