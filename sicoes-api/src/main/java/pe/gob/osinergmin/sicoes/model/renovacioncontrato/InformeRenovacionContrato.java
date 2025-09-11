@@ -78,7 +78,7 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     private String conclusiones;
 
     @Column(name = "ES_VIGENTE", nullable = false)
-    private Long vigente;
+    private Boolean vigente;
 
     @Column(name = "DE_UUID_INFO_RENOVACION")
     private String uuiInfoRenovacion;
@@ -93,6 +93,6 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     @JoinColumn(name = "ES_APROBACION_INFORME", referencedColumnName = "ID_LISTADO_DETALLE", nullable = true)
     private ListadoDetalle estadoAprobacionInforme;
 
-    private ListadoDetalleRenovacionContrato estadoAprobacionInforme;
+
  
 }

@@ -294,17 +294,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             
 
             informeRenovacionContrato.setEstadoAprobacionInforme(concluidoEstadoAprobacionInforme);
-            // Crear la instancia de ListadoDetalleRenovacionContrato basada en ListadoDetalle
-            ListadoDetalleRenovacionContrato estadoAprobacionInforme = new ListadoDetalleRenovacionContrato();
-            estadoAprobacionInforme.setIdListadoDetalle(concluidoEstadoAprobacionInforme.getIdListadoDetalle());
-            estadoAprobacionInforme.setIdListado(concluidoEstadoAprobacionInforme.getIdListado());
-            estadoAprobacionInforme.setCodigo(concluidoEstadoAprobacionInforme.getCodigo());
-            estadoAprobacionInforme.setNombre(concluidoEstadoAprobacionInforme.getNombre());
-            estadoAprobacionInforme.setDescripcion(concluidoEstadoAprobacionInforme.getDescripcion());
-            estadoAprobacionInforme.setValor(concluidoEstadoAprobacionInforme.getValor());
+
             informeRenovacionContrato.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG1().toString());
             informeRenovacionContrato.setFecActualizacion(new Date());
-            informeRenovacionContrato.setEstadoAprobacionInforme(estadoAprobacionInforme);
+
 
             informeRenovacionContratoDao.save(informeRenovacionContrato);
             
