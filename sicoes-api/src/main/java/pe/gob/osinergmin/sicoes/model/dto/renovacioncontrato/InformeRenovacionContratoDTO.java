@@ -40,7 +40,6 @@ public class InformeRenovacionContratoDTO {
 
     private String registro;
 
-    @NotEmpty
     private String completado;
 
     private ListadoDetalleDTO estadoAprobacionInforme;
