@@ -68,44 +68,21 @@ public class ListarInformeRenovacionContratoImpl {
         Long idContratista ,
         Pageable pageable
         ) {
-        Long esVigente =new Long(Constantes.ESTADO.ACTIVO);
-        Page<InformeRenovacionContrato> listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins(
+        Boolean esVigente =Boolean.TRUE;
+        Page<InformeRenovacionContrato> listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins2(
             numeroExpediente,
             esVigente,
             estadoAprobacionInforme,
             idContratista,
+            usuarioCtx.getIdUsuario(),
             pageable
         );
-         listInforme = filtrarAprobacionesBandeja(listInforme,usuarioCtx.getIdUsuario());
+
 
          return listInforme.map(InformeRenovacionContratoMapper.MAPPER::toDTO);
 
     }
-    private Page<InformeRenovacionContrato> filtrarAprobacionesBandeja(Page<InformeRenovacionContrato> informes, Long idUsuario) {
-        // Filtra las aprobaciones por usuario y elimina informes sin aprobaciones válidas
-        List<InformeRenovacionContrato> filtrados = informes.stream()
-            .map(informe -> {
-                List<RequerimientoAprobacion> aprobacionesFiltradas = informe.getAprobaciones().stream()
-                    .filter(aprobacion -> aprobacion != null
-                        && aprobacion.getIdUsuario() != null
-                        && aprobacion.getIdUsuario().equals(idUsuario))
-                    .collect(Collectors.toList());
-                informe.setAprobaciones(aprobacionesFiltradas);
-                return informe;
-            })
-            .filter(informe -> informe.getAprobaciones() != null && !informe.getAprobaciones().isEmpty())
-            .collect(Collectors.toList());
-        // Retorna una página simulada (puedes ajustar según tu implementación de Page)
-        return new org.springframework.data.domain.PageImpl<>(filtrados, informes.getPageable(), filtrados.size());
-    }
 
-    private Page<InformeRenovacionContrato> filtrarAprobaciones(Page<InformeRenovacionContrato> informes,Long a,Long b) {
-        return informes.map(informe -> {
-            List<RequerimientoAprobacion> aprobacionesFiltradas = informe.getAprobaciones().stream()
-                    .filter(aprobacion -> aprobacion != null)
-                    .collect(Collectors.toList());
-            informe.setAprobaciones(aprobacionesFiltradas);
-            return informe;
-        });
-    }
+
+
 }

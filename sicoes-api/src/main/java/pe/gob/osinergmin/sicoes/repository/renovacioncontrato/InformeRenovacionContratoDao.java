@@ -19,6 +19,33 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContra
 @Repository
 public interface InformeRenovacionContratoDao extends JpaRepository<InformeRenovacionContrato, Long> {
 
+    @Query(
+            value = "SELECT i FROM InformeRenovacionContrato i " +
+                    "JOIN FETCH i.usuario " +
+                    "JOIN FETCH i.requerimiento r " +
+                    "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
+                    "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
+                    "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
+                    "AND (:vigente IS NULL OR i.vigente = :vigente) " +
+                    "AND EXISTS (SELECT apr FROM i.aprobaciones apr WHERE apr.idUsuario = :idUsuario) " +
+                    "ORDER BY i.usuCreacion DESC",
+            countQuery = "SELECT COUNT(i) FROM InformeRenovacionContrato i " +
+                    "JOIN i.requerimiento r " +
+                    "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
+                    "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
+                    "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
+                    "AND (:vigente IS NULL OR i.vigente = :vigente) " +
+                    "AND EXISTS (SELECT apr FROM i.aprobaciones apr WHERE apr.idUsuario = :idUsuario)"
+    )
+    Page<InformeRenovacionContrato> findByFiltrosWithJoins2(
+            @Param("numeroExpediente") String numeroExpediente,
+            @Param("vigente") Boolean vigente,
+            @Param("estadoAprobacion") Long estadoAprobacion,
+            @Param("idContratista") Long idContratista,
+            @Param("idUsuario") Long idUsuario,
+            Pageable pageable
+    );
+
 @Query(
         value = "SELECT i FROM InformeRenovacionContrato i " +
                         "INNER JOIN FETCH i.usuario u " +
@@ -37,7 +64,7 @@ public interface InformeRenovacionContratoDao extends JpaRepository<InformeRenov
 )
 Page<InformeRenovacionContrato> findByFiltrosWithJoins(
         @Param("numeroExpediente") String numeroExpediente,
-        @Param("vigente") Long vigente,
+        @Param("vigente") Boolean vigente,
         @Param("estadoAprobacion") Long estadoAprobacion,
         @Param("idContratista") Long idContratista,
         Pageable pageable
