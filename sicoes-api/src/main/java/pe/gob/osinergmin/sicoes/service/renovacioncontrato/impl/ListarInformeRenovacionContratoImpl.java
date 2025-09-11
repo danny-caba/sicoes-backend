@@ -1,7 +1,11 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,13 +15,13 @@ import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
-import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
+import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
-import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.InformeRenovacionContratoMapper;
 
 import pe.gob.osinergmin.sicoes.util.Constantes;
@@ -29,18 +33,15 @@ public class ListarInformeRenovacionContratoImpl {
 
     private final Logger logger = LogManager.getLogger(ListarInformeRenovacionContratoImpl.class);
 
-    private final SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
-    private final ListadoDetalleService listadoDetalleService;
     private final InformeRenovacionContratoDao informeRenovacionContratoDao;
+    private final ListadoDetalleDao listadoDetalleDao;
 
 
        public ListarInformeRenovacionContratoImpl(
-        ListadoDetalleService listadoDetalleService,
         InformeRenovacionContratoDao informeRenovacionContratoDao,
-        SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao) {
-           this.listadoDetalleService = listadoDetalleService;
+        ListadoDetalleDao listadoDetalleDao) {
            this.informeRenovacionContratoDao = informeRenovacionContratoDao;
-           this.solicitudPerfecionamientoContratoDao = solicitudPerfecionamientoContratoDao;
+           this.listadoDetalleDao = listadoDetalleDao;
            
        }
 
@@ -57,18 +58,8 @@ public class ListarInformeRenovacionContratoImpl {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_SIN_PERMISO_RENOVACION_CONTRATO);
         }
         this.logger.info("Tipo aprobador {}", tipoAprobador);
-        return flujoG1(usuarioCtx, numeroExpediente, estadoAprobacionInforme, idContratista, pageable);
 
-}
-
-    private Page<InformeRenovacionContratoDTO> flujoG1(
-        Usuario usuarioCtx,
-        String numeroExpediente, 
-        Long estadoAprobacionInforme,
-        Long idContratista ,
-        Pageable pageable
-        ) {
-        Boolean esVigente =Boolean.TRUE;
+        Boolean esVigente = Boolean.TRUE;
         Page<InformeRenovacionContrato> listInforme = informeRenovacionContratoDao.findByFiltrosWithJoins2(
             numeroExpediente,
             esVigente,
@@ -78,11 +69,84 @@ public class ListarInformeRenovacionContratoImpl {
             pageable
         );
 
+        // Recopilar todos los IDs de listado detalle de las aprobaciones
+        Set<Long> idsListadoDetalle = new HashSet<>();
+        
+        for (InformeRenovacionContrato informe : listInforme.getContent()) {
+            if (informe.getAprobaciones() != null) {
+                for (RequerimientoAprobacion aprobacion : informe.getAprobaciones()) {
+                    // Agregar IDs de listado detalle a la colección
+                    if (aprobacion.getIdGrupoAprobadorLd() != null) {
+                        idsListadoDetalle.add(aprobacion.getIdGrupoAprobadorLd());
+                    }
+                    if (aprobacion.getIdTipoAprobadorLd() != null) {
+                        idsListadoDetalle.add(aprobacion.getIdTipoAprobadorLd());
+                    }
+                    if (aprobacion.getIdGrupoLd() != null) {
+                        idsListadoDetalle.add(aprobacion.getIdGrupoLd());
+                    }
+                }
+            }
+        }
 
-         return listInforme.map(InformeRenovacionContratoMapper.MAPPER::toDTO);
+        // Consultar todos los ListadoDetalle por los IDs recopilados
+        List<ListadoDetalle> listadoDetalleList = new ArrayList<>();
+        if (!idsListadoDetalle.isEmpty()) {
+            listadoDetalleList = listadoDetalleDao.findAllById(idsListadoDetalle);
+        }
 
+        // Crear un mapa para acceso rápido por ID
+        Map<Long, ListadoDetalle> mapListadoDetalle = new HashMap<>();
+        for (ListadoDetalle detalle : listadoDetalleList) {
+            mapListadoDetalle.put(detalle.getIdListadoDetalle(), detalle);
+        }
+
+        // Convertir a DTO y asignar los datos de listado detalle
+        return listInforme.map(informe -> {
+            InformeRenovacionContratoDTO dto = InformeRenovacionContratoMapper.MAPPER.toDTO(informe);
+            
+            // Asignar datos de listado detalle a las aprobaciones
+            if (dto.getAprobaciones() != null) {
+                for (RequerimientoAprobacionDTO aprobacionDTO : dto.getAprobaciones()) {
+                    // Asignar grupoAprobadorLd
+                    if (aprobacionDTO.getIdGrupoAprobadorLd() != null) {
+                        ListadoDetalle grupoAprobador = mapListadoDetalle.get(aprobacionDTO.getIdGrupoAprobadorLd());
+                        if (grupoAprobador != null) {
+                            ListadoDetalleDTO grupoAprobadorDto = new ListadoDetalleDTO();
+                            grupoAprobadorDto.setIdListadoDetalle(grupoAprobador.getIdListadoDetalle());
+                            grupoAprobadorDto.setCodigo(grupoAprobador.getCodigo());
+                            grupoAprobadorDto.setNombre(grupoAprobador.getNombre());
+                            aprobacionDTO.setGrupoAprobadorLd(grupoAprobadorDto);
+                        }
+                    }
+                    
+                    // Asignar tipoAprobadorLd
+                    if (aprobacionDTO.getIdTipoAprobadorLd() != null) {
+                        ListadoDetalle tipoAprobadorDetalle = mapListadoDetalle.get(aprobacionDTO.getIdTipoAprobadorLd());
+                        if (tipoAprobadorDetalle != null) {
+                            ListadoDetalleDTO tipoAprobadorDto = new ListadoDetalleDTO();
+                            tipoAprobadorDto.setIdListadoDetalle(tipoAprobadorDetalle.getIdListadoDetalle());
+                            tipoAprobadorDto.setCodigo(tipoAprobadorDetalle.getCodigo());
+                            tipoAprobadorDto.setNombre(tipoAprobadorDetalle.getNombre());
+                            aprobacionDTO.setTipoAprobadorLd(tipoAprobadorDto);
+                        }
+                    }
+                    
+                    // Asignar grupoLd
+                    if (aprobacionDTO.getIdGrupoLd() != null) {
+                        ListadoDetalle grupo = mapListadoDetalle.get(aprobacionDTO.getIdGrupoLd());
+                        if (grupo != null) {
+                            ListadoDetalleDTO grupoDto = new ListadoDetalleDTO();
+                            grupoDto.setIdListadoDetalle(grupo.getIdListadoDetalle());
+                            grupoDto.setCodigo(grupo.getCodigo());
+                            grupoDto.setNombre(grupo.getNombre());
+                            aprobacionDTO.setGrupoLd(grupoDto);
+                        }
+                    }
+                }
+            }
+            
+            return dto;
+        });
     }
-
-
-
 }

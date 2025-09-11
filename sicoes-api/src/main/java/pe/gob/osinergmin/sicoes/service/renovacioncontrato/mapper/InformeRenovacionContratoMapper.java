@@ -13,7 +13,7 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContra
 @Mapper(uses = {UsuarioMapper.class, SupervisoraMapper.class, SicoesSolicitudMapper.class, RequerimientoRenovacionMapper.class},
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface InformeRenovacionContratoMapper {
+    public interface InformeRenovacionContratoMapper {
 
     InformeRenovacionContratoMapper MAPPER = Mappers.getMapper(InformeRenovacionContratoMapper.class);
 

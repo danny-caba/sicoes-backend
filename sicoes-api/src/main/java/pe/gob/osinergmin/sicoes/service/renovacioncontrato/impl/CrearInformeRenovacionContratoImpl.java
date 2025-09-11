@@ -239,7 +239,9 @@ public class CrearInformeRenovacionContratoImpl  {
             RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(
                     nuevoInformeRenovacionContrato.getIdInformeRenovacion(),
                     listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1(),
-                    contexto.getUsuario().getIdUsuario()
+                    contexto.getUsuario().getIdUsuario(),
+                    contexto.getIp()
+
             );
             AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1, contexto);
             requerimientoAprobacionDao.save(requerimientoAprobacionG1);
@@ -251,11 +253,12 @@ public class CrearInformeRenovacionContratoImpl  {
         return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
 
-    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion,Long idUsuarioG1,Long idUsuario) {
+    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion,Long idUsuarioG1,Long idUsuario,String ip) {
 
         RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
         requerimientoAprobacionG1.setFeAsignacion(new Date());
         requerimientoAprobacionG1.setFecCreacion(new Date());
+        requerimientoAprobacionG1.setIpCreacion(ip);
         requerimientoAprobacionG1.setUsuCreacion(idUsuario.toString());
         requerimientoAprobacionG1.setIdUsuario(idUsuarioG1);
         requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
