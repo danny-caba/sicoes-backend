@@ -7,13 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
-import pe.gob.osinergmin.sicoes.model.Asignacion;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionContratoService;
-
-import javax.validation.Valid;
 
 
 @RestController
@@ -50,7 +47,7 @@ public class InformeRenovacionContratoController extends BaseRestController{
     }
 
     @PostMapping("/informes")
-	public InformeRenovacionContratoDTO crearInforme(@RequestBody @Valid InformeRenovacionContratoDTO informeRenovacionContratoDTO) {
+	public InformeRenovacionContratoDTO crearInforme(@RequestBody InformeRenovacionContratoDTO informeRenovacionContratoDTO) {
 		logger.info("crearInforme objecto: {} ",informeRenovacionContratoDTO.getObjeto());
 
 		return informeRenovacionContratoService.crearInforme(informeRenovacionContratoDTO, getContexto());
