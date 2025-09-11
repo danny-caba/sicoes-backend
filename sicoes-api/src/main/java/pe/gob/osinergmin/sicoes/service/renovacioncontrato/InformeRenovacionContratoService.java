@@ -13,7 +13,7 @@ public interface InformeRenovacionContratoService {
     Page<InformeRenovacionContratoDTO> listaInformes(
             String tipoAprobador,
         String numeroExpediente,
-        Long estado,
+        Long estadoAprobacionInforme,
         Long idContratista,
         Contexto contexto,
         Pageable pageable);

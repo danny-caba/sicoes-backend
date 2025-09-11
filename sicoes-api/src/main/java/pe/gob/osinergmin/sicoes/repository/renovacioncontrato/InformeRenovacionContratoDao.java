@@ -19,28 +19,29 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContra
 @Repository
 public interface InformeRenovacionContratoDao extends JpaRepository<InformeRenovacionContrato, Long> {
 
-    @Query(
-            value = "SELECT i FROM InformeRenovacionContrato i " +
-                    "LEFT JOIN FETCH i.usuario u " +
-                    "LEFT JOIN FETCH i.requerimiento r " +
-                    "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
-                    "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
-                    "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-                    "AND (:vigente IS NULL OR i.vigente = :vigente) " +
-                    "ORDER BY i.usuCreacion DESC",
-            countQuery = "SELECT COUNT(i) FROM InformeRenovacionContrato i " +
-                    "LEFT JOIN i.requerimiento r " +
-                    "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListado = :estadoAprobacion) " +
-                    " AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
-                    "AND (:vigente IS NULL OR i.vigente = :vigente)"
-    )
-    Page<InformeRenovacionContrato> findByFiltrosWithJoins(
-            @Param("numeroExpediente") String numeroExpediente,
-            @Param("vigente") Boolean vigente,
-            @Param("estadoAprobacion") Long estadoAprobacion,
-            @Param("idContratista") Long idContratista ,
-            Pageable pageable
-    );
+@Query(
+        value = "SELECT i FROM InformeRenovacionContrato i " +
+                        "INNER JOIN FETCH i.usuario u " +
+                        "INNER JOIN FETCH i.requerimiento r " +
+                        "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
+                        "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
+                        "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
+                        "AND (:vigente IS NULL OR i.vigente = :vigente) " +
+                        "ORDER BY i.usuCreacion DESC",
+        countQuery = "SELECT COUNT(i) FROM InformeRenovacionContrato i " +
+                        "INNER JOIN i.requerimiento r " +
+                        "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
+                        "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
+                        "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
+                        "AND (:vigente IS NULL OR i.vigente = :vigente) "
+)
+Page<InformeRenovacionContrato> findByFiltrosWithJoins(
+        @Param("numeroExpediente") String numeroExpediente,
+        @Param("vigente") Long vigente,
+        @Param("estadoAprobacion") Long estadoAprobacion,
+        @Param("idContratista") Long idContratista,
+        Pageable pageable
+);
     
     
     @Transactional

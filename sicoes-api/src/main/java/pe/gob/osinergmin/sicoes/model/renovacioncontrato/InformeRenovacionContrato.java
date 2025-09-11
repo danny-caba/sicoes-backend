@@ -78,11 +78,10 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     private String conclusiones;
 
     @Column(name = "ES_VIGENTE", nullable = false)
-    private Boolean vigente;
+    private Long vigente;
 
     @Column(name = "DE_UUID_INFO_RENOVACION")
     private String uuiInfoRenovacion;
-
 
     @Column(name = "ES_REGISTRO", nullable = false, length = 1)
     private String registro;
@@ -93,4 +92,7 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ES_APROBACION_INFORME", referencedColumnName = "ID_LISTADO_DETALLE", nullable = true)
     private ListadoDetalle estadoAprobacionInforme;
+
+    private ListadoDetalleRenovacionContrato estadoAprobacionInforme;
+ 
 }

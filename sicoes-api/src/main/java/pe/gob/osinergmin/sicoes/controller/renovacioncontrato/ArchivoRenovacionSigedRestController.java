@@ -16,6 +16,7 @@ import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ArchivoRenovacionSigedRequest;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ArchivoRenovacionSigedResponse;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.ArchivoRenovacionSigedService;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.util.model.response.ApiResponse;
 import pe.gob.osinergmin.sicoes.util.renovacioncontrato.ResponseBuilder;
@@ -48,12 +49,12 @@ public class ArchivoRenovacionSigedRestController extends BaseRestController {
         
         logger.info("Adjuntando archivo para informe de renovación: {}", idInformeRenovacion);
         ApiResponse apiResponse = new ApiResponse();
-        
+        Contexto contexto = getContexto();
         try {
             ArchivoRenovacionSigedRequest request = new ArchivoRenovacionSigedRequest();
             request.setIdInformeRenovacion(idInformeRenovacion);
             
-            ArchivoRenovacionSigedResponse response = archivoRenovacionSigedService.adjuntarArchivo(request, file);
+            ArchivoRenovacionSigedResponse response = archivoRenovacionSigedService.adjuntarArchivo(request, file,contexto);
             
             return ResponseBuilder.buildResponse(
                 apiResponse, 

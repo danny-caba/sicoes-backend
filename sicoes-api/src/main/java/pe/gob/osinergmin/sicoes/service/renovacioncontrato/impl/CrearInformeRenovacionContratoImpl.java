@@ -152,15 +152,105 @@ public class CrearInformeRenovacionContratoImpl  {
     }
 
 
-    public InformeRenovacionContratoDTO ejecutar(InformeRenovacionContratoDTO dto, Contexto contexto) {
+
+    public InformeRenovacionContratoDTO ejecutar(InformeRenovacionContratoDTO informeRenovacionContratoDTO, Contexto contexto) {
+        
+
+    Long idSolicitud = informeRenovacionContratoDTO.getRequerimiento().getSolicitudPerfil().getIdSolicitud(); 
+    List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud  = 
+        solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
+
+
+    if (listaPerfilesAprobadoresBySolicitud.isEmpty()) {
+        throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IDSOlcitud: " + idSolicitud);       
+    }
+
+    Contrato contrato = contratoDao.findBySolicitudPerfContId(idSolicitud)
+    .orElseThrow(() -> new ValidacionException(
+        Constantes.CODIGO_MENSAJE.CONTRATO_NO_ENCONTRADO,
+        "Contrato no encontrado para idSolicitud: " + idSolicitud
+    ));
+    String nombreEvaluador = contexto.getUsuario().getNombreUsuario();
+    String nombreRol = contexto.getUsuario().getRoles().get(0).getNombre();
+        RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(informeRenovacionContratoDTO.getRequerimiento().getNuExpediente()).orElseThrow(()->
+        new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IDSOlcitud: " + idSolicitud)
+                );
+    String nombreEmpresaSupervisora = requerimientoRenovacion.getSolicitudPerfil().getSupervisora().getNombres();
+    String numExpediente = informeRenovacionContratoDTO.getRequerimiento().getNuExpediente();
+
+    InformeRenovacionContrato informe = InformeRenovacionContratoMapper.MAPPER.toEntity(informeRenovacionContratoDTO);
+    informe.setVigente(new Long(Constantes.ESTADO.ACTIVO));
+    informe.setRegistro(Constantes.ESTADO.ACTIVO);
+    informe.setCompletado(Constantes.ESTADO.INACTIVO);
+
+    ListadoDetalle estadoIformeLd = listadoDetalleService.obtenerListadoDetalle(
+            Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO ,
+            Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO
+    );
+
+    ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
+    listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoIformeLd.getIdListadoDetalle());
+    informe.setEstadoAprobacionInforme(listadoDetalleRenovacionContrato);
+
+    AuditoriaUtil.setAuditoriaRegistro(informe,contexto);
+
+    File jrxml = new File(pathJasper + "Formato_Informe_RenovacionContrato.jrxml");
+    Usuario usuarioG1=usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
+
+    SicoesSolicitud solicitud = solicitudDao.findSolicitudWithSupervisoraNative(informe.getRequerimiento().getSolicitudPerfil().getIdSolicitud())
+                .orElseThrow(
+                        () -> new ValidacionException(
+                                Constantes.CODIGO_MENSAJE.SOLICITUD_NO_ENCONTRADA,
+                                "Solicitud para renovación no encontrado para idInformeRenovacion: " + informe.getRequerimiento().getSolicitudPerfil().getIdSolicitud()
+                        )
+                );
+        nombreEmpresaSupervisora =  solicitud.getSupervisora().getNombreRazonSocial();
+
+    ByteArrayOutputStream output = generarPdfOutputStream(informe,nombreEvaluador,nombreEmpresaSupervisora,numExpediente, jrxml,nombreRol);
+    byte[] bytesSalida = output.toByteArray();
 
         Long idSolicitud = dto.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
         List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud =
                 solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
 
+
         if (listaPerfilesAprobadoresBySolicitud.isEmpty()) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encuentra el listado de detalle para IdSolcitud: " + idSolicitud);
         }
+
+    archivoPdf.setIdContrato(contrato.getIdContrato());
+
+    String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContrato(
+            requerimientoRenovacion.getIdReqRenovacion(),
+            archivoPdf);
+    archivoPdf.setNombreAlFresco(alfrescoPath);
+    AuditoriaUtil.setAuditoriaRegistro(archivoPdf,contexto);
+
+
+    adjuntarDocumentoSiged(informe,archivoPdf.getNombreReal(),bytesSalida,solicitud);
+
+    UUID uuid = UUID.randomUUID();
+    String uuidString = uuid.toString();
+    informe.setUuiInfoRenovacion(uuidString);
+    Usuario usuario = usuarioDao.obtener(Long.parseLong(informe.getUsuCreacion()));
+    informe.setUsuario(usuario);
+
+    InformeRenovacionContrato nuevoInformeRenovacionContrato =  informeRenovacionContratoDao.save(informe);
+
+    archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
+    archivoPdf = archivoDao.save(archivoPdf);
+
+    logger.info("Archivo registrado en DB con ID: {} y ruta Alfresco: {} " , archivoPdf.getIdArchivo() , alfrescoPath);
+
+    notificacionRenovacionContratoService.notificacionInformePorAprobar( usuarioG1,  numExpediente, contexto);
+
+    RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(nuevoInformeRenovacionContrato.getIdInformeRenovacion(),
+            listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1(),
+            contexto.getUsuario().getIdUsuario());
+
+    AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1,contexto);
+    requerimientoAprobacionDao.save(requerimientoAprobacionG1);
+
 
         Contrato contrato = contratoDao.findBySolicitudPerfContId(idSolicitud).orElseThrow(() -> new ValidacionException(
                 Constantes.CODIGO_MENSAJE.CONTRATO_NO_ENCONTRADO,
@@ -247,20 +337,42 @@ public class CrearInformeRenovacionContratoImpl  {
         return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
 
-    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion) {
-        RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
-        requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
-        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-            "GRUPOS", 
-            "G1"
-        );
-        requerimientoAprobacionG1.setIdTipoLd(g1GrupoLD.getIdListadoDetalle()); 
+    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion,Long idUsuarioG1,Long idUsuario) {
 
+        RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
+        requerimientoAprobacionG1.setFeAsignacion(new Date());
+        requerimientoAprobacionG1.setFecCreacion(new Date());
+        requerimientoAprobacionG1.setUsuCreacion(idUsuario.toString());
+        requerimientoAprobacionG1.setIdUsuario(idUsuarioG1);
+        requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
+
+        ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPOS",
+                "G1"
+        );
+        requerimientoAprobacionG1.setIdGrupoLd(g2GrupoLD.getIdListadoDetalle());
         ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-            "ESTADO_APROBACION", 
-            "ASIGNADO"
+                "ESTADO_APROBACION",
+                "ASIGNADO"
         );
         requerimientoAprobacionG1.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
+
+        ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
+                "TIPO_EVALUADOR",
+                "APROBADOR_TECNICO"
+        );
+        requerimientoAprobacionG1.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
+
+        ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPO_APROBACION",
+                "JEFE_UNIDAD"
+        );
+        requerimientoAprobacionG1.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
+        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+            "TIPO_APROBACION",
+            "APROBAR"
+        );
+        requerimientoAprobacionG1.setIdTipoLd(g1GrupoLD.getIdListadoDetalle()); 
 
         return requerimientoAprobacionG1;
     }

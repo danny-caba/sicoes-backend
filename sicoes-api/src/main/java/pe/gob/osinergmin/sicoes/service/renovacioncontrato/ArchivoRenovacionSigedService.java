@@ -11,6 +11,7 @@ import gob.osinergmin.siged.remote.rest.ro.out.DocumentoAnularOutRO;
 import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ArchivoRenovacionSigedRequest;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ArchivoRenovacionSigedResponse;
+import pe.gob.osinergmin.sicoes.util.Contexto;
 
 /**
  * Servicio para la gestión de archivos SIGED en renovación de contrato.
@@ -27,7 +28,7 @@ public interface ArchivoRenovacionSigedService {
     
     DocumentoAnularOutRO anularDocumento(DocumentoAnularInRO documento) throws Exception;
     
-    ArchivoRenovacionSigedResponse adjuntarArchivo(ArchivoRenovacionSigedRequest request, MultipartFile file) throws Exception;
+    ArchivoRenovacionSigedResponse adjuntarArchivo(ArchivoRenovacionSigedRequest request, MultipartFile file, Contexto contexto) throws Exception;
     
     ArchivoRenovacionSigedResponse anularArchivo(ArchivoRenovacionSigedRequest request) throws Exception;
 }
