@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
@@ -20,6 +21,7 @@ public class RequerimientoRenovacionListDTO implements Serializable {
     private String tiSector;
     private String tiSubSector;
     private String noItem;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date feRegistro;
     private String estadoReqRenovacion;
     private String deObservacion;
