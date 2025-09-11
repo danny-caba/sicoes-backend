@@ -6,8 +6,12 @@ import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoAprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
+import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionDao;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionContratoService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+
+import java.util.List;
 
 @Service
 public class InformeRenovacionContratoAdapter implements InformeRenovacionContratoService {
@@ -15,14 +19,17 @@ public class InformeRenovacionContratoAdapter implements InformeRenovacionContra
     private final ListarInformeRenovacionContratoImpl listarInformeRenovacionContratoImpl;
     private final CrearInformeRenovacionContratoImpl crearInformeRenovacionContratoImpl;
     private final RechazarInformePresupuestalRenovacionContratoImpl rechazarInformeRenovacionContratoImpl;
+    private final InformeRenovacionDao informeRenovacionDao;
 
     public InformeRenovacionContratoAdapter(
             CrearInformeRenovacionContratoImpl crearInformeRenovacionContratoImpl, 
             ListarInformeRenovacionContratoImpl listarInformeRenovacionContratoImpl, 
-            RechazarInformePresupuestalRenovacionContratoImpl rechazarInformeRenovacionContratoImpl) {
+            RechazarInformePresupuestalRenovacionContratoImpl rechazarInformeRenovacionContratoImpl,
+            InformeRenovacionDao informeRenovacionDao) {
         this.listarInformeRenovacionContratoImpl = listarInformeRenovacionContratoImpl;
         this.crearInformeRenovacionContratoImpl = crearInformeRenovacionContratoImpl;
         this.rechazarInformeRenovacionContratoImpl = rechazarInformeRenovacionContratoImpl;
+        this.informeRenovacionDao = informeRenovacionDao;
     }
 
 
@@ -43,5 +50,14 @@ public class InformeRenovacionContratoAdapter implements InformeRenovacionContra
             Contexto contexto) {
         return rechazarInformeRenovacionContratoImpl.ejecutar(requerimientoAprobacionDTO,contexto);
     }
-    
+
+    @Override
+    public InformeRenovacion obtenerInformePorNroExpediente(String nroExpediente, Contexto contexto) {
+        List<InformeRenovacion> lista = informeRenovacionDao.findWithRequerimientoByExpediente(nroExpediente);
+        if(lista.isEmpty()){
+            return null;
+        }
+        return lista.get(0);
+    }
+
 }

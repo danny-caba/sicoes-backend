@@ -995,4 +995,9 @@ public class Constantes {
 		public static final String ARCHIVADO 		= "ARCHIVADO";
 	}
 
+    public static final class INFORME_RENOVACION {
+        public static final String ESTADO_COMPLETO 		= "1";
+        public static final String ESTADO_INCOMPLETO 		= "0";
+    }
+
 }

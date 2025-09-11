@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.repository.renovacioncontrato;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -88,4 +89,12 @@ public interface InformeRenovacionDao extends JpaRepository<InformeRenovacion, L
            "AND ra.idInformeRenovacion = :idInformeRenovacion " +
            "ORDER BY h.feFechaCambio DESC")
     List<HistorialEstadoAprobacionCampo> buscarHistorialAprobaciones(@Param("idInformeRenovacion") Long idInformeRenovacion);
+
+    Optional<InformeRenovacion> findByDeUuidInfoRenovacion(String deUuidInfoRenovacion);
+
+    @Query("SELECT ir FROM InformeRenovacion ir " +
+            "JOIN FETCH ir.requerimientoRenovacion rr " +
+            "WHERE rr.nuExpediente = :nroExpediente AND ir.esCompletado='0'" +
+            "ORDER BY ir.fecCreacion DESC")
+    List<InformeRenovacion> findWithRequerimientoByExpediente(@Param("nroExpediente") String nroExpediente);
 }

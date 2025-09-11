@@ -9,7 +9,6 @@ import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecion
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
-import pe.gob.osinergmin.sicoes.model.renovacioncontrato.ListadoDetalleRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
 import java.util.Date;
@@ -293,6 +292,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 "CONCLUIDO"
             );
             
+
+            informeRenovacionContrato.setEstadoAprobacionInforme(concluidoEstadoAprobacionInforme);
             // Crear la instancia de ListadoDetalleRenovacionContrato basada en ListadoDetalle
             ListadoDetalleRenovacionContrato estadoAprobacionInforme = new ListadoDetalleRenovacionContrato();
             estadoAprobacionInforme.setIdListadoDetalle(concluidoEstadoAprobacionInforme.getIdListadoDetalle());
@@ -304,6 +305,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             informeRenovacionContrato.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG1().toString());
             informeRenovacionContrato.setFecActualizacion(new Date());
             informeRenovacionContrato.setEstadoAprobacionInforme(estadoAprobacionInforme);
+
             informeRenovacionContratoDao.save(informeRenovacionContrato);
             
             // 3.5.4 Envía notificación por correo al rol Evaluador de Contratos para la Evaluación de la Invitación

@@ -19,6 +19,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 
@@ -90,6 +91,8 @@ public class InformeRenovacionContrato extends BaseModel implements Serializable
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ES_APROBACION_INFORME", referencedColumnName = "ID_LISTADO_DETALLE", nullable = true)
-    private ListadoDetalleRenovacionContrato estadoAprobacionInforme;
+    private ListadoDetalle estadoAprobacionInforme;
 
+    private ListadoDetalleRenovacionContrato estadoAprobacionInforme;
+ 
 }

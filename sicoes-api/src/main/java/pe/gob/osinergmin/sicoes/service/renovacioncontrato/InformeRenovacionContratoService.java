@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionContratoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoAprobacionDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface InformeRenovacionContratoService {
@@ -21,5 +22,6 @@ public interface InformeRenovacionContratoService {
 
     RequerimientoAprobacionDTO rechazarInformePresupuestal(RequerimientoAprobacionDTO requerimientoAprobacionDTO,
             Contexto contexto);
-    
+
+    InformeRenovacion obtenerInformePorNroExpediente(String nroExpediente, Contexto contexto);
 }

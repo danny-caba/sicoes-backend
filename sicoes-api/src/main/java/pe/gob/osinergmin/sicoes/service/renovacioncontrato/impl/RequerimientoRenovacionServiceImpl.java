@@ -104,8 +104,7 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 			requerimiento.setFeRegistro(r.getFeRegistro());
 			requerimiento.setFeRegistro(r.getFeRegistro());
 			requerimiento.setEstadoReqRenovacion(  r.getEstadoReqRenovacion().getCodigo());
-			//requerimiento.setEstadoAprobacionInforme();
-			List<InformeRenovacion> listaInforme = informeRenovacionDao.listarPorRequerimiento(requerimiento.getIdReqRenovacion());
+			List<InformeRenovacion> listaInforme = informeRenovacionDao.listarPorRequerimiento(r.getIdReqRenovacion());
 			if(!listaInforme.isEmpty()) {
 				requerimiento.setEstadoAprobacionInforme(listaInforme.get(listaInforme.size() - 1).getEstadoAprobacionInforme().getNombre());
 			}
@@ -190,8 +189,7 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
 		requerimientoRenovacion.setSolicitudPerfil(sicoesSolicitud);
 		AuditoriaUtil.setAuditoriaRegistro(requerimientoRenovacion,contexto);
-		Usuario usuario = usuarioDao.obtener(Long.parseLong(requerimientoRenovacion.getUsuCreacion()));
-		requerimientoRenovacion.setUsuario(usuario);
+		requerimientoRenovacion.setIdUsuario(contexto.getUsuario().getIdUsuario());
 		return requerimientoRenovacionDao.save(requerimientoRenovacion);
 	}
 

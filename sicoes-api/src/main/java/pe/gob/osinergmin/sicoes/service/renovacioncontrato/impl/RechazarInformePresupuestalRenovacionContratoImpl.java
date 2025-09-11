@@ -12,7 +12,6 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContrato;
-import pe.gob.osinergmin.sicoes.model.renovacioncontrato.ListadoDetalleRenovacionContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
@@ -63,22 +62,18 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO);
         }
 
-        ListadoDetalle estadoAprobacionInformeRC = listadoDetalleService.obtenerListadoDetalle(
+        ListadoDetalle estadoAprobacionInformeRCAsignado = listadoDetalleService.obtenerListadoDetalle(
                 "ESTADO_APROBACION"    ,
                 "ASIGNADO"
         );
 
-        ListadoDetalleRenovacionContrato listadoDetalleRenovacionContrato= new ListadoDetalleRenovacionContrato();
-        listadoDetalleRenovacionContrato.setIdListadoDetalle(estadoAprobacionInformeRC.getIdListadoDetalle());  
-        informeRenovacionContrato.setEstadoAprobacionInforme(listadoDetalleRenovacionContrato);
+        informeRenovacionContrato.setEstadoAprobacionInforme(estadoAprobacionInformeRCAsignado);
 
         actualizarEstadoInformeRenovacionContrato(informeRenovacionContrato, contexto);
         
-    
         SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
 
-        
-        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();        
+        RequerimientoAprobacion requerimientoAprobacion = new RequerimientoAprobacion();
         requerimientoAprobacion.setDeObservacion(requerimientoAprobacionDTO.getDeObservacion());
         requerimientoAprobacion.setIdInformeRenovacion(requerimientoAprobacionDTO.getIdReqInforme());
         Usuario usuario = contexto.getUsuario();
