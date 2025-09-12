@@ -37,24 +37,8 @@ public class BandejaAprobacionRestController extends BaseRestController {
         this.bandejaAprobacionService = bandejaAprobacionService;
     }
 
-
-        @Autowired
+    @Autowired
     private AprobacionInformeService aprobacionInformeService;
-
-    @GetMapping("/aprobaciones")
-    public Page<BandejaAprobacionResponseDTO> listarAprobaciones(
-            @RequestParam(required = false) String numeroExpediente,
-            @RequestParam(required = false) Long estadoAprobacionInforme,
-            @RequestParam(required = false) Long idContratista,
-            Pageable pageable) {
-
-        logger.info("get listarInformes: {} {} {}", numeroExpediente, estadoAprobacionInforme, idContratista);
-
-        Contexto contexto = getContexto();
-        return bandejaAprobacionService.listaApobaciones(
-
-                numeroExpediente, estadoAprobacionInforme, idContratista, contexto, pageable);
-    }
 
     @PostMapping("/aprobar-informe-renovacion")
     public ResponseEntity<ApiResponse> aprobarInformeRenovacion(
@@ -103,5 +87,20 @@ public class BandejaAprobacionRestController extends BaseRestController {
                 HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
-    }    
+    }
+
+    @GetMapping("/aprobaciones")
+    public Page<BandejaAprobacionResponseDTO> listarAprobaciones(
+            @RequestParam(required = false) String numeroExpediente,
+            @RequestParam(required = false) Long estadoAprobacionInforme,
+            @RequestParam(required = false) Long idContratista,
+            Pageable pageable) {
+
+        logger.info("get listarInformes: {} {} {}", numeroExpediente, estadoAprobacionInforme, idContratista);
+
+        Contexto contexto = getContexto();
+        return bandejaAprobacionService.listaApobaciones(
+
+                numeroExpediente, estadoAprobacionInforme, idContratista, contexto, pageable);
+    }
 }
