@@ -1,20 +1,12 @@
 package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
@@ -23,6 +15,8 @@ import pe.gob.osinergmin.sicoes.model.Notificacion;
  * Entidad para la tabla SICOES_TC_REQ_APROBACION
  * Representa los requerimientos de aprobación de renovación de contratos
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "SICOES_TC_REQ_APROBACION")
 public class RequerimientoAprobacion extends BaseModel implements Serializable {
@@ -43,7 +37,6 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_INFORME_RENOVACION", nullable = false,insertable = false, updatable = false)
     private InformeRenovacionContrato informeRenovacionContrato;
-
 
     @Column(name = "ID_REQ_DOCUMENTO", precision = 38)
     private Long idReqDocumento;
@@ -85,11 +78,9 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_INFORME_RENOVACION", insertable = false, updatable = false)
     private InformeRenovacion informeRenovacion;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_NOTIFICACION")
     private Notificacion notificacion;
-
 
     @Temporal(TemporalType.DATE)
     @Column(name = "FE_ASIGNACION")
@@ -100,185 +91,4 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
 
     @Column(name = "ID_GRUPO_APROBADOR_LD", precision = 38)
     private Long idGrupoAprobadorLd;
-
-    // Constructores
-    public RequerimientoAprobacion() {
-    }
-
-    public RequerimientoAprobacion(Long idRequerimiento) {
-        this.idRequerimiento = idRequerimiento;
-    }
-
-    // Getters y Setters
-    public Long getIdReqAprobacion() {
-        return idReqAprobacion;
-    }
-
-    public void setIdReqAprobacion(Long idReqAprobacion) {
-        this.idReqAprobacion = idReqAprobacion;
-    }
-
-    public Long getIdRequerimiento() {
-        return idRequerimiento;
-    }
-
-    public void setIdRequerimiento(Long idRequerimiento) {
-        this.idRequerimiento = idRequerimiento;
-    }
-
-    public Long getIdReqInforme() {
-        return idReqInforme;
-    }
-
-    public void setIdReqInforme(Long idReqInforme) {
-        this.idReqInforme = idReqInforme;
-    }
-
-    public Long getIdReqDocumento() {
-        return idReqDocumento;
-    }
-
-    public void setIdReqDocumento(Long idReqDocumento) {
-        this.idReqDocumento = idReqDocumento;
-    }
-
-    public Long getIdTipoLd() {
-        return idTipoLd;
-    }
-
-    public void setIdTipoLd(Long idTipoLd) {
-        this.idTipoLd = idTipoLd;
-    }
-
-    public Long getIdGrupoLd() {
-        return idGrupoLd;
-    }
-
-    public void setIdGrupoLd(Long idGrupoLd) {
-        this.idGrupoLd = idGrupoLd;
-    }
-
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
-    public Long getIdEstadoLd() {
-        return idEstadoLd;
-    }
-
-    public void setIdEstadoLd(Long idEstadoLd) {
-        this.idEstadoLd = idEstadoLd;
-    }
-
-    public Long getIdFirmadoLd() {
-        return idFirmadoLd;
-    }
-
-    public void setIdFirmadoLd(Long idFirmadoLd) {
-        this.idFirmadoLd = idFirmadoLd;
-    }
-
-    public String getDeObservacion() {
-        return deObservacion;
-    }
-
-    public void setDeObservacion(String deObservacion) {
-        this.deObservacion = deObservacion;
-    }
-
-    public Date getFeAprobacion() {
-        return feAprobacion;
-    }
-
-    public void setFeAprobacion(Date feAprobacion) {
-        this.feAprobacion = feAprobacion;
-    }
-
-    public Date getFeRechazo() {
-        return feRechazo;
-    }
-
-    public void setFeRechazo(Date feRechazo) {
-        this.feRechazo = feRechazo;
-    }
-
-    public Date getFeFirma() {
-        return feFirma;
-    }
-
-    public void setFeFirma(Date feFirma) {
-        this.feFirma = feFirma;
-    }
-
-    public InformeRenovacion getInformeRenovacion() {
-        return informeRenovacion;
-    }
-
-    public void setInformeRenovacion(InformeRenovacion informeRenovacion) {
-        this.informeRenovacion = informeRenovacion;
-    }
-
-    public Notificacion getNotificacion() {
-        return notificacion;
-    }
-
-    public void setNotificacion(Notificacion notificacion) {
-        this.notificacion = notificacion;
-    }
-
-    public Date getFeAsignacion() {
-        return feAsignacion;
-    }
-
-    public void setFeAsignacion(Date feAsignacion) {
-        this.feAsignacion = feAsignacion;
-    }
-
-    public Long getIdTipoAprobadorLd() {
-        return idTipoAprobadorLd;
-    }
-
-    public void setIdTipoAprobadorLd(Long idTipoAprobadorLd) {
-        this.idTipoAprobadorLd = idTipoAprobadorLd;
-    }
-
-    public Long getIdGrupoAprobadorLd() {
-        return idGrupoAprobadorLd;
-    }
-
-    public void setIdGrupoAprobadorLd(Long idGrupoAprobadorLd) {
-        this.idGrupoAprobadorLd = idGrupoAprobadorLd;
-    }
-
-    @Override
-    public String toString() {
-        return "RequerimientoAprobacion [idReqAprobacion=" + idReqAprobacion 
-                + ", idRequerimiento=" + idRequerimiento 
-                + ", idReqInforme=" + idReqInforme 
-                + ", idReqDocumento=" + idReqDocumento 
-                + ", idTipoLd=" + idTipoLd 
-                + ", idGrupoLd=" + idGrupoLd 
-                + ", idUsuario=" + idUsuario 
-                + ", idEstadoLd=" + idEstadoLd 
-                + ", idFirmadoLd=" + idFirmadoLd 
-                + ", deObservacion=" + deObservacion 
-                + ", feAprobacion=" + feAprobacion 
-                + ", feRechazo=" + feRechazo 
-                + ", feFirma=" + feFirma 
-                + ", feAsignacion=" + feAsignacion 
-                + ", idTipoAprobadorLd=" + idTipoAprobadorLd 
-                + ", idGrupoAprobadorLd=" + idGrupoAprobadorLd + "]";
-    }
-
-    public Long getIdInformeRenovacion() {
-        return idInformeRenovacion;
-    }
-
-    public void setIdInformeRenovacion(Long idInformeRenovacion) {
-        this.idInformeRenovacion = idInformeRenovacion;
-    }
 }
