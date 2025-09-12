@@ -1600,7 +1600,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO,Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO)); //rechazado
 
                  Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
-                aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
+                 aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
             }
             adendaFinal.setFecActualizacion(new Date());
             AuditoriaUtil.setAuditoriaRegistro(adendaFinal,contexto);
@@ -2069,7 +2069,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         logger.info("idPerfContrato: {}", idPerfContrato);
         SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
         logger.info("solicitud: {}", solicitud.getIdSolicitud());
-        Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
+        Supervisora supervisora = supervisoraDao.obtener(existe.getPersonaPropuesta().getIdSupervisora());
         logger.info("supervisora: {}", supervisora.getIdSupervisora());
         if (accion.equals("A")) {
             if (conforme) {
