@@ -1,8 +1,10 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeAprobacionCreateRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.*;
 
 import org.springframework.stereotype.Service;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
@@ -11,12 +13,11 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacionContra
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 import java.util.List;
 
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.AprobacionInformeCreateRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.AprobacionInformeCreateResponseDTO;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.AprobacionInformeService;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -35,6 +36,7 @@ import pe.gob.osinergmin.sicoes.model.Usuario;
 @Service
 public class AprobacionInformeImplService implements AprobacionInformeService {
 
+    private final Logger logger = LogManager.getLogger(AprobacionInformeImplService.class);
     @Autowired
     private InformeRenovacionContratoDao informeRenovacionContratoDao;
 
@@ -55,6 +57,105 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Override
+    public AprobacionInformeRenovacionCreateResponseDTO aprobarInformeRenovacion(
+            AprobacionInformeRenovacionCreateRequestDTO requestDTO,
+            Contexto contexto) throws DataNotFoundException {
+
+        // Validaciones básicas
+        if (requestDTO == null) {
+            logger.error("El request no puede ser nulo.");
+            throw new IllegalArgumentException("El request no puede ser nulo.");
+        }
+        if (contexto == null || contexto.getUsuario() == null || contexto.getUsuario().getIdUsuario() == null) {
+            logger.error("El contexto/usuario es inválido.");
+            throw new IllegalArgumentException("El contexto/usuario es inválido.");
+        }
+        if (requestDTO.getIdRequerimientosAprobacion() == null || requestDTO.getIdRequerimientosAprobacion().isEmpty()) {
+            logger.error("Debe indicar al menos un id de RequerimientoAprobacion.");
+            throw new IllegalArgumentException("Debe indicar al menos un id de RequerimientoAprobacion.");
+        }
+
+        // Inicializar respuesta agregada
+        AprobacionInformeRenovacionCreateResponseDTO respuestaAgregada = new AprobacionInformeRenovacionCreateResponseDTO();
+        List<AprobacionInformeCreateResponseDTO> resultados = new ArrayList<>();
+
+        // Procesar cada id de requerimiento
+        for (Long idReqApr : requestDTO.getIdRequerimientosAprobacion()) {
+            try {
+                // 1) Obtener requerimiento
+                RequerimientoAprobacion entity = requerimientoAprobacionDao.obtenerPorId(idReqApr);
+                if (entity == null) {
+                    logger.error("No existe RequerimientoAprobacion con id={}", idReqApr);
+                    throw new DataNotFoundException("No existe RequerimientoAprobacion con id=" + idReqApr);
+                }
+
+                // Validar informe de renovación
+                if (entity.getInformeRenovacionContrato() == null ||
+                    entity.getInformeRenovacionContrato().getIdInformeRenovacion() == null) {
+                    logger.error("El RequerimientoAprobacion {} no tiene InformeRenovacion asociado.", idReqApr);
+                    throw new DataNotFoundException(
+                        "El RequerimientoAprobacion " + idReqApr + " no tiene InformeRenovacion asociado.");
+                }
+
+                // 2) Obtener grupo aprobador
+                ListadoDetalle grupoAprobadorLd = listadoDetalleService.obtener(
+                    entity.getIdGrupoAprobadorLd(),contexto);
+                if (grupoAprobadorLd == null || grupoAprobadorLd.getCodigo() == null) {
+                    logger.error("No se pudo resolver el grupo aprobador para RequerimientoAprobacion {}", idReqApr);
+                    throw new DataNotFoundException(
+                        "No se pudo resolver el grupo aprobador para RequerimientoAprobacion " + idReqApr);
+                }
+
+                // 3) Construir request para aprobación específica
+                AprobacionInformeCreateRequestDTO reqAprob = new AprobacionInformeCreateRequestDTO();
+                reqAprob.setIdUsuario(contexto.getUsuario().getIdUsuario());
+                reqAprob.setObservacion(requestDTO.getObservacion());
+
+                // Agregar informe a la lista
+                InformeAprobacionCreateRequestDTO informeDTO = new InformeAprobacionCreateRequestDTO();
+                informeDTO.setIdInformeRenovacion(entity.getInformeRenovacionContrato().getIdInformeRenovacion());
+                List<InformeAprobacionCreateRequestDTO> informes = new ArrayList<>();
+                informes.add(informeDTO);
+                reqAprob.setInformes(informes);
+
+                // 4) Enrutar según grupo aprobador
+                AprobacionInformeCreateResponseDTO resultado;
+                String codigoGrupo = grupoAprobadorLd.getCodigo();
+
+                switch (codigoGrupo) {
+                    case "JEFE_UNIDAD":
+                        resultado = aprobarInformeRenovacionG1(reqAprob, contexto);
+                        break;
+                    case "GERENTE":
+                        resultado = aprobarInformeRenovacionG2(reqAprob, contexto);
+                        break;
+                    case "GPPM":
+                        resultado = aprobarInformeRenovacionGppmG3(reqAprob, contexto);
+                        break;
+                    case "GSE":
+                        resultado = aprobarInformeRenovacionGseG3(reqAprob, contexto);
+                        break;
+                    default:
+                        logger.error("Código de grupo aprobador no soportado: {}", codigoGrupo);
+                        throw new IllegalStateException(
+                            "Código de grupo aprobador no soportado: " + codigoGrupo);
+                }
+
+                resultados.add(resultado);
+
+            } catch (Exception e) {
+                // Loggear error y continuar con siguiente id
+                logger.error("Error procesando RequerimientoAprobacion id={}", idReqApr, e);
+                throw new DataNotFoundException("Error procesando requerimiento: " + e.getMessage());
+            }
+        }
+
+
+        return null;
+    }
+
+
     /**
      * Aprueba el informe de renovación G1.
      * @param requestDTO DTO con datos de la aprobación

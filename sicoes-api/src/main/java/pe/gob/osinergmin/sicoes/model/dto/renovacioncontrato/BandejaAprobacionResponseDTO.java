@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 
 @Getter
 @Setter
@@ -25,4 +26,9 @@ public class BandejaAprobacionResponseDTO {
     private String estadoAprobacionGerenteDivision;
     private String estadoAprobacionGPPM;
     private String estadoAprobacionGSE;
+    private ListadoDetalleDTO tipoAprobacionLd;
+    private ListadoDetalleDTO estadoLd;
+    private ListadoDetalleDTO grupoAprobadorLd;
+
+
 }

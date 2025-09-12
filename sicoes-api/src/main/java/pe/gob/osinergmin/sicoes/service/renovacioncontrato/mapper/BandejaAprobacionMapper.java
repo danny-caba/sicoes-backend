@@ -10,12 +10,20 @@ import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.text.SimpleDateFormat;
+import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
+import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 
 @Component
 public class BandejaAprobacionMapper {
 
     @Autowired
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
+
+    @Autowired
+    private ListadoDetalleDao listadoDetalleDao;
+
+    @Autowired
+    private ListadoDetalleMapper listadoDetalleMapper;
 
     public BandejaAprobacionResponseDTO toDto(RequerimientoAprobacion entity, Contexto contexto, ListadoDetalleService listadoDetalleService) {
         BandejaAprobacionResponseDTO dto = new BandejaAprobacionResponseDTO();
@@ -121,6 +129,29 @@ public class BandejaAprobacionMapper {
         }
         dto.setEstadoAprobacionGSE(gse);
 
+        // Asignar tipoAprobacionLd
+        java.util.Optional.ofNullable(entity.getIdTipoAprobadorLd())
+            .ifPresent(id -> dto.setTipoAprobacionLd(
+            listadoDetalleMapper.toDto(
+                listadoDetalleDao.findById(entity.getIdTipoLd())
+            )
+            ));
+
+        // Asignar estadoLd
+        java.util.Optional.ofNullable(entity.getIdEstadoLd())
+            .ifPresent(id -> dto.setEstadoLd(
+            listadoDetalleMapper.toDto(
+                listadoDetalleDao.findById(entity.getIdEstadoLd())
+            )
+            ));
+
+        // Asignar grupoAprobadorLd
+        java.util.Optional.ofNullable(entity.getIdGrupoAprobadorLd())
+            .ifPresent(id -> dto.setGrupoAprobadorLd(
+            listadoDetalleMapper.toDto(
+                listadoDetalleDao.findById(entity.getIdGrupoAprobadorLd())
+            )
+            ));
 
         return dto;
     }
