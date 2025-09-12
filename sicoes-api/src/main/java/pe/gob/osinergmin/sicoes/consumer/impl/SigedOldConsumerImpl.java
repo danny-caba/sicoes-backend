@@ -81,6 +81,13 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	
 	@Value("${siged.ws.password.firma.digital}")
 	private String SIGED_PASSWORD_FIRMA_DIGITAL;
+
+	private static final String NODE_ARCHIVO_OPEN = "<archivo>";
+	private static final String NODE_ARCHIVO_CLOSE = "</archivo>";
+	private static final String NODE_FECHA_CREACION_OPEN = "<fechaCreacion>";
+	private static final String NODE_FECHA_CREACION_CLOSE = "</fechaCreacion>";
+	private static final String NODE_ID_ARCHIVO_OPEN = "<idArchivo>";
+	private static final String NODE_ID_ARCHIVO_CLOSE = "</idArchivo>";
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
 
@@ -366,7 +373,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	}
 
 	public String subirArchivosAlfrescoRequerimiento(Long idRequerimiento,Archivo archivo) {
-		logger.info("Requerimiento: "+archivo.getIdRequerimiento());
+		logger.info("Requerimiento {}", idRequerimiento);
 		try {
 			RestTemplate restTemplate=new RestTemplate();
 			HttpHeaders headers = new HttpHeaders();
@@ -392,14 +399,14 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			if(archivo.getIdRequerimiento()!=null) {
 				path=SIGED_WS_URL+SIGED_PATH_SUBIR_ARCHIVO+SIGED_USER+SIGED_PATH_BASE+"/REQUERIMIENTO/"+idRequerimiento;
 			}else {
-				logger.info("Sin path enviar idRequerimiento "+path);
+				logger.info("Sin path enviar idRequerimiento: {}", path);
 			}
-			logger.info("Enviado a alfresco : "+path);
-			logger.info("nombre Archivo: "+archivo.getNombreReal());
+			logger.info("Enviado a alfresco: {}", path);
+			logger.info("nombre Archivo: {}", archivo.getNombreReal());
 			if(archivo.getFile()!=null) {
-				logger.info("contenido Archivo: "+archivo.getFile().getBytes().length);
+				logger.info("contenido Archivo: {}", archivo.getFile().getBytes().length);
 			}else {
-				logger.info("contenido Archivo: "+archivo.getContenido().length);
+				logger.info("contenido Archivo: {}", archivo.getContenido().length);
 			}
 			ResponseEntity<String> response = restTemplate.exchange(
 					path,
@@ -408,7 +415,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 					String.class);
 			XmlMapper xmlMapper = new XmlMapper();
 			AlfrescoFileOut fileOut=xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
-			logger.info("respuesta: "+fileOut);
+			logger.info("respuesta: {}", fileOut);
 			return  fileOut.getFiles().getFullFilePath();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -417,7 +424,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	}
 
 	@Override
-	public Long obtenerIdInformeSiged(String expediente, Contexto contexto) throws Exception {
+	public Long obtenerIdInformeSiged(String expediente, Contexto contexto) throws ValidacionException {
 		logger.info("obtenerIdInformeSiged() inicio...");
 
 		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + expediente + "/1";
@@ -433,59 +440,59 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			logger.info("response [{}].", response);
 
 			while (true) {
-				Integer indexRequerimientoInforme = response.indexOf("Requerimiento_Informe_" + contexto.getUsuario().getUsuario());
+				if (response != null) {
+					Integer indexRequerimientoInforme = response.indexOf("Requerimiento_Informe_" + contexto.getUsuario().getUsuario());
 
-				if (indexRequerimientoInforme > 0) {
+					if (indexRequerimientoInforme > 0) {
 
-					Integer indexInforme = indexRequerimientoInforme;
+						Integer indexInforme = indexRequerimientoInforme;
 
-					//Obtener los campos del informe
-					String partialResponse = response.substring(0, indexInforme);
-					Integer indexInicioArchivo = partialResponse.lastIndexOf("<archivo>") + "<archivo>".length();
-					partialResponse = response.substring(indexInforme);
-					Integer indexFinalArchivo = partialResponse.indexOf("</archivo>");
+						//Obtener los campos del informe
+						String partialResponse = response.substring(0, indexInforme);
+						Integer indexInicioArchivo = partialResponse.lastIndexOf(NODE_ARCHIVO_OPEN) + NODE_ARCHIVO_OPEN.length();
+						partialResponse = response.substring(indexInforme);
+						Integer indexFinalArchivo = partialResponse.indexOf(NODE_ARCHIVO_CLOSE);
 
-					//En caso exista más de informe a firmar
-					String afterResponse = response.substring(indexInforme + indexFinalArchivo + "</archivo>".length());
-					response = response.substring(indexInicioArchivo, indexInforme + indexFinalArchivo).trim();
+						//En caso exista más de informe a firmar
+						String afterResponse = response.substring(indexInforme + indexFinalArchivo + NODE_ARCHIVO_CLOSE.length());
+						response = response.substring(indexInicioArchivo, indexInforme + indexFinalArchivo).trim();
 
-					//Obtener la fecha de creación
-					Integer indexFechaCreacionArchivo = response.indexOf("<fechaCreacion>") + "<fechaCreacion>".length();
-					String fechaCreacionResponse = response.substring(indexFechaCreacionArchivo);
-					fechaCreacionResponse = fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf("</fechaCreacion>"));
-					Date fechaCreacionArchivo = formatter.parse(fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf("T")) + " " +
-							fechaCreacionResponse.substring(fechaCreacionResponse.indexOf("T") + 1, fechaCreacionResponse.indexOf("T") + 9));
+						//Obtener la fecha de creación
+						Integer indexFechaCreacionArchivo = response.indexOf(NODE_FECHA_CREACION_OPEN) + NODE_FECHA_CREACION_OPEN.length();
+						String fechaCreacionResponse = response.substring(indexFechaCreacionArchivo);
+						fechaCreacionResponse = fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf(NODE_FECHA_CREACION_CLOSE));
+						Date fechaCreacionArchivo = formatter.parse(fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf("T")) + " " +
+								fechaCreacionResponse.substring(fechaCreacionResponse.indexOf("T") + 1, fechaCreacionResponse.indexOf("T") + 9));
 
-					//Obtener el idArchivo del informe
-					Integer indexIdArchivo = response.indexOf("<idArchivo>") + "<idArchivo>".length();
-					response = response.substring(indexIdArchivo);
-					response = response.substring(0, response.indexOf("</idArchivo>"));
-					Long idArchivoTemp = Long.parseLong(response.trim());
+						//Obtener el idArchivo del informe
+						Integer indexIdArchivo = response.indexOf(NODE_ID_ARCHIVO_OPEN) + NODE_ID_ARCHIVO_OPEN.length();
+						response = response.substring(indexIdArchivo);
+						response = response.substring(0, response.indexOf(NODE_ID_ARCHIVO_CLOSE));
+						Long idArchivoTemp = Long.parseLong(response.trim());
 
-					response = afterResponse;
+						response = afterResponse;
 
-					if (fechaCreacion == null) {
-						idArchivo = idArchivoTemp;
-						fechaCreacion = fechaCreacionArchivo;
+						if (fechaCreacion == null || fechaCreacionArchivo.compareTo(fechaCreacion) > 0) {
+							idArchivo = idArchivoTemp;
+							fechaCreacion = fechaCreacionArchivo;
+						}
+					} else {
+						break;
 					}
-					else if (fechaCreacionArchivo.compareTo(fechaCreacion) > 0) {
-						idArchivo = idArchivoTemp;
-						fechaCreacion = fechaCreacionArchivo;
-					}
-				}
-				else {
+				} else {
+					logger.warn("Response es nulo, no se puede buscar el informe");
 					break;
 				}
 			}
-			logger.info("idInforme: " + idArchivo);
+			logger.info("idInforme: {}", idArchivo);
 		}
 		catch (HttpClientErrorException ex) {
-			logger.error("Invoking of web service " + url + " of siged was failed", ex);
-			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
+			logger.error("Invoking of web service {} of siged was failed", url, ex);
+			throw new ValidacionException(String.valueOf(ex.getRawStatusCode()), ex.getMessage());
 		}
 		catch (Exception ex) {
-			logger.error("Invoking of web service " + url + " of siged was failed", ex);
-			throw ex;
+			logger.error("Invoking of web service {} of siged was failed", url, ex);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO, url);
 		}
 
 		logger.info("obtenerIdInformeSiged() fin...");

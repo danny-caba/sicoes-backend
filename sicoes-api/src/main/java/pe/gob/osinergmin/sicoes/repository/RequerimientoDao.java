@@ -10,11 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import pe.gob.osinergmin.sicoes.model.Division;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
 
 @Repository
 public interface RequerimientoDao extends JpaRepository<Requerimiento, Long> {

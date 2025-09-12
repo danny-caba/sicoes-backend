@@ -123,8 +123,15 @@ public class NotificacionServiceImpl implements NotificacionService{
 
 	@Autowired
 	private RequerimientoDocumentoDetalleDao requerimientoDocumentoDetalleDao;
+
     @Autowired
     private DivisionService divisionService;
+
+	private static final String VAR_ACCION = "accion";
+	private static final String VAR_NOMBRE = "nombre";
+	private static final String VAR_NU_EXPEDIENTE = "nuExpediente";
+	private static final String VAR_ASUNTO_CARGA_DOC = "NOTIFICACIÓN CARGAR DOCUMENTOS";
+	private static final String VAR_NOM_SUPERVISOR_PN = "nombre_supervisor_pn";
 
 	@Override
 	public Notificacion obtener(Long idNotificacion, Contexto contexto) {
@@ -1078,8 +1085,8 @@ public class NotificacionServiceImpl implements NotificacionService{
 		Notificacion notificacion = new Notificacion();
 		notificacion.setAsunto((esAprobacion ? "ACEPTACIÓN" : "RECHAZO") + " DE INVITACIÓN SUPERVISOR PERSONA NATURAL");
 		final Context ctx = new Context();
-		ctx.setVariable("accion", esAprobacion ? "ACEPTÓ" : "RECHAZÓ");
-		ctx.setVariable("nombre", invitacion.getSupervisora().getNombreCompleto());
+		ctx.setVariable(VAR_ACCION, esAprobacion ? "ACEPTÓ" : "RECHAZÓ");
+		ctx.setVariable(VAR_NOMBRE, invitacion.getSupervisora().getNombreCompleto());
 		ctx.setVariable("division", invitacion.getRequerimiento().getDivision().getDeDivision());
 		ctx.setVariable("fechaInvitacion", DateUtil.getDate(invitacion.getFechaInvitacion(), "dd/MM/yyyy"));
 		ctx.setVariable("fechaCaducidad", DateUtil.getDate(invitacion.getFechaCaducidad(), "dd/MM/yyyy"));
@@ -1102,8 +1109,8 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacion.setCorreo(usuario.getCorreo());
 		notificacion.setAsunto("NOTIFICACIÓN PARA APROBAR");
 		final Context ctx = new Context();
-		ctx.setVariable("nombre", usuario.getNombreUsuario());
-		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
+		ctx.setVariable(VAR_NOMBRE, usuario.getNombreUsuario());
+		ctx.setVariable(VAR_NU_EXPEDIENTE, requerimiento.getNuExpediente());
 		String htmlContent = templateEngine.process("30-requerimiento-por-aprobar.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
@@ -1119,10 +1126,10 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacion.setCorreo(usuario.getCorreo());
 		notificacion.setAsunto("NOTIFICACIÓN DE RECHAZAR APROBACIÓN");
 		final Context ctx = new Context();
-		ctx.setVariable("nombre", usuario.getNombreUsuario());
+		ctx.setVariable(VAR_NOMBRE, usuario.getNombreUsuario());
 		ctx.setVariable("nombreRol", contexto.getUsuario().getNombreUsuario());
 		ctx.setVariable("rol", rol);
-		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
+		ctx.setVariable(VAR_NU_EXPEDIENTE, requerimiento.getNuExpediente());
 		String htmlContent = templateEngine.process("31-requerimiento-rechazado.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
@@ -1138,14 +1145,14 @@ public class NotificacionServiceImpl implements NotificacionService{
 		String tipoDocumento = supervisora.getTipoDocumento().getCodigo();
 		Notificacion notificacion = new Notificacion();
 		notificacion.setCorreo(supervisora.getCorreo());
-		notificacion.setAsunto("NOTIFICACIÓN CARGAR DOCUMENTOS");
+		notificacion.setAsunto(VAR_ASUNTO_CARGA_DOC);
 		final Context ctx = new Context();
 		if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
-			ctx.setVariable("nombre", supervisora.getNombreRazonSocial());
+			ctx.setVariable(VAR_NOMBRE, supervisora.getNombreRazonSocial());
 		} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
-			ctx.setVariable("nombre", supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
+			ctx.setVariable(VAR_NOMBRE, supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
 		}
-		ctx.setVariable("nuExpediente", requerimiento.getNuExpediente());
+		ctx.setVariable(VAR_NU_EXPEDIENTE, requerimiento.getNuExpediente());
 		String htmlContent = templateEngine.process("29-requerimiento-cargar-documentos.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
@@ -1181,14 +1188,14 @@ public class NotificacionServiceImpl implements NotificacionService{
 			notificacion.setCorreo(correos);
 			notificacion.setAsunto("INVITACIÓN PERSONA NATURAL S4");
 			final Context ctx = new Context();
-			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
+			ctx.setVariable(VAR_NOM_SUPERVISOR_PN, supervisoraPN.getNombres());
 			Requerimiento requerimiento = requerimientoDao.obtener(requerimientoInvitacion.getRequerimiento().getIdRequerimiento())
 				.orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO));
 			String tipoDocumento = supervisoraPN.getTipoDocumento().getCodigo();
 			if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
-				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
+				ctx.setVariable(VAR_NOM_SUPERVISOR_PN, supervisoraPN.getNombreRazonSocial());
 			} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
-				ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
+				ctx.setVariable(VAR_NOM_SUPERVISOR_PN, supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
 			}
 			ctx.setVariable("division", requerimiento.getDivision().getDeDivision());
 			ctx.setVariable("fechaInvitacion", DateUtil.getDate(requerimientoInvitacion.getFechaInvitacion(), "dd/MM/yyyy HH:mm"));
@@ -1210,12 +1217,12 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacion.setCorreo(correos);
 		notificacion.setAsunto("SUBSANAR CARGA DE DOCUMENTOS");
 		final Context ctx = new Context();
-		ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres());
+		ctx.setVariable(VAR_NOM_SUPERVISOR_PN, supervisoraPN.getNombres());
 		Long tipoDocumento = supervisoraPN.getTipoDocumento().getIdListadoDetalle();
 		if (tipoDocumento == 2){
-			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombreRazonSocial());
+			ctx.setVariable(VAR_NOM_SUPERVISOR_PN, supervisoraPN.getNombreRazonSocial());
 		} else if (tipoDocumento == 3) {
-			ctx.setVariable("nombre_supervisor_pn", supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
+			ctx.setVariable(VAR_NOM_SUPERVISOR_PN, supervisoraPN.getNombres()+" "+supervisoraPN.getApellidoPaterno()+" "+supervisoraPN.getApellidoMaterno());
 		}
 		ctx.setVariable("detalles", requerimientoDocumentoDetalleDao.listarPorUuid(requerimientoDocumento.getRequerimientoDocumentoUuid(), null));
 		String htmlContent = templateEngine.process("31-evaluacion-requerimiento-documento.html", ctx);
@@ -1247,13 +1254,13 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeVistoBuenoSupervisor(Supervisora supervisora, List<RequerimientoDocumentoDetalle> listaReqDocDetalle, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
 		notificacion.setCorreo(supervisora.getCorreo());
-		notificacion.setAsunto("NOTIFICACIÓN CARGAR DOCUMENTOS");
+		notificacion.setAsunto(VAR_ASUNTO_CARGA_DOC);
 		final Context ctx = new Context();
 		String tipoDocumento = supervisora.getTipoDocumento().getCodigo();
 		if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
-			ctx.setVariable("nombre", supervisora.getNombreRazonSocial());
+			ctx.setVariable(VAR_NOMBRE, supervisora.getNombreRazonSocial());
 		} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
-			ctx.setVariable("nombre", supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
+			ctx.setVariable(VAR_NOMBRE, supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
 		}
 		ctx.setVariable("documentos", listaReqDocDetalle);
 		String htmlContent = templateEngine.process("33-documento-sin-visto-bueno-supervisor.html", ctx);
@@ -1273,9 +1280,9 @@ public class NotificacionServiceImpl implements NotificacionService{
 		final Context ctx = new Context();
 		String tipoDocumento = supervisora.getTipoDocumento().getCodigo();
 		if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.RUC)){
-			ctx.setVariable("nombre", supervisora.getNombreRazonSocial());
+			ctx.setVariable(VAR_NOMBRE, supervisora.getNombreRazonSocial());
 		} else if (tipoDocumento.equalsIgnoreCase(Constantes.LISTADO.TIPO_DOCUMENTO.DNI)) {
-			ctx.setVariable("nombre", supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
+			ctx.setVariable(VAR_NOMBRE, supervisora.getNombres()+" "+supervisora.getApellidoPaterno()+" "+supervisora.getApellidoMaterno());
 		}
 		String htmlContent = templateEngine.process("34-fin-contratacion.html", ctx);
 		notificacion.setMensaje(htmlContent);
@@ -1312,11 +1319,11 @@ public class NotificacionServiceImpl implements NotificacionService{
 		notificacion.setCorreo(usuario.getCorreo());
 		notificacion.setAsunto(asunto);
 		final Context ctx = new Context();
-		ctx.setVariable("nombre", usuario.getNombreUsuario());
+		ctx.setVariable(VAR_NOMBRE, usuario.getNombreUsuario());
 		ctx.setVariable("rol", rol.getNombre());
 		ctx.setVariable("nombre_aprobador", aprobador.getNombreUsuario());
-		ctx.setVariable("nuExpediente", aprobacion.getRequerimiento().getNuExpediente());
-		ctx.setVariable("accion", accion);
+		ctx.setVariable(VAR_NU_EXPEDIENTE, aprobacion.getRequerimiento().getNuExpediente());
+		ctx.setVariable(VAR_ACCION, accion);
 		String htmlContent = templateEngine.process("35-requerimiento-archivamiento.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
@@ -1337,7 +1344,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 
 		if (Objects.equals(aprobacion.getEstado().getCodigo(), Constantes.LISTADO.RESULTADO_APROBACION.APROBADO)) {
 			if (Objects.equals(aprobacion.getGrupo().getCodigo(), Constantes.LISTADO.GRUPOS.G3)) {
-				asunto = "NOTIFICACIÓN CARGAR DOCUMENTOS";
+				asunto = VAR_ASUNTO_CARGA_DOC;
 				template = "29-requerimiento-cargar-documentos.html";
 			} else {
 				asunto = "NOTIFICACIÓN PARA APROBAR";
@@ -1355,11 +1362,11 @@ public class NotificacionServiceImpl implements NotificacionService{
 
 			ctx.setVariable("rol", rol.getNombre());
 			ctx.setVariable("nombre_aprobador", aprobador.getNombreUsuario());
-			ctx.setVariable("accion", "rechazó");
+			ctx.setVariable(VAR_ACCION, "rechazó");
 		}
 
-		ctx.setVariable("nombre", usuario.getNombreUsuario());
-		ctx.setVariable("nuExpediente", aprobacion.getRequerimiento().getNuExpediente());
+		ctx.setVariable(VAR_NOMBRE, usuario.getNombreUsuario());
+		ctx.setVariable(VAR_NU_EXPEDIENTE, aprobacion.getRequerimiento().getNuExpediente());
 		String htmlContent = templateEngine.process(template, ctx);
 		notificacion.setAsunto(asunto);
 		notificacion.setMensaje(htmlContent);

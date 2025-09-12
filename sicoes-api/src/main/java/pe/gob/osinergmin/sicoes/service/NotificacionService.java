@@ -20,8 +20,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 
 import java.util.List;
 
-import java.util.List;
-
 public interface NotificacionService extends BaseService<Notificacion, Long> {
 
 	public Notificacion obtener(Long idNotificacion,Contexto contexto);

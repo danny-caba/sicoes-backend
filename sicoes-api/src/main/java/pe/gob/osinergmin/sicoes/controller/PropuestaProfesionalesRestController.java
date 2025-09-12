@@ -57,7 +57,7 @@ public class PropuestaProfesionalesRestController extends BaseRestController{
 		logger.info("registrarpropuestaProfesional {} ",propuestaProfesional);
 		
 		
-		Map<String, String> valor = empresasSancionadaRestController.ValidadSancion(propuestaProfesional.getSupervisora().getCodigoRuc());
+		Map<String, String> valor = empresasSancionadaRestController.validadSancion(propuestaProfesional.getSupervisora().getCodigoRuc());
 		if ("1".equals(valor.get("respuestaFec"))) {
 			
 			PropuestaProfesional propuestaProfesional2 = new PropuestaProfesional();

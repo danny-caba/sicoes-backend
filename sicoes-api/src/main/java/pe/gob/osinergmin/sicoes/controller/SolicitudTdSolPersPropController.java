@@ -59,7 +59,7 @@ public class SolicitudTdSolPersPropController extends BaseRestController{
 	public Map<String,String> validarTrabajadorOsi(@RequestBody String codigoRuc) {
 		logger.info("validarTrabajadorOsi {} ",codigoRuc);
 
-		return empresasSancionadaRestController.ValidadSancionPerfContr(codigoRuc);
+		return empresasSancionadaRestController.validadSancionPerfContr(codigoRuc);
 	}
  
 }

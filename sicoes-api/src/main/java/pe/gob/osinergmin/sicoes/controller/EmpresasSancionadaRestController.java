@@ -23,6 +23,8 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 
 	@Autowired
 	EmpresasSancionadaService empresasSancionadaService;
+
+	private static final String DDMMYYYY = "dd/MM/yyyy";
 	
 	private Logger logger = LogManager.getLogger(EmpresasSancionadaRestController.class);
 	
@@ -34,7 +36,7 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 	}
 
 	@GetMapping("/sancion-vigente")
-	public Map<String,String> ValidadSancion(@RequestParam(required=false) String ruc){
+	public Map<String,String> validadSancion(@RequestParam(required=false) String ruc){
 		Map<String,String> valor=new HashMap<>();
 		String documento = getContexto().getUsuario().getCodigoRuc();
 		documento = documento.trim();
@@ -88,7 +90,7 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 	}
 
 	@GetMapping("/sancion-vigente-pn-contr")
-	public Map<String,String> ValidadSancionPerfContr(@RequestParam(required=false) String ruc){
+	public Map<String,String> validadSancionPerfContr(@RequestParam(required=false) String ruc){
 		Map<String,String> valor=new HashMap<>();
 		String documento = getContexto().getUsuario().getCodigoRuc();
 		documento = documento.trim();
@@ -145,11 +147,10 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 	}
 
 	@GetMapping("/vinculo-laboral")
-	public Map<String,String> ValidarVinculoLaboral(@RequestParam String numeroDocumento){
+	public Map<String,String> validarVinculoLaboral(@RequestParam String numeroDocumento){
 		Map<String,String> valor=new HashMap<>();
 
-		boolean esRuc = false;
-		esRuc = Objects.equals(numeroDocumento.trim().length(), 10) ? true : false;
+		boolean esRuc = numeroDocumento.trim().length() == 10;
 		numeroDocumento = numeroDocumento.trim();
 
 		if (esRuc) {
@@ -162,7 +163,7 @@ public class EmpresasSancionadaRestController extends BaseRestController {
 
 			if(!rpt.equalsIgnoreCase("2")) {
 
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DDMMYYYY);
 				LocalDate fechaCese = LocalDate.parse(rpt, formatter);
 
 				LocalDate fechaLimite = LocalDate.now().minusDays(1);

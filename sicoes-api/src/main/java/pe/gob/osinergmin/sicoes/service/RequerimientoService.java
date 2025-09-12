@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.util.Optional;
 
@@ -28,6 +28,6 @@ public interface RequerimientoService extends BaseService<Requerimiento, Long> {
 
     Requerimiento actualizar(Requerimiento requerimiento, Contexto contexto);
 
-    Long obtenerIdInforme(String expediente, Contexto contexto) throws Exception;
+    Long obtenerIdInforme(String expediente, Contexto contexto) throws ValidacionException;
 
 }

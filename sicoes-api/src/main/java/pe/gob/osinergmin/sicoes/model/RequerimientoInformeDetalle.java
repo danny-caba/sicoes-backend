@@ -55,7 +55,7 @@ public class RequerimientoInformeDetalle extends BaseModel implements Serializab
     private String disponibilidadPresupuestal;
 
     @Column(name = "DE_DECLARACION_JURADA", length = 5000)
-    private String DeclaracionJurada;
+    private String declaracionJurada;
 
     public Long getIdRequerimientoInformeDetalle() {
         return idRequerimientoInformeDetalle;
@@ -146,10 +146,10 @@ public class RequerimientoInformeDetalle extends BaseModel implements Serializab
     }
 
     public String getDeclaracionJurada() {
-        return DeclaracionJurada;
+        return declaracionJurada;
     }
 
     public void setDeclaracionJurada(String declaracionJurada) {
-        DeclaracionJurada = declaracionJurada;
+        declaracionJurada = declaracionJurada;
     }
 }

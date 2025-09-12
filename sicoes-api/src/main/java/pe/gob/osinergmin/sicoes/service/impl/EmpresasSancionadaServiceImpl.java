@@ -507,7 +507,6 @@ public class EmpresasSancionadaServiceImpl implements EmpresasSancionadaService 
 					URLEncoder.encode(codigoAplicativo, StandardCharsets.UTF_8.toString()),
 					URLEncoder.encode(codigoConsulta, StandardCharsets.UTF_8.toString())
 			);
-			System.out.println("Valor de urlWithParams: " + urlWithParams);
 			// Crear una URL y abrir una conexión
 			URL url = new URL(urlWithParams);
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();

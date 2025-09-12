@@ -9,18 +9,14 @@ import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIE
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_EN_PROCESO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoContrato;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.dto.ArchivoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoContratoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoContratoDTO;
@@ -36,17 +32,12 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class RequerimientoContratoImpl implements RequerimientoContratoService {
-
-    private static final Logger logger = LogManager.getLogger(RequerimientoContratoImpl.class);
 
     @Autowired
     private ListadoDetalleService listadoDetalleService;
@@ -96,9 +87,6 @@ public class RequerimientoContratoImpl implements RequerimientoContratoService {
         RequerimientoContrato contratoBD = requerimientoContratoDao.obtenerPorUuid(uuid)
                 .orElseThrow(() -> new ValidacionException(REQUERIMIENTO_CONTRATO_NO_ENCONTRADO));
         Requerimiento requerimiento = contratoBD.getRequerimiento();
-//        if(!requerimiento.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQUERIMIENTO.EN_PROCESO)) {
-//            throw new ValidacionException(REQUERIMIENTO_EN_PROCESO);
-//        }
         if(!contratoBD.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_REQ_CONTRATO.EN_PROCESO)) {
             throw new ValidacionException(REQUERIMIENTO_EN_PROCESO);
         }
@@ -162,7 +150,7 @@ public class RequerimientoContratoImpl implements RequerimientoContratoService {
 
     @Override
     public void eliminar(Long aLong, Contexto contexto) {
-
+        requerimientoContratoDao.deleteById(aLong);
     }
 
 }

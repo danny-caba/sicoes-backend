@@ -1,10 +1,8 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO;
-import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.APROBACION_NO_ENCONTRADA;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_FIN_ANTES_INICIO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ERROR_FECHA_INICIO_ANTES_HOY;
-import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ESTADO_APROBACION_INCORRECTO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.ESTADO_APROBACION_NO_ENVIADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENCONTRADO;
 import static pe.gob.osinergmin.sicoes.util.Constantes.CODIGO_MENSAJE.SIAF_NO_ENVIADO;
@@ -44,7 +42,6 @@ import pe.gob.osinergmin.sicoes.model.Division;
 import pe.gob.osinergmin.sicoes.model.PerfilAprobador;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoDocumentoDetalle;
-import pe.gob.osinergmin.sicoes.model.RequerimientoInforme;
 import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.UsuarioRol;
@@ -53,7 +50,6 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoDao;
@@ -193,7 +189,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    public Long obtenerIdInforme(String expediente, Contexto contexto) throws Exception {
+    public Long obtenerIdInforme(String expediente, Contexto contexto) throws ValidacionException {
         return sigedOldConsumer.obtenerIdInformeSiged(expediente, contexto);
     }
 
@@ -203,7 +199,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
     }
 
     @Override
-    public void eliminar(Long aLong, Contexto contexto) { }
+    public void eliminar(Long aLong, Contexto contexto) {
+        requerimientoDao.deleteById(aLong);
+    }
 
     @Override
     public Page<Requerimiento> listar(FiltroRequerimientoDTO filtro, Pageable pageable, Contexto contexto) {
@@ -308,7 +306,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_G2_NO_ENCONTRADO);
         }
         requerimientoAprobacion.setUsuario(aprobadorG2);
-        // TODO: EL ESTADO APROBACION SE DEBE REUTILIZAR
         ListadoDetalle asignado = listadoDetalleService.obtenerListadoDetalle(
                 Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                 Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO
@@ -454,15 +451,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
                 throw new ValidacionException(ACCESO_NO_AUTORIZADO);
             }
 
-            //Actualizar Aprobacion a Aprobado o Desaprobado
-//            ListadoDetalle estadoAprobacionRequest = listadoDetalleService.obtenerListadoDetalle(
-//                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO, aprobacion.getEstado().getCodigo());
-//            aprobacionBD.setEstado(estadoAprobacionRequest);
             AuditoriaUtil.setAuditoriaRegistro(aprobacionBD, contexto);
             aprobacionDao.save(aprobacionBD);
 
-            //Actualizar Requerimiento
-//            requerimientoBD.setDeObservacion(aprobacion.getObservacion());
             AuditoriaUtil.setAuditoriaRegistro(requerimientoBD, contexto);
             return requerimientoDao.save(requerimientoBD);
         }
@@ -528,29 +519,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
     @Override
     public Page<Requerimiento> listarPorAprobar(FiltroRequerimientoDTO filtroRequerimientoDTO, Pageable pageable, Contexto contexto) {
-//        return this.listar(filtroRequerimientoDTO, pageable, contexto)
-//                .map(req -> {
-//                    req.setArchivos(new ArrayList<Archivo>());
-//                    Archivo informe = archivoDao.obtenerTipoArchivoRequerimiento(req.getIdRequerimiento(),
-//                            Constantes.LISTADO.TIPO_ARCHIVO.ARCHIVO_REQUERIMIENTO);
-//                    req.getArchivos().add(informe);
-//                    req.getReqAprobaciones()
-//                            .forEach(aprob -> {
-//                                if(aprob.getEstado().getCodigo().equalsIgnoreCase(Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)) {
-//                                    req.setTipoAprobacion(aprob.getTipo().getNombre());
-//                                }
-//                                if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.JEFE_UNIDAD)) {
-//                                    req.setEstadoFirmaJefeUnidad(aprob.getEstado().getNombre());
-//                                } else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GERENTE)) {
-//                                    req.setEstadoFirmaGerente(aprob.getEstado().getNombre());
-//                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GPPM)) {
-//                                    req.setEstadoAprobacionGPPM(aprob.getEstado().getNombre());
-//                                }else if(aprob.getGrupo().getCodigo().equalsIgnoreCase(Constantes.LISTADO.GRUPO_APROBACION.GSE)) {
-//                                    req.setEstadoAprobacionGSE(aprob.getEstado().getNombre());
-//                                }
-//                            });
-//                    return req;
-//                });
         return null;
     }
 

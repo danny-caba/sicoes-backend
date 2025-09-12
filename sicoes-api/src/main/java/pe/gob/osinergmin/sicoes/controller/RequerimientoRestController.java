@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import pe.gob.osinergmin.sicoes.model.Requerimiento;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
-import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionDTO;
 import pe.gob.osinergmin.sicoes.service.RequerimientoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 

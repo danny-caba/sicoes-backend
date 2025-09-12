@@ -1,6 +1,10 @@
 package pe.gob.osinergmin.sicoes.model.dto;
 
-public class DivisionDTO {
+import java.io.Serializable;
+
+public class DivisionDTO implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private Long idDivision;
 	private String deDivision;
 

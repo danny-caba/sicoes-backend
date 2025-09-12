@@ -32,6 +32,7 @@ public class RequerimientoContratoRestController  extends BaseRestController {
     @GetMapping
     @Raml("requerimientoContrato.listar.properties")
     public Page<RequerimientoContrato> listar(@ModelAttribute FiltroRequerimientoContratoDTO filtros, Pageable pageable) {
+        logger.info("listar requerimientos contratos: {}", filtros);
         return requerimientoContratoService.listar(filtros, pageable, getContexto());
     }
 
@@ -39,6 +40,7 @@ public class RequerimientoContratoRestController  extends BaseRestController {
     @Raml("requerimientoContrato.registrar.properties")
     @Transactional
     public RequerimientoContrato registrar(@RequestBody RequerimientoContrato contrato) {
+        logger.info("registrar requerimiento contrato: {}", contrato);
         return requerimientoContratoService.guardar(contrato, getContexto());
     }
 
@@ -47,6 +49,7 @@ public class RequerimientoContratoRestController  extends BaseRestController {
     @Transactional
     public RequerimientoContrato editar(@PathVariable("uuid") String uuid,
                                          @RequestBody RequerimientoContratoDTO contrato) {
+        logger.info("editar requerimiento contrato: {}", uuid);
         return requerimientoContratoService.editar(uuid, contrato, getContexto());
     }
 }

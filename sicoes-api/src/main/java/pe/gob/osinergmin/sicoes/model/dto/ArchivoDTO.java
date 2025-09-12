@@ -1,8 +1,8 @@
 package pe.gob.osinergmin.sicoes.model.dto;
+import java.io.Serializable;
 
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-
-public class ArchivoDTO {
+public class ArchivoDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long idArchivo;
     private ListadoDetalleDTO tipoArchivo;
     private String nombre;

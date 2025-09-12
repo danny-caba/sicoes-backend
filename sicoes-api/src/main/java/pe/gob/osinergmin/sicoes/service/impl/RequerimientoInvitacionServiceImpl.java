@@ -31,7 +31,6 @@ import pe.gob.osinergmin.sicoes.service.RolService;
 import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.service.UsuarioRolService;
-import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -114,7 +113,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     @Override
     public void eliminar(Long aLong, Contexto contexto) {
-
+        requerimientoInvitacionDao.deleteById(aLong);
     }
 
     @Override
@@ -291,25 +290,31 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     private void setearDescripcionSaldo(RequerimientoInvitacion requerimientoInvitacion) {
         Long saldo = requerimientoInvitacion.getSaldoContrato();
-        if(saldo != null && saldo > 0) {
-            Long anios = saldo / 365;
-            Long meses = (saldo % 365) / 30;
-            Long dias = (saldo % 365) % 30;
-            StringBuilder sb = new StringBuilder();
-            if(anios > 0) {
-                sb.append(anios).append(anios > 1 ? " años " : " año ");
-            }
-            if(meses > 0) {
-                sb.append(meses).append(meses > 1 ? " meses " : " mes ");
-            }
-            if(dias > 0) {
-                sb.append(dias).append(dias > 1 ? " días" : " día");
-            }
-            requerimientoInvitacion.setDescripcionSaldoContrato(sb.toString());
-        } else {
+
+        if (saldo == null || saldo <= 0) {
             requerimientoInvitacion.setDescripcionSaldoContrato("0 días");
+            return;
         }
 
+        Long anios = saldo / 365;
+        Long meses = (saldo % 365) / 30;
+        Long dias = (saldo % 365) % 30;
+
+        StringBuilder sb = new StringBuilder();
+        appendPeriodo(sb, anios, "año", "años");
+        appendPeriodo(sb, meses, "mes", "meses");
+        appendPeriodo(sb, dias, "día", "días");
+
+        requerimientoInvitacion.setDescripcionSaldoContrato(sb.toString().trim());
+    }
+
+    private void appendPeriodo(StringBuilder sb, Long valor, String singular, String plural) {
+        if (valor != null && valor > 0) {
+            sb.append(valor)
+                    .append(" ")
+                    .append(valor > 1 ? plural : singular)
+                    .append(" ");
+        }
     }
 
 }

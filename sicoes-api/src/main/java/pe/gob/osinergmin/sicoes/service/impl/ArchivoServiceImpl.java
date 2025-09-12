@@ -162,21 +162,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
 			}	
 		}
-
-		if(archivo.getIdReqDocumentoDetalle() != null) {
-//			todo: cuanto peso como maximo se debe considerar?
-//			if(tamanioMB>pesoAcreditacion) {
-//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
-//			}
-		}
-
-		if(archivo.getIdRequerimientoContrato() != null) {
-//			todo: cuanto peso como maximo se debe considerar?
-//			if(tamanioMB>pesoAcreditacion) {
-//				throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_TAMANIO,pesoAcreditacion);
-//			}
-		}
-		
 		AuditoriaUtil.setAuditoriaRegistro(archivo, contexto);
 		if (archivo.getCodigo() == null) {
 			archivo.setCodigo(UUID.randomUUID().toString());
@@ -1359,49 +1344,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 		return archivoDao.buscarXRequerimiento(idSolicitud,Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO);
 	}
 
-	@Transactional(rollbackFor = Exception.class)
-	public Archivo guardarXRequerimiento(Archivo archivo, Contexto contexto) {
-		boolean nuevo = archivo.getIdArchivo() == null;
-//		if(archivo.getRequerimientoUuid() != null) {
-//			archivo.setIdRequerimiento(requerimientoService.obtenerId(archivo.getRequerimientoUuid()));
-//			if(archivo.getTipoArchivo().getCodigo().equals(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA)) {
-//				List<Archivo> archivosExperiencia = this.buscarArchivo(Constantes.LISTADO.TIPO_ARCHIVO.EXPERIENCIA,
-//								archivo.getSolicitudUuid(), null, null)
-//						.getContent()
-//						.stream()
-//						.filter(arch -> Optional.ofNullable(arch.getIdDocumento()).isPresent())
-//						.collect(Collectors.toList());
-//				boolean existe = archivosExperiencia.stream()
-//						.anyMatch(arch -> {
-//							try {
-//								arch.setContenido(sigedOldConsumer.descargarArchivosAlfresco(arch));
-//								if(Optional.ofNullable(archivo.getFile()).isPresent()
-//										&& Optional.ofNullable(arch.getContenido()).isPresent()) {
-//									InputStream nuevoArch = archivo.getFile().getInputStream();
-//									InputStream oldArch = new ByteArrayInputStream(arch.getContenido());
-//									boolean existeArchivo = IOUtils.contentEquals(nuevoArch, oldArch);
-//									nuevoArch.close();
-//									oldArch.close();
-//									return existeArchivo;
-//								} else {
-//									return false;
-//								}
-//							} catch (Exception e) {
-//								return false;
-//							}
-//						});
-//				if(existe) {
-//					throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_DUPLICADO);
-//				}
-//			}
-//		}
-		if (nuevo) {
-			return registrarRequerimiento(archivo, contexto);
-		} else {
-			return modificarRequerimiento(archivo, contexto);
-		}
-	}
-
 	private Archivo registrarRequerimiento(Archivo archivo, Contexto contexto) {
 		Archivo archivoBD;
 		int tamanioByte;
@@ -1442,11 +1384,8 @@ public class ArchivoServiceImpl implements ArchivoService {
 			}
 
 		}
-//		if(archivo.getDescripcion()==null||"".equals(archivo.getDescripcion())) {
-//			archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.CARGADO));
-//		}else {
-			archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
-//		}
+
+		archivo.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ARCHIVO.CODIGO, Constantes.LISTADO.ESTADO_ARCHIVO.ASOCIADO));
 
 		archivoBD = archivoDao.save(archivo);
 		if (archivo.getFile() != null || archivo.getContenido() != null) {
@@ -1500,29 +1439,17 @@ public class ArchivoServiceImpl implements ArchivoService {
 
 	@Transactional(rollbackFor = Exception.class)
 	public Archivo guardarPorRequerimiento (Archivo archivo, Contexto contexto) {
-		return archivo.getIdArchivo() == null
-				? registrarRequerimiento(archivo, contexto)
-				: modificarRequerimiento(archivo, contexto);
+		return guardarArchivoGenerico(archivo, contexto);
 	}
 
 	@Transactional(rollbackFor = Exception.class)
 	public Archivo guardarXRequerimientoInforme (Archivo archivo, Contexto contexto) {
-			boolean nuevo = archivo.getIdArchivo() == null;
-			if (nuevo) {
-					return registrarRequerimiento(archivo, contexto);
-			} else {
-					return modificarRequerimiento(archivo, contexto);
-			}
+		return guardarArchivoGenerico(archivo, contexto);
 	}
 
 	@Transactional(rollbackFor = Exception.class)
 	public Archivo guardarXRequerimientoDocumento (Archivo archivo, Contexto contexto) {
-		boolean nuevo = archivo.getIdArchivo() == null;
-		if (nuevo) {
-			return registrarRequerimiento(archivo, contexto);
-		} else {
-			return modificarRequerimiento(archivo, contexto);
-		}
+		return guardarArchivoGenerico(archivo, contexto);
 	}
 
 	@Override
@@ -1543,5 +1470,11 @@ public class ArchivoServiceImpl implements ArchivoService {
 		} else {
 			return archivos.get(0);
 		}
+	}
+
+	private Archivo guardarArchivoGenerico(Archivo archivo, Contexto contexto) {
+		return archivo.getIdArchivo() == null
+				? registrarRequerimiento(archivo, contexto)
+				: modificarRequerimiento(archivo, contexto);
 	}
 }

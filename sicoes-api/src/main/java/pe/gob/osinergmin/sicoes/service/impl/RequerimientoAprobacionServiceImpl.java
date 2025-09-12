@@ -8,16 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.controller.RequerimientoAprobacionRestController;
 import pe.gob.osinergmin.sicoes.model.Archivo;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.RequerimientoAprobacion;
-import pe.gob.osinergmin.sicoes.model.Rol;
 import pe.gob.osinergmin.sicoes.model.dto.DivisionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FiltroRequerimientoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.RequerimientoAprobacionResponseDTO;
-import pe.gob.osinergmin.sicoes.model.dto.SupervisoraDTO;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.RequerimientoAprobacionDao;
-import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.RequerimientoAprobacionService;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -33,10 +29,8 @@ import java.util.stream.Collectors;
 @Service
 public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobacionService {
 
-    private static final Logger logger = LogManager.getLogger(RequerimientoAprobacionRestController.class);
+    private static final Logger logger = LogManager.getLogger(RequerimientoAprobacionServiceImpl.class);
 
-    @Autowired
-    private ListadoDetalleService listadoDetalleService;
     @Autowired
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
     @Autowired
@@ -59,7 +53,7 @@ public class RequerimientoAprobacionServiceImpl implements RequerimientoAprobaci
 
     @Override
     public void eliminar(Long aLong, Contexto contexto) {
-
+        requerimientoAprobacionDao.deleteById(aLong);
     }
 
     @Override
