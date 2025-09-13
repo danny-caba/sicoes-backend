@@ -27,6 +27,10 @@ public class BandejaAprobacionImplService {
     @Autowired
     private ListadoDetalleService listadoDetalleService;
 
+
+
+
+
     public Page<BandejaAprobacionResponseDTO> listaApobaciones(
 
             String numeroExpediente,
