@@ -342,10 +342,10 @@ public class CrearInformeRenovacionContratoImpl  {
 
     private Archivo buidlArchivo(byte[] bytesSalida, Long idInformeRenovacion) {
         Archivo archivo = new Archivo();
-        archivo.setNombre("INFORME_RENOVACION_CONTRATO_"+".pdf");
+        archivo.setNombre("INFORME_RENOVACION_CONTRATO_A_"+idInformeRenovacion+".pdf");
         SimpleDateFormat sdf2 = new SimpleDateFormat("hhmmss");
 		String hora = sdf2.format(new Date());
-        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_"+hora+".pdf");
+        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_"+hora+".pdf");
         archivo.setTipo("application/pdf");
 
         
