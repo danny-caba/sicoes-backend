@@ -18,8 +18,11 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.List;
 
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.AprobacionCreateMapper;
+
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.AprobacionInformeService;
-import pe.gob.osinergmin.sicoes.util.Constantes;
+
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.ValidaAprobacionInformeService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprobacionDao;
@@ -57,92 +60,67 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private ValidaAprobacionInformeService validaAprobacionService;
+
+    @Autowired
+    private ValidaAprobacionInformeService datosService;
+
+    @Autowired
+    private AprobacionCreateMapper aprobacionCreateMapper;
+
+
     @Override
     public AprobacionInformeRenovacionCreateResponseDTO aprobarInformeRenovacion(
             AprobacionInformeRenovacionCreateRequestDTO requestDTO,
             Contexto contexto) throws DataNotFoundException {
-
-        // Validaciones básicas
-        if (requestDTO == null) {
-            logger.error("El request no puede ser nulo.");
-            throw new IllegalArgumentException("El request no puede ser nulo.");
-        }
-        if (contexto == null || contexto.getUsuario() == null || contexto.getUsuario().getIdUsuario() == null) {
-            logger.error("El contexto/usuario es inválido.");
-            throw new IllegalArgumentException("El contexto/usuario es inválido.");
-        }
-        if (requestDTO.getIdRequerimientosAprobacion() == null || requestDTO.getIdRequerimientosAprobacion().isEmpty()) {
-            logger.error("Debe indicar al menos un id de RequerimientoAprobacion.");
-            throw new IllegalArgumentException("Debe indicar al menos un id de RequerimientoAprobacion.");
-        }
-
-        // Inicializar respuesta agregada
-        AprobacionInformeRenovacionCreateResponseDTO respuestaAgregada = new AprobacionInformeRenovacionCreateResponseDTO();
-        List<AprobacionInformeCreateResponseDTO> resultados = new ArrayList<>();
-
-        // Procesar cada id de requerimiento
+        AprobacionInformeRenovacionCreateResponseDTO responseDTO = new AprobacionInformeRenovacionCreateResponseDTO();
+        validaAprobacionService.validarInformeRenovacion(requestDTO, contexto);
+        List<AprobacionCreateResponseDTO> aprobaciones = new ArrayList<>();
         for (Long idReqApr : requestDTO.getIdRequerimientosAprobacion()) {
             try {
                 // 1) Obtener requerimiento
                 RequerimientoAprobacion entity = requerimientoAprobacionDao.obtenerPorId(idReqApr);
-                if (entity == null) {
-                    logger.error("No existe RequerimientoAprobacion con id={}", idReqApr);
-                    throw new DataNotFoundException("No existe RequerimientoAprobacion con id=" + idReqApr);
-                }
-
-                // Validar informe de renovación
-                if (entity.getInformeRenovacionContrato() == null ||
-                    entity.getInformeRenovacionContrato().getIdInformeRenovacion() == null) {
-                    logger.error("El RequerimientoAprobacion {} no tiene InformeRenovacion asociado.", idReqApr);
-                    throw new DataNotFoundException(
-                        "El RequerimientoAprobacion " + idReqApr + " no tiene InformeRenovacion asociado.");
-                }
-
-                // 2) Obtener grupo aprobador
                 ListadoDetalle grupoAprobadorLd = listadoDetalleService.obtener(
-                    entity.getIdGrupoAprobadorLd(),contexto);
-                if (grupoAprobadorLd == null || grupoAprobadorLd.getCodigo() == null) {
-                    logger.error("No se pudo resolver el grupo aprobador para RequerimientoAprobacion {}", idReqApr);
-                    throw new DataNotFoundException(
-                        "No se pudo resolver el grupo aprobador para RequerimientoAprobacion " + idReqApr);
-                }
-
+                        entity.getIdGrupoAprobadorLd(),contexto);
+                String codigoGrupo = grupoAprobadorLd.getCodigo();
+                // 4) Enrutar según grupo aprobador
                 // 3) Construir request para aprobación específica
                 AprobacionInformeCreateRequestDTO reqAprob = new AprobacionInformeCreateRequestDTO();
                 reqAprob.setIdUsuario(contexto.getUsuario().getIdUsuario());
                 reqAprob.setObservacion(requestDTO.getObservacion());
-
                 // Agregar informe a la lista
                 InformeAprobacionCreateRequestDTO informeDTO = new InformeAprobacionCreateRequestDTO();
                 informeDTO.setIdInformeRenovacion(entity.getInformeRenovacionContrato().getIdInformeRenovacion());
+
                 List<InformeAprobacionCreateRequestDTO> informes = new ArrayList<>();
                 informes.add(informeDTO);
                 reqAprob.setInformes(informes);
-
-                // 4) Enrutar según grupo aprobador
-                AprobacionInformeCreateResponseDTO resultado;
-                String codigoGrupo = grupoAprobadorLd.getCodigo();
-
+                
                 switch (codigoGrupo) {
                     case "JEFE_UNIDAD":
-                        resultado = aprobarInformeRenovacionG1(reqAprob, contexto);
+                       aprobarInformeRenovacionG1(reqAprob, contexto);
                         break;
                     case "GERENTE":
-                        resultado = aprobarInformeRenovacionG2(reqAprob, contexto);
+                        aprobarInformeRenovacionG2(reqAprob, contexto);
                         break;
                     case "GPPM":
-                        resultado = aprobarInformeRenovacionGppmG3(reqAprob, contexto);
+                        aprobarInformeRenovacionGppmG3(reqAprob, contexto);
                         break;
                     case "GSE":
-                        resultado = aprobarInformeRenovacionGseG3(reqAprob, contexto);
+                        aprobarInformeRenovacionGseG3(reqAprob, contexto);
                         break;
                     default:
                         logger.error("Código de grupo aprobador no soportado: {}", codigoGrupo);
-                        throw new IllegalStateException(
-                            "Código de grupo aprobador no soportado: " + codigoGrupo);
+                        throw new DataNotFoundException(
+                                "Código de grupo aprobador no soportado: " + codigoGrupo);
                 }
 
-                resultados.add(resultado);
+                RequerimientoAprobacion entityBefore = requerimientoAprobacionDao.obtenerPorId(idReqApr);
+                // Mapear requerimiento a DTO usando el mapper
+                AprobacionCreateResponseDTO aprobacionDTO = aprobacionCreateMapper.toDto(entityBefore);
+                aprobaciones.add(aprobacionDTO);
 
             } catch (Exception e) {
                 // Loggear error y continuar con siguiente id
@@ -150,9 +128,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 throw new DataNotFoundException("Error procesando requerimiento: " + e.getMessage());
             }
         }
-
-
-        return null;
+        responseDTO.setAprobaciones(aprobaciones);
+        return responseDTO;
     }
 
 
@@ -164,39 +141,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
      */
     @Override
     public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionG1(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto) {
-        // Validación 3.0: idUsuario obligatorio
-        /*if (requestDTO.getIdUsuario() == null) {
-            throw new DataNotFoundException("El campo id Usuario es obligatorio");
-        }*/
-        // Validación 3.1: observacion obligatorio
-        if (requestDTO.getObservacion() == null || requestDTO.getObservacion().trim().isEmpty()) {
-            throw new DataNotFoundException("El campo observacion es obligatorio");
-        }
-        // Validación 3.2: observacion longitud máxima
-        if (requestDTO.getObservacion().length() > 500) {
-            throw new DataNotFoundException("La observación no debe superar los 500 caracteres");
-        }
-        // Validación 3.3: todos los informes deben tener idInformeRenovacion
-        if (requestDTO.getInformes() == null || requestDTO.getInformes().isEmpty()) {
-            throw new DataNotFoundException("Debe ingresar al menos un informe de renovación");
-        }
-        // 3.4  validaciones en   validaciones en un solo bucle
-        for (InformeAprobacionCreateRequestDTO informeDTO : requestDTO.getInformes()) {
-            if (informeDTO.getIdInformeRenovacion() == null) {
-                throw new DataNotFoundException("Debe ingresar idInformeRenovacion en todos los informes");
-            }
-            Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeDTO.getIdInformeRenovacion());
-            if (!informeOpt.isPresent()) {
-                throw new DataNotFoundException("Código informe renovación no encontrado "+informeDTO.getIdInformeRenovacion().toString());
-            }
-            InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
 
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-            if (listaPerfilesAprobadoresBySolicitud == null || listaPerfilesAprobadoresBySolicitud.isEmpty()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-        }
+
 
         // 3.5 Iniciar iteración de lógica de negocio de Aprobación
         for (InformeAprobacionCreateRequestDTO informeRequest : requestDTO.getInformes()) {
@@ -205,23 +151,16 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeRequest.getIdInformeRenovacion());
 
             InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
-            
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = 
-                solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
 
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
+            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = obtenerSolicitudPerfecionamiento(informeRenovacionContrato);
             
             // 3.5.2 Actualiza aprobación el campo "Estado Aprobación Jefe División" = Aprobado
-            ListadoDetalle jefeUnidadG1GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPO_APROBACION", 
-                "JEFE_UNIDAD"
-            );
+
             
             // Buscar el requerimiento de aprobación G1 existente
             List<RequerimientoAprobacion> requerimientosG1 = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-                informeRequest.getIdInformeRenovacion(), 
-                jefeUnidadG1GrupoAprobadorLD.getIdListadoDetalle()
+                informeRequest.getIdInformeRenovacion(),
+                    datosService.obtenerIdLd("GRUPO_APROBACION", "JEFE_UNIDAD")
             );
             
             if (requerimientosG1.isEmpty()) {
@@ -229,58 +168,41 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             
             RequerimientoAprobacion requerimientoAprobacionG1 = requerimientosG1.get(0);
-            
-            ListadoDetalle aprobadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION", 
-                "APROBADO"
+            asignarAuditoriaActualizacion(requerimientoAprobacionG1, contexto);
+            requerimientoAprobacionG1.setIdEstadoLd(
+                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
             );
-            requerimientoAprobacionG1.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG1().toString());
-            requerimientoAprobacionG1.setFecActualizacion(new Date());
-            requerimientoAprobacionG1.setFeAprobacion(new Date());
-            requerimientoAprobacionG1.setIdEstadoLd(aprobadoEstadoLD.getIdListadoDetalle());
             requerimientoAprobacionG1.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG1());
             requerimientoAprobacionG1.setDeObservacion(requestDTO.getObservacion());
 
             
             // 3.5.3 Registra el campo "Estado Aprobación Gerente División" = Asignado
             RequerimientoAprobacion requerimientoAprobacionG2 = new RequerimientoAprobacion();
-            requerimientoAprobacionG2.setFeAsignacion(new Date());
-            requerimientoAprobacionG2.setFecCreacion(new Date());
-            requerimientoAprobacionG2.setUsuCreacion(solicitudPerfecionamientoContrato.getIdAprobadorG1().toString());
+            asignarAuditoriaCreacion(requerimientoAprobacionG2, contexto);
 
             requerimientoAprobacionG2.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
 
-            ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-                    "TIPO_APROBACION",
-                    "FIRMAR"
+            requerimientoAprobacionG2.setIdTipoLd(
+                datosService.obtenerIdLd("TIPO_APROBACION", "FIRMAR")
             );
-            requerimientoAprobacionG2.setIdTipoLd(g1GrupoLD.getIdListadoDetalle());
 
-            ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPOS", 
-                "G2"
+            requerimientoAprobacionG2.setIdGrupoLd(
+                datosService.obtenerIdLd("GRUPOS", "G2")
             );
-            requerimientoAprobacionG2.setIdGrupoLd(g2GrupoLD.getIdListadoDetalle());
             
             requerimientoAprobacionG2.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
             
-            ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION", 
-                "ASIGNADO"
+            requerimientoAprobacionG2.setIdEstadoLd(
+                datosService.obtenerIdLd("ESTADO_APROBACION", "ASIGNADO")
             );
-            requerimientoAprobacionG2.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
             
-            ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
-                    "TIPO_EVALUADOR",
-                    "APROBADOR_TECNICO"
+            requerimientoAprobacionG2.setIdTipoAprobadorLd(
+                datosService.obtenerIdLd("TIPO_EVALUADOR", "APROBADOR_TECNICO")
             );
-            requerimientoAprobacionG2.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
             
-            ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPO_APROBACION", 
-                "GERENTE"
+            requerimientoAprobacionG2.setIdGrupoAprobadorLd(
+                datosService.obtenerIdLd("GRUPO_APROBACION", "GERENTE")
             );
-            requerimientoAprobacionG2.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
             requerimientoAprobacionDao.save(requerimientoAprobacionG2);
             // 3.5.4 Realiza notificación
             Usuario usuarioG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
@@ -302,44 +224,6 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
      */
     @Override
     public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionG2(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto) {
-        // Validación 3.0: idUsuario obligatorio
-        if (requestDTO.getIdUsuario() == null) {
-            throw new DataNotFoundException("El campo id Usuario es obligatorio");
-        }
-        // Validación 3.1: observacion obligatorio
-        if (requestDTO.getObservacion() == null || requestDTO.getObservacion().trim().isEmpty()) {
-            throw new DataNotFoundException("El campo observacion es obligatorio");
-        }
-        // Validación 3.2: observacion longitud máxima
-        if (requestDTO.getObservacion().length() > 500) {
-            throw new DataNotFoundException("La observación no debe superar los 500 caracteres");
-        }
-        // Validación 3.3: todos los informes deben tener idInformeRenovacion
-        if (requestDTO.getInformes() == null || requestDTO.getInformes().isEmpty()) {
-            throw new DataNotFoundException("Debe ingresar al menos un informe de renovación");
-        }
-
-        // 3.4 validaciones en un solo bucle - Valida id Usuario de List<InformeAprobacionCreateRequestDTO> informes
-        for (InformeAprobacionCreateRequestDTO informeDTO : requestDTO.getInformes()) {
-            if (informeDTO.getIdInformeRenovacion() == null) {
-                throw new DataNotFoundException("Debe ingresar idInformeRenovacion en todos los informes");
-            }
-            Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeDTO.getIdInformeRenovacion());
-            if (!informeOpt.isPresent()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-            InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
-
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-            if (listaPerfilesAprobadoresBySolicitud == null || listaPerfilesAprobadoresBySolicitud.isEmpty()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
-            if (!solicitudPerfecionamientoContrato.getIdAprobadorG2().equals(requestDTO.getIdUsuario())) {
-                throw new DataNotFoundException("El usuario no coincide con el perfil aprobador G2");
-            }
-        }
 
         // 3.5 Iniciar iteración de lógica de negocio de Aprobación
         for (InformeAprobacionCreateRequestDTO informeRequest : requestDTO.getInformes()) {
@@ -350,23 +234,12 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
 
 
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
-            
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud =
-                solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
-            
             // 3.5.2 Actualiza aprobación el campo "Estado Aprobación Gerente División" = Aprobado
-            ListadoDetalle gerenteUnidadG2GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPO_APROBACION", 
-                "GERENTE"
-            );
-            
+
             // Buscar el requerimiento de aprobación G2 existente
             List<RequerimientoAprobacion> requerimientosG2 = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-                informeRequest.getIdInformeRenovacion(), 
-                gerenteUnidadG2GrupoAprobadorLD.getIdListadoDetalle()
+                informeRequest.getIdInformeRenovacion(),
+                    datosService.obtenerIdLd("GRUPO_APROBACION", "GERENTE")
             );
             
             if (requerimientosG2.isEmpty()) {
@@ -374,17 +247,12 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             
             RequerimientoAprobacion requerimientoAprobacionG2 = requerimientosG2.get(0);
-            requerimientoAprobacionG2.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG2().toString());
-            requerimientoAprobacionG2.setFecActualizacion(new Date());
-            requerimientoAprobacionG2.setFeAprobacion(new Date());
+            asignarAuditoriaActualizacion(requerimientoAprobacionG2, contexto);
 
-            ListadoDetalle aprobadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION", 
-                "APROBADO"
+            requerimientoAprobacionG2.setIdEstadoLd(
+                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
             );
-
-            requerimientoAprobacionG2.setIdEstadoLd(aprobadoEstadoLD.getIdListadoDetalle());
-            requerimientoAprobacionG2.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
+            requerimientoAprobacionG2.setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionG2.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Actualiza el campo "Estado Aprobación Informe" = Concluido
@@ -392,13 +260,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 "ESTADO_REQUERIMIENTO", 
                 "CONCLUIDO"
             );
-            
-
             informeRenovacionContrato.setEstadoAprobacionInforme(concluidoEstadoAprobacionInforme);
-
-            informeRenovacionContrato.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG1().toString());
-            informeRenovacionContrato.setFecActualizacion(new Date());
-
+            asignarAuditoriaActualizacionInforme(informeRenovacionContrato, contexto);
 
             informeRenovacionContratoDao.save(informeRenovacionContrato);
             
@@ -424,40 +287,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
      */
     @Override
     public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGppmG3(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto) {
-        // Validación 3.0: idUsuario obligatorio
-        if (requestDTO.getIdUsuario() == null) {
-            throw new DataNotFoundException("El campo id Usuario es obligatorio");
-        }
-        // Validación 3.1: observacion obligatorio
-        if (requestDTO.getObservacion() == null || requestDTO.getObservacion().trim().isEmpty()) {
-            throw new DataNotFoundException("El campo observacion es obligatorio");
-        }
-        // Validación 3.2: observacion longitud máxima
-        if (requestDTO.getObservacion().length() > 500) {
-            throw new DataNotFoundException("La observación no debe superar los 500 caracteres");
-        }
-        // Validación 3.3: todos los informes deben tener idInformeRenovacion
-        if (requestDTO.getInformes() == null || requestDTO.getInformes().isEmpty()) {
-            throw new DataNotFoundException("Debe ingresar al menos un informe de renovación");
-        }
 
-        // 3.4 validaciones en un solo bucle - Valida id Usuario de List<InformeAprobacionCreateRequestDTO> informes
-        for (InformeAprobacionCreateRequestDTO informeDTO : requestDTO.getInformes()) {
-            if (informeDTO.getIdInformeRenovacion() == null) {
-                throw new DataNotFoundException("Debe ingresar idInformeRenovacion en todos los informes");
-            }
-            Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeDTO.getIdInformeRenovacion());
-            if (!informeOpt.isPresent()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-            InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
 
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-            if (listaPerfilesAprobadoresBySolicitud == null || listaPerfilesAprobadoresBySolicitud.isEmpty()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-        }
 
         // 3.5 Iniciar iteración de lógica de negocio de Aprobación
         for (InformeAprobacionCreateRequestDTO informeRequest : requestDTO.getInformes()) {
@@ -466,23 +297,15 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeRequest.getIdInformeRenovacion());
 
             InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
-            
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = 
-                solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
+            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = obtenerSolicitudPerfecionamiento(informeRenovacionContrato);
             
             // 3.5.2 Actualiza aprobación el campo "Estado Aprobación GPPM G3" = Aprobado
-            ListadoDetalle gppmG3GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPO_APROBACION", 
-                "GPPM"
-            );
+            Long idGrupoAprobadorGppmG3 = datosService.obtenerIdLd("GRUPO_APROBACION", "GPPM");
             
             // Buscar el requerimiento de aprobación GPPM G3 existente
             List<RequerimientoAprobacion> requerimientosGppmG3 = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
                 informeRequest.getIdInformeRenovacion(), 
-                gppmG3GrupoAprobadorLD.getIdListadoDetalle()
+                idGrupoAprobadorGppmG3
             );
             
             if (requerimientosGppmG3.isEmpty()) {
@@ -490,55 +313,41 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             
             RequerimientoAprobacion requerimientoAprobacionGppmG3 = requerimientosGppmG3.get(0);
-            requerimientoAprobacionGppmG3.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG3().toString());
-            requerimientoAprobacionGppmG3.setFecActualizacion(new Date());
-            requerimientoAprobacionGppmG3.setFeAprobacion(new Date());
+            asignarAuditoriaActualizacion(requerimientoAprobacionGppmG3, contexto);
 
-            ListadoDetalle aprobadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION", 
-                "APROBADO"
+            requerimientoAprobacionGppmG3.setIdEstadoLd(
+                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
             );
-            
-            requerimientoAprobacionGppmG3.setIdEstadoLd(aprobadoEstadoLD.getIdListadoDetalle());
-            requerimientoAprobacionGppmG3.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG3());
+            requerimientoAprobacionGppmG3.setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionGppmG3.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Registra el campo "Estado Aprobación GSE G3" = Asignado
             RequerimientoAprobacion requerimientoAprobacionGseG3 = new RequerimientoAprobacion();
-            
-            requerimientoAprobacionGseG3.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
-            ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-                    "TIPO_APROBACION",
-                    "APROBAR"
-            );
-            requerimientoAprobacionGseG3.setIdTipoLd(g1GrupoLD.getIdListadoDetalle());
+            asignarAuditoriaCreacion(requerimientoAprobacionGseG3, contexto);
 
+            requerimientoAprobacionGseG3.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
             
-            ListadoDetalle g3GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPOS", 
-                "G3"
+            requerimientoAprobacionGseG3.setIdTipoLd(
+                datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")
             );
-            requerimientoAprobacionGseG3.setIdGrupoLd(g3GrupoLD.getIdListadoDetalle());
+            
+            requerimientoAprobacionGseG3.setIdGrupoLd(
+                datosService.obtenerIdLd("GRUPOS", "G3")
+            );
             
             requerimientoAprobacionGseG3.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG3());
             
-            ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION", 
-                "ASIGNADO"
+            requerimientoAprobacionGseG3.setIdEstadoLd(
+                datosService.obtenerIdLd("ESTADO_APROBACION", "ASIGNADO")
             );
-            requerimientoAprobacionGseG3.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
             
-            ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
-                    "TIPO_EVALUADOR",
-                    "APROBADOR_TECNICO"
+            requerimientoAprobacionGseG3.setIdTipoAprobadorLd(
+                datosService.obtenerIdLd("TIPO_EVALUADOR", "APROBADOR_TECNICO")
             );
-            requerimientoAprobacionGseG3.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
             
-            ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPO_APROBACION", 
-                "GSE"
+            requerimientoAprobacionGseG3.setIdGrupoAprobadorLd(
+                datosService.obtenerIdLd("GRUPO_APROBACION", "GSE")
             );
-            requerimientoAprobacionGseG3.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
             
             requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
             
@@ -562,69 +371,21 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
      */
     @Override
     public AprobacionInformeCreateResponseDTO aprobarInformeRenovacionGseG3(AprobacionInformeCreateRequestDTO requestDTO, Contexto contexto) {
-        // Validación 3.0: idUsuario obligatorio
-        if (requestDTO.getIdUsuario() == null) {
-            throw new DataNotFoundException("El campo id Usuario es obligatorio");
-        }
-        // Validación 3.1: observacion obligatorio
-        if (requestDTO.getObservacion() == null || requestDTO.getObservacion().trim().isEmpty()) {
-            throw new DataNotFoundException("El campo observacion es obligatorio");
-        }
-        // Validación 3.2: observacion longitud máxima
-        if (requestDTO.getObservacion().length() > 500) {
-            throw new DataNotFoundException("La observación no debe superar los 500 caracteres");
-        }
-        // Validación 3.3: todos los informes deben tener idInformeRenovacion
-        if (requestDTO.getInformes() == null || requestDTO.getInformes().isEmpty()) {
-            throw new DataNotFoundException("Debe ingresar al menos un informe de renovación");
-        }
 
-        // 3.4 validaciones en un solo bucle - Valida id Usuario de List<InformeAprobacionCreateRequestDTO> informes
-        for (InformeAprobacionCreateRequestDTO informeDTO : requestDTO.getInformes()) {
-            if (informeDTO.getIdInformeRenovacion() == null) {
-                throw new DataNotFoundException("Debe ingresar idInformeRenovacion en todos los informes");
-            }
-            Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeDTO.getIdInformeRenovacion());
-            if (!informeOpt.isPresent()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-            InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
-
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-            if (listaPerfilesAprobadoresBySolicitud == null || listaPerfilesAprobadoresBySolicitud.isEmpty()) {
-                throw new DataNotFoundException(Constantes.CODIGO_MENSAJE.PERFIL_APROBADOR_RENOVACION_CONTRATO_NO_ENCONTRADO);
-            }
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
-            if (!solicitudPerfecionamientoContrato.getIdAprobadorG3().equals(requestDTO.getIdUsuario())) {
-                throw new DataNotFoundException("El usuario no coincide con el perfil aprobador G3");
-            }
-        }
 
         // 3.5 Iniciar iteración de lógica de negocio de Aprobación
         for (InformeAprobacionCreateRequestDTO informeRequest : requestDTO.getInformes()) {
             
             // 3.5.1 Obtiene datos SolicitudPerfecionamientoContrato
             Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(informeRequest.getIdInformeRenovacion());
-
             InformeRenovacionContrato informeRenovacionContrato = informeOpt.get();
-            Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
-            
-            List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud = 
-                solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
-
-            SolicitudPerfecionamientoContrato solicitudPerfecionamientoContrato = listaPerfilesAprobadoresBySolicitud.get(0);
-            
             // 3.5.2 Actualiza aprobación el campo "Estado Aprobación GSE G3" = Aprobado
-            ListadoDetalle gseG3GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPO_APROBACION", 
-                "GSE"
-            );
+
             
             // Buscar el requerimiento de aprobación GSE G3 existente
             List<RequerimientoAprobacion> requerimientosGseG3 = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-                informeRequest.getIdInformeRenovacion(), 
-                gseG3GrupoAprobadorLD.getIdListadoDetalle()
+                informeRequest.getIdInformeRenovacion(),
+                    datosService.obtenerIdLd("GRUPO_APROBACION", "GSE")
             );
             
             if (requerimientosGseG3.isEmpty()) {
@@ -632,29 +393,23 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             
             RequerimientoAprobacion requerimientoAprobacionGseG3 = requerimientosGseG3.get(0);
-            requerimientoAprobacionGseG3.setUsuActualizacion(solicitudPerfecionamientoContrato.getIdAprobadorG3().toString());
-            requerimientoAprobacionGseG3.setFecActualizacion(new Date());
-            requerimientoAprobacionGseG3.setFeAprobacion(new Date());
+            asignarAuditoriaActualizacion(requerimientoAprobacionGseG3, contexto);
 
-            ListadoDetalle aprobadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION", 
-                "APROBADO"
+            requerimientoAprobacionGseG3.setIdEstadoLd(
+                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
             );
-            
-            requerimientoAprobacionGseG3.setIdEstadoLd(aprobadoEstadoLD.getIdListadoDetalle());
-            requerimientoAprobacionGseG3.setIdUsuario(requestDTO.getIdUsuario());
+            requerimientoAprobacionGseG3.setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionGseG3.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Actualiza el campo estado requerimiento renovacion = 'CONCLUIDO'
             RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.obtenerPorId(
                 informeRenovacionContrato.getRequerimiento().getIdReqRenovacion());
-               
-            ListadoDetalle concluidoEstadoReqRenovacion = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_REQUERIMIENTO", 
-                "CONCLUIDO"
+
+            asignarAuditoriaActualizacionRequerimiento(requerimientoRenovacion, contexto);
+
+            requerimientoRenovacion.setEstadoReqRenovacion(
+                datosService.obtenerLd("ESTADO_REQUERIMIENTO", "CONCLUIDO")
             );
-            
-            requerimientoRenovacion.setEstadoReqRenovacion(concluidoEstadoReqRenovacion);
             requerimientoRenovacionDao.save(requerimientoRenovacion);
             
             // 3.5.4 Envía notificación por correo al evaluador de contratos para solicitud de contratos
@@ -669,4 +424,69 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
         return new AprobacionInformeCreateResponseDTO();
     }
+
+    /**
+     * Asigna los valores de auditoría de actualización a un requerimiento
+     * @param requerimiento El requerimiento a actualizar
+     * @param contexto El contexto con la información del usuario
+     */
+    private void asignarAuditoriaActualizacion(RequerimientoAprobacion requerimiento, Contexto contexto) {
+        requerimiento.setUsuActualizacion(contexto.getUsuario().getIdUsuario().toString());
+        requerimiento.setIpActualizacion(contexto.getIp());
+        requerimiento.setFecActualizacion(new Date());
+        requerimiento.setFeAprobacion(new Date());
+    }
+
+    /**
+     * Asigna los valores de auditoría de creación a un requerimiento
+     * @param requerimiento El requerimiento a crear
+     * @param contexto El contexto con la información del usuario
+     */
+    private void asignarAuditoriaCreacion(RequerimientoAprobacion requerimiento, Contexto contexto) {
+        requerimiento.setIpCreacion(contexto.getIp());
+        requerimiento.setFeAsignacion(new Date());
+        requerimiento.setFecCreacion(new Date());
+        requerimiento.setUsuCreacion(contexto.getUsuario().getIdUsuario().toString());
+    }
+
+    /**
+     * Asigna los valores de auditoría de actualización a un informe de renovación
+     * @param informe El informe a actualizar
+     * @param contexto El contexto con la información del usuario
+     */
+    private void asignarAuditoriaActualizacionInforme(InformeRenovacionContrato informe, Contexto contexto) {
+        informe.setIpActualizacion(contexto.getIp());
+        informe.setUsuActualizacion(contexto.getUsuario().getIdUsuario().toString());
+        informe.setFecActualizacion(new Date());
+    }
+
+    /**
+     * Asigna los valores de auditoría de actualización a un requerimiento de renovación
+     * @param requerimiento El requerimiento a actualizar
+     * @param contexto El contexto con la información del usuario
+     */
+    private void asignarAuditoriaActualizacionRequerimiento(RequerimientoRenovacion requerimiento, Contexto contexto) {
+        requerimiento.setIpActualizacion(contexto.getIp());
+        requerimiento.setUsuActualizacion(contexto.getUsuario().getIdUsuario().toString());
+        requerimiento.setFecActualizacion(new Date());
+    }
+
+    /**
+     * Obtiene el contrato de perfeccionamiento asociado a un informe de renovación
+     * @param informeRenovacionContrato El informe de renovación
+     * @return El contrato de perfeccionamiento asociado
+     * @throws DataNotFoundException Si no se encuentra el contrato
+     */
+    private SolicitudPerfecionamientoContrato obtenerSolicitudPerfecionamiento(InformeRenovacionContrato informeRenovacionContrato) {
+        Long idSolicitud = informeRenovacionContrato.getRequerimiento().getSolicitudPerfil().getIdSolicitud();
+        List<SolicitudPerfecionamientoContrato> listaPerfilesAprobadoresBySolicitud =
+            solicitudPerfecionamientoContratoDao.getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
+        
+        if (listaPerfilesAprobadoresBySolicitud.isEmpty()) {
+            throw new DataNotFoundException("No se encontró contrato de perfeccionamiento para la solicitud: " + idSolicitud);
+        }
+        
+        return listaPerfilesAprobadoresBySolicitud.get(0);
+    }
+
 }
