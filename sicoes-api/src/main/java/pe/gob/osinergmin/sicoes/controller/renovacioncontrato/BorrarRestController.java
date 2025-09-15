@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoResponseDTO;
-import pe.gob.osinergmin.sicoes.service.renovacioncontrato.BorrarService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 @RestController

@@ -1,15 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato;
 
-import java.io.File;
-import java.util.List;
-
 import org.springframework.web.multipart.MultipartFile;
-
-import gob.osinergmin.siged.remote.rest.ro.in.DocumentoAnularInRO;
-import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
-import gob.osinergmin.siged.remote.rest.ro.out.DocumentoAnularOutRO;
-import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformePresupuestalCreateRequest;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformePresupuestalCreateResponse;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
