@@ -44,7 +44,7 @@
 
 	<!-- Detalle -->
 	<detail>
-		<band height="760">
+		<band height="680">
 
 			<!-- Cabecera destinatarios -->
 			<staticText>
@@ -77,7 +77,7 @@
 			<textField>
 				<reportElement x="50" y="40" width="505" height="20"/>
 				<textElement><font size="12"/></textElement>
-				<textFieldExpression><![CDATA[$P{nombreEmpresaSupervisora}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Renovación de contrato de la empresa supervisora " + $P{nombreEmpresaSupervisora}]]></textFieldExpression>
 			</textField>
 
 			<staticText>
@@ -88,7 +88,7 @@
 			<textField>
 				<reportElement x="70" y="60" width="485" height="20"/>
 				<textElement><font size="12"/></textElement>
-				<textFieldExpression><![CDATA[$P{numExpediente}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Contrato de locación de servicio nro. " + $P{numExpediente}]]></textFieldExpression>
 			</textField>
 
 			<line>
@@ -173,24 +173,19 @@
 			</staticText>
 
 			<textField>
-				<reportElement x="30" y="580" width="525" height="60"/>
+				<reportElement x="30" y="580" width="525" height="40"/>
 				<textElement><font size="12"/></textElement>
 				<textFieldExpression><![CDATA[$P{conclusiones}]]></textFieldExpression>
 			</textField>
+			
 			<!-- Firma -->
-
-
-		</band>
-	</detail>
-	<summary>
-		<band height="80">
 			<staticText>
-				<reportElement x="0" y="10" width="555" height="20"/>
+				<reportElement x="0" y="630" width="555" height="20"/>
 				<textElement textAlignment="Left"><font size="12" isBold="true"/></textElement>
 				<text><![CDATA[Atentamente,]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="50" width="100" height="18" uuid="2e9af779-f87f-43e8-bf9b-d69a763565cb">
+				<reportElement x="0" y="660" width="100" height="18">
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.firstLineIndent" value="px"/>
 				</reportElement>
@@ -206,6 +201,8 @@
 				</textElement>
 				<text><![CDATA[«image:osifirma»]]></text>
 			</staticText>
+
+
 		</band>
-	</summary>
+	</detail>
 </jasperReport>
