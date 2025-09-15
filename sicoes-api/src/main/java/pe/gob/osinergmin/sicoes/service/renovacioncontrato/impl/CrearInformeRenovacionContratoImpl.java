@@ -183,8 +183,18 @@ public class CrearInformeRenovacionContratoImpl  {
         Usuario usuario = usuarioDao.obtener(Long.parseLong(informe.getUsuCreacion()));
         informe.setUsuario(usuario);
         if (Constantes.INFORME_RENOVACION.ESTADO_INCOMPLETO.equals(dto.getCompletado())) {
+
             informe.setVigente(Boolean.FALSE);
             informe.setRegistro(Constantes.ESTADO.ACTIVO);
+            informe.setCompletado(Constantes.INFORME_RENOVACION.ESTADO_INCOMPLETO);
+            informe.setObjeto(dto.getObjeto());
+            informe.setBaseLegal(dto.getBaseLegal());
+            informe.setAntecedentes(dto.getAntecedentes());
+            informe.setJustificacion(dto.getJustificacion());
+            informe.setNecesidad(dto.getNecesidad());
+            informe.setConclusiones(dto.getConclusiones());
+            informe.setEstadoAprobacionInforme(null);
+
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
         }else if (Constantes.INFORME_RENOVACION.ESTADO_COMPLETO.equals(dto.getCompletado())){
             RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(
@@ -195,6 +205,13 @@ public class CrearInformeRenovacionContratoImpl  {
             String numExpediente = requerimientoRenovacion.getNuExpediente();
             informe.setVigente(Boolean.TRUE);
             informe.setRegistro(Constantes.ESTADO.ACTIVO);
+            informe.setCompletado(Constantes.INFORME_RENOVACION.ESTADO_COMPLETO);
+            informe.setObjeto(dto.getObjeto());
+            informe.setBaseLegal(dto.getBaseLegal());
+            informe.setAntecedentes(dto.getAntecedentes());
+            informe.setJustificacion(dto.getJustificacion());
+            informe.setNecesidad(dto.getNecesidad());
+            informe.setConclusiones(dto.getConclusiones());
 
             ListadoDetalle estadoInformeEnProceso = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
             informe.setEstadoAprobacionInforme(estadoInformeEnProceso);
