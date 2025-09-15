@@ -14,7 +14,7 @@ import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
-import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformePresupuestoService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.BorrarService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 
@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class InformePresupuestoServiceImpl implements InformePresupuestoService {
+public class BorrarServiceImpl implements BorrarService {
 
-    private static final Logger logger = LogManager.getLogger(InformePresupuestoServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(BorrarServiceImpl.class);
 
     @Autowired
     private InformeRenovacionContratoDao informeRenovacionContratoDao;

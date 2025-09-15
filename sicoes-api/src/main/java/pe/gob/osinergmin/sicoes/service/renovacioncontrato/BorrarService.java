@@ -4,7 +4,7 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePre
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoResponseDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
-public interface InformePresupuestoService {
+public interface BorrarService {
     DocumentoInformePresupuestoResponseDTO agregarDocumento(DocumentoInformePresupuestoRequestDTO requestDTO, Contexto contexto) throws Exception;
     DocumentoInformePresupuestoResponseDTO anularDocumento(DocumentoInformePresupuestoRequestDTO requestDTO, Contexto contexto) throws Exception;
 }
