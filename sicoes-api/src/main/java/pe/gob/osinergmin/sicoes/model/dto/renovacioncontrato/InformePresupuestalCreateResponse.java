@@ -1,7 +1,8 @@
 package pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO para las respuestas de gestión de informes presupuestales.
@@ -9,15 +10,13 @@ import lombok.Setter;
  * Esta clase encapsula los datos de respuesta después de adjuntar o anular documentos
  * asociados a un informe presupuestal.
  */
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class InformePresupuestalCreateResponse {
-    
-    private Long idInformeRenovacion;
-    private Long idRequerimientoRenovacion;
     private Long idArchivo;
     private Long idDocumentoSiged;
-    private String nombreDocumento;
+    private Long idRequerimientoAprobacion;
     private String estado;
     private String mensaje;
 }
