@@ -11,27 +11,26 @@ import org.springframework.web.bind.annotation.RestController;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.DocumentoInformePresupuestoResponseDTO;
-import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformePresupuestoService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
 @RestController
 @RequestMapping("/api/informe/renovacion/presupuesto")
-public class InformePresupuestoRestController extends BaseRestController {
+public class BorrarRestController extends BaseRestController {
 
-	private Logger logger = LogManager.getLogger(InformePresupuestoRestController.class);
+	private Logger logger = LogManager.getLogger(BorrarRestController.class);
 	
 	@Autowired
-	private InformePresupuestoService informePresupuestoService;
+	private BorrarService borrarService;
 
 	@PostMapping("/documento/agregar")
 	public DocumentoInformePresupuestoResponseDTO agregarDocumento(@RequestBody DocumentoInformePresupuestoRequestDTO documentoInformePresupuesto, Contexto contexto) throws Exception {
 		logger.info("agregarDocumento");
-		return informePresupuestoService.agregarDocumento(documentoInformePresupuesto, getContexto());
+		return borrarService.agregarDocumento(documentoInformePresupuesto, getContexto());
 	}
 
 	@PostMapping("/documento/anular")
 	public DocumentoInformePresupuestoResponseDTO anularDocumento(@RequestBody DocumentoInformePresupuestoRequestDTO documentoInformePresupuesto, Contexto contexto) throws Exception {
 		logger.info("anularDocumento");
-		return informePresupuestoService.anularDocumento(documentoInformePresupuesto, getContexto());
+		return borrarService.anularDocumento(documentoInformePresupuesto, getContexto());
 	}
 }
