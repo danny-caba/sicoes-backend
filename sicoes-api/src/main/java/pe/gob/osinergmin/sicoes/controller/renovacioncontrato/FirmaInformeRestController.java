@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/api/informe/renovacion/firma-informe")
+@RequestMapping("/api/informe/renovacion/firma")
 public class FirmaInformeRestController extends BaseRestController {
 
     private static final Logger logger = LogManager.getLogger(FirmaInformeRestController.class);
@@ -40,7 +40,7 @@ public class FirmaInformeRestController extends BaseRestController {
         } catch (DataNotFoundException ex) {
             return ResponseBuilder.buildErrorResponse(apiResponse, "NOT_FOUND", 404, ex.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            logger.error("Error al obtener parámetros de firma digital", e);
+            logger.error("Error al obtener id Archivo de firma digital", e);
             return ResponseBuilder.buildErrorResponse(apiResponse, "ERROR", 500, "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

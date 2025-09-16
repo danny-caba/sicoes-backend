@@ -41,7 +41,9 @@ public class FirmaInformeImplService implements FirmaInformeService {
     public FirmaInformeResponseDTO obtenerIdArchivo(FirmaInformeRequestDTO requestDTO, Contexto contexto) throws Exception {
 
         RequerimientoAprobacion entity = requerimientoAprobacionDao.obtenerPorId(requestDTO.getIdRequerimientoAprobacion());
-
+        if (entity == null) {
+            throw new DataNotFoundException("No se encontró el requerimiento de aprobación con ID: " + requestDTO.getIdRequerimientoAprobacion());
+        }
         // 1. Validar que existe el informe de renovación
         Optional<InformeRenovacionContrato> informeOpt = informeRenovacionContratoDao.findById(entity.getInformeRenovacion().getIdInformeRenovacion());
         if (!informeOpt.isPresent()) {
@@ -57,7 +59,7 @@ public class FirmaInformeImplService implements FirmaInformeService {
 
         RequerimientoRenovacion requerimiento = requerimientoOpt.get();
 
-        Long idArchivo = sigedOldConsumer.obtenerIdArchivosRenovacionContrato(requerimiento.getNuExpediente());
+        Long idArchivo = sigedOldConsumer.obtenerIdArchivosRenovacionContrato(requerimiento.getNuExpediente(),informeRenovacionContrato.getIdInformeRenovacion());
 
         // 4. Crear y devolver la respuesta
     FirmaInformeResponseDTO response = new FirmaInformeResponseDTO();
