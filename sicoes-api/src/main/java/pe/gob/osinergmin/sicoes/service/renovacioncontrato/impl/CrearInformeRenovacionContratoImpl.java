@@ -247,6 +247,8 @@ public class CrearInformeRenovacionContratoImpl  {
                     "EN_APROBACION"
             );
 
+            informe.setDeNombreArchivo(archivoPdf.getNombre());
+            informe.setDeRutaArchivo(archivoPdf.getNombreAlFresco());
             informe.setEstadoAprobacionInforme(EnAprobacionEstadoAprobacionInforme);
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
 
