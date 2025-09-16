@@ -119,6 +119,15 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
         return page.map(this::mapToDto);
     }
 
+    @Override
+    public Page<InformeRenovacionDTO> listarInformesRenovacion(String numeroExpediente, String empresaSupervisora, String tipoInforme, String estadoEvaluacion, Pageable pageable, Contexto contexto) {
+        logger.info("listarInformesRenovacion - numeroExpediente: {}, empresaSupervisora: {}", numeroExpediente, empresaSupervisora);
+
+        Page<InformeRenovacion> page = informeRenovacionDao.findByNuExpedienteContratistaEstado(numeroExpediente, empresaSupervisora, pageable);
+
+        return page.map(this::mapToDto);
+    }
+
     private InformeRenovacionDTO mapToDto(InformeRenovacion entity) {
         InformeRenovacionDTO dto = new InformeRenovacionDTO();
 

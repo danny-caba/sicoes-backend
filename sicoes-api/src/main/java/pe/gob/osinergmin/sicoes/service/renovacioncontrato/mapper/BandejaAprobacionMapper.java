@@ -32,6 +32,7 @@ public class BandejaAprobacionMapper {
 
 
         dto.setIdRequermientoAprobacion(entity.getIdReqAprobacion());
+        dto.setIdInformeRenovacion(entity.getIdInformeRenovacion());
 
         // tipoAprobacion
         String tipoAprobacion = listadoDetalleService.obtener(entity.getIdTipoLd(), contexto) != null ?
