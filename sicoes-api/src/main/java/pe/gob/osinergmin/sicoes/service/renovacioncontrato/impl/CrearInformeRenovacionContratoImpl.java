@@ -242,7 +242,22 @@ public class CrearInformeRenovacionContratoImpl  {
 
             adjuntarDocumentoSiged(informe, archivoPdf.getNombreReal(), bytesSalida, solicitud);
 
+            ListadoDetalle EnAprobacionEstadoAprobacionInforme = listadoDetalleService.obtenerListadoDetalle(
+                    "ESTADO_REQUERIMIENTO",
+                    "EN_APROBACION"
+            );
+
+            informe.setDeNombreArchivo(archivoPdf.getNombre());
+            informe.setDeRutaArchivo(archivoPdf.getNombreAlFresco());
+            informe.setEstadoAprobacionInforme(EnAprobacionEstadoAprobacionInforme);
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
+
+            ListadoDetalle EnProcesoEstadoRequerimientoRenovacion = listadoDetalleService.obtenerListadoDetalle(
+                    "ESTADO_REQUERIMIENTO",
+                    "EN_PROCESO"
+            );
+            requerimientoRenovacion.setEstadoReqRenovacion(EnProcesoEstadoRequerimientoRenovacion);
+            requerimientoRenovacionDao.save(requerimientoRenovacion);
 
             archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
             archivoPdf = archivoDao.save(archivoPdf);

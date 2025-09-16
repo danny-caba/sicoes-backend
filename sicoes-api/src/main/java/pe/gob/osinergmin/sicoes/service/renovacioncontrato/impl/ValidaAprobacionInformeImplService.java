@@ -71,14 +71,12 @@ public class ValidaAprobacionInformeImplService implements ValidaAprobacionInfor
             logger.error("Debe indicar al menos un id de RequerimientoAprobacion.");
             throw new DataNotFoundException("Debe indicar al menos un id de RequerimientoAprobacion.");
         }
-        if (requestDTO.getObservacion() == null || requestDTO.getObservacion().isEmpty()) {
-            logger.error("Debe ingresar Observacion.");
-            throw new DataNotFoundException("Debe ingresar Observacion.");
+        if (!(requestDTO.getObservacion() == null || requestDTO.getObservacion().isEmpty())) {
+            if (requestDTO.getObservacion().length() > 500) {
+                throw new DataNotFoundException("La observación no debe superar los 500 caracteres");
+            }
         }
-        if (requestDTO.getObservacion().length() > 500) {
-            throw new DataNotFoundException("La observación no debe superar los 500 caracteres");
-        }
-        
+
         // Inicializar respuesta agregada
         AprobacionInformeRenovacionCreateResponseDTO respuestaAgregada = new AprobacionInformeRenovacionCreateResponseDTO();
         List<AprobacionInformeCreateResponseDTO> resultados = new ArrayList<>();
