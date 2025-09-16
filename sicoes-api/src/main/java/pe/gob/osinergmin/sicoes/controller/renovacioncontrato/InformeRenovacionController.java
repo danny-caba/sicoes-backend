@@ -33,6 +33,7 @@ import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.HistorialAprobacion
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionService;
+import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
 @RestController
@@ -45,6 +46,8 @@ public class InformeRenovacionController extends BaseRestController {
     private InformeRenovacionService informeRenovacionService;
     @Autowired
     private NotificacionService notificacionService;
+    @Autowired
+    private SigedOldConsumer sigedOldConsumer;
 
     @GetMapping("/adjunto/descargar")
     @Raml("renovacioncontrato.informe.adjunto.descargar.properties")
@@ -113,6 +116,60 @@ public class InformeRenovacionController extends BaseRestController {
 
         } catch (Exception e) {
             logger.error("Error al descargar adjunto de informe - UUID: " + uuid, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ENDPOINT TEMPORAL PARA TESTING - BYPASA VALIDACIONES
+    @GetMapping("/adjunto/descargar-directo")
+    public ResponseEntity<Resource> descargarAdjuntoDirecto(
+            @RequestParam String uuid,
+            @RequestParam(required = false) String nombreArchivo) {
+
+        logger.info("descargarAdjuntoDirecto - UUID: {}, Archivo: {}", uuid, nombreArchivo);
+
+        try {
+            // Validar parámetros básicos
+            if (uuid == null || uuid.trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Descargar directamente desde Alfresco SIN validaciones de permisos
+            byte[] contenidoArchivo = sigedOldConsumer.descargarArchivoPorUuidAlfresco(uuid);
+
+            if (contenidoArchivo == null || contenidoArchivo.length == 0) {
+                logger.warn("Archivo no encontrado o vacío para UUID: {}", uuid);
+                return ResponseEntity.notFound().build();
+            }
+
+            // Preparar respuesta de descarga
+            ByteArrayResource resource = new ByteArrayResource(contenidoArchivo);
+
+            // Determinar nombre del archivo
+            String nombreDescarga = (nombreArchivo != null && !nombreArchivo.trim().isEmpty())
+                    ? nombreArchivo.trim()
+                    : "adjunto_" + uuid + ".pdf";
+
+            // Configurar headers de respuesta
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombreDescarga + "\"");
+            headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+            headers.add(HttpHeaders.PRAGMA, "no-cache");
+            headers.add(HttpHeaders.EXPIRES, "0");
+
+            // Detectar tipo de contenido
+            MediaType mediaType = determinarTipoContenido(nombreDescarga);
+
+            logger.info("Descarga directa exitosa - UUID: {}, Tamaño: {} bytes", uuid, contenidoArchivo.length);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(contenidoArchivo.length)
+                    .contentType(mediaType)
+                    .body(resource);
+
+        } catch (Exception e) {
+            logger.error("Error al descargar adjunto directo - UUID: " + uuid, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
