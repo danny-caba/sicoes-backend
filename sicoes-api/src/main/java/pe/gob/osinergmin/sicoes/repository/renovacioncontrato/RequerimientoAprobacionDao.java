@@ -23,6 +23,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                          "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
                          "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
                          "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
+                         "AND (:nombreContratista IS NULL OR UPPER(r.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
                          "AND apr.idUsuario = :idUsuario " +
                          "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
                          "ORDER BY i.usuCreacion DESC",
@@ -32,6 +33,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                          "WHERE (:estadoAprobacion IS NULL OR i.estadoAprobacionInforme.idListadoDetalle = :estadoAprobacion) " +
                          "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
                          "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
+                         "AND (:nombreContratista IS NULL OR UPPER(r.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
                          "AND apr.idUsuario = :idUsuario " +
                          "AND (:esVigente IS NULL OR i.esVigente = :esVigente)"
     )
@@ -39,6 +41,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
            @Param("numeroExpediente") String numeroExpediente,
            @Param("estadoAprobacion") Long estadoAprobacion,
            @Param("idContratista") Long idContratista,
+           @Param("nombreContratista") String nombreContratista,
            @Param("idUsuario") Long idUsuario,
            @Param("esVigente") Integer esVigente,
            Pageable pageable

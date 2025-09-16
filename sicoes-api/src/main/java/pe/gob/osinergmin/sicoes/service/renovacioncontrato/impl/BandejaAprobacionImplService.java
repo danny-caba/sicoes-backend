@@ -36,6 +36,7 @@ public class BandejaAprobacionImplService {
             String numeroExpediente,
             Long estadoAprobacionInforme,
             Long idContratista,
+            String nombreContratista,
             Contexto contexto,
             Pageable pageable) {
 
@@ -46,6 +47,7 @@ public class BandejaAprobacionImplService {
                 numeroExpediente,
                 estadoAprobacionInforme,
                 idContratista,
+                nombreContratista,
                 idUsuario,
                 esVigente,
                 pageable
