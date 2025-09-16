@@ -29,6 +29,17 @@ public class InformeRenovacionRestController extends BaseRestController {
         return informeRenovacionService.buscar(numeroExpediente,contratista,estadoAprobacion,pageable,getContexto());
     }
 
+    @GetMapping("/informes")
+    public Page<InformeRenovacionDTO> listarInformes(
+            @RequestParam(required = false) String numeroExpediente,
+            @RequestParam(required = false) String empresaSupervisora,
+            @RequestParam(required = false) String tipoInforme,
+            @RequestParam(required = false) String estadoEvaluacion,
+            Pageable pageable) {
+        logger.info("listarInformes - numeroExpediente: {}, empresaSupervisora: {}", numeroExpediente, empresaSupervisora);
+        return informeRenovacionService.listarInformesRenovacion(numeroExpediente, empresaSupervisora, tipoInforme, estadoEvaluacion, pageable, getContexto());
+    }
+
 
 
 }

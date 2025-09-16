@@ -14,6 +14,7 @@ import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 @AllArgsConstructor
 public class BandejaAprobacionResponseDTO {
     private Long idRequermientoAprobacion;
+    private Long idInformeRenovacion;
     private String tipoAprobacion;
     private String numeroExpediente;
     private String informe;

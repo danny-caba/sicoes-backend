@@ -17,6 +17,8 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 public interface InformeRenovacionService {
 
     public Page<InformeRenovacionDTO> buscar(String nuExpediente, String contratista, String estadoAprobacion, Pageable pageable, Contexto contexto);
+    
+    public Page<InformeRenovacionDTO> listarInformesRenovacion(String numeroExpediente, String empresaSupervisora, String tipoInforme, String estadoEvaluacion, Pageable pageable, Contexto contexto);
 
     /**
      * Rechaza un informe de renovación
