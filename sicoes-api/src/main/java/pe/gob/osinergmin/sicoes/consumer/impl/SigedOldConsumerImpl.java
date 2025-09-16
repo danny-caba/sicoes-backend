@@ -430,20 +430,59 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	 * 
 	 * Requerimiento: 350 - Renovación de contrato.
 	 */
-	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente) throws Exception{
+	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente,Long idInformeRenovacion) throws Exception{
 
 		logger.info("obtenerIdArchivos inicio...");
 
 		String url = SIGED_WS_URL + SIGED_PATH_OBTENER_ID_ARCHIVO + "/" + numeroExpediente + "/1";
 		Long idArchivo = 0L;
-
+		Date fechaCreacion = null;
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			logger.info("url [{}].", url);
 			String response = restTemplate.getForObject(url, String.class);
 			logger.info("response: " + response);
+			while (true) {
+				Integer indexInformeVerificacion = response.indexOf("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_");
+				Integer indexInformeResultado = response.indexOf("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_");
+				if (indexInformeVerificacion > 0 || indexInformeResultado > 0) {
+					Integer indexInforme = indexInformeVerificacion > 0 ? indexInformeVerificacion : indexInformeResultado;
+					// Obtener los campos del informe
+					String partialResponse = response.substring(0, indexInforme);
+					Integer indexInicioArchivo = partialResponse.lastIndexOf("<archivo>") + "<archivo>".length();
+					partialResponse = response.substring(indexInforme);
+					Integer indexFinalArchivo = partialResponse.indexOf("</archivo>");
+					// En caso exista más de informe a firmar
+					String afterResponse = response.substring(indexInforme + indexFinalArchivo + "</archivo>".length());
+					response = response.substring(indexInicioArchivo, indexInforme + indexFinalArchivo).trim();
+					// Obtener la fecha de creación
+					Integer indexFechaCreacionArchivo = response.indexOf("<fechaCreacion>") + "<fechaCreacion>".length();
+					Integer indexFinalFechaCreacionArchivo = response.indexOf("</fechaCreacion>");
+					String fechaCreacionResponse = response.substring(indexFechaCreacionArchivo, indexFinalFechaCreacionArchivo);
 
-			logger.info("idArchivo: " + idArchivo);
+					Date fechaCreacionArchivo = formatter.parse(fechaCreacionResponse.substring(0, fechaCreacionResponse.indexOf("T")) + " " +
+							fechaCreacionResponse.substring(fechaCreacionResponse.indexOf("T") + 1, fechaCreacionResponse.indexOf("T") + 9));
+
+					//Obtener el idArchivo del informe
+					Integer indexIdArchivo = response.indexOf("<idArchivo>") + "<idArchivo>".length();
+					response = response.substring(indexIdArchivo);
+					response = response.substring(0, response.indexOf("</idArchivo>"));
+					Long idArchivoTemp = Long.parseLong(response.trim());
+					response = afterResponse;
+					if (fechaCreacion == null) {
+						idArchivo = idArchivoTemp;
+						fechaCreacion = fechaCreacionArchivo;
+					}
+					else if (fechaCreacionArchivo.compareTo(fechaCreacion) > 0) {
+						idArchivo = idArchivoTemp;
+						fechaCreacion = fechaCreacionArchivo;
+					}
+				}
+				else {
+					break;
+				}
+			}
 		}
 		catch (HttpClientErrorException ex) {
 			logger.error("Invoking of web service " + url + " of siged was failed", ex);
@@ -453,9 +492,6 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			logger.error("Invoking of web service " + url + " of siged was failed", ex);
 			throw ex;
 		}
-
-		logger.info("obtenerIdArchivos fin...");
-
 		return idArchivo;
 	}
 

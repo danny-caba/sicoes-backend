@@ -6,10 +6,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FirmaDigitalRequestDTO implements Serializable {
+public class FirmaInformeRequestDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long idInformeRenovacion;
+    private Long idRequerimientoAprobacion;
+
 
 }

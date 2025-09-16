@@ -47,7 +47,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idEstadoLd = '1' ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarActivos();
 
-    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idReqAprobacion = :id AND r.idEstadoLd = '1'")
+    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idReqAprobacion = :id  ")
     RequerimientoAprobacion obtenerPorId(@Param("id") Long id);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
