@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.FirmaDigitalRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.FirmaDigitalResponseDTO;
-import pe.gob.osinergmin.sicoes.service.renovacioncontrato.FirmaDigitalService;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.FirmaInformeRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.FirmaInformeResponseDTO;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.FirmaInformeService;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.util.model.response.ApiResponse;
 import pe.gob.osinergmin.sicoes.util.renovacioncontrato.ResponseBuilder;
@@ -22,22 +22,21 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/api/informe/renovacion/firma-digital")
-public class FirmaDigitalRestController extends BaseRestController {
+@RequestMapping("/api/informe/renovacion/firma-informe")
+public class FirmaInformeRestController extends BaseRestController {
 
-    private static final Logger logger = LogManager.getLogger(FirmaDigitalRestController.class);
+    private static final Logger logger = LogManager.getLogger(FirmaInformeRestController.class);
 
     @Autowired
-    private FirmaDigitalService firmaDigitalService;
+    private FirmaInformeService firmaInformeService;
 
-    @PostMapping("/obtenerParametros")
-    public ResponseEntity<ApiResponse> obtenerParametrosfirmaDigital(@RequestBody FirmaDigitalRequestDTO firmaDigitalRequestDTO) {
-        logger.info("Obteniendo parámetros de firma digital para idInformeRenovacion: {}", firmaDigitalRequestDTO.getIdInformeRenovacion());
+    @PostMapping("/obtenerIdArchivo")
+    public ResponseEntity<ApiResponse> obtenerIdArchivo(@RequestBody FirmaInformeRequestDTO requestDTO) {
+
         ApiResponse apiResponse = new ApiResponse();
-        
         try {
-            FirmaDigitalResponseDTO response = firmaDigitalService.obtenerParametrosfirmaDigital(firmaDigitalRequestDTO, getContexto());
-            return ResponseBuilder.buildResponse(apiResponse, "SUCCESS", 200, "Parámetros de firma digital obtenidos exitosamente", HttpStatus.OK, Arrays.asList(Collections.singletonMap("firmaDigital", response)));
+            FirmaInformeResponseDTO response = firmaInformeService.obtenerIdArchivo(requestDTO, getContexto());
+            return ResponseBuilder.buildResponse(apiResponse, "SUCCESS", 200, "Parámetros de firma digital obtenidos exitosamente", HttpStatus.OK, Arrays.asList(Collections.singletonMap("firmaInforme", response)));
         } catch (DataNotFoundException ex) {
             return ResponseBuilder.buildErrorResponse(apiResponse, "NOT_FOUND", 404, ex.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
