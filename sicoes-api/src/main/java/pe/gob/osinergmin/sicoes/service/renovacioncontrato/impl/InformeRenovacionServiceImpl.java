@@ -123,7 +123,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     public Page<InformeRenovacionDTO> listarInformesRenovacion(String numeroExpediente, String empresaSupervisora, String tipoInforme, String estadoEvaluacion, Pageable pageable, Contexto contexto) {
         logger.info("listarInformesRenovacion - numeroExpediente: {}, empresaSupervisora: {}", numeroExpediente, empresaSupervisora);
 
-        Page<InformeRenovacion> page = informeRenovacionDao.findByParametrosGenerales(numeroExpediente, empresaSupervisora, tipoInforme, estadoEvaluacion, pageable);
+        Page<InformeRenovacion> page = informeRenovacionDao.findByNuExpedienteContratistaEstado(numeroExpediente, empresaSupervisora, pageable);
 
         return page.map(this::mapToDto);
     }
