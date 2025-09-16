@@ -26,7 +26,10 @@ public class BandejaAprobacionMapper {
     private ListadoDetalleMapper listadoDetalleMapper;
 
     public BandejaAprobacionResponseDTO toDto(RequerimientoAprobacion entity, Contexto contexto, ListadoDetalleService listadoDetalleService) {
+
+
         BandejaAprobacionResponseDTO dto = new BandejaAprobacionResponseDTO();
+
 
         dto.setIdRequermientoAprobacion(entity.getIdReqAprobacion());
 
@@ -153,6 +156,9 @@ public class BandejaAprobacionMapper {
             )
             ));
 
+        dto.setUuidInformeRenovacion(entity.getInformeRenovacion().getDeUuidInfoRenovacion());
+
         return dto;
+
     }
 }

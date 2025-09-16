@@ -29,6 +29,7 @@ public class BandejaAprobacionResponseDTO {
     private ListadoDetalleDTO tipoAprobacionLd;
     private ListadoDetalleDTO estadoLd;
     private ListadoDetalleDTO grupoAprobadorLd;
+    private String uuidInformeRenovacion;
 
 
 }

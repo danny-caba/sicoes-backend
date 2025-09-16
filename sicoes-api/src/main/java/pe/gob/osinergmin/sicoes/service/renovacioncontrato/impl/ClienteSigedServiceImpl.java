@@ -103,7 +103,7 @@ public class ClienteSigedServiceImpl   {
             Archivo archivo = new Archivo();
             // Generar nombre con timestamp
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
-            String nombreBase = String.format("INFORME_RENOVACION_CONTRATO_%d_%s%s", 
+            String nombreBase = String.format("INFORME_RENOVACION_PRESUPUESTO_%d_%s%s",
                 idInformeRenovacion, timestamp, EXTENSION_PDF);
             // Configurar propiedades básicas
             archivo.setNombre(nombreBase);
