@@ -183,7 +183,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionG2.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
 
             requerimientoAprobacionG2.setIdTipoLd(
-                datosService.obtenerIdLd("TIPO_APROBACION", "FIRMAR")
+                datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")
             );
 
             requerimientoAprobacionG2.setIdGrupoLd(
