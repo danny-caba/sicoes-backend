@@ -26,6 +26,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                          "AND (:nombreContratista IS NULL OR UPPER(r.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
                          "AND apr.idUsuario = :idUsuario " +
                          "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
+                         "AND apr.idEstadoLd IN (SELECT ld.idListadoDetalle FROM ListadoDetalle ld WHERE ld.codigo = 'ASIGNADO' AND ld.listado.codigo = 'ESTADO_APROBACION') " +
                          "ORDER BY i.usuCreacion DESC",
            countQuery = "SELECT COUNT(apr) FROM RequerimientoAprobacion apr " +
                          "JOIN apr.informeRenovacion i " +
@@ -35,7 +36,8 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                          "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
                          "AND (:nombreContratista IS NULL OR UPPER(r.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
                          "AND apr.idUsuario = :idUsuario " +
-                         "AND (:esVigente IS NULL OR i.esVigente = :esVigente)"
+                         "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
+                         "AND apr.idEstadoLd IN (SELECT ld.idListadoDetalle FROM ListadoDetalle ld WHERE ld.codigo = 'ASIGNADO' AND ld.listado.codigo = 'ESTADO_APROBACION')"
     )
     Page<RequerimientoAprobacion> buscarByIdUsuario(
            @Param("numeroExpediente") String numeroExpediente,
@@ -78,4 +80,12 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     List<RequerimientoAprobacion> findByIdInformeRenovacionAndIdGrupoAprobadorLd(
         @Param("idInformeRenovacion") Long idInformeRenovacion, 
         @Param("idGrupoAprobadorLd") Long idGrupoAprobadorLd);
+    
+    @Query("SELECT r FROM RequerimientoAprobacion r " +
+           "WHERE r.idUsuario = :idUsuario " +
+           "AND r.idEstadoLd = :idEstadoLd " +
+           "ORDER BY r.fecCreacion DESC")
+    List<RequerimientoAprobacion> findByIdUsuarioAndIdEstadoLd(
+        @Param("idUsuario") Long idUsuario,
+        @Param("idEstadoLd") Long idEstadoLd);
 }
