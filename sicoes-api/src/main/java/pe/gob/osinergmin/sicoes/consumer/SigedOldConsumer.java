@@ -26,4 +26,6 @@ public interface SigedOldConsumer {
 	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente,Long idInformeRenovacion) throws Exception;
 
 	String subirArchivosAlfrescoRenovacionContrato(Long idReqRenovacion, Archivo archivoPdf);
+	
+	String subirArchivosAlfrescoRenovacionContratoConUuid(Long idReqRenovacion, Archivo archivoPdf, String uuidPredefinido);
 }

@@ -179,6 +179,8 @@ public class CrearInformeRenovacionContratoImpl  {
         UUID uuid = UUID.randomUUID();
         String uuidString = uuid.toString();
         informe.setUuiInfoRenovacion(uuidString);
+        
+        // IMPORTANTE: Este UUID será usado tanto para el informe como para el archivo en Alfresco
         AuditoriaUtil.setAuditoriaRegistro(informe, contexto);
         Usuario usuario = usuarioDao.obtener(Long.parseLong(informe.getUsuCreacion()));
         informe.setUsuario(usuario);
@@ -234,9 +236,11 @@ public class CrearInformeRenovacionContratoImpl  {
             Archivo archivoPdf = buidlArchivo(bytesSalida, dto.getIdInformeRenovacion());
             archivoPdf.setIdContrato(contrato.getIdContrato());
 
-            String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContrato(
+            // Usar el UUID del informe para subir a Alfresco (así serán consistentes)
+            String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
                     requerimientoRenovacion.getIdReqRenovacion(),
-                    archivoPdf);
+                    archivoPdf,
+                    informe.getUuiInfoRenovacion());
             archivoPdf.setNombreAlFresco(alfrescoPath);
             AuditoriaUtil.setAuditoriaRegistro(archivoPdf, contexto);
 
