@@ -599,29 +599,32 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 					requestEntity,
 					String.class);
 
-			XmlMapper xmlMapper = new XmlMapper();
-			AlfrescoFileOut fileOut = xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
-			logger.info("respuesta: " + fileOut);
-			
-			// Extraer el UUID real del nodo de Alfresco
+			// Extraer UUID directamente del XML usando regex
+			String responseBody = response.getBody();
 			String uuidReal = null;
-			if (fileOut.getFiles() != null) {
-				if (fileOut.getFiles().getUuid() != null) {
-					uuidReal = fileOut.getFiles().getUuid();
-				} else if (fileOut.getFiles().getNodeRef() != null) {
-					// Extraer UUID del nodeRef si viene en la respuesta
-					String nodeRef = fileOut.getFiles().getNodeRef();
-					if (nodeRef.contains("workspace://SpacesStore/")) {
-						uuidReal = nodeRef.substring(nodeRef.lastIndexOf("/") + 1);
-					}
+			
+			// Buscar nodeRef en el XML que contiene workspace://SpacesStore/UUID
+			java.util.regex.Pattern nodeRefPattern = java.util.regex.Pattern.compile("workspace://SpacesStore/([a-f0-9\\-]{36})");
+			java.util.regex.Matcher nodeRefMatcher = nodeRefPattern.matcher(responseBody);
+			
+			if (nodeRefMatcher.find()) {
+				uuidReal = nodeRefMatcher.group(1);
+			} else {
+				// Buscar directamente un UUID en el XML (formato: 8-4-4-4-12 caracteres)
+				java.util.regex.Pattern uuidPattern = java.util.regex.Pattern.compile("([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})");
+				java.util.regex.Matcher uuidMatcher = uuidPattern.matcher(responseBody);
+				
+				if (uuidMatcher.find()) {
+					uuidReal = uuidMatcher.group(1);
 				}
 			}
 			
-			logger.info("UUID predefinido: " + uuidPredefinido);
-			logger.info("UUID real de Alfresco: " + uuidReal);
+			// Parsear la respuesta XML para mantener compatibilidad
+			XmlMapper xmlMapper = new XmlMapper();
+			AlfrescoFileOut fileOut = xmlMapper.readValue(responseBody, AlfrescoFileOut.class);
 			
-			// Retornar el UUID real de Alfresco si está disponible, sino el predefinido
-			return uuidReal != null ? uuidReal : uuidPredefinido;
+			// Retornar el UUID real de Alfresco si se encontró, sino el fullFilePath original
+			return uuidReal != null ? uuidReal : fileOut.getFiles().getFullFilePath();
 			
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
