@@ -237,7 +237,7 @@ public class CrearInformeRenovacionContratoImpl  {
             ByteArrayOutputStream output = generarPdfOutputStream(informe, contexto.getUsuario().getNombreUsuario(), nombreEmpresaSupervisora, numExpediente, jrxml, contexto.getUsuario().getRoles().get(0).getNombre());
             byte[] bytesSalida = output.toByteArray();
 
-            Archivo archivoInformePdf = buidlArchivo(bytesSalida, numExpediente);
+            Archivo archivoInformePdf = asignarDatosArchivo(bytesSalida, numExpediente);
             archivoInformePdf.setIdContrato(contrato.getIdContrato());
 
             // Usar el UUID del informe para subir a Alfresco y obtener el UUID real del nodo
@@ -387,7 +387,7 @@ public class CrearInformeRenovacionContratoImpl  {
         return tempFile;
     }
 
-    private Archivo buidlArchivo(byte[] bytesSalida, String numExpediente) {
+    private Archivo asignarDatosArchivo(byte[] bytesSalida, String numExpediente) {
         Archivo archivo = new Archivo();
         archivo.setNombre("INFORME_RENOVACION_CONTRATO_"+numExpediente+".pdf");
         archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_"+numExpediente+".pdf");
@@ -403,6 +403,8 @@ public class CrearInformeRenovacionContratoImpl  {
         archivo.setNroFolio(1L);
         archivo.setContenido(bytesSalida);
         archivo.setTipoArchivo(tipoArchivoLd);
+        archivo.setDescripcion("Informe del Requerimiento de Renovación de Contrato");
+
         ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(
               "ESTADO_ARCHIVO"    ,
                 "CARGADO"
