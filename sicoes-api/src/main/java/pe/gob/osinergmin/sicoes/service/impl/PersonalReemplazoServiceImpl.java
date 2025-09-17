@@ -271,7 +271,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo, Contexto contexto) {
+    public PersonalReemplazo eliminarBaja(PersonalReemplazoDTO personalReemplazo, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -365,7 +365,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo, Contexto contexto) {
+    public PersonalReemplazo eliminarPropuesta(PersonalReemplazoDTO personalReemplazo, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -392,7 +392,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional
-    public PersonalReemplazo registrar(PersonalReemplazo personalReemplazoIN, Contexto contexto) {
+    public PersonalReemplazo registrar(PersonalReemplazoDTO personalReemplazoIN, Contexto contexto) {
         Long idReemplazo = personalReemplazoIN.getIdReemplazo();
         if (idReemplazo == null) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONAL_REEMPLAZO_NO_ENVIADO);
@@ -1158,7 +1158,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     }
 
     @Override
-    public PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto) {
+    public PersonalReemplazo registrarDocIniServ(PersonalReemplazoDTO personalReemplazo, Contexto contexto) {
         logger.info("personalReemplazo: {}", personalReemplazo);
         logger.info("contexto: {}", contexto);
         Long id = personalReemplazo.getIdReemplazo();
@@ -2053,7 +2053,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
+    public PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
         logger.info("personalReemplazo: {}", personalReemplazo);
         logger.info("conforme: {}", conforme);
         logger.info("accion: {}", accion);

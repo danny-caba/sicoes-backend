@@ -7,6 +7,7 @@ import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
+import pe.gob.osinergmin.sicoes.model.dto.AdendaReemplazoDTO;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.IdsDocumentoArchivoDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
@@ -36,68 +38,61 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     Logger logger = LogManager.getLogger(AdendaReemplazoServiceImpl.class);
 
-    @Autowired
-    private AdendaReemplazoDao adendaReemplazoDao;
+    private final AdendaReemplazoDao adendaReemplazoDao;
+    private final PersonalReemplazoDao reemplazoDao;
+    private final PersonalReemplazoService personalReemplazoService;
+    private final SupervisoraMovimientoService supervisoraMovimientoService;
+    private final ListadoDetalleDao listadoDetalleDao;
+    private final DocumentoReemDao documentoReemDao;
+    private final SigedOldConsumer sigedOldConsumer;
+    private final PropuestaProfesionalDao propuestaProfesionalDao;
+    private final ListadoDetalleService listadoDetalleService;
+    private final UsuarioRolDao usuarioRolDao;
+    private final UsuarioDao usuarioDao;
+    private final AprobacionDao aprobacionDao;
+    private final NotificacionContratoService notificacionContratoService;
+    private final SicoesSolicitudDao sicoesSolicitudDao;
+    private final RolDao rolDao;
+
+     @Autowired
+    public AdendaReemplazoServiceImpl(AdendaReemplazoDao adendaReemplazoDao,
+                                      PersonalReemplazoDao reemplazoDao,
+                                      PersonalReemplazoService personalReemplazoService,
+                                      SupervisoraMovimientoService supervisoraMovimientoService,
+                                      ListadoDetalleDao listadoDetalleDao,
+                                      DocumentoReemDao documentoReemDao,
+                                      SigedOldConsumer sigedOldConsumer,
+                                      PropuestaProfesionalDao propuestaProfesionalDao,
+                                      ListadoDetalleService listadoDetalleService,
+                                      UsuarioRolDao usuarioRolDao,
+                                      UsuarioDao usuarioDao,
+                                      AprobacionDao aprobacionDao,
+                                      NotificacionContratoService notificacionContratoService,
+                                      SicoesSolicitudDao sicoesSolicitudDao,
+                                      RolDao rolDao
+
+                                       ) {
+        this.adendaReemplazoDao = adendaReemplazoDao;
+        this.reemplazoDao = reemplazoDao;
+        this.personalReemplazoService = personalReemplazoService;
+        this.supervisoraMovimientoService = supervisoraMovimientoService;
+        this.listadoDetalleDao = listadoDetalleDao;
+        this.documentoReemDao = documentoReemDao;
+        this.sigedOldConsumer = sigedOldConsumer;
+        this.propuestaProfesionalDao = propuestaProfesionalDao;
+        this.listadoDetalleService = listadoDetalleService;
+        this.usuarioRolDao = usuarioRolDao;
+        this.usuarioDao = usuarioDao;
+        this.aprobacionDao = aprobacionDao;
+        this.notificacionContratoService = notificacionContratoService;
+        this.sicoesSolicitudDao = sicoesSolicitudDao;
+        this.rolDao = rolDao;
+
+    }
 
     @Autowired
-    private PersonalReemplazoDao reemplazoDao;
-
-    @Autowired
-    private PersonalReemplazoService personalReemplazoService;
-
-    @Autowired
-    private SupervisoraMovimientoService supervisoraMovimientoService;
-
-    @Autowired
-    private ListadoDetalleDao listadoDetalleDao;
-
-    @Autowired
-    private DocumentoReemDao documentoReemDao;
-
-    @Autowired
-    private EvaluarDocuReemDao evaluarDocuReemDao;
-
-    @Autowired
-    private SigedOldConsumer sigedOldConsumer;
-
-    @Autowired
-    private SigedApiConsumer sigedApiConsumer;
-
-    @Autowired
-    private ArchivoService archivoService;
-
-    @Autowired
-    private DocumentoReemService documentoReemService;
-
-    @Autowired
-    private PropuestaProfesionalDao propuestaProfesionalDao;
-
-    @Autowired
-    private ListadoDetalleService listadoDetalleService;
-
-    @Autowired
-    private UsuarioRolDao usuarioRolDao;
-
-    @Autowired
-    private UsuarioDao usuarioDao;
-
-    @Autowired
-    private SolicitudDao solicitudDao;
-
-    @Autowired
-    private PerfilAprobadorDao perfilAprobadorDao;
-
-    @Autowired
-    private AprobacionDao aprobacionDao;
-
-    @Autowired
-    private NotificacionContratoService notificacionContratoService;
-
-    @Autowired
-    private SicoesSolicitudDao sicoesSolicitudDao;
-
-    @Autowired
-    private RolDao rolDao;
+    @Lazy
+    private AdendaReemplazoService adendaReemplazoService;
 
     @Override
     @Transactional
@@ -168,12 +163,12 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     @Override
     public AdendaReemplazo obtener(Long aLong, Contexto contexto) {
-        return null;
+         throw new UnsupportedOperationException("Método obtener no está implementado");
     }
 
     @Override
     public void eliminar(Long aLong, Contexto contexto) {
-
+         throw new UnsupportedOperationException("Método eliminar no está implementado");
     }
 
     @Override
@@ -418,7 +413,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     }
 
                 }
-                actualizar(adenda,contexto);
+                adendaReemplazoService.actualizar(adenda,contexto);
             }
 
             Map<String, Object> responseBody = new HashMap<>();
@@ -548,7 +543,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     adenda.setObservacionFirmaGerencia(firmaRequestDTO.getObservacion());
                 }
             }
-            return actualizar(adenda,contexto);
+            return adendaReemplazoService.actualizar(adenda,contexto);
         } catch (Exception ex){
             logger.error("Error inesperado en proceso de finalizar firma", ex);
             throw new ValidacionException(
@@ -602,16 +597,18 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     }
 
     @Override
-    public AdendaReemplazo rechazarVisto(AdendaReemplazo adendaReemplazo,Contexto contexto) {
+    @Transactional
+    public AdendaReemplazo rechazarVisto(AdendaReemplazo adendaReemplazo, Contexto contexto) {
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO;
         ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
         adendaReemplazo.setEstadoAprobacion(estadoApro);
         adendaReemplazo.setEstadoVbGaf(estadoApro);
-        return actualizar(adendaReemplazo,contexto);
+        return adendaReemplazoService.actualizar(adendaReemplazo,contexto);
     }
 
     @Override
+    @Transactional
     public AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, Boolean firmaJefe, Boolean firmaGerente,
                                          Contexto contexto) {
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
@@ -625,7 +622,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             adendaReemplazo.setEstadoAprobacion(estadoApro);
             adendaReemplazo.setEstadoFirmaGerencia(estadoApro);
         }
-        return actualizar(adendaReemplazo,contexto);
+        return adendaReemplazoService.actualizar(adendaReemplazo,contexto);
     }
 
     private ResponseEntity<String> enviarSolicitudExterna(String url, HttpHeaders headers) {

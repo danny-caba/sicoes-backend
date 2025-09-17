@@ -26,10 +26,10 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
                                                     Pageable pageable, Contexto contexto);
     List<PersonalReemplazo> listarPersonaReemplazoxDocIniServ(String descDocIniServ);
     PersonalReemplazo guardar(PersonalReemplazo personalReemplazo, Contexto contexto);
-    PersonalReemplazo eliminarBaja(PersonalReemplazo personalReemplazo, Contexto contexto);
+    PersonalReemplazo eliminarBaja(PersonalReemplazoDTO personalReemplazo, Contexto contexto);
     PersonalReemplazo actualizar(PersonalReemplazo personalReemplazo, Contexto contexto);
-    PersonalReemplazo eliminarPropuesta(PersonalReemplazo personalReemplazo, Contexto contexto);
-    PersonalReemplazo registrar(PersonalReemplazo personalReemplazo, Contexto contexto);
+    PersonalReemplazo eliminarPropuesta(PersonalReemplazoDTO personalReemplazo, Contexto contexto);
+    PersonalReemplazo registrar(PersonalReemplazoDTO personalReemplazo, Contexto contexto);
     List<Combo> listarContratistas(String codigo);
     List<AprobacionReemp> buscarAprobacion(String requerimiento, String corol, Long tipoaprob , Long estadoaprob, Long tiposolicitud, Long idcontratista, Long numexpediente);
     Aprobacion updateAprobacion(AprobacionDTO aprobacion,Contexto contexto) ;
@@ -38,7 +38,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     PersonalReemplazo obtenerPersonalReemplazo(Long idReemplazo);
     EvaluarDocuResponseDTO evaluarConformidad(EvaluarDocuRequestDTO request, Contexto contexto);
     GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(List<EvaluarDocuRequestDTO> request, Contexto contexto);
-    PersonalReemplazo registrarDocIniServ(PersonalReemplazo personalReemplazo, Contexto contexto);
+    PersonalReemplazo registrarDocIniServ(PersonalReemplazoDTO personalReemplazo, Contexto contexto);
     PersonalReemplazo registrarRevDocumentos(RegistrarRevDocumentosRequestDTO request, Contexto contexto);
     Page<HistorialAprobReemp> listarHistorialReemp(Long idReemplazo, Pageable pageable );
     EvaluacionDocInicioServ obtenerEvaluacionDocInicioServicio(Long id);
@@ -48,7 +48,7 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String idseccion);
     Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion, Contexto contexto);
     PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo, Boolean conforme, Contexto contexto);
-    PersonalReemplazo evaluarDocumentos(PersonalReemplazo personalReemplazo,Boolean conforme, String accion, Contexto contexto);
+    PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,Boolean conforme, String accion, Contexto contexto);
     ExpedienteInRO crearExpedienteAgregarDocumentos(SicoesSolicitud solicitud, Contexto contexto);
     void procesarDocumentosReemplazo(
             List<DocumentoReemplazo> documentos, SicoesSolicitud sicoesSolicitud, Contexto contexto) throws ValidacionException;
