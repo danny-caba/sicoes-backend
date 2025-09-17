@@ -554,4 +554,62 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		}
 	}
 
+	@Override
+	public String subirArchivosAlfrescoRenovacionContratoConUuid(Long idReqRenovacion, Archivo archivo, String uuidPredefinido) {
+		try {
+			// Usar el UUID predefinido como nombre del archivo en Alfresco
+			String nombreArchivoConUuid = uuidPredefinido + "_" + archivo.getNombreReal();
+			
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+			MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+			ContentDisposition contentDisposition = ContentDisposition
+					.builder("form-data")
+					.name("file")
+					.filename(nombreArchivoConUuid)
+					.build();
+			fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+			HttpEntity<byte[]> fileEntity = null;
+
+			if (archivo.getFile() != null) {
+				fileEntity = new HttpEntity<>(archivo.getFile().getBytes(), fileMap);
+			} else {
+				fileEntity = new HttpEntity<>(archivo.getContenido(), fileMap);
+			}
+
+			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+			body.add("file", fileEntity);
+
+			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+			String path = "";
+			if (idReqRenovacion != null) {
+				path = SIGED_WS_URL + SIGED_PATH_SUBIR_ARCHIVO + SIGED_USER + SIGED_PATH_BASE + "/REQUERIMIENTO_RENOVACION/" + idReqRenovacion;
+			} else {
+				logger.info("Sin path enviar idReqRenovacion " + path);
+			}
+
+			logger.info("Enviado a alfresco con UUID predefinido: " + path);
+			logger.info("UUID predefinido: " + uuidPredefinido);
+			logger.info("nombre Archivo con UUID: " + nombreArchivoConUuid);
+			
+			ResponseEntity<String> response = restTemplate.exchange(
+					path,
+					HttpMethod.POST,
+					requestEntity,
+					String.class);
+
+			XmlMapper xmlMapper = new XmlMapper();
+			AlfrescoFileOut fileOut = xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
+			logger.info("respuesta: " + fileOut);
+			
+			// Retornar el UUID como path para que sea consistente
+			return uuidPredefinido;
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_SUBIR_ALFRESCO, e);
+		}
+	}
+
 }
