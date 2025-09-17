@@ -236,12 +236,15 @@ public class CrearInformeRenovacionContratoImpl  {
             Archivo archivoPdf = buidlArchivo(bytesSalida, dto.getIdInformeRenovacion());
             archivoPdf.setIdContrato(contrato.getIdContrato());
 
-            // Usar el UUID del informe para subir a Alfresco (así serán consistentes)
-            String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
+            // Usar el UUID del informe para subir a Alfresco y obtener el UUID real del nodo
+            String uuidRealAlfresco = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
                     requerimientoRenovacion.getIdReqRenovacion(),
                     archivoPdf,
                     informe.getUuiInfoRenovacion());
-            archivoPdf.setNombreAlFresco(alfrescoPath);
+            
+            // Actualizar el informe con el UUID real de Alfresco
+            informe.setUuiInfoRenovacion(uuidRealAlfresco);
+            archivoPdf.setNombreAlFresco(uuidRealAlfresco);
             AuditoriaUtil.setAuditoriaRegistro(archivoPdf, contexto);
 
             adjuntarDocumentoSiged(informe, archivoPdf.getNombreReal(), bytesSalida, solicitud);
@@ -266,7 +269,7 @@ public class CrearInformeRenovacionContratoImpl  {
             archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
             archivoPdf = archivoDao.save(archivoPdf);
 
-            logger.info("Archivo registrado en DB con ID: {} y ruta Alfresco: {} ", archivoPdf.getIdArchivo(), alfrescoPath);
+            logger.info("Archivo registrado en DB con ID: {} y UUID Alfresco: {} ", archivoPdf.getIdArchivo(), uuidRealAlfresco);
 
             notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
 

@@ -603,8 +603,25 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			AlfrescoFileOut fileOut = xmlMapper.readValue(response.getBody(), AlfrescoFileOut.class);
 			logger.info("respuesta: " + fileOut);
 			
-			// Retornar el UUID como path para que sea consistente
-			return uuidPredefinido;
+			// Extraer el UUID real del nodo de Alfresco
+			String uuidReal = null;
+			if (fileOut.getFiles() != null) {
+				if (fileOut.getFiles().getUuid() != null) {
+					uuidReal = fileOut.getFiles().getUuid();
+				} else if (fileOut.getFiles().getNodeRef() != null) {
+					// Extraer UUID del nodeRef si viene en la respuesta
+					String nodeRef = fileOut.getFiles().getNodeRef();
+					if (nodeRef.contains("workspace://SpacesStore/")) {
+						uuidReal = nodeRef.substring(nodeRef.lastIndexOf("/") + 1);
+					}
+				}
+			}
+			
+			logger.info("UUID predefinido: " + uuidPredefinido);
+			logger.info("UUID real de Alfresco: " + uuidReal);
+			
+			// Retornar el UUID real de Alfresco si está disponible, sino el predefinido
+			return uuidReal != null ? uuidReal : uuidPredefinido;
 			
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
