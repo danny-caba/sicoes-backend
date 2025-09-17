@@ -177,8 +177,8 @@ public class CrearInformeRenovacionContratoImpl  {
             );
         }
         UUID uuid = UUID.randomUUID();
-        String uuidString = uuid.toString();
-        informe.setUuiInfoRenovacion(uuidString);
+        String uuidInformeRenovacion = uuid.toString();
+        informe.setUuiInfoRenovacion(uuidInformeRenovacion);
         
         // IMPORTANTE: Este UUID será usado tanto para el informe como para el archivo en Alfresco
         AuditoriaUtil.setAuditoriaRegistro(informe, contexto);
@@ -233,29 +233,28 @@ public class CrearInformeRenovacionContratoImpl  {
             ByteArrayOutputStream output = generarPdfOutputStream(informe, contexto.getUsuario().getNombreUsuario(), nombreEmpresaSupervisora, numExpediente, jrxml, contexto.getUsuario().getRoles().get(0).getNombre());
             byte[] bytesSalida = output.toByteArray();
 
-            Archivo archivoPdf = buidlArchivo(bytesSalida, dto.getIdInformeRenovacion());
-            archivoPdf.setIdContrato(contrato.getIdContrato());
+            Archivo archivoInformePdf = buidlArchivo(bytesSalida, dto.getIdInformeRenovacion());
+            archivoInformePdf.setIdContrato(contrato.getIdContrato());
 
             // Usar el UUID del informe para subir a Alfresco y obtener el UUID real del nodo
             String uuidRealAlfresco = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
                     requerimientoRenovacion.getIdReqRenovacion(),
-                    archivoPdf,
-                    informe.getUuiInfoRenovacion());
+                    archivoInformePdf,
+                    uuidInformeRenovacion);
             
             // Actualizar el informe con el UUID real de Alfresco
-            informe.setUuiInfoRenovacion(uuidRealAlfresco);
-            archivoPdf.setNombreAlFresco(uuidRealAlfresco);
-            AuditoriaUtil.setAuditoriaRegistro(archivoPdf, contexto);
+            informe.setUuiInfoRenovacion(uuidInformeRenovacion);
 
-            adjuntarDocumentoSiged(informe, archivoPdf.getNombreReal(), bytesSalida, solicitud);
+
+            adjuntarDocumentoSiged(informe, archivoInformePdf.getNombreReal(), bytesSalida, solicitud);
 
             ListadoDetalle EnAprobacionEstadoAprobacionInforme = listadoDetalleService.obtenerListadoDetalle(
                     "ESTADO_REQUERIMIENTO",
                     "EN_APROBACION"
             );
 
-            informe.setDeNombreArchivo(archivoPdf.getNombre());
-            informe.setDeRutaArchivo(archivoPdf.getNombreAlFresco());
+            informe.setDeNombreArchivo(archivoInformePdf.getNombre());
+            informe.setDeRutaArchivo(archivoInformePdf.getNombreAlFresco());
             informe.setEstadoAprobacionInforme(EnAprobacionEstadoAprobacionInforme);
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
 
@@ -266,10 +265,14 @@ public class CrearInformeRenovacionContratoImpl  {
             requerimientoRenovacion.setEstadoReqRenovacion(EnProcesoEstadoRequerimientoRenovacion);
             requerimientoRenovacionDao.save(requerimientoRenovacion);
 
-            archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
-            archivoPdf = archivoDao.save(archivoPdf);
+            archivoInformePdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
 
-            logger.info("Archivo registrado en DB con ID: {} y UUID Alfresco: {} ", archivoPdf.getIdArchivo(), uuidRealAlfresco);
+            archivoInformePdf.setCodigo(uuidInformeRenovacion);
+            archivoInformePdf.setNombreAlFresco(uuidRealAlfresco);
+            AuditoriaUtil.setAuditoriaRegistro(archivoInformePdf, contexto);
+            archivoInformePdf = archivoDao.save(archivoInformePdf);
+
+            logger.info("Archivo registrado en DB con ID: {} y UUID Alfresco: {} ", archivoInformePdf.getIdArchivo(), uuidRealAlfresco);
 
             notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
 
