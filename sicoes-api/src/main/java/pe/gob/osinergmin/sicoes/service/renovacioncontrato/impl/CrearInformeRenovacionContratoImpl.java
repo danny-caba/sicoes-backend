@@ -233,7 +233,7 @@ public class CrearInformeRenovacionContratoImpl  {
             ByteArrayOutputStream output = generarPdfOutputStream(informe, contexto.getUsuario().getNombreUsuario(), nombreEmpresaSupervisora, numExpediente, jrxml, contexto.getUsuario().getRoles().get(0).getNombre());
             byte[] bytesSalida = output.toByteArray();
 
-            Archivo archivoInformePdf = buidlArchivo(bytesSalida, dto.getIdInformeRenovacion());
+            Archivo archivoInformePdf = buidlArchivo(bytesSalida, numExpediente);
             archivoInformePdf.setIdContrato(contrato.getIdContrato());
 
             // Usar el UUID del informe para subir a Alfresco y obtener el UUID real del nodo
@@ -382,28 +382,24 @@ public class CrearInformeRenovacionContratoImpl  {
         return tempFile;
     }
 
-    private Archivo buidlArchivo(byte[] bytesSalida, Long idInformeRenovacion) {
+    private Archivo buidlArchivo(byte[] bytesSalida, String numExpediente) {
         Archivo archivo = new Archivo();
-        archivo.setNombre("INFORME_RENOVACION_CONTRATO_A_"+idInformeRenovacion+".pdf");
-        SimpleDateFormat sdf2 = new SimpleDateFormat("hhmmss");
-		String hora = sdf2.format(new Date());
-        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_"+hora+".pdf");
+        archivo.setNombre("INFORME_RENOVACION_CONTRATO_"+numExpediente+".pdf");
+        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_"+numExpediente+".pdf");
         archivo.setTipo("application/pdf");
-
-        
     ListadoDetalle archivoRenovacion = listadoDetalleService.obtenerListadoDetalle(
         Constantes.LISTADO.TIPO_ARCHIVO.CODIGO    ,
         Constantes.LISTADO.TIPO_ARCHIVO.INFORME_RENOVACION_CONTRATO
         );
-    if (archivoRenovacion == null) {
-        throw  new RuntimeException("Estado 'renovacion contrato' no encontrado en listado detalle");
-    }
+        if (archivoRenovacion == null) {
+            throw  new RuntimeException("Estado 'renovacion contrato' no encontrado en listado detalle");
+        }
 
         archivo.setPeso(bytesSalida.length * 1L);
         archivo.setNroFolio(1L);
         archivo.setContenido(bytesSalida);
         archivo.setTipo(crearExpedienteParametrosTipoDocumentoAdjuntar);
-        archivo.setIdInformeRenovacion(idInformeRenovacion);
+
         archivo.setTipoArchivo(archivoRenovacion);
 
         return archivo;
