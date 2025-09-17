@@ -26,7 +26,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                          "AND (:nombreContratista IS NULL OR UPPER(r.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
                          "AND apr.idUsuario = :idUsuario " +
                          "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-                         "AND apr.idEstadoLd IN (SELECT ld.idListadoDetalle FROM ListadoDetalle ld WHERE ld.codigo = 'ASIGNADO' AND ld.listado.codigo = 'ESTADO_APROBACION') " +
+                         "AND apr.idEstadoLd = (SELECT ld.idListadoDetalle FROM ListadoDetalle ld WHERE ld.codigo = 'ASIGNADO' AND ld.idListado = (SELECT l.idListado FROM Listado l WHERE l.codigo = 'ESTADO_APROBACION')) " +
                          "ORDER BY i.usuCreacion DESC",
            countQuery = "SELECT COUNT(apr) FROM RequerimientoAprobacion apr " +
                          "JOIN apr.informeRenovacion i " +
@@ -37,7 +37,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
                          "AND (:nombreContratista IS NULL OR UPPER(r.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
                          "AND apr.idUsuario = :idUsuario " +
                          "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-                         "AND apr.idEstadoLd IN (SELECT ld.idListadoDetalle FROM ListadoDetalle ld WHERE ld.codigo = 'ASIGNADO' AND ld.listado.codigo = 'ESTADO_APROBACION')"
+                         "AND apr.idEstadoLd = (SELECT ld.idListadoDetalle FROM ListadoDetalle ld WHERE ld.codigo = 'ASIGNADO' AND ld.idListado = (SELECT l.idListado FROM Listado l WHERE l.codigo = 'ESTADO_APROBACION'))"
     )
     Page<RequerimientoAprobacion> buscarByIdUsuario(
            @Param("numeroExpediente") String numeroExpediente,
