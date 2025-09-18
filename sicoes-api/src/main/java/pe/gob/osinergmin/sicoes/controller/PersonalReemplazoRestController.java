@@ -68,7 +68,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PutMapping("/externo/reemplazo/solicitud/baja/elimina/propuesto")
     @Raml("personalReemplazo.listar.properties")
-    public PersonalReemplazo eliminaBajaPropuesto(@RequestBody PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo eliminaBajaPropuesto(@RequestBody PersonalReemplazoDTO personalReemplazo) {
         logger.info("eliminar baja {}", personalReemplazo);
         return personalReemplazoService.eliminarBaja(personalReemplazo, getContexto());
     }
@@ -82,14 +82,14 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PutMapping("/externo/reemplazo/solicitud/propuesta/elimina/propuesto")
     @Raml("personalReemplazo.listar.properties")
-    public PersonalReemplazo eliminaPropuesto(@RequestBody PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo eliminaPropuesto(@RequestBody PersonalReemplazoDTO personalReemplazo) {
         logger.info(" eliminar propuesto {}", personalReemplazo);
         return personalReemplazoService.eliminarPropuesta(personalReemplazo,getContexto());
     }
 
     @PutMapping("/externo/reemplazo/inserta")
     @Raml("personalReemplazo.listar.properties")
-    public PersonalReemplazo finalizarRegistro(@RequestBody PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo finalizarRegistro(@RequestBody PersonalReemplazoDTO personalReemplazo) {
         logger.info("Finalizar registro propuesto {}", personalReemplazo);
         return personalReemplazoService.registrar(personalReemplazo,getContexto());
     }
@@ -161,7 +161,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PutMapping("/reemplazo/solicitud/registra/inicio-servicio")
     @Raml("personalReemplazo.listar.properties")
-    public PersonalReemplazo registroInicioServicio(@RequestBody PersonalReemplazo personalReemplazo) {
+    public PersonalReemplazo registroInicioServicio(@RequestBody PersonalReemplazoDTO personalReemplazo) {
         logger.info("Registro inicio servicio {}", personalReemplazo);
         return personalReemplazoService.registrarDocIniServ(personalReemplazo,getContexto());
     }
@@ -227,7 +227,7 @@ public class PersonalReemplazoRestController extends BaseRestController {
 
     @PutMapping("/interno/reemplazo/solicitud/propuesto")
     @Raml("personalReemplazo.listar.properties")
-    public PersonalReemplazo evaluarDocumentos(@RequestBody PersonalReemplazo personalReemplazo, @RequestParam(required = false) Boolean conforme, @RequestParam String accion) {
+    public PersonalReemplazo evaluarDocumentos(@RequestBody PersonalReemplazoDTO personalReemplazo, @RequestParam(required = false) Boolean conforme, @RequestParam String accion) {
         logger.info("evaluar documentos {}", personalReemplazo);
         return personalReemplazoService.evaluarDocumentos(personalReemplazo, conforme,accion , getContexto());
     }

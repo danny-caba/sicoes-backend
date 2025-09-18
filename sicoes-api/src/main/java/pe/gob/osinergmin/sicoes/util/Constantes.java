@@ -1066,4 +1066,17 @@ public class Constantes {
 		public static final String SOLICITUD_REEMPLAZO_SUPERVISOR = "SOLICITUD_REEMPLAZO_SUPERVISOR";
 		public static final String INFORME = "INFORME";
 	}
+
+		public static final class CONSTANTES_REEMP_PERSONAL {
+
+		public static final String KEY_ARCHIVOS = "archivos";
+		public static final String SUBREPORT_DIR   = "SUBREPORT_DIR";
+		public static final String LOG_SICOES_SOLICITUD = "sicoesSolicitud: {}";
+		public static final String LOG_PERSONAL_REEMPLAZO = "personalReemplazo: {}";
+		public static final String LOG_CONFORME = "conforme: {}";
+		public static final String LOG_ACCION = "accion: {}";
+		public static final String LOG_CONTEXTO = "contexto: {}";
+		public static final String LOG_ID_SOLICITUD = "idSolicitud: {}";
+
+	}
 }
