@@ -23,9 +23,9 @@ public interface SigedOldConsumer {
 	
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital();
 
-	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente,Long idInformeRenovacion) throws Exception;
+	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente) throws Exception;
 
 	String subirArchivosAlfrescoRenovacionContrato(Long idReqRenovacion, Archivo archivoPdf);
 	
-	String subirArchivosAlfrescoRenovacionContratoConUuid(Long idReqRenovacion, Archivo archivoPdf, String uuidPredefinido);
+	String subirArchivosAlfrescoRenovacionContratoConUuid(Long idReqRenovacion, Archivo archivoPdf);
 }

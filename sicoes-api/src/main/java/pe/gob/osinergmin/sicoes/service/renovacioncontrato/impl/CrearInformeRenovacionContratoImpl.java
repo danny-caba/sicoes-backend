@@ -252,8 +252,7 @@ public class CrearInformeRenovacionContratoImpl  {
             // Usar el UUID del informe para subir a Alfresco y obtener el UUID real del nodo
             String rutaAlfresco = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
                     requerimientoRenovacion.getIdReqRenovacion(),
-                    archivoInformePdf,
-                    uuidInformeRenovacion);
+                    archivoInformePdf);
             
             // Actualizar el informe con el UUID real de Alfresco
             informe.setUuiInfoRenovacion(uuidInformeRenovacion);

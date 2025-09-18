@@ -430,7 +430,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	 * 
 	 * Requerimiento: 350 - Renovación de contrato.
 	 */
-	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente,Long idInformeRenovacion) throws Exception{
+	public Long obtenerIdArchivosRenovacionContrato(String numeroExpediente) throws Exception{
 
 		logger.info("obtenerIdArchivos inicio...");
 
@@ -444,8 +444,8 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			String response = restTemplate.getForObject(url, String.class);
 			logger.info("response: " + response);
 			while (true) {
-				Integer indexInformeVerificacion = response.indexOf("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_");
-				Integer indexInformeResultado = response.indexOf("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_");
+				Integer indexInformeVerificacion = response.indexOf("INFORME_RENOVACION_CONTRATO_"+numeroExpediente);
+				Integer indexInformeResultado = response.indexOf("INFORME_RENOVACION_CONTRATO_"+numeroExpediente);
 				if (indexInformeVerificacion > 0 || indexInformeResultado > 0) {
 					Integer indexInforme = indexInformeVerificacion > 0 ? indexInformeVerificacion : indexInformeResultado;
 					// Obtener los campos del informe
@@ -555,13 +555,13 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	}
 
 	@Override
-	public String subirArchivosAlfrescoRenovacionContratoConUuid(Long idReqRenovacion, Archivo archivo, String uuidPredefinido) {
+	public String subirArchivosAlfrescoRenovacionContratoConUuid(Long idReqRenovacion, Archivo archivo) {
 		try {
 			// Usar el UUID predefinido como nombre del archivo en Alfresco
-			String nombreArchivoConUuid = uuidPredefinido + "_" + archivo.getNombreReal();
+			String nombreArchivoConUuid = archivo.getNombreReal();
 
-			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Parámetros: idReqRenovacion={}, uuidPredefinido={}, nombreArchivoOriginal={}, nombreArchivoConUuid={}", 
-				idReqRenovacion, uuidPredefinido, archivo.getNombreReal(), nombreArchivoConUuid);
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Parámetros: idReqRenovacion={},  nombreArchivoOriginal={}, nombreArchivoConUuid={}",
+				idReqRenovacion,  archivo.getNombreReal(), nombreArchivoConUuid);
 
 			RestTemplate restTemplate = new RestTemplate();
 			HttpHeaders headers = new HttpHeaders();
@@ -629,8 +629,14 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			XmlMapper xmlMapper = new XmlMapper();
 			AlfrescoFileOut fileOut = xmlMapper.readValue(responseBody, AlfrescoFileOut.class);
 
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] fileOut: {}", fileOut);
+
 			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] fullFilePath retornado: {}", 
 				(fileOut != null && fileOut.getFiles() != null) ? fileOut.getFiles().getFullFilePath() : "null");
+
+
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] uuid retornado: {}",
+					(fileOut != null && fileOut.getFiles() != null) ? fileOut.getFiles().getUuid() : "null");
 
 			// Retornar el UUID real de Alfresco si se encontró, sino el fullFilePath original
 			return  fileOut.getFiles().getFullFilePath();

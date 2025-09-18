@@ -59,7 +59,7 @@ public class FirmaInformeImplService implements FirmaInformeService {
 
         RequerimientoRenovacion requerimiento = requerimientoOpt.get();
 
-        Long idArchivo = sigedOldConsumer.obtenerIdArchivosRenovacionContrato(requerimiento.getNuExpediente(),informeRenovacionContrato.getIdInformeRenovacion());
+        Long idArchivo = sigedOldConsumer.obtenerIdArchivosRenovacionContrato(requerimiento.getNuExpediente());
 
         // 4. Crear y devolver la respuesta
     FirmaInformeResponseDTO response = new FirmaInformeResponseDTO();
