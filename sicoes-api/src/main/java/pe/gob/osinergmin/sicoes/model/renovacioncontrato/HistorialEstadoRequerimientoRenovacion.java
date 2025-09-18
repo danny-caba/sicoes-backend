@@ -23,8 +23,8 @@ public class HistorialEstadoRequerimientoRenovacion extends BaseModel implements
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_HIST_EST_CAMPO")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_HIST_EST_CAMPO", sequenceName = "SEQ_SICOES_HIST_EST_CAMPO", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_HIS_EST_REQ_RENOV")
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_HIS_EST_REQ_RENOV", sequenceName = "SEQ_SICOES_HIS_EST_REQ_RENOV", allocationSize = 1)
     @Column(name = "ID_HISTORIAL_ESTADO_CAMPO")
     private Long idHistorialEstadoCampo;
 
