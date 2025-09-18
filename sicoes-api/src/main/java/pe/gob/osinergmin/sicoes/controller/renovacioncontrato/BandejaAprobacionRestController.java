@@ -11,7 +11,9 @@ import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.AprobacionInformeRenovacionCreateRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.AprobacionInformeRenovacionCreateResponseDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.BandejaAprobacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.TipoAprobadorResponseDTO;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.AprobacionInformeService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.TipoAprobadorService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl.BandejaAprobacionImplService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
@@ -37,6 +39,9 @@ public class BandejaAprobacionRestController extends BaseRestController {
 
     @Autowired
     private AprobacionInformeService aprobacionInformeService;
+    
+    @Autowired
+    private TipoAprobadorService tipoAprobadorService;
 
     @PostMapping("/aprobar-informe-renovacion")
     public ResponseEntity<ApiResponse> aprobarInformeRenovacion(
@@ -101,5 +106,26 @@ public class BandejaAprobacionRestController extends BaseRestController {
         return bandejaAprobacionService.listaApobaciones(
 
                 numeroExpediente, estadoAprobacionInforme, idContratista, nombreContratista, contexto, pageable);
+    }
+    
+    @GetMapping("/tipo-aprobador")
+    public ResponseEntity<TipoAprobadorResponseDTO> obtenerTipoAprobador() {
+        
+        logger.info("Obteniendo tipo de aprobador para usuario autenticado");
+        
+        try {
+            Contexto contexto = getContexto();
+            TipoAprobadorResponseDTO response = tipoAprobadorService.identificarTipoAprobador(contexto);
+            
+            logger.info("Tipo de aprobador identificado: {} para usuario: {}", 
+                       response.getTipoAprobador(), response.getIdUsuario());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("Error al identificar tipo de aprobador", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                               .body(new TipoAprobadorResponseDTO(null, "ERROR", "ERROR"));
+        }
     }
 }

@@ -42,6 +42,16 @@ public class BandejaAprobacionImplService {
 
         Long idUsuario = contexto.getUsuario().getIdUsuario();
         Integer esVigente = 1;
+        
+        // Debug: Log roles del usuario para identificar el problema
+        if (contexto.getUsuario() != null && contexto.getUsuario().getRoles() != null) {
+            contexto.getUsuario().getRoles().forEach(rol -> {
+                System.out.println("DEBUG - Usuario ID: " + idUsuario + 
+                                 ", Rol ID: " + rol.getIdRol() + 
+                                 ", Rol Codigo: " + rol.getCodigo() + 
+                                 ", Rol Nombre: " + rol.getNombre());
+            });
+        }
 
         Page<RequerimientoAprobacion> listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuario(
                 numeroExpediente,

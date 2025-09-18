@@ -176,9 +176,7 @@ public class CrearInformeRenovacionContratoImpl  {
                     ()->new ValidacionException(Constantes.CODIGO_MENSAJE.INFORME_PRESUPUESTO_RENOVACION_CONTRATO_NO_ENCONTRADO)
             );
         }
-        UUID uuid = UUID.randomUUID();
-        String uuidString = uuid.toString();
-        informe.setUuiInfoRenovacion(uuidString);
+
         
         // IMPORTANTE: Este UUID será usado tanto para el informe como para el archivo en Alfresco
         AuditoriaUtil.setAuditoriaRegistro(informe, contexto);
@@ -199,6 +197,12 @@ public class CrearInformeRenovacionContratoImpl  {
 
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
         }else if (Constantes.INFORME_RENOVACION.ESTADO_COMPLETO.equals(dto.getCompletado())){
+
+            UUID uuid = UUID.randomUUID();
+            String uuidInformeRenovacion = uuid.toString();
+            informe.setUuiInfoRenovacion(uuidInformeRenovacion);
+
+
             RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.findByNuExpediente(
                     dto.getRequerimiento().getNuExpediente()).orElseThrow(() ->
                     new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO,
@@ -233,29 +237,28 @@ public class CrearInformeRenovacionContratoImpl  {
             ByteArrayOutputStream output = generarPdfOutputStream(informe, contexto.getUsuario().getNombreUsuario(), nombreEmpresaSupervisora, numExpediente, jrxml, contexto.getUsuario().getRoles().get(0).getNombre());
             byte[] bytesSalida = output.toByteArray();
 
-            Archivo archivoPdf = buidlArchivo(bytesSalida, requerimientoRenovacion.getNuExpediente());
-            archivoPdf.setIdContrato(contrato.getIdContrato());
+            Archivo archivoInformePdf = asignarDatosArchivo(bytesSalida, numExpediente);
+            archivoInformePdf.setIdContrato(contrato.getIdContrato());
 
             // Usar el UUID del informe para subir a Alfresco y obtener el UUID real del nodo
-            String uuidRealAlfresco = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
+            String rutaAlfresco = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
                     requerimientoRenovacion.getIdReqRenovacion(),
-                    archivoPdf,
-                    informe.getUuiInfoRenovacion());
+                    archivoInformePdf,
+                    uuidInformeRenovacion);
             
             // Actualizar el informe con el UUID real de Alfresco
-            informe.setUuiInfoRenovacion(uuidRealAlfresco);
-            archivoPdf.setNombreAlFresco(uuidRealAlfresco);
-            AuditoriaUtil.setAuditoriaRegistro(archivoPdf, contexto);
+            informe.setUuiInfoRenovacion(uuidInformeRenovacion);
 
-            adjuntarDocumentoSiged(informe, archivoPdf.getNombreReal(), bytesSalida, solicitud);
+
+            adjuntarDocumentoSiged(informe, archivoInformePdf.getNombreReal(), bytesSalida, solicitud);
 
             ListadoDetalle EnAprobacionEstadoAprobacionInforme = listadoDetalleService.obtenerListadoDetalle(
                     "ESTADO_REQUERIMIENTO",
                     "EN_APROBACION"
             );
 
-            informe.setDeNombreArchivo(archivoPdf.getNombre());
-            informe.setDeRutaArchivo(archivoPdf.getNombreAlFresco());
+            informe.setDeNombreArchivo(archivoInformePdf.getNombre());
+            informe.setDeRutaArchivo(rutaAlfresco);
             informe.setEstadoAprobacionInforme(EnAprobacionEstadoAprobacionInforme);
             nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(informe);
 
@@ -266,10 +269,15 @@ public class CrearInformeRenovacionContratoImpl  {
             requerimientoRenovacion.setEstadoReqRenovacion(EnProcesoEstadoRequerimientoRenovacion);
             requerimientoRenovacionDao.save(requerimientoRenovacion);
 
-            archivoPdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
-            archivoPdf = archivoDao.save(archivoPdf);
+            archivoInformePdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
 
-            logger.info("Archivo registrado en DB con ID: {} y UUID Alfresco: {} ", archivoPdf.getIdArchivo(), uuidRealAlfresco);
+            archivoInformePdf.setCodigo(uuidInformeRenovacion);
+            archivoInformePdf.setNombreAlFresco(rutaAlfresco);
+
+            AuditoriaUtil.setAuditoriaRegistro(archivoInformePdf, contexto);
+            archivoInformePdf = archivoDao.save(archivoInformePdf);
+
+            logger.info("Archivo registrado en DB con ID: {} y Ruta Alfresco: {} ", archivoInformePdf.getIdArchivo(), rutaAlfresco);
 
             notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
 
@@ -379,28 +387,32 @@ public class CrearInformeRenovacionContratoImpl  {
         return tempFile;
     }
 
-    private Archivo buidlArchivo(byte[] bytesSalida, String nroExpediente) {
+    private Archivo asignarDatosArchivo(byte[] bytesSalida, String numExpediente) {
         Archivo archivo = new Archivo();
-        archivo.setNombre("INFORME_RENOVACION_CONTRATO_"+nroExpediente+".pdf");
-        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_"+nroExpediente+".pdf");
+        archivo.setNombre("INFORME_RENOVACION_CONTRATO_"+numExpediente+".pdf");
+        archivo.setNombreReal("INFORME_RENOVACION_CONTRATO_"+numExpediente+".pdf");
         archivo.setTipo("application/pdf");
-
-        
-    ListadoDetalle archivoRenovacion = listadoDetalleService.obtenerListadoDetalle(
+        ListadoDetalle tipoArchivoLd = listadoDetalleService.obtenerListadoDetalle(
         Constantes.LISTADO.TIPO_ARCHIVO.CODIGO    ,
         Constantes.LISTADO.TIPO_ARCHIVO.INFORME_RENOVACION_CONTRATO
         );
-    if (archivoRenovacion == null) {
-        throw  new RuntimeException("Estado 'renovacion contrato' no encontrado en listado detalle");
-    }
-
+        if (tipoArchivoLd == null) {
+            throw  new RuntimeException("Estado 'renovacion contrato' no encontrado en listado detalle");
+        }
         archivo.setPeso(bytesSalida.length * 1L);
         archivo.setNroFolio(1L);
         archivo.setContenido(bytesSalida);
-        archivo.setTipo(crearExpedienteParametrosTipoDocumentoAdjuntar);
+        archivo.setTipoArchivo(tipoArchivoLd);
+        archivo.setDescripcion("Informe del Requerimiento de Renovación de Contrato");
 
-        archivo.setTipoArchivo(archivoRenovacion);
-
+        ListadoDetalle estado = listadoDetalleService.obtenerListadoDetalle(
+              "ESTADO_ARCHIVO"    ,
+                "CARGADO"
+        );
+        if (estado == null) {
+            throw  new RuntimeException("Estado 'estado' no encontrado en listado detalle");
+        }
+        archivo.setEstado(estado);
         return archivo;
     }
 

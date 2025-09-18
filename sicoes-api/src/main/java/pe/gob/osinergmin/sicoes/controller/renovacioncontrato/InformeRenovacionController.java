@@ -379,10 +379,6 @@ public class InformeRenovacionController extends BaseRestController {
                         .body(Collections.singletonMap("message", "El ID del informe de renovación es requerido"));
             }
 
-            if (rechazoDTO.getMotivoRechazo() == null || rechazoDTO.getMotivoRechazo().trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Collections.singletonMap("message", "El motivo de rechazo es requerido"));
-            }
 
             // Procesar el rechazo
             informeRenovacionService.rechazarInforme(rechazoDTO, getContexto());
