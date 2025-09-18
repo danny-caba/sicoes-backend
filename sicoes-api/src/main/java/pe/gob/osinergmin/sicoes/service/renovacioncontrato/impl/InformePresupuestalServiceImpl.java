@@ -61,12 +61,11 @@ public class InformePresupuestalServiceImpl implements InformePresupuestalServic
         InformeRenovacion informe=entity.getInformeRenovacion();
         InformeRenovacionContrato informeRenovacionContrato= entity.getInformeRenovacionContrato();
         RequerimientoRenovacion requerimiento=entity.getInformeRenovacion().getRequerimientoRenovacion();
-
         try {
             // 3. Crear y procesar archivo
-            Archivo archivo = clienteSigedService.buildArchivo(file, informe.getIdInformeRenovacion());
+            Archivo archivo = clienteSigedService.asignarDatosArchivo(file, informe.getRequerimientoRenovacion().getNuExpediente());
             // 4. Subir a Alfresco
-            String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContrato(
+            String alfrescoPath = sigedOldConsumer.subirArchivosAlfrescoRenovacionContratoConUuid(
                     requerimiento.getIdReqRenovacion(), archivo);
             archivo.setNombreAlFresco(alfrescoPath);
             // 5. Registrar auditoría
@@ -83,7 +82,6 @@ public class InformePresupuestalServiceImpl implements InformePresupuestalServic
             log.info("Documento procesado exitosamente para requerimiento ID: {}", idRequerimientoAprobacion);
             // 8. Construir respuesta
             return null;
-
         } catch (Exception e) {
             log.error("Error al procesar documento para requerimiento ID: {}", idRequerimientoAprobacion, e);
             throw new DataNotFoundException(String.format("Error al procesar el documento: %s", e.getMessage()));

@@ -97,32 +97,34 @@ public class ClienteSigedServiceImpl   {
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
 
 
-    public Archivo buildArchivo(MultipartFile file, Long idInformeRenovacion) {
+    public Archivo asignarDatosArchivo(MultipartFile file, String numeroExpediente) {
         try {
-            // Crear archivo base
             Archivo archivo = new Archivo();
-            // Generar nombre con timestamp
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
-            String nombreBase = String.format("INFORME_RENOVACION_PRESUPUESTO_%d_%s%s",
-                idInformeRenovacion, timestamp, EXTENSION_PDF);
-            // Configurar propiedades básicas
+            // Obtener nombre original y extensión
+            String nombreOriginal = file.getOriginalFilename();
+            String extension = "";
+            if (nombreOriginal != null && nombreOriginal.lastIndexOf('.') != -1) {
+                extension = nombreOriginal.substring(nombreOriginal.lastIndexOf('.'));
+            }
+            String nombreBase = String.format("INFORME_RENOVACION_PRESUPUESTO_%s%s", numeroExpediente, extension);
+
             archivo.setNombre(nombreBase);
-            archivo.setNombreReal(nombreBase);
-            archivo.setTipo("application/pdf");
+            archivo.setNombreReal(nombreOriginal != null ? nombreOriginal : nombreBase);
+            archivo.setTipo(file.getContentType());
             archivo.setPeso(file.getSize());
             archivo.setNroFolio(1L);
             archivo.setContenido(file.getBytes());
             archivo.setTipo(crearExpedienteParametrosTipoDocumentoAdjuntar);
-            archivo.setIdInformeRenovacion(idInformeRenovacion);
+
             // Obtener y validar tipo de archivo
             ListadoDetalle archivoRenovacion = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.TIPO_ARCHIVO.CODIGO,
                     Constantes.LISTADO.TIPO_ARCHIVO.INFORME_RENOVACION_CONTRATO);
             archivo.setTipoArchivo(archivoRenovacion);
             return archivo;
-            
+
         } catch (IOException e) {
-            log.error("Error al procesar el archivo para el informe ID: {}", idInformeRenovacion, e);
+            log.error("Error al procesar el archivo para el informe ID: {}", numeroExpediente, e);
             throw new DataNotFoundException(
                 String.format("Error al procesar el archivo: %s", e.getMessage()));
         }
