@@ -54,6 +54,7 @@ import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprob
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialAprobacionRenovacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialRequerimientoRenovacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.NotificacionRenovacionContratoService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.InformeRenovacionContratoMapper;
@@ -61,6 +62,7 @@ import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
+import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 
 
 @Service
@@ -125,6 +127,9 @@ public class CrearInformeRenovacionContratoImpl  {
 
     @Autowired
     private HistorialRequerimientoRenovacionService historialRequerimientoRenovacionService;
+
+    @Autowired
+    private HistorialAprobacionRenovacionService historialAprobacionRenovacionService;
 
     public CrearInformeRenovacionContratoImpl(
         InformeRenovacionContratoDao informeRenovacionContratoDao,
@@ -273,12 +278,11 @@ public class CrearInformeRenovacionContratoImpl  {
             requerimientoRenovacion.setEstadoReqRenovacion(EnProcesoEstadoRequerimientoRenovacion);
 
             RequerimientoRenovacion requerimientoRenovacionResult=requerimientoRenovacionDao.save(requerimientoRenovacion);
-            try {
-                historialRequerimientoRenovacionService.registrarHistorialRequerimientoRenovacion(requerimientoRenovacionResult,contexto);
+            try{
+            historialRequerimientoRenovacionService.registrarHistorialRequerimientoRenovacion(requerimientoRenovacionResult,contexto);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new DataNotFoundException("Error al registrar historial de aprobación: " + e.getMessage(), e);
             }
-
             archivoInformePdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
 
             archivoInformePdf.setCodigo(uuidInformeRenovacion);
@@ -299,7 +303,8 @@ public class CrearInformeRenovacionContratoImpl  {
 
             );
             AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1, contexto);
-            requerimientoAprobacionDao.save(requerimientoAprobacionG1);
+            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG1);
+            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
 
         }else{
             throw new ValidacionException(

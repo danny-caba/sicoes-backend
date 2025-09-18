@@ -15,6 +15,7 @@ import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialRequerimient
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 
 /**
  * Implementación del servicio para el manejo del historial de estados de requerimientos de renovación
@@ -36,7 +37,7 @@ public class HistorialRequerimientoRenovacionImplService implements HistorialReq
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void registrarHistorialRequerimientoRenovacion(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto) throws Exception {
+    public void registrarHistorialRequerimientoRenovacion(RequerimientoRenovacion requerimientoRenovacion, Contexto contexto)  {
         try {
             // Validar que el requerimiento tenga estado
             if (requerimientoRenovacion.getEstadoReqRenovacion() != null && 
@@ -75,7 +76,7 @@ public class HistorialRequerimientoRenovacionImplService implements HistorialReq
         } catch (Exception e) {
             logger.error("Error al registrar historial para requerimiento ID: {}", 
                         requerimientoRenovacion.getIdReqRenovacion(), e);
-            throw new Exception("Error al registrar historial de requerimiento de renovación: " + e.getMessage(), e);
+            throw new DataNotFoundException("Error al registrar historial de requerimiento de renovación: " + e.getMessage(), e);
         }
     }
 }

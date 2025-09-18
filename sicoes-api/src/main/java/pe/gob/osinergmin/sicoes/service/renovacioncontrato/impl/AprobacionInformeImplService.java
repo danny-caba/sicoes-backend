@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.List;
 
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialAprobacionRenovacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.AprobacionCreateMapper;
 
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.AprobacionInformeService;
@@ -70,6 +71,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
     @Autowired
     private AprobacionCreateMapper aprobacionCreateMapper;
 
+    @Autowired
+    private HistorialAprobacionRenovacionService historialAprobacionRenovacionService;
 
     @Override
     public AprobacionInformeRenovacionCreateResponseDTO aprobarInformeRenovacion(
@@ -203,7 +206,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionG2.setIdGrupoAprobadorLd(
                 datosService.obtenerIdLd("GRUPO_APROBACION", "GERENTE")
             );
-            requerimientoAprobacionDao.save(requerimientoAprobacionG2);
+
+            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG2);
+            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+
             // 3.5.4 Realiza notificación
             Usuario usuarioG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
@@ -348,9 +354,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionGseG3.setIdGrupoAprobadorLd(
                 datosService.obtenerIdLd("GRUPO_APROBACION", "GSE")
             );
-            
-            requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
-            
+
+            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
+            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+
             // 3.5.4 Envía notificación por correo al rol GSE G3 para la evaluación
             Usuario gseG3Usuario = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG3());
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
@@ -411,7 +418,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 datosService.obtenerLd("ESTADO_REQUERIMIENTO", "CONCLUIDO")
             );
             requerimientoRenovacionDao.save(requerimientoRenovacion);
-            
+
             // 3.5.4 Envía notificación por correo al evaluador de contratos para solicitud de contratos
             Usuario evaluadorContratosUsuario = usuarioService.obtener(informeRenovacionContrato.getUsuario().getIdUsuario());
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
