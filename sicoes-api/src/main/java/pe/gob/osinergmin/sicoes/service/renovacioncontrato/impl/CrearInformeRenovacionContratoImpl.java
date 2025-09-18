@@ -14,6 +14,7 @@ import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +54,7 @@ import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprob
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialRequerimientoRenovacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.NotificacionRenovacionContratoService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.InformeRenovacionContratoMapper;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -121,6 +123,8 @@ public class CrearInformeRenovacionContratoImpl  {
     private final RequerimientoRenovacionDao requerimientoRenovacionDao;
     private final RequerimientoAprobacionDao requerimientoAprobacionDao;
 
+    @Autowired
+    private HistorialRequerimientoRenovacionService historialRequerimientoRenovacionService;
 
     public CrearInformeRenovacionContratoImpl(
         InformeRenovacionContratoDao informeRenovacionContratoDao,
@@ -267,7 +271,13 @@ public class CrearInformeRenovacionContratoImpl  {
                     "EN_PROCESO"
             );
             requerimientoRenovacion.setEstadoReqRenovacion(EnProcesoEstadoRequerimientoRenovacion);
-            requerimientoRenovacionDao.save(requerimientoRenovacion);
+
+            RequerimientoRenovacion requerimientoRenovacionResult=requerimientoRenovacionDao.save(requerimientoRenovacion);
+            try {
+                historialRequerimientoRenovacionService.registrarHistorialRequerimientoRenovacion(requerimientoRenovacionResult,contexto);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
             archivoInformePdf.setIdInformeRenovacion(nuevoInformeRenovacionContrato.getIdInformeRenovacion());
 
