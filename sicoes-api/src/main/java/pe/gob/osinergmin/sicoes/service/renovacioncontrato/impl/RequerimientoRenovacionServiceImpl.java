@@ -34,6 +34,7 @@ import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionD
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
 import pe.gob.osinergmin.sicoes.service.*;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialRequerimientoRenovacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoRenovacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.RequerimientoRenovacionMapper;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -91,6 +92,8 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 	private ListadoDetalleDao listadoDetalleDao;
 	@Autowired
 	private UsuarioDao usuarioDao;
+    @Autowired
+    private HistorialRequerimientoRenovacionService historialRequerimientoRenovacionService;
 
 	@Override
 	public Page<RequerimientoRenovacionListDTO> buscar(String idSolicitud, String numeroExpediente, String sector, String subSector, Pageable pageable, Contexto contexto) {
@@ -190,9 +193,10 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setSolicitudPerfil(sicoesSolicitud);
 		AuditoriaUtil.setAuditoriaRegistro(requerimientoRenovacion,contexto);
 		requerimientoRenovacion.setIdUsuario(contexto.getUsuario().getIdUsuario());
-		return requerimientoRenovacionDao.save(requerimientoRenovacion);
+        requerimientoRenovacionDao.save(requerimientoRenovacion);
+        historialRequerimientoRenovacionService.registrarHistorialRequerimientoRenovacion(requerimientoRenovacion,contexto);
+        return requerimientoRenovacion;
 	}
-
 
 	private String enviarArchivos(List<File> archivosAlfresco, SicoesSolicitud solicitud, Contexto contexto) throws Exception {
 		ExpedienteInRO expedienteInRO = null;
