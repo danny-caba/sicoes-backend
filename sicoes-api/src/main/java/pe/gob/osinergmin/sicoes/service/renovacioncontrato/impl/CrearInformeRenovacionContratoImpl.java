@@ -271,7 +271,15 @@ public class CrearInformeRenovacionContratoImpl  {
 
             logger.info("Archivo registrado en DB con ID: {} y UUID Alfresco: {} ", archivoPdf.getIdArchivo(), uuidRealAlfresco);
 
-            notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
+            // Enviar notificación y capturar el ID
+            Long idNotificacion = notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
+            
+            // Actualizar el informe con el ID de la notificación
+            if (idNotificacion != null) {
+                nuevoInformeRenovacionContrato.setIdNotificacion(idNotificacion);
+                nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(nuevoInformeRenovacionContrato);
+                logger.info("Informe actualizado con ID de notificación: {}", idNotificacion);
+            }
 
             RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(
                     nuevoInformeRenovacionContrato.getIdInformeRenovacion(),

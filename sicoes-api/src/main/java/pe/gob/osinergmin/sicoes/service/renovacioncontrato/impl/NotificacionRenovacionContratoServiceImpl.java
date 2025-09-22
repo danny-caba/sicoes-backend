@@ -68,7 +68,7 @@ public class NotificacionRenovacionContratoServiceImpl implements NotificacionRe
     return notificacion;
     }
 
-    private void saveNotificacion(Notificacion notificacion) {
+    private Notificacion saveNotificacion(Notificacion notificacion) {
 
     ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
         Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
@@ -77,11 +77,11 @@ public class NotificacionRenovacionContratoServiceImpl implements NotificacionRe
         throw  new RuntimeException("Estado 'Pendiente' no encontrado en listado detalle");
     }
     notificacion.setEstado(pendiente);
-    notificacionDao.save(notificacion);
+    return notificacionDao.save(notificacion);
     }
 
     @Override
-    public void notificacionInformePorAprobar(Usuario usuario, String numExpediente, Contexto contexto) {
+    public Long notificacionInformePorAprobar(Usuario usuario, String numExpediente, Contexto contexto) {
         String email = usuario.getCorreo();
         String nombreUsuario = usuario.getNombreUsuario();
         logger.info(" notificacionInformePorAprobar para email: {} nombre: {} ",email,nombreUsuario);
@@ -95,6 +95,9 @@ public class NotificacionRenovacionContratoServiceImpl implements NotificacionRe
                 NOMBRE_TEMPLATE_NOTIFICACION_INFORME_POR_APROBAR,
                 ctx);
         AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
-        saveNotificacion(notificacion); 
+        Notificacion notificacionGuardada = saveNotificacion(notificacion);
+        
+        logger.info("Notificación guardada con ID: {}", notificacionGuardada.getIdNotificacion());
+        return notificacionGuardada.getIdNotificacion();
     }
 }

@@ -5,6 +5,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 
 public interface NotificacionRenovacionContratoService {
 
-    void notificacionInformePorAprobar(Usuario usuario, String numExpediente, Contexto contexto);
+    Long notificacionInformePorAprobar(Usuario usuario, String numExpediente, Contexto contexto);
     
 }
