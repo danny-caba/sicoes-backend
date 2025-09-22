@@ -559,7 +559,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		try {
 			// Usar el UUID predefinido como nombre del archivo en Alfresco
 			String nombreArchivoConUuid = uuidPredefinido + "_" + archivo.getNombreReal();
-			
+
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Parámetros: idReqRenovacion={}, uuidPredefinido={}, nombreArchivoOriginal={}, nombreArchivoConUuid={}", 
+				idReqRenovacion, uuidPredefinido, archivo.getNombreReal(), nombreArchivoConUuid);
+
 			RestTemplate restTemplate = new RestTemplate();
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -574,8 +577,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 
 			if (archivo.getFile() != null) {
 				fileEntity = new HttpEntity<>(archivo.getFile().getBytes(), fileMap);
+				logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Tamaño archivo (getFile): {} bytes", archivo.getFile().getBytes().length);
 			} else {
 				fileEntity = new HttpEntity<>(archivo.getContenido(), fileMap);
+				logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Tamaño archivo (getContenido): {} bytes", archivo.getContenido().length);
 			}
 
 			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -586,13 +591,11 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			if (idReqRenovacion != null) {
 				path = SIGED_WS_URL + SIGED_PATH_SUBIR_ARCHIVO + SIGED_USER + SIGED_PATH_BASE + "/REQUERIMIENTO_RENOVACION/" + idReqRenovacion;
 			} else {
-				logger.info("Sin path enviar idReqRenovacion " + path);
+				logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Sin path enviar idReqRenovacion {}", path);
 			}
 
-			logger.info("Enviado a alfresco con UUID predefinido: " + path);
-			logger.info("UUID predefinido: " + uuidPredefinido);
-			logger.info("nombre Archivo con UUID: " + nombreArchivoConUuid);
-			
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Enviando a Alfresco: {}", path);
+
 			ResponseEntity<String> response = restTemplate.exchange(
 					path,
 					HttpMethod.POST,
@@ -602,32 +605,38 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			// Extraer UUID directamente del XML usando regex
 			String responseBody = response.getBody();
 			String uuidReal = null;
-			
+
 			// Buscar nodeRef en el XML que contiene workspace://SpacesStore/UUID
 			java.util.regex.Pattern nodeRefPattern = java.util.regex.Pattern.compile("workspace://SpacesStore/([a-f0-9\\-]{36})");
 			java.util.regex.Matcher nodeRefMatcher = nodeRefPattern.matcher(responseBody);
-			
+
 			if (nodeRefMatcher.find()) {
 				uuidReal = nodeRefMatcher.group(1);
 			} else {
 				// Buscar directamente un UUID en el XML (formato: 8-4-4-4-12 caracteres)
 				java.util.regex.Pattern uuidPattern = java.util.regex.Pattern.compile("([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})");
 				java.util.regex.Matcher uuidMatcher = uuidPattern.matcher(responseBody);
-				
+
 				if (uuidMatcher.find()) {
 					uuidReal = uuidMatcher.group(1);
 				}
 			}
-			
+
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] Respuesta Alfresco: {}", responseBody);
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] UUID extraído de respuesta: {}", uuidReal);
+
 			// Parsear la respuesta XML para mantener compatibilidad
 			XmlMapper xmlMapper = new XmlMapper();
 			AlfrescoFileOut fileOut = xmlMapper.readValue(responseBody, AlfrescoFileOut.class);
-			
+
+			logger.info("[subirArchivosAlfrescoRenovacionContratoConUuid] fullFilePath retornado: {}", 
+				(fileOut != null && fileOut.getFiles() != null) ? fileOut.getFiles().getFullFilePath() : "null");
+
 			// Retornar el UUID real de Alfresco si se encontró, sino el fullFilePath original
-			return uuidReal != null ? uuidReal : fileOut.getFiles().getFullFilePath();
-			
+			return  fileOut.getFiles().getFullFilePath();
+
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			logger.error("[subirArchivosAlfrescoRenovacionContratoConUuid] Error: {}", e.getMessage(), e);
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_PROBLEMA_SUBIR_ALFRESCO, e);
 		}
 	}
