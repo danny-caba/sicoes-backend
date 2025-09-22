@@ -322,6 +322,19 @@ public class CrearInformeRenovacionContratoImpl  {
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG1);
             historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
 
+            // Crear requerimiento de aprobación para G2 si existe aprobador G2
+            if (listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG2() != null) {
+                RequerimientoAprobacion requerimientoAprobacionG2 = buildRequerimientoAprobacionG2(
+                        nuevoInformeRenovacionContrato.getIdInformeRenovacion(),
+                        listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG2(),
+                        contexto.getUsuario().getIdUsuario(),
+                        contexto.getIp()
+                );
+                AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG2, contexto);
+                RequerimientoAprobacion requerimientoAprobacionG2Result = requerimientoAprobacionDao.save(requerimientoAprobacionG2);
+                historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionG2Result, contexto);
+            }
+
         }else{
             throw new ValidacionException(
                     Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
@@ -368,6 +381,53 @@ public class CrearInformeRenovacionContratoImpl  {
         requerimientoAprobacionG1.setIdTipoLd(g1GrupoLD.getIdListadoDetalle()); 
 
         return requerimientoAprobacionG1;
+    }
+
+    private RequerimientoAprobacion buildRequerimientoAprobacionG2(Long idInformeRenovacion, Long idUsuarioG2, Long idUsuario, String ip) {
+
+        RequerimientoAprobacion requerimientoAprobacionG2 = new RequerimientoAprobacion();
+        requerimientoAprobacionG2.setFeAsignacion(new Date());
+        requerimientoAprobacionG2.setFecCreacion(new Date());
+        requerimientoAprobacionG2.setIpCreacion(ip);
+        requerimientoAprobacionG2.setUsuCreacion(idUsuario.toString());
+        requerimientoAprobacionG2.setIdUsuario(idUsuarioG2);
+        requerimientoAprobacionG2.setIdInformeRenovacion(idInformeRenovacion);
+
+        // Configurar como grupo G2
+        ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPOS",
+                "G2"
+        );
+        requerimientoAprobacionG2.setIdGrupoLd(g2GrupoLD.getIdListadoDetalle());
+        
+        ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
+                "ESTADO_APROBACION",
+                "ASIGNADO"
+        );
+        requerimientoAprobacionG2.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
+
+        ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
+                "TIPO_EVALUADOR",
+                "APROBADOR_TECNICO"
+        );
+        requerimientoAprobacionG2.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
+
+        ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
+                "GRUPO_APROBACION",
+                "GERENTE_DIVISION"
+        );
+        requerimientoAprobacionG2.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
+        
+        ListadoDetalle tipoAprobacionLD = listadoDetalleService.obtenerListadoDetalle(
+            "TIPO_APROBACION",
+            "APROBAR"
+        );
+        requerimientoAprobacionG2.setIdTipoLd(tipoAprobacionLD.getIdListadoDetalle()); 
+
+        // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD en G2
+        requerimientoAprobacionG2.setIdFirmadoLd(962L);
+
+        return requerimientoAprobacionG2;
     }
 
     public static String removerSufijoPdf(String nombreArchivo) {
