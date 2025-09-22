@@ -47,6 +47,7 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
 import pe.gob.osinergmin.sicoes.repository.ArchivoDao;
 import pe.gob.osinergmin.sicoes.repository.ContratoDao;
+import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
@@ -122,6 +123,7 @@ public class CrearInformeRenovacionContratoImpl  {
     private final ContratoDao contratoDao;
     private final SicoesSolicitudDao solicitudDao;
     private final UsuarioDao usuarioDao;
+    private final NotificacionDao notificacionDao;
     private final RequerimientoRenovacionDao requerimientoRenovacionDao;
     private final RequerimientoAprobacionDao requerimientoAprobacionDao;
 
@@ -142,6 +144,7 @@ public class CrearInformeRenovacionContratoImpl  {
         ContratoDao contratoDao,
         SicoesSolicitudDao solicitudDao,
         UsuarioDao usuarioDao,
+        NotificacionDao notificacionDao,
         RequerimientoRenovacionDao requerimientoRenovacionDao,
         RequerimientoAprobacionDao requerimientoAprobacionDao
         ) {
@@ -156,6 +159,7 @@ public class CrearInformeRenovacionContratoImpl  {
         this.contratoDao = contratoDao;
         this.solicitudDao = solicitudDao;
         this.usuarioDao = usuarioDao;
+        this.notificacionDao = notificacionDao;
         this.requerimientoRenovacionDao = requerimientoRenovacionDao;
         this.requerimientoAprobacionDao = requerimientoAprobacionDao;
     }
@@ -298,9 +302,13 @@ public class CrearInformeRenovacionContratoImpl  {
             
             // Actualizar el informe con el ID de la notificación
             if (idNotificacion != null) {
-                nuevoInformeRenovacionContrato.setIdNotificacion(idNotificacion);
-                nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(nuevoInformeRenovacionContrato);
-                logger.info("Informe actualizado con ID de notificación: {}", idNotificacion);
+                // Buscar la notificación por ID y asignarla al informe
+                pe.gob.osinergmin.sicoes.model.Notificacion notificacion = notificacionDao.findById(idNotificacion).orElse(null);
+                if (notificacion != null) {
+                    nuevoInformeRenovacionContrato.setNotificacion(notificacion);
+                    nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(nuevoInformeRenovacionContrato);
+                    logger.info("Informe actualizado con ID de notificación: {}", idNotificacion);
+                }
             }
 
             RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(
