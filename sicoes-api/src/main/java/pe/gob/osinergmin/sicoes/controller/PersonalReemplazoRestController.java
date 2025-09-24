@@ -9,8 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.*;
-import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
-import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.PersonalReemplazoService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -21,16 +19,14 @@ import java.util.List;
 @RequestMapping("/api")
 public class PersonalReemplazoRestController extends BaseRestController {
 
-    private Logger logger = LogManager.getLogger(PersonalReemplazoRestController.class);
+    private static final Logger logger = LogManager.getLogger(PersonalReemplazoRestController.class);
+
+    private final PersonalReemplazoService personalReemplazoService;
 
     @Autowired
-    private PersonalReemplazoService personalReemplazoService;
-
-    @Autowired
-    private DocumentoReemService documentoReemService;
-
-    @Autowired
-    NotificacionService notificacionService;
+    public PersonalReemplazoRestController(PersonalReemplazoService personalReemplazoService) {
+        this.personalReemplazoService = personalReemplazoService;
+    }
 
     @GetMapping("/externo/reemplazo/solicitud/obtener/{idSolicitud}")
     @Raml("personalReemplazo.obtener.properties")
