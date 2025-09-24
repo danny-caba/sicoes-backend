@@ -74,6 +74,10 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private final ListadoDetalleService listadoDetalleService;
     private final NotificacionDao notificacionDao;
 
+    private static final String NUMERO_EXPEDIENTE = "numeroExpediente";
+    private static final String NOMBRE_SUPERVISORA = "nombreSupervisora";
+    private static final String NOMBRE_PERSONAL = "nombrePersonal";
+
     @Autowired
     private PersonalReemplazoService personalReemplazoService;
 
@@ -145,7 +149,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
         Context ctx = new Context();
         ctx.setVariable("nombreRol", nombreRol);
-        ctx.setVariable("numeroExpediente", numExpediente);
+        ctx.setVariable(NUMERO_EXPEDIENTE, numExpediente);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -162,8 +166,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         logger.info(" notificarDesvinculacionEmpresa para email: {} ",email);
 
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", nombreSupervisora);
-        ctx.setVariable("numeroExpediente", numeroExpediente);
+        ctx.setVariable(NOMBRE_SUPERVISORA, nombreSupervisora);
+        ctx.setVariable(NUMERO_EXPEDIENTE, numeroExpediente);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -182,8 +186,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         String nombrePersonal = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", nombreSupervisora);
-        ctx.setVariable("nombrePersonal", nombrePersonal);
+        ctx.setVariable(NOMBRE_SUPERVISORA, nombreSupervisora);
+        ctx.setVariable(NOMBRE_PERSONAL, nombrePersonal);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -205,7 +209,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         //logger.info(" notificarCargarDocumentosInicioServicio para email: {} ",contexto.getUsuario().getCorreo());
         String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", nombreSupervisora);
+        ctx.setVariable(NOMBRE_SUPERVISORA, nombreSupervisora);
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -261,8 +265,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         String nombreSupervisora = obtenerNombreSupervisora(personaPropuesta);
 
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", nombreSupervisora);
-        ctx.setVariable("numeroExpediente", personaPropuesta.getNumeroExpediente());
+        ctx.setVariable(NOMBRE_SUPERVISORA, nombreSupervisora);
+        ctx.setVariable(NUMERO_EXPEDIENTE, personaPropuesta.getNumeroExpediente());
 
         Notificacion notificacion = buildNotification(
                 email,
@@ -297,8 +301,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         String email = empresa.getCorreo();
         logger.info(" notificarRevDocumentos2 para email: {} ",email);
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", this.obtenerNombreSupervisora(empresa));
-        ctx.setVariable("nombrePersonal", nombrePersonal);
+        ctx.setVariable(NOMBRE_SUPERVISORA, this.obtenerNombreSupervisora(empresa));
+        ctx.setVariable(NOMBRE_PERSONAL, nombrePersonal);
         ctx.setVariable("nombrePerfil", nombrePerfil);
         ctx.setVariable("listDocsAsociados", listDocsAsociados);
         Notificacion notificacion = buildNotification(
@@ -315,8 +319,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         String email = usuario.getCorreo();
         logger.info(" notificarRevDocumentos15 para email: {} ",email);
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", usuario.getNombreUsuario());
-        ctx.setVariable("numeroExpediente", numeroExpediente);
+        ctx.setVariable(NOMBRE_SUPERVISORA, usuario.getNombreUsuario());
+        ctx.setVariable(NUMERO_EXPEDIENTE, numeroExpediente);
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_REV_DOCUMENTOS_15,
@@ -345,8 +349,8 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         String email = empresa.getCorreo();
         logger.info(" notificarRevDocumentos122 para email: {} ",email);
         Context ctx = new Context();
-        ctx.setVariable("nombreSupervisora", this.obtenerNombreSupervisora(empresa));
-        ctx.setVariable("nombrePersonal", nombrePersonal);
+        ctx.setVariable(NOMBRE_SUPERVISORA, this.obtenerNombreSupervisora(empresa));
+        ctx.setVariable(NOMBRE_PERSONAL, nombrePersonal);
         ctx.setVariable("docAdicional", docAdicional);
         ctx.setVariable("sctr1", sctr1);
         ctx.setVariable("sctr2", sctr2);
@@ -366,7 +370,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
         Context ctx = new Context();
         ctx.setVariable("nombreAprobador", usuario.getNombreUsuario());
-        ctx.setVariable("numeroExpediente", numeroExpediente);
+        ctx.setVariable(NUMERO_EXPEDIENTE, numeroExpediente);
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_APROBACION_PENDIENTE,
@@ -383,7 +387,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         logger.info(" notificarEvaluacionPendiente para email: {} ",email);
 
         Context ctx = new Context();
-        ctx.setVariable("numeroExpediente", numeroExpediente);
+        ctx.setVariable(NUMERO_EXPEDIENTE, numeroExpediente);
         Notificacion notificacion = buildNotification(
                 email,
                 ASUNTO_NOTIFICACION_EVALUACION_PENDIENTE,
@@ -422,7 +426,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
         }
         logger.info(" notificarFinalizacionContrato para email: {} ",email);
         Context ctx = new Context();
-        ctx.setVariable("numeroExpediente", numeroExpediente);
+        ctx.setVariable(NUMERO_EXPEDIENTE, numeroExpediente);
 
         Notificacion notificacion = buildNotification(
                 email,
