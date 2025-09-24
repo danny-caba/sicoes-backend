@@ -4,7 +4,6 @@ import com.lowagie.text.pdf.PdfReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,32 +37,30 @@ import java.util.stream.Collectors;
 @Service
 public class DocumentoReemServiceImpl implements DocumentoReemService {
 
-    Logger logger = LogManager.getLogger(DocumentoReemServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(DocumentoReemServiceImpl.class);
 
-    @Autowired
-    private DocumentoReemDao documentoReemDao;
-
-    @Autowired
-    private ListadoDetalleDao listadoDetalleDao;
-
-    @Autowired
-    private ArchivoService archivoService;
-
-    @Autowired
-    private ListadoDetalleService listadoDetalleService;
-
-    @Autowired
-    private ArchivoDao archivoDao;
-
-    @Autowired
-    private Environment env;
-
-    @Autowired
-    private SigedOldConsumer sigedOldConsumer;
-
+    private final DocumentoReemDao documentoReemDao;
+    private final ListadoDetalleDao listadoDetalleDao;
+    private final ArchivoService archivoService;
+    private final  ListadoDetalleService listadoDetalleService;
+    private final ArchivoDao archivoDao;
+    private final  SigedOldConsumer sigedOldConsumer;
     private final EntityManager entityManager;
 
-    public DocumentoReemServiceImpl(EntityManager entityManager) {
+    @Autowired
+    public DocumentoReemServiceImpl(DocumentoReemDao documentoReemDao,
+                                    ListadoDetalleDao listadoDetalleDao,
+                                    ArchivoService archivoService,
+                                    ListadoDetalleService listadoDetalleService,
+                                    ArchivoDao archivoDao,
+                                    SigedOldConsumer sigedOldConsumer,
+                                    EntityManager entityManager) {
+        this.documentoReemDao = documentoReemDao;
+        this.listadoDetalleDao = listadoDetalleDao;
+        this.archivoService = archivoService;
+        this.listadoDetalleService = listadoDetalleService;
+        this.archivoDao = archivoDao;
+        this.sigedOldConsumer = sigedOldConsumer;
         this.entityManager = entityManager;
     }
 
@@ -106,7 +103,7 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
                 archivo.setNroFolio(1L);
             }
         } catch (Exception e) {
-            logger.error("Error al leer el archivo para obtener el número de folios: " + e.getMessage(), e);
+            logger.error("Error al leer el archivo para obtener el número de folios: {}", e.getMessage(), e);
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_SE_PUEDE_LEER);
         }
 
@@ -117,7 +114,7 @@ public class DocumentoReemServiceImpl implements DocumentoReemService {
                 null, null,null,documentoBD.getIdDocumento(), null, archivo);
         archivoGuardadoBD.setNombreAlFresco(alfrescoPath);
         archivoGuardadoBD = archivoDao.save(archivoGuardadoBD);
-        logger.info("Archivo registrado en DB con ID: " + archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);
+        logger.info("Archivo registrado en DB con ID: {}" , archivoGuardadoBD.getIdArchivo() + " y ruta Alfresco: " + alfrescoPath);
 
         return documentoBD;
     }

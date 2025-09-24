@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
@@ -36,7 +37,7 @@ import java.util.*;
 @Service
 public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
-    Logger logger = LogManager.getLogger(AdendaReemplazoServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(AdendaReemplazoServiceImpl.class);
 
     private final AdendaReemplazoDao adendaReemplazoDao;
     private final PersonalReemplazoDao reemplazoDao;
@@ -53,8 +54,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     private final NotificacionContratoService notificacionContratoService;
     private final SicoesSolicitudDao sicoesSolicitudDao;
     private final RolDao rolDao;
+    private  final AdendaReemplazoService adendaReemplazoService;
 
-     @Autowired
+    @Autowired
     public AdendaReemplazoServiceImpl(AdendaReemplazoDao adendaReemplazoDao,
                                       PersonalReemplazoDao reemplazoDao,
                                       PersonalReemplazoService personalReemplazoService,
@@ -69,7 +71,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                                       AprobacionDao aprobacionDao,
                                       NotificacionContratoService notificacionContratoService,
                                       SicoesSolicitudDao sicoesSolicitudDao,
-                                      RolDao rolDao
+                                      RolDao rolDao,
+                                      @Lazy AdendaReemplazoService adendaReemplazoService
 
                                        ) {
         this.adendaReemplazoDao = adendaReemplazoDao;
@@ -87,12 +90,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         this.notificacionContratoService = notificacionContratoService;
         this.sicoesSolicitudDao = sicoesSolicitudDao;
         this.rolDao = rolDao;
-
+        this.adendaReemplazoService = adendaReemplazoService;
     }
-
-    @Autowired
-    @Lazy
-    private AdendaReemplazoService adendaReemplazoService;
 
     @Override
     @Transactional
@@ -198,23 +197,18 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.APROBADO;
         ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
-        if (visto){
-            if (estadoApro.equals(adendaReemplazo.get().getEstadoVbGaf())){
+        if (visto && estadoApro.equals(adendaReemplazo.get().getEstadoVbGaf())){
                 throw new ValidacionException(
                         Constantes.CODIGO_MENSAJE.VISTO_BUENO_APROBADO);
-            }
+
         } else {
-            if (firmaJefe){
-                if (estadoApro.equals(adendaReemplazo.get().getEstadoFirmaJefe())){
+            if (firmaJefe && estadoApro.equals(adendaReemplazo.get().getEstadoFirmaJefe())){
                     throw new ValidacionException(
                             Constantes.CODIGO_MENSAJE.FIRMA_APROBADA);
-                }
             }
-            if (firmaGerente){
-                if (estadoApro.equals(adendaReemplazo.get().getEstadoFirmaGerencia())){
+            if (firmaGerente && estadoApro.equals(adendaReemplazo.get().getEstadoFirmaGerencia())){
                     throw new ValidacionException(
                             Constantes.CODIGO_MENSAJE.FIRMA_APROBADA);
-                }
             }
         }
 
@@ -452,7 +446,6 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             String descAsignado = Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO;
             String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
 
-            ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
             ListadoDetalle estadoAproAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAprobacionAdenda);
             ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignado);
             ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);
@@ -643,7 +636,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         return response;
     }
 
-    private Map<String, Object> procesarRespuesta(ResponseEntity<String> response) throws Exception {
+    private Map<String, Object> procesarRespuesta(ResponseEntity<String> response) throws JsonProcessingException {
         logger.info("Procesar respuesta recibida: {}", response);
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {});

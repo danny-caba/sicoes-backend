@@ -45,106 +45,51 @@ import java.util.stream.Collectors;
 @Service
 public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
-    Logger logger = LogManager.getLogger(PersonalReemplazoServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(PersonalReemplazoServiceImpl.class);
 
-    @Autowired
-    private PersonalReemplazoDao reemplazoDao;
+    private final PersonalReemplazoDao reemplazoDao;
+    private final DocumentoReemDao documentoReemDao;
+    private final DocumentoReemService documentoReemService;
+    private final ArchivoDao archivoDao;
+    private final ListadoDetalleDao listadoDetalleDao;
+    private final EvaluarDocuReemDao evaluarDocuReemDao;
+    private final SupervisoraMovimientoService supervisoraMovimientoService;
+    private final NotificacionContratoService notificacionContratoService;
+    private final ComboDao comboDao;
+    private final AprobacionReempDao aprobacionReempDao;
+    private final SicoesSolicitudDao sicoesSolicitudDao;
+    private final ArchivoService archivoService;
+    private final SigedOldConsumer sigedOldConsumer;
+    private final SigedApiConsumer sigedApiConsumer;
+    private final Environment env;
+    private final AprobacionDao aprobacionDao;
+    private final AdendaDao adendaDao;
+    private final EvaluacionDocumentacionDao evaluacionDocumentacionDao;
+    private final EvaluacionPPDao evaluacionPPDao;
+    private final PropuestaProfesionalDao propuestaProfesionalDao;
+    private final ListadoDetalleService listadoDetalleService;
+    private final HistorialAprobReempDao historialAprobReempDao;
+    private final SupervisoraDao supervisoraDao;
+    private final UsuarioRolDao usuarioRolDao;
+    private final UsuarioDao usuarioDao;
+    private final EvaluacionDocInicioServDao evaluacionDocInicioServDao;
+    private final DocumentoInicioServDao documentoInicioServDao;
+    private final ListadoDao listadoDao;
+    private final ArchivoUtil archivoUtil;
+    private final RolDao rolDao;
+    private final DocumentoPPDao documentoPPDao;
+    private final SupervisoraMovimientoDao supervisoraMovimientoDao;
+    private final ContratoDao contratoDao;
 
-    @Autowired
-    private DocumentoReemDao documentoReemDao;
-
-    @Autowired
-    private DocumentoReemService documentoReemService;
-
-    @Autowired
-    private ArchivoDao archivoDao;
-
-    @Autowired
-    private ListadoDetalleDao listadoDetalleDao;
-
-    @Autowired
-    private EvaluarDocuReemDao evaluarDocuReemDao;
-
-    @Autowired
-    private SupervisoraMovimientoService supervisoraMovimientoService;
-
-    @Autowired
-    private  NotificacionContratoService notificacionContratoService;
-
-    @Autowired
-    private ComboDao comboDao;
-
-    @Autowired
-    private AprobacionReempDao aprobacionReempDao;
-
-    @Autowired
-    private SicoesSolicitudDao sicoesSolicitudDao;
-
-    @Autowired
-    private ArchivoService archivoService;
-
-    @Autowired
-    private SigedOldConsumer sigedOldConsumer;
-
-    @Autowired
-    private SigedApiConsumer sigedApiConsumer;
-
-    @Autowired
-    private Environment env;
 
     @Value("${siged.old.proyecto}")
     private String SIGLA_PROYECTO;
-
-    @Autowired
-    private AprobacionDao aprobacionDao;
-
-    @Autowired
-    private AdendaDao adendaDao;
-
-    @Autowired
-    private EvaluacionDocumentacionDao evaluacionDocumentacionDao;
-
-    @Autowired
-    private EvaluacionPPDao evaluacionPPDao;
-
-    @Autowired
-    private PropuestaProfesionalDao propuestaProfesionalDao;
-
-    @Autowired
-    private ListadoDetalleService listadoDetalleService;
-
-    @Autowired
-    private HistorialAprobReempDao historialAprobReempDao;
-
-    @Autowired
-    private SupervisoraDao supervisoraDao;
-
-    @Autowired
-    private UsuarioRolDao usuarioRolDao;
-
-    @Autowired
-    private UsuarioDao usuarioDao;
-
-    @Autowired
-    private EvaluacionDocInicioServDao evaluacionDocInicioServDao;
-
-    @Autowired
-    private  DocumentoInicioServDao documentoInicioServDao;
-
-    @Autowired
-    private ListadoDao listadoDao;
-
-    @Autowired
-    private ArchivoUtil archivoUtil;
 
     @Value("${path.jasper}")
     private String pathJasper;
 
     @Value("${siged.ws.cliente.osinergmin.numero.documento}")
     private String OSI_DOCUMENTO;
-
-    @Value("${consolidado.documentos}")
-    private String CONSOLIDADO_DOCUMENTOS;
 
     @Value("${finalizacion.evaluacion}")
     private String FINALIZACION_EVALUACION;
@@ -159,16 +104,73 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private String pathTemporal;
 
     @Autowired
-    private RolDao rolDao;
+    public PersonalReemplazoServiceImpl(PersonalReemplazoDao reemplazoDao,
+                                        DocumentoReemDao documentoReemDao,
+                                        DocumentoReemService documentoReemService,
+                                        ArchivoDao archivoDao,
+                                        ListadoDetalleDao listadoDetalleDao,
+                                        EvaluarDocuReemDao evaluarDocuReemDao,
+                                        SupervisoraMovimientoService supervisoraMovimientoService,
+                                        NotificacionContratoService notificacionContratoService,
+                                        ComboDao comboDao, AprobacionReempDao aprobacionReempDao,
+                                        SicoesSolicitudDao sicoesSolicitudDao,
+                                        ArchivoService archivoService,
+                                        SigedOldConsumer sigedOldConsumer,
+                                        SigedApiConsumer sigedApiConsumer,
+                                        Environment env,
+                                        AprobacionDao aprobacionDao,
+                                        AdendaDao adendaDao,
+                                        EvaluacionDocumentacionDao evaluacionDocumentacionDao,
+                                        EvaluacionPPDao evaluacionPPDao,
+                                        PropuestaProfesionalDao propuestaProfesionalDao,
+                                        ListadoDetalleService listadoDetalleService,
+                                        HistorialAprobReempDao historialAprobReempDao,
+                                        SupervisoraDao supervisoraDao,
+                                        UsuarioRolDao usuarioRolDao,
+                                        UsuarioDao usuarioDao,
+                                        EvaluacionDocInicioServDao evaluacionDocInicioServDao,
+                                        DocumentoInicioServDao documentoInicioServDao,
+                                        ListadoDao listadoDao,
+                                        ArchivoUtil archivoUtil,
+                                        RolDao rolDao,
+                                        DocumentoPPDao documentoPPDao,
+                                        SupervisoraMovimientoDao supervisoraMovimientoDao,
+                                        ContratoDao contratoDao) {
+        this.reemplazoDao = reemplazoDao;
+        this.documentoReemDao = documentoReemDao;
+        this.documentoReemService = documentoReemService;
+        this.archivoDao = archivoDao;
+        this.listadoDetalleDao = listadoDetalleDao;
+        this.evaluarDocuReemDao = evaluarDocuReemDao;
+        this.supervisoraMovimientoService = supervisoraMovimientoService;
+        this.notificacionContratoService = notificacionContratoService;
+        this.comboDao = comboDao;
+        this.aprobacionReempDao = aprobacionReempDao;
+        this.sicoesSolicitudDao = sicoesSolicitudDao;
+        this.archivoService = archivoService;
+        this.sigedOldConsumer = sigedOldConsumer;
+        this.sigedApiConsumer = sigedApiConsumer;
+        this.env = env;
+        this.aprobacionDao = aprobacionDao;
+        this.adendaDao = adendaDao;
+        this.evaluacionDocumentacionDao = evaluacionDocumentacionDao;
+        this.evaluacionPPDao = evaluacionPPDao;
+        this.propuestaProfesionalDao = propuestaProfesionalDao;
+        this.listadoDetalleService = listadoDetalleService;
+        this.historialAprobReempDao = historialAprobReempDao;
+        this.supervisoraDao = supervisoraDao;
+        this.usuarioRolDao = usuarioRolDao;
+        this.usuarioDao = usuarioDao;
+        this.evaluacionDocInicioServDao = evaluacionDocInicioServDao;
+        this.documentoInicioServDao = documentoInicioServDao;
+        this.listadoDao = listadoDao;
+        this.archivoUtil = archivoUtil;
+        this.rolDao = rolDao;
+        this.documentoPPDao = documentoPPDao;
+        this.supervisoraMovimientoDao = supervisoraMovimientoDao;
+        this.contratoDao = contratoDao;
+    }
 
-    @Autowired
-    private DocumentoPPDao documentoPPDao;
-
-    @Autowired
-    private SupervisoraMovimientoDao supervisoraMovimientoDao;
-
-    @Autowired
-    private ContratoDao contratoDao;
 
     @Override
     public Page<PersonalReemplazo> listarPersonalReemplazo(Long idSolicitud, String descAprobacion,
@@ -456,12 +458,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
         Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
-        /*
-        if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.CONSOLIDADO_DOCUMENTOS)) {
-            registrarExpedienteSiged(archivoDB, personalReemplazo, CONSOLIDADO_DOCUMENTOS);
-        } else {
-            adjuntarDocumentoSiged(archivoDB, personalReemplazo, CONSOLIDADO_DOCUMENTOS);
-        }*/
+
         return archivoDB;
     }
 
@@ -944,12 +941,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         archivo.setIdReemplazoPersonal(personalReemplazo.getIdReemplazo());
         archivo.setTipoArchivo(tipoArchivo);
         Archivo archivoDB = archivoService.guardarPorPersonalReemplazo(archivo, contexto);
-        /*
-        if (Objects.equals(tipoArchivo.getCodigo(), Constantes.LISTADO.TIPO_ARCHIVO.FINALIZACION_EVALUACION)) {
-            registrarExpedienteSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
-        } else {
-            adjuntarDocumentoSiged(archivoDB, personalReemplazo, FINALIZACION_EVALUACION);
-        }*/
         return archivoDB;
     }
 
