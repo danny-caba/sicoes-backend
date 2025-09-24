@@ -92,14 +92,14 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @PostMapping("/reemplazo/solicitud/propuesto/revisa")
     @Raml("evalDocuReemplazo.revisar.properties")
     public EvaluarDocuResponseDTO evaluarConformidad(@RequestBody EvaluarDocuRequestDTO request){
-        logger.info(" Request {}", request);
+        logger.info("evaluarConformidad Request  {}", request);
         return personalReemplazoService.evaluarConformidad(request, getContexto());
     }
 
     @PostMapping("/reemplazo/solicitud/propuesto/observaciones")
     @Raml("generic.response.properties")
     public GenericResponseDTO<List<EvaluarDocuResponseDTO>> registrarObservaciones(@RequestBody List<EvaluarDocuRequestDTO> request){
-        logger.info(" Request {}", request);
+        logger.info("registrarObservaciones Request {}", request);
         return personalReemplazoService.registrarObservaciones(request, getContexto());
     }
 
@@ -143,14 +143,14 @@ public class PersonalReemplazoRestController extends BaseRestController {
     @Raml("generic.response.properties")
     public PersonalReemplazo registroRevisarDocumentacion(
             @RequestBody RegistrarRevDocumentosRequestDTO request){
-        logger.info(" Request {}", request);
+        logger.info("registroRevisarDocumentacion Request {}", request);
         return personalReemplazoService.registrarRevDocumentos(request, getContexto());
     }
 
     @GetMapping("/reemplazo/{idReemplazo}")
     @Raml("personalReemplazo.listar.properties")
     public PersonalReemplazo obtenerPersonalReemplazo(@PathVariable Long idReemplazo){
-        logger.info(" Request {}", request);
+        logger.info("obtenerPersonalReemplazo Request {}", request);
         return personalReemplazoService.obtenerPersonalReemplazo(idReemplazo);
     }
 

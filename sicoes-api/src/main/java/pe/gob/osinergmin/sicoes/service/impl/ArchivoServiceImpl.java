@@ -96,6 +96,8 @@ public class ArchivoServiceImpl implements ArchivoService {
     @Autowired
     private OtroRequisitoService otroRequisitoService;
 
+	private static final String V2_FILE_PATTERN = ".*_v2\\.pdf$";
+
 	@Override
 	public Archivo obtener(Long idArchivo, Contexto contexto) {
 		return archivoDao.obtener(idArchivo);
@@ -504,12 +506,12 @@ public class ArchivoServiceImpl implements ArchivoService {
         // Verificar si hay archivos _v2
         boolean tieneV2 = archivos.stream()
                                 .anyMatch(a -> a.getNombre() != null && 
-                                            a.getNombre().matches(".*_v2\\.pdf$"));
+                                            a.getNombre().matches(V2_FILE_PATTERN));
                                           
 		for (Archivo archivo : archivos) {
             // Si hay _v2, solo procesamos los _v2. Si no hay _v2, procesamos todos
             if (!tieneV2 || (tieneV2 && archivo.getNombre() != null && 
-                            archivo.getNombre().matches(".*_v2\\.pdf$"))) {
+                            archivo.getNombre().matches(V2_FILE_PATTERN))) {
                 
                 try {
                     byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
@@ -1233,12 +1235,12 @@ public class ArchivoServiceImpl implements ArchivoService {
 		// Verificar si hay archivos _v2
 		boolean tieneV2 = archivos.stream()
 				.anyMatch(a -> a.getNombre() != null &&
-						a.getNombre().matches(".*_v2\\.pdf$"));
+						a.getNombre().matches(V2_FILE_PATTERN));
 
 		for (Archivo archivo : archivos) {
 			// Si hay _v2, solo procesamos los _v2. Si no hay _v2, procesamos todos
 			if (!tieneV2 || (tieneV2 && archivo.getNombre() != null &&
-					archivo.getNombre().matches(".*_v2\\.pdf$"))) {
+					archivo.getNombre().matches(V2_FILE_PATTERN))) {
 
 				try {
 					logger.info("archivoAlfresco:{}",archivo.getNombreAlFresco());

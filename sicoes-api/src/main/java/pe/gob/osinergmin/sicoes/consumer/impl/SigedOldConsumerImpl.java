@@ -2,15 +2,20 @@ package pe.gob.osinergmin.sicoes.consumer.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +39,7 @@ import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import org.xml.sax.InputSource;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.model.Archivo;
 import pe.gob.osinergmin.sicoes.model.Ubigeo;
@@ -77,7 +83,7 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	private String SIGED_PATH_FIRMA_DIGITAL;
 
 	@Value("${siged.ws.path.finalizar.firma.digital}")
-	private String SIGED_PATH_FINALIZAR_FIRMA_DIGITAL;
+	private String sigedPathFinalizarFirmaDigital;
 	
 	@Value("${siged.ws.usuario.firma.digital}")
 	private String SIGED_USER_FIRMA_DIGITAL;
@@ -86,6 +92,10 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 	private String SIGED_PASSWORD_FIRMA_DIGITAL;
 	
 	Logger logger = LogManager.getLogger(SigedOldConsumerImpl.class);
+
+	private static final String WEB_SERVICE_INVOCATION_MSG = "Invoking of web service ";
+	private static final String WEB_SERVICE_FAILURE_MSG = " of siged was failed";
+
 
 	public String subirArchivosAlfresco(Long idSolicitud,Long idPropuesta,Long idProceso,Long idSeccionRequisito,
 										Long idContrato,Long idSoliPerfCont,Long idDocumentReemplazo, Long idPersonalReemplazo, Archivo archivo) {
@@ -338,11 +348,11 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			logger.info("idArchivo: " + idArchivo);
 		}
 		catch (HttpClientErrorException ex) {
-			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			logger.error(WEB_SERVICE_INVOCATION_MSG+ url + WEB_SERVICE_FAILURE_MSG, ex);
 			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
 		}
 		catch (Exception ex) {
-			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+			logger.error(WEB_SERVICE_INVOCATION_MSG + url + WEB_SERVICE_FAILURE_MSG, ex);
 			throw ex;
 		}
 		
@@ -370,76 +380,28 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 
 			String response = restTemplate.getForObject(url, String.class);
 			logger.info("response {}",response);
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(false);
-			dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-			dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
-			dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 
-			DocumentBuilder db = dbf.newDocumentBuilder();
-            assert response != null;
-            org.w3c.dom.Document xml = db.parse(new org.xml.sax.InputSource(new java.io.StringReader(response)));
+			Document xml = parseXmlResponse(response);
 
-			javax.xml.xpath.XPath xp = javax.xml.xpath.XPathFactory.newInstance().newXPath();
-			org.w3c.dom.NodeList archivos = (org.w3c.dom.NodeList)
-					xp.evaluate("//documento/archivos/archivo", xml, javax.xml.xpath.XPathConstants.NODESET);
+			XPath xp = XPathFactory.newInstance().newXPath();
+			NodeList archivos = (NodeList)
+					xp.evaluate("//documento/archivos/archivo", xml, XPathConstants.NODESET);
 
-			org.w3c.dom.Node mejorArchivo = null;
-			java.time.OffsetDateTime mejorFecha = null;
-
-			for (int i = 0; i < archivos.getLength(); i++) {
-				org.w3c.dom.Node a = archivos.item(i);
-
-				String nombre = xp.evaluate("nombre", a);
-				if (nombre == null) continue;
-				nombre = nombre.trim();
-				if (nombre.isEmpty() || "null".equalsIgnoreCase(nombre)) continue;
-
-				if (!nombre.equalsIgnoreCase(nombreArchivo)) continue;
-
-				String fstr = xp.evaluate("fechaCreacion", a);
-				java.time.OffsetDateTime f = null;
-				try { f = java.time.OffsetDateTime.parse(fstr); } catch (Exception ignore) {}
-
-				if (mejorArchivo == null || (f != null && (mejorFecha == null || f.isAfter(mejorFecha)))) {
-					mejorArchivo = a;
-					mejorFecha = f;
-				}
-			}
-
+			Node mejorArchivo = findMejorArchivo(archivos, xp, nombreArchivo);
 			if (mejorArchivo != null) {
-				// idArchivo
-				String idArchStr = xp.evaluate("idArchivo", mejorArchivo);
-				if (idArchStr != null) {
-					idArchStr = idArchStr.trim();
-					if (!idArchStr.isEmpty()) {
-						idArchivo = Long.parseLong(idArchStr);
-					}
-				}
-
-				// documento padre -> idDocumento
-				org.w3c.dom.Node docPadre = (org.w3c.dom.Node)
-						xp.evaluate("ancestor::documento[1]", mejorArchivo, javax.xml.xpath.XPathConstants.NODE);
-				if (docPadre != null) {
-					String idDocStr = xp.evaluate("idDocumento", docPadre);
-					if (idDocStr != null) {
-						idDocStr = idDocStr.trim();
-						if (!idDocStr.isEmpty()) {
-							idDocumento = Long.parseLong(idDocStr);
-						}
-					}
-				}
+				idArchivo = extractIdArchivo(mejorArchivo, xp);
+				idDocumento = extractIdDocumento(mejorArchivo, xp);
 			}
 
 			logger.info("idArchivo: {}", idArchivo);
 			logger.info("idDocumento: {}", idDocumento);
 		}
 		catch (HttpClientErrorException ex) {
-			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+            logger.error(WEB_SERVICE_INVOCATION_MSG + "{}" + WEB_SERVICE_FAILURE_MSG, url, ex);
 			throw new ValidacionException(ex.getRawStatusCode()+"",ex.getMessage());
 		}
 		catch (Exception ex) {
-			logger.error("Invoking of web service " + url + " of siged was failed", ex);
+            logger.error(WEB_SERVICE_INVOCATION_MSG + "{}" + WEB_SERVICE_FAILURE_MSG, url, ex);
 			throw ex;
 		}
 		idsDocumentoArchivoDTO.setIdArchivo(idArchivo);
@@ -448,12 +410,77 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 		return idsDocumentoArchivoDTO;
 	}
 
+	private Document parseXmlResponse(String response) throws Exception {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setNamespaceAware(false);
+		dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		assert response != null;
+		return db.parse(new InputSource(new StringReader(response)));
+	}
+
+	private Node findMejorArchivo(NodeList archivos, XPath xp, String nombreArchivo) throws Exception {
+		Node mejorArchivo = null;
+		OffsetDateTime mejorFecha = null;
+
+		for (int i = 0; i < archivos.getLength(); i++) {
+			Node archivo = archivos.item(i);
+			String nombre = xp.evaluate("nombre", archivo);
+			if (isValidArchivo(nombre, nombreArchivo)) {
+				OffsetDateTime fecha = parseFecha(xp.evaluate("fechaCreacion", archivo));
+				if (shouldUpdateArchivo(fecha, mejorFecha)) {
+					mejorArchivo = archivo;
+					mejorFecha = fecha;
+				}
+			}
+		}
+		return mejorArchivo;
+	}
+
+	private boolean isValidArchivo(String nombre, String nombreArchivo) {
+		return nombre != null && !nombre.trim().isEmpty() && !"null".equalsIgnoreCase(nombre) && nombre.equalsIgnoreCase(nombreArchivo);
+	}
+
+	private OffsetDateTime parseFecha(String fechaStr) {
+		try {
+			return OffsetDateTime.parse(fechaStr);
+		} catch (Exception ignore) {
+			return null;
+		}
+	}
+
+	private boolean shouldUpdateArchivo(OffsetDateTime nuevaFecha, OffsetDateTime mejorFecha) {
+		return nuevaFecha != null && (mejorFecha == null || nuevaFecha.isAfter(mejorFecha));
+	}
+
+	private Long extractIdArchivo(Node archivo, XPath xp) throws Exception {
+		String idArchivoStr = xp.evaluate("idArchivo", archivo);
+		if (idArchivoStr != null && !idArchivoStr.trim().isEmpty()) {
+			return Long.parseLong(idArchivoStr.trim());
+		}
+		return null;
+	}
+
+	private Long extractIdDocumento(Node archivo, XPath xp) throws Exception {
+		Node docPadre = (Node) xp.evaluate("ancestor::documento[1]", archivo, XPathConstants.NODE);
+		if (docPadre != null) {
+			String idDocumentoStr = xp.evaluate("idDocumento", docPadre);
+			if (idDocumentoStr != null && !idDocumentoStr.trim().isEmpty()) {
+				return Long.parseLong(idDocumentoStr.trim());
+			}
+		}
+		return null;
+	}
+
 	public AccessRequestInFirmaDigital obtenerParametrosfirmaDigital() {
 		
 		AccessRequestInFirmaDigital parametros = new AccessRequestInFirmaDigital();
 		
 		parametros.setAction(SIGED_PATH_FIRMA_DIGITAL);
-		parametros.setFinalizarAction(SIGED_PATH_FINALIZAR_FIRMA_DIGITAL);
+		parametros.setFinalizarAction(sigedPathFinalizarFirmaDigital);
 		parametros.setLoginUsuario(SIGED_USER_FIRMA_DIGITAL);
 		parametros.setPasswordUsuario(SIGED_PASSWORD_FIRMA_DIGITAL);
 		
