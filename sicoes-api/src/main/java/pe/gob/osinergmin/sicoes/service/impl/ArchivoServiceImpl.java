@@ -857,16 +857,6 @@ public class ArchivoServiceImpl implements ArchivoService {
 		if (archivo == null) {
 			throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO);
 		}
-		// try {
-		// 	Long idUsuarioCreacion = Long.parseLong(archivo.getUsuCreacion());
-
-		// 	if (!contexto.getUsuario().getIdUsuario().equals(idUsuarioCreacion)) {
-		// 		throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-		// 	}
-		// } catch (NumberFormatException e) {
-		// 	logger.error(e.getMessage(), e);
-		// 	throw new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_ELIMINAR_USUARIO);
-		// }
 		archivoDao.deleteById(archivo.getIdArchivo());
 
 	}
