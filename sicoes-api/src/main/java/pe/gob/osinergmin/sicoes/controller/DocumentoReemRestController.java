@@ -1,6 +1,5 @@
 package pe.gob.osinergmin.sicoes.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -13,16 +12,19 @@ import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/documentosreemplazo")
 public class DocumentoReemRestController extends BaseRestController{
 
-    @Autowired
-    DocumentoReemService documentoReemService;
+    private static final Logger logger = LogManager.getLogger(DocumentoReemRestController.class);
 
-    private Logger logger = LogManager.getLogger(DocumentoReemRestController.class);
+    private final DocumentoReemService documentoReemService;
+
+    public DocumentoReemRestController(DocumentoReemService documentoReemService) {
+        this.documentoReemService = documentoReemService;
+    }
+
 
     @PostMapping
     @Raml("documentoReemplazo.obtener.properties")

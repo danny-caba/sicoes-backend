@@ -2,13 +2,10 @@ package pe.gob.osinergmin.sicoes.controller;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import pe.gob.osinergmin.sicoes.model.Adenda;
 import pe.gob.osinergmin.sicoes.model.AdendaReemplazo;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.service.AdendaReemplazoService;
-import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
 import java.util.Map;
@@ -17,13 +14,12 @@ import java.util.Map;
 @RequestMapping("/api")
 public class AdendaReemplazoRestController extends BaseRestController {
 
-    private Logger logger = LogManager.getLogger(AdendaReemplazoRestController.class);
+    private static final Logger logger = LogManager.getLogger(AdendaReemplazoRestController.class);
 
-    @Autowired
-    private AdendaReemplazoService adendaReemplazoService;
-
-    @Autowired
-    NotificacionService notificacionService;
+    private final AdendaReemplazoService adendaReemplazoService;
+    public AdendaReemplazoRestController(AdendaReemplazoService adendaReemplazoService) {
+        this.adendaReemplazoService = adendaReemplazoService;
+    }
 
     @PostMapping("/reemplazo/solicitud/registra/propuesto/adenda")
     @Raml("adendaReemplazo.listar.properties")
@@ -34,14 +30,14 @@ public class AdendaReemplazoRestController extends BaseRestController {
 
     @PostMapping("/reemplazo/solicitud/visto/")
     public Map<String,Object> vistoBueno(@RequestBody FirmaRequestDTO firmaRequestDTO){
-        logger.info("visto bueno inicio {}");
+        logger.info("visto bueno inicio {}", firmaRequestDTO);
         return adendaReemplazoService.iniciarFirma(firmaRequestDTO.getIdAdenda(), firmaRequestDTO.getVisto(),
                 firmaRequestDTO.getFirmaJefe(),firmaRequestDTO.getFirmaGerente());
     }
 
     @PostMapping("/reemplazo/solicitud/finalizar-visto/")
     public Map<String,Object> finalizarvistoBueno(@RequestBody FirmaRequestDTO firmaRequestDTO){
-        logger.info("visto bueno finalizar {}");
+        logger.info("visto bueno finalizar {}", firmaRequestDTO);
         return adendaReemplazoService.finalizarFirma(firmaRequestDTO,getContexto());
     }
 
@@ -54,21 +50,20 @@ public class AdendaReemplazoRestController extends BaseRestController {
 
     @PostMapping("/reemplazo/solicitud/firmar/")
     public Map<String,Object> firmar(@RequestBody FirmaRequestDTO firmaRequestDTO){
-        logger.info("firma inicio {}");
+        logger.info("firma inicio {}", firmaRequestDTO);
         return adendaReemplazoService.iniciarFirma(firmaRequestDTO.getIdAdenda(), firmaRequestDTO.getVisto(),
                 firmaRequestDTO.getFirmaJefe(),firmaRequestDTO.getFirmaGerente());
     }
 
     @PostMapping("/reemplazo/solicitud/finalizar-firma/")
     public Map<String,Object> finalizarFirma(@RequestBody FirmaRequestDTO firmaRequestDTO){
-        logger.info("firma finalizar {}");
+        logger.info("firma finalizar {}", firmaRequestDTO);
         return adendaReemplazoService.finalizarFirma(firmaRequestDTO,getContexto());
     }
 
     @PostMapping("/reemplazo/solicitud/visto-firma/")
     public AdendaReemplazo finalizarVistoFirma(@RequestBody FirmaRequestDTO firmaRequestDTO){
-        logger.info("visto-firma {}");
-        logger.info("firmaRequestDTO {}",firmaRequestDTO);
+        logger.info("visto - firma {}",firmaRequestDTO);
         logger.info("contexto {}",getContexto());
         return adendaReemplazoService.finalizarFirmaAdenda(firmaRequestDTO,getContexto());
     }
