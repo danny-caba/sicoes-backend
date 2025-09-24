@@ -1,6 +1,5 @@
 package pe.gob.osinergmin.sicoes.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;

@@ -79,7 +79,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     private final UsuarioRolDao usuarioRolDao;
     private final  UsuarioDao usuarioDao;
     private final SicoesSolicitudDao sicoesSolicitudDao;
-  
+
     private static final String NUMERO_EXPEDIENTE = "numeroExpediente";
     private static final String NOMBRE_SUPERVISORA = "nombreSupervisora";
     private static final String NOMBRE_PERSONAL = "nombrePersonal";

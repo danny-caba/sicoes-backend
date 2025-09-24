@@ -96,7 +96,9 @@ public class SupervisoraMovimientoServiceImpl implements SupervisoraMovimientoSe
 			return null;
 		}else {
 			SupervisoraMovimiento sup = new SupervisoraMovimiento();
-			sup.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
+			sup.setEstado(listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
+					Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
 			return sup;
 		}
 	}

@@ -1,23 +1,17 @@
 package pe.gob.osinergmin.sicoes.repository;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import pe.gob.osinergmin.sicoes.model.ProcesoItem;
-import pe.gob.osinergmin.sicoes.model.Propuesta;
 import pe.gob.osinergmin.sicoes.model.PropuestaProfesional;
-import pe.gob.osinergmin.sicoes.model.PropuestaTecnica;
 import pe.gob.osinergmin.sicoes.util.Constantes;
-import pe.gob.osinergmin.sicoes.util.Contexto;
 
 @Repository
 public interface PropuestaProfesionalDao extends JpaRepository<PropuestaProfesional, Long> {

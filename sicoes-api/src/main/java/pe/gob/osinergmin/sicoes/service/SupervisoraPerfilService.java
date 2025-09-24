@@ -3,7 +3,6 @@ package pe.gob.osinergmin.sicoes.service;
 import java.io.InputStream;
 import java.util.List;
 
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

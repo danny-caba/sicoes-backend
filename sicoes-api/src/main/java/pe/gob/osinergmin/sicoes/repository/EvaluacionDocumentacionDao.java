@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.EvaluacionDocumentacion;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface EvaluacionDocumentacionDao extends JpaRepository<EvaluacionDocumentacion, Long> {
