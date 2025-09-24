@@ -11,7 +11,6 @@ import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,Long> {
 

@@ -2,8 +2,6 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
-import gob.osinergmin.siged.remote.rest.ro.out.DocumentoOutRO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +14,19 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
-import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.model.dto.AdendaReemplazoDTO;
+import pe.gob.osinergmin.sicoes.model.AdendaReemplazo;
+import pe.gob.osinergmin.sicoes.model.Aprobacion;
+import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
+import pe.gob.osinergmin.sicoes.model.PersonalReemplazo;
+import pe.gob.osinergmin.sicoes.model.PropuestaProfesional;
+import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
+import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
-import pe.gob.osinergmin.sicoes.model.dto.IdsDocumentoArchivoDTO;
 import pe.gob.osinergmin.sicoes.repository.*;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
@@ -30,7 +35,6 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
-import java.io.File;
 import java.util.*;
 
 @Service
@@ -316,7 +320,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
             String descAsignado = Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO;
             String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
 
-            ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
+            //ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
             ListadoDetalle estadoAproAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAprobacionAdenda);
             ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignado);
             ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);

@@ -13,8 +13,6 @@ import pe.gob.osinergmin.sicoes.model.DocumentoReemplazo;
 import pe.gob.osinergmin.sicoes.service.DocumentoReemService;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/documentosreemplazo")
 public class DocumentoReemRestController extends BaseRestController{

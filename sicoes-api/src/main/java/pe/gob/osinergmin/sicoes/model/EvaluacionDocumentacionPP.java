@@ -38,4 +38,4 @@ public class EvaluacionDocumentacionPP {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name = "FECHA_FINALIZACION_CONTRATO")
     private Date fechaFinalizacionContrato;
-};
+}

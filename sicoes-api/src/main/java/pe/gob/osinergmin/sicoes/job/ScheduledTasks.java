@@ -171,7 +171,7 @@ public class ScheduledTasks {
 	}
 
 	@Scheduled(cron = "0 1 0 * * ?")
-	public void notificarCargaDocuInicioServicio() throws Exception {
+	public void notificarCargaDocuInicioServicio() {
 		logger.info("Inicio notificarCargaDocuInicioServicio");
 		notificacionContratoService.notificarCargarDocumentosInicioServicio(getContextoAnonimo());
 		logger.info("Fin notificarCargaDocuInicioServicio");
@@ -179,7 +179,7 @@ public class ScheduledTasks {
 
 
 	@Scheduled(cron = "0 1 0 * * ?")
-	public void notificarFinalizacionContrato() throws Exception {
+	public void notificarFinalizacionContrato() {
 		logger.info("Inicio notificarFinalizacionContrato");
 		//notificacionContratoService.notificarFinalizacionContrato(getContextoAnonimo());
 		logger.info("Fin notificarFinalizacionContrato");

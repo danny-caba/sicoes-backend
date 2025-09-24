@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import pe.gob.osinergmin.sicoes.model.Adenda;
 import pe.gob.osinergmin.sicoes.model.AdendaReemplazo;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.service.AdendaReemplazoService;

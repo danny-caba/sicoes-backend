@@ -1,6 +1,5 @@
 package pe.gob.osinergmin.sicoes.service;
 
-import pe.gob.osinergmin.sicoes.model.Adenda;
 import pe.gob.osinergmin.sicoes.model.AdendaReemplazo;
 import pe.gob.osinergmin.sicoes.model.dto.FirmaRequestDTO;
 import pe.gob.osinergmin.sicoes.util.Contexto;

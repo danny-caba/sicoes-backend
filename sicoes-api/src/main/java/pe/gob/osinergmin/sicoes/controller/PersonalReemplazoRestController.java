@@ -16,7 +16,6 @@ import pe.gob.osinergmin.sicoes.util.Raml;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")

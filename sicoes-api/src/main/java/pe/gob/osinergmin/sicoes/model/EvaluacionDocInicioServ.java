@@ -29,4 +29,4 @@ public class EvaluacionDocInicioServ {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(name = "FECHA_INICIO_CONTRATO")
     private Date fechaInicioContrato;
-};
+}

@@ -18,9 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.PropuestaProfesional;
 import pe.gob.osinergmin.sicoes.model.Supervisora;
-import pe.gob.osinergmin.sicoes.model.SupervisoraDictamen;
 import pe.gob.osinergmin.sicoes.model.SupervisoraMovimiento;
 import pe.gob.osinergmin.sicoes.model.SupervisoraPerfil;
 import pe.gob.osinergmin.sicoes.repository.SupervisoraPerfilDao;

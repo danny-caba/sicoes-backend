@@ -442,7 +442,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
     @Transactional
     public void notificarFinalizacionContrato(Contexto contexto) {
 
-        Date hoy = new Date();
+        //Date hoy = new Date();
 		List<PersonalReemplazo> reemplazos = personalReemplazoDao.obtenerParaDesvinculacion();
 
         Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_TECNICO).stream()
