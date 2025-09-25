@@ -71,8 +71,8 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PutMapping("/reemplazo/solicitud/rechazar-firma")
     @Raml("adendaReemplazo.listar.properties")
     public AdendaReemplazo rechazarFirma(@RequestBody AdendaReemplazo adendaReemplazo,
-                                         @RequestParam(required = false) boolean firmaJefe,
-                                         @RequestParam(required = false) boolean firmaGerente){
+                                         @RequestParam(defaultValue = "false") boolean firmaJefe,
+                                         @RequestParam(defaultValue = "false") boolean firmaGerente){
         logger.info(" rechazar firma {}", adendaReemplazo);
         return adendaReemplazoService.rechazarFirma(adendaReemplazo,firmaJefe,firmaGerente,getContexto());
     }
