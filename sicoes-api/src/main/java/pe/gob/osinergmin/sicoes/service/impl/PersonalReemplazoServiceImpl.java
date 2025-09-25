@@ -394,11 +394,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         }
         logger.info("registrar - personalBaja: {}", personalBaja);
         PropuestaProfesional propuestaProfesional = propuestaProfesionalDao.listarXSolicitud(idSolicitud, personalBaja.getIdSupervisora());
-        /*
-        if (propuestaProfesional == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.PROFESIONAL_NO_EXISTE);
-        }
-         */
+
         Supervisora personaPropuesta = personalReemplazo.getPersonaPropuesta();
         if (personaPropuesta == null){
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.ID_PERSONA_PROPUESTA);
@@ -448,8 +444,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         Optional<Usuario> usuarioExterno = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS).stream()
                 .findFirst()
                 .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
-        enviarNotificacionByRolEvaluador(usuarioExterno.get(), sicoesSolicitud, contexto);
-        enviarNotificacionDesvinculacion(usuarioExterno.get(), sicoesSolicitud, contexto);
+        if (usuarioExterno.isPresent()) {
+            enviarNotificacionByRolEvaluador(usuarioExterno.get(), sicoesSolicitud, contexto);
+            enviarNotificacionDesvinculacion(usuarioExterno.get(), sicoesSolicitud, contexto);
+        }
         personalReemplazoOUT.setArchivo(archivo);
         return personalReemplazoOUT;
     }
@@ -1281,24 +1279,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         return resultado;
     }
 
-    private String obtenerNombreSupervisora(PersonalReemplazo persoReemplazo) {
-        Supervisora personaPropuesta = persoReemplazo.getPersonaPropuesta();
-        String razonSocial = personaPropuesta.getNombreRazonSocial();
-        this.logger.info("razon social juridica {} ", razonSocial);
-        String nombreSupervisora = null;
-        if(razonSocial!=null){
-            nombreSupervisora = razonSocial;
-        }else{
-            String apellidoPaterno = personaPropuesta.getApellidoPaterno();
-            String apellidoMaterno = personaPropuesta.getApellidoMaterno();
-            nombreSupervisora = personaPropuesta.getNombres()
-                    .concat(" ").concat(apellidoPaterno)
-                    .concat(" ").concat(apellidoMaterno);
-            this.logger.info("razon social personal natural {} ", razonSocial);
-        }
-        return nombreSupervisora;
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Aprobacion updateAprobacion(AprobacionDTO aprobacion, Contexto contexto) {
@@ -1431,10 +1411,10 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
              if (contrato.getFechaFinalContrato().before(persoReemp.getFeFechaDesvinculacion())) {
                throw new ValidacionException("La Fecha Desvinculación no puede ser posterior a la fecha de finalización del Contrato");
             }
-            if(fecha.before(contrato.getFechaFinalContrato()) || fecha.equals(contrato.getFechaFinalContrato())){
-              if (!fecha.equals(persoReemp.getFeFechaDesvinculacion())){
-                  resultado = true;
-              }
+
+            if ((fecha.before(contrato.getFechaFinalContrato()) || fecha.equals(contrato.getFechaFinalContrato()))
+                    && !fecha.equals(persoReemp.getFeFechaDesvinculacion())) {
+                resultado = true;
             }
         return resultado;
     }

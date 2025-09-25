@@ -1,9 +1,5 @@
 package pe.gob.osinergmin.sicoes.service.impl;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,61 +7,41 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
-import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
-import pe.gob.osinergmin.sicoes.consumer.SissegApiConsumer;
-import pe.gob.osinergmin.sicoes.consumer.SneApiConsumer;
 import pe.gob.osinergmin.sicoes.model.*;
-import pe.gob.osinergmin.sicoes.model.dto.DetalleVacacionesDTO;
-import pe.gob.osinergmin.sicoes.model.dto.EvaluacionPendienteDTO;
-import pe.gob.osinergmin.sicoes.repository.AsignacionDao;
-import pe.gob.osinergmin.sicoes.repository.AsignacionPerfilDivisionDao;
-import pe.gob.osinergmin.sicoes.repository.EvaluacionPendienteDao;
-import pe.gob.osinergmin.sicoes.repository.HistorialAprobadorDao;
-import pe.gob.osinergmin.sicoes.repository.HistorialVacacionesDao;
-import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
-import pe.gob.osinergmin.sicoes.repository.PerfilDivisionDao;
-import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesTdSoliPersPropDao;
-import pe.gob.osinergmin.sicoes.repository.SolicitudDao;
-import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.service.*;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
-import pe.gob.osinergmin.sicoes.util.ValidacionException;
-import pe.gob.osinergmin.sicoes.util.bean.siged.AccessRequestInFirmaDigital;
 
 
 @Service
 public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropService{
 
-	Logger logger = LogManager.getLogger(SicoesTdSolPersPropServiceImpl.class);
+	private final static Logger logger = LogManager.getLogger(SicoesTdSolPersPropServiceImpl.class);
+
+	private final SicoesTdSoliPersPropDao sicoesTdSoliPersPropDao;
+	private final PropuestaProfesionalService propuestaProfesionalService;
+	private final ListadoDetalleService listadoDetalleService;
+	private final SupervisoraMovimientoService supervisoraMovimientoService;
 
 	@Autowired
-	private SicoesTdSoliPersPropDao sicoesTdSoliPersPropDao;
+	public SicoesTdSolPersPropServiceImpl(SicoesTdSoliPersPropDao sicoesTdSoliPersPropDao,
+										  PropuestaProfesionalService propuestaProfesionalService,
+										  ListadoDetalleService listadoDetalleService,
+										  SupervisoraMovimientoService supervisoraMovimientoService) {
+		this.sicoesTdSoliPersPropDao = sicoesTdSoliPersPropDao;
+		this.propuestaProfesionalService = propuestaProfesionalService;
+		this.listadoDetalleService = listadoDetalleService;
+		this.supervisoraMovimientoService = supervisoraMovimientoService;
+	}
 
-	@Autowired
-	private PropuestaProfesionalService propuestaProfesionalService;
-
-	@Autowired
-	private SicoesTdSolPerConSecService sicoesTdSolPerConSecService;
-
-	@Autowired
-	private ListadoDetalleService listadoDetalleService;
-
-	@Autowired
-	private SupervisoraMovimientoService supervisoraMovimientoService;
 
 	@Override
 	public SicoesTdSoliPersProp guardar(SicoesTdSoliPersProp sicoesTdSoliPersProp, Contexto contexto) {
