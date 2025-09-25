@@ -1515,7 +1515,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,Boolean conforme, Contexto contexto) {
+    public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,boolean conforme, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException("No existe id");
@@ -1782,7 +1782,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
+    public PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,boolean conforme, String accion, Contexto contexto) {
         logger.info("evaluar documentos personalReemplazo: {}", personalReemplazo);
         logger.info("evaluar documentos conforme: {}", conforme);
         logger.info("evaluar documentos accion: {}", accion);
@@ -2019,7 +2019,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         SicoesSolicitud solicitud = sicoesSolicitudDao.findById(personalReemplazo.getIdSolicitud())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_EXISTE));
         String nombrePersonal = nombrePersonal(personalReemplazo);
-        String nombrePerfil = personalReemplazo.getPerfil().getNombre();
+        //String nombrePerfil = personalReemplazo.getPerfil().getNombre();
         notificacionContratoService.notificarRevDocumentos122(solicitud.getSupervisora(), nombrePersonal, "", "", new ArrayList<>(), contexto);
     }
 

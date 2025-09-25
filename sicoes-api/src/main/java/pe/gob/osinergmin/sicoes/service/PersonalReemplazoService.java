@@ -46,8 +46,8 @@ public interface PersonalReemplazoService extends BaseService<PersonalReemplazo,
     PersonalReemplazo evaluarDocumentoInforme(Long id, Date fecha);
     List<DocumentoPP> obtenerDocumentoPPxSeccion(Long id, String idseccion);
     Boolean evaluarDocumReemplazo(EvaluarDocuDTO evaluacion, Contexto contexto);
-    PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo, Boolean conforme, Contexto contexto);
-    PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,Boolean conforme, String accion, Contexto contexto);
+    PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo, boolean conforme, Contexto contexto);
+    PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,boolean conforme, String accion, Contexto contexto);
     ExpedienteInRO crearExpedienteAgregarDocumentos(SicoesSolicitud solicitud, Contexto contexto);
     void procesarDocumentosReemplazo(
             List<DocumentoReemplazo> documentos, SicoesSolicitud sicoesSolicitud, Contexto contexto) throws ValidacionException;

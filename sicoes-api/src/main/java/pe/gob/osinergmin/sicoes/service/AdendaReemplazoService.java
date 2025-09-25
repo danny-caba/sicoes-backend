@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface AdendaReemplazoService extends BaseService<AdendaReemplazo,Long>{
 
-    Map<String,Object> iniciarFirma(Long idAdenda,Boolean visto, Boolean firmaJefe, Boolean firmaGerente);
+    Map<String,Object> iniciarFirma(Long idAdenda,boolean visto, boolean firmaJefe, boolean firmaGerente);
     Map<String,Object> procesarFirma(Integer idArchivoSiged,
                                             String usuarioSiged, String passwordSiged,
                                             String urlFirma, String motivo);
@@ -17,6 +17,6 @@ public interface AdendaReemplazoService extends BaseService<AdendaReemplazo,Long
     AdendaReemplazo finalizarFirmaAdenda(FirmaRequestDTO firmaRequestDTO, Contexto contexto);
     AdendaReemplazo actualizar(AdendaReemplazo adendaReemplazo, Contexto contexto);
     AdendaReemplazo rechazarVisto(AdendaReemplazo adendaReemplazo, Contexto contexto);
-    AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, Boolean firmaJefe, Boolean firmaGerente,
+    AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, boolean firmaJefe, boolean firmaGerente,
                                   Contexto contexto);
 }

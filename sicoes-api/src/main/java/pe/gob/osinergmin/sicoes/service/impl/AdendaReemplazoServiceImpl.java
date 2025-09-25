@@ -176,8 +176,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     }
 
     @Override
-    public Map<String, Object> iniciarFirma(Long idAdenda, Boolean visto,
-                                             Boolean firmaJefe, Boolean firmaGerente) {
+    public Map<String, Object> iniciarFirma(Long idAdenda, boolean visto,
+                                             boolean firmaJefe, boolean firmaGerente) {
         logger.info("Inicio proceso de firma para adenda con ID: {}", idAdenda);
 
         AdendaReemplazo adendaReemplazo = getAdendaReemplazo(idAdenda);
@@ -194,7 +194,10 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         String usuarioSiged = accessRequestInFirmaDigital.getLoginUsuario();
         String passwordSiged = accessRequestInFirmaDigital.getPasswordUsuario();
         String urlFirma = accessRequestInFirmaDigital.getAction();
-        String motivo = visto ? "VB_REEMPLAZO" : null;
+        String motivo = null;
+        if (visto) {
+            motivo = "VB_REEMPLAZO";
+        }
 
         // Log de los parámetros de la firma
         logger.info("idArchivoSiged {}", idArchivoSiged);
@@ -275,7 +278,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         AdendaReemplazo adenda = getAdendaReemplazo(firmaRequestDTO.getIdAdenda());
         try {
             AccessRequestInFirmaDigital accessRequestInFirmaDigital = sigedOldConsumer.obtenerParametrosfirmaDigital();
-            boolean motivo = firmaRequestDTO.getVisto();
+            boolean motivo = firmaRequestDTO.isVisto();
 
             String url = construirUrl(accessRequestInFirmaDigital.getFinalizarAction(),motivo);
             HttpHeaders headers = construirHeaders(firmaRequestDTO.getCookie());
@@ -308,12 +311,12 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         AdendaReemplazo adenda = getAdendaReemplazo(firmaRequestDTO.getIdAdenda());
         try {
             //Vamos actualizar adenda el flag visto bueno
-            String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
+            //String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
             String listadoAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.CODIGO;
             String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
             String listadoTipoAprob = Constantes.LISTADO.TIPO_APROBACION.CODIGO;
 
-            String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.APROBADO;
+            //String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.APROBADO;
             String descAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.APROBADO;
             String descAsignado = Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO;
             String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
@@ -325,7 +328,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
             logger.info("firmaRequest:{}",firmaRequestDTO);
 
-            if (Boolean.TRUE.equals(firmaRequestDTO.getVisto())){ //Visto bueno
+            if (Boolean.TRUE.equals(firmaRequestDTO.isVisto())){ //Visto bueno
                 adenda.setEstadoVbGaf(estadoAproAdenda);
                 adenda.setEstadoFirmaJefe(estadoAsig);
                 adenda.setObservacionVb(firmaRequestDTO.getObservacion());
@@ -340,9 +343,9 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                         Constantes.CODIGO_MENSAJE.USUARIO_G3_NO_EXISTE,
                         contexto);
             } else { //Firma
-                logger.info("firma_jefe {}", firmaRequestDTO.getFirmaJefe());
+                logger.info("firma_jefe {}", firmaRequestDTO.isFirmaJefe());
 
-                if (Boolean.TRUE.equals(firmaRequestDTO.getFirmaJefe())){
+                if (Boolean.TRUE.equals(firmaRequestDTO.isFirmaJefe())){
                     adenda.setEstadoFirmaJefe(estadoAproAdenda);
                     adenda.setEstadoFirmaGerencia(estadoAsig);
                     adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
@@ -355,7 +358,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                             Constantes.CODIGO_MENSAJE.USUARIO_G4_NO_EXISTE,
                             contexto);
                 }
-                if (Boolean.TRUE.equals(firmaRequestDTO.getFirmaGerente())){
+                if (Boolean.TRUE.equals(firmaRequestDTO.isFirmaGerente())){
                     actualizarPersonalReemplazoYNotificar(adenda,estadoConcluido,firmaRequestDTO,contexto);
                     adenda.setEstadoFirmaGerencia(estadoAproAdenda);
                     adenda.setEstadoAprobacion(estadoConcluido);
@@ -427,7 +430,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     @Override
     @Transactional
-    public AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, Boolean firmaJefe, Boolean firmaGerente,
+    public AdendaReemplazo rechazarFirma(AdendaReemplazo adendaReemplazo, boolean firmaJefe, boolean firmaGerente,
                                          Contexto contexto) {
         String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
         String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO;
@@ -552,7 +555,8 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         return listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
     }
 
-    private void verifyFirmaOrVisto(Boolean visto, Boolean firmaJefe, Boolean firmaGerente, AdendaReemplazo adendaReemplazo, ListadoDetalle estadoApro) {
+    private void verifyFirmaOrVisto(boolean visto, boolean firmaJefe, boolean firmaGerente,
+                                    AdendaReemplazo adendaReemplazo, ListadoDetalle estadoApro) {
         if (visto) {
             if (estadoApro.equals(adendaReemplazo.getEstadoVbGaf())) {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.VISTO_BUENO_APROBADO);
@@ -575,7 +579,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
         ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud, descConcluido);
 
-        if (firmaRequestDTO.getVisto()) {
+        if (firmaRequestDTO.isVisto()) {
             procesarVistoBueno(firmaRequestDTO, adenda, estadoApro, estadoConcluido, contexto);
         } else {
             procesarFirma(firmaRequestDTO, adenda, estadoApro, estadoConcluido, contexto);
@@ -598,7 +602,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     private void procesarFirma(FirmaRequestDTO firmaRequestDTO, AdendaReemplazo adenda,
                                ListadoDetalle estadoApro, ListadoDetalle estadoConcluido, Contexto contexto) {
-        if (firmaRequestDTO.getFirmaJefe()) {
+        if (firmaRequestDTO.isFirmaJefe()) {
             adenda.setEstadoFirmaJefe(estadoApro);
             adenda.setEstadoFirmaGerencia(estadoConcluido);
             adenda.setObservacionFirmaJefe(firmaRequestDTO.getObservacion());
@@ -609,7 +613,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                     contexto);
         }
 
-        if (firmaRequestDTO.getFirmaGerente()) {
+        if (firmaRequestDTO.isFirmaGerente()) {
             actualizarPersonalReemplazoYNotificar(adenda, estadoConcluido, firmaRequestDTO, contexto);
             adenda.setEstadoFirmaGerencia(estadoApro);
             adenda.setEstadoAprobacion(estadoConcluido);
