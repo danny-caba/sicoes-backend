@@ -43,59 +43,56 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
 
     private static final Logger logger = LogManager.getLogger(AdendaReemplazoServiceImpl.class);
 
-    private final AdendaReemplazoDao adendaReemplazoDao;
-    private final PersonalReemplazoDao reemplazoDao;
-    private final PersonalReemplazoService personalReemplazoService;
-    private final SupervisoraMovimientoService supervisoraMovimientoService;
-    private final ListadoDetalleDao listadoDetalleDao;
-    private final DocumentoReemDao documentoReemDao;
-    private final SigedOldConsumer sigedOldConsumer;
-    private final PropuestaProfesionalDao propuestaProfesionalDao;
-    private final ListadoDetalleService listadoDetalleService;
-    private final UsuarioRolDao usuarioRolDao;
-    private final UsuarioDao usuarioDao;
-    private final AprobacionDao aprobacionDao;
-    private final NotificacionContratoService notificacionContratoService;
-    private final SicoesSolicitudDao sicoesSolicitudDao;
-    private final RolDao rolDao;
-    private final AdendaReemplazoService adendaReemplazoService;
+    @Autowired
+    private  AdendaReemplazoDao adendaReemplazoDao;
+
+    @Autowired
+    private  PersonalReemplazoDao reemplazoDao;
+
+    @Autowired
+    private  PersonalReemplazoService personalReemplazoService;
+
+    @Autowired
+    private  SupervisoraMovimientoService supervisoraMovimientoService;
+
+    @Autowired
+    private ListadoDetalleDao listadoDetalleDao;
+
+    @Autowired
+    private  DocumentoReemDao documentoReemDao;
+
+    @Autowired
+    private  SigedOldConsumer sigedOldConsumer;
+
+    @Autowired
+    private  PropuestaProfesionalDao propuestaProfesionalDao;
+
+    @Autowired
+    private  ListadoDetalleService listadoDetalleService;
+
+    @Autowired
+    private  UsuarioRolDao usuarioRolDao;
+
+     @Autowired
+    private  UsuarioDao usuarioDao;
+
+    @Autowired
+    private AprobacionDao aprobacionDao;
+
+    @Autowired
+    private  NotificacionContratoService notificacionContratoService;
+
+    @Autowired
+    private  SicoesSolicitudDao sicoesSolicitudDao;
+
+    @Autowired
+    private  RolDao rolDao;
+
+    @Autowired
+    @Lazy
+    private  AdendaReemplazoService adendaReemplazoService;
     private static final String ARCHIVOS_KEY = "archivos";
 
-    public AdendaReemplazoServiceImpl(AdendaReemplazoDao adendaReemplazoDao,
-                                      PersonalReemplazoDao reemplazoDao,
-                                      PersonalReemplazoService personalReemplazoService,
-                                      SupervisoraMovimientoService supervisoraMovimientoService,
-                                      ListadoDetalleDao listadoDetalleDao,
-                                      DocumentoReemDao documentoReemDao,
-                                      SigedOldConsumer sigedOldConsumer,
-                                      PropuestaProfesionalDao propuestaProfesionalDao,
-                                      ListadoDetalleService listadoDetalleService,
-                                      UsuarioRolDao usuarioRolDao,
-                                      UsuarioDao usuarioDao,
-                                      AprobacionDao aprobacionDao,
-                                      NotificacionContratoService notificacionContratoService,
-                                      SicoesSolicitudDao sicoesSolicitudDao,
-                                      RolDao rolDao,
-                                      @Lazy AdendaReemplazoService adendaReemplazoService
-
-                                       ) {
-        this.adendaReemplazoDao = adendaReemplazoDao;
-        this.reemplazoDao = reemplazoDao;
-        this.personalReemplazoService = personalReemplazoService;
-        this.supervisoraMovimientoService = supervisoraMovimientoService;
-        this.listadoDetalleDao = listadoDetalleDao;
-        this.documentoReemDao = documentoReemDao;
-        this.sigedOldConsumer = sigedOldConsumer;
-        this.propuestaProfesionalDao = propuestaProfesionalDao;
-        this.listadoDetalleService = listadoDetalleService;
-        this.usuarioRolDao = usuarioRolDao;
-        this.usuarioDao = usuarioDao;
-        this.aprobacionDao = aprobacionDao;
-        this.notificacionContratoService = notificacionContratoService;
-        this.sicoesSolicitudDao = sicoesSolicitudDao;
-        this.rolDao = rolDao;
-        this.adendaReemplazoService = adendaReemplazoService;
-    }
 
     @Override
     @Transactional

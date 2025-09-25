@@ -2,6 +2,7 @@ package pe.gob.osinergmin.sicoes.service.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -68,48 +69,43 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
 
     private final Logger logger = LogManager.getLogger(NotificacionContratoServiceImpl.class);
 
-    private final TemplateEngine templateEngine;
-    private final ListadoDetalleService listadoDetalleService;
-    private final NotificacionDao notificacionDao;
-    private final PersonalReemplazoService personalReemplazoService;
-    private  final SicoesSolicitudService sicoesSolicitudService;
-    private final PersonalReemplazoDao personalReemplazoDao;
-    private final PropuestaProfesionalDao propuestaProfesionalDao;
-    private final SupervisoraMovimientoService supervisoraMovimientoService;
-    private final UsuarioRolDao usuarioRolDao;
-    private final  UsuarioDao usuarioDao;
-    private final SicoesSolicitudDao sicoesSolicitudDao;
+    @Autowired
+    private  TemplateEngine templateEngine;
+
+    @Autowired
+    private ListadoDetalleService listadoDetalleService;
+
+    @Autowired
+    private NotificacionDao notificacionDao;
+
+    @Autowired
+    private  PersonalReemplazoService personalReemplazoService;
+
+    @Autowired
+    private   SicoesSolicitudService sicoesSolicitudService;
+
+    @Autowired
+    private  PersonalReemplazoDao personalReemplazoDao;
+
+    @Autowired
+    private  PropuestaProfesionalDao propuestaProfesionalDao;
+
+    @Autowired
+    private  SupervisoraMovimientoService supervisoraMovimientoService;
+
+    @Autowired
+    private  UsuarioRolDao usuarioRolDao;
+
+    @Autowired
+    private  UsuarioDao usuarioDao;
+
+    @Autowired
+    private  SicoesSolicitudDao sicoesSolicitudDao;
 
     private static final String NUMERO_EXPEDIENTE = "numeroExpediente";
     private static final String NOMBRE_SUPERVISORA = "nombreSupervisora";
     private static final String NOMBRE_PERSONAL = "nombrePersonal";
 
-
-    public NotificacionContratoServiceImpl(
-            TemplateEngine templateEngine,
-            ListadoDetalleService listadoDetalleService,
-            NotificacionDao notificacionDao,
-            PersonalReemplazoService personalReemplazoService,
-            SicoesSolicitudService sicoesSolicitudService,
-            PersonalReemplazoDao personalReemplazoDao,
-            PropuestaProfesionalDao propuestaProfesionalDao,
-            SupervisoraMovimientoService supervisoraMovimientoService,
-            UsuarioRolDao usuarioRolDao, UsuarioDao usuarioDao,
-            SicoesSolicitudDao sicoesSolicitudDao) {
-
-        this.templateEngine = templateEngine;
-        this.listadoDetalleService = listadoDetalleService;
-        this.notificacionDao = notificacionDao;
-        this.personalReemplazoService = personalReemplazoService;
-        this.sicoesSolicitudService = sicoesSolicitudService;
-        this.personalReemplazoDao = personalReemplazoDao;
-        this.propuestaProfesionalDao = propuestaProfesionalDao;
-        this.supervisoraMovimientoService = supervisoraMovimientoService;
-        this.usuarioRolDao = usuarioRolDao;
-        this.usuarioDao = usuarioDao;
-        this.sicoesSolicitudDao = sicoesSolicitudDao;
-    }
-	
     private void saveNotificacion(Notificacion notificacion) {
 
         ListadoDetalle pendiente = listadoDetalleService.obtenerListadoDetalle(
