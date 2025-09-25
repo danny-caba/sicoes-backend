@@ -116,7 +116,7 @@ public class NotificacionContratoServiceImpl implements NotificacionContratoServ
             Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
             Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
         if (pendiente == null) {
-            throw  new RuntimeException("Estado 'Pendiente' no encontrado en listado detalle");
+            throw  new ValidacionException("Estado 'Pendiente' no encontrado en listado detalle");
         }
         notificacion.setEstado(pendiente);
         notificacionDao.save(notificacion);

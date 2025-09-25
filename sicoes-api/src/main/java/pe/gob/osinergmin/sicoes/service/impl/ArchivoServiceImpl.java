@@ -1228,7 +1228,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 						a.getNombre().matches(V2_FILE_PATTERN));
 
 		for (Archivo archivo : archivos) {
-			if (!tieneV2 || (tieneV2 && archivo.getNombre() != null &&
+			if (!tieneV2 || (archivo.getNombre() != null &&
 					archivo.getNombre().matches(V2_FILE_PATTERN))) {
 
 				try {
@@ -1246,8 +1246,7 @@ public class ArchivoServiceImpl implements ArchivoService {
 					String rutaCompleta = dirPath + File.separator + archivo.getNombre();
 
 					logger.info("rutaCompleta:{}",rutaCompleta);
-					File file = new File(rutaCompleta);
-
+					File file = new File(rutaCompleta
 					logger.info("file:{}",file);
 
 					FileUtils.writeByteArrayToFile(file, contenido);

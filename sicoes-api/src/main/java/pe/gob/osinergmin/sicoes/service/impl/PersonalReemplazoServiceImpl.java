@@ -615,7 +615,13 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         cliente.add(cs);
         d.setDireccion("-");
         d.setDireccionPrincipal(true);
-        d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
+
+        String direccionEstado = env.getProperty("crear.expediente.parametros.direccion.estado");
+        if (direccionEstado == null || direccionEstado.isEmpty()) {
+            throw new IllegalStateException("Falta la propiedad 'crear.expediente.parametros.direccion.estado'");
+        }
+
+        d.setEstado(direccionEstado.charAt(0));
         d.setTelefono("-");
         d.setUbigeo(Integer.parseInt(env.getProperty("siged.ws.cliente.osinergmin.ubigeo")));
         direccion.add(d);
@@ -623,11 +629,37 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         cs.setDirecciones(direcciones);
         clientes.setCliente(cliente);
         documento.setClientes(clientes);
-        documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
-        documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
-        documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
-        documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente").charAt(0));
-        documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
+
+        String enumerado = env.getProperty("crear.expediente.parametros.enumerado");
+        if (enumerado == null || enumerado.isEmpty()) {
+            throw new IllegalStateException("Falta la propiedad 'crear.expediente.parametros.enumerado'");
+        }
+        documento.setEnumerado(enumerado.charAt(0));
+
+        String enFlujo = env.getProperty("crear.expediente.parametros.esta.en.flujo");
+        if (enFlujo == null || enFlujo.isEmpty()) {
+            throw new IllegalStateException("Falta la propiedad 'crear.expediente.parametros.esta.en.flujo'");
+        }
+        documento.setEstaEnFlujo(enFlujo.charAt(0));
+
+        String firmado = env.getProperty("crear.expediente.parametros.firmado");
+        if (firmado == null || firmado.isEmpty()) {
+            throw new IllegalStateException("Falta la propiedad 'crear.expediente.parametros.firmado'");
+        }
+        documento.setFirmado(firmado.charAt(0));
+
+        String creaExpediente = env.getProperty("crear.expediente.parametros.crea.expediente");
+        if (creaExpediente == null || creaExpediente.isEmpty()) {
+            throw new IllegalStateException("Falta la propiedad 'crear.expediente.parametros.crea.expediente'");
+        }
+        documento.setCreaExpediente(creaExpediente.charAt(0));
+
+        String publico = env.getProperty("crear.expediente.parametros.crea.publico");
+        if (publico == null || publico.isEmpty()) {
+            throw new IllegalStateException("Falta la propiedad 'crear.expediente.parametros.crea.publico'");
+        }
+        documento.setPublico(publico.charAt(0));
+
         return expediente;
     }
 
@@ -1894,7 +1926,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     private boolean checkAllDocsConforme(List<EvaluarDocuReemplazo> listEvaluaciones) {
         return !listEvaluaciones.isEmpty()
                 && listEvaluaciones.stream()
-                .allMatch(evaluacion -> Constantes.LISTADO.SI_NO.SI.equals(evaluacion.getConforme()));
+                .allMatch(eval -> Constantes.LISTADO.SI_NO.SI.equals(eval.getConforme()));
     }
 
     private void procesarDocsConforme(Contexto contexto, PersonalReemplazo personalReemplazo) {
