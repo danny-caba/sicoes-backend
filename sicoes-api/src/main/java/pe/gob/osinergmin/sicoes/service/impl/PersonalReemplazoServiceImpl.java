@@ -1305,57 +1305,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 break;
 
             case Constantes.REQUERIMIENTO.APROB_EVAL_CONTR:
-
-                Adenda adendaFinal = adendaDao.obtenerAdenda(persoReempFinal.getIdReemplazo())
-                        .stream().findFirst().orElseThrow(() -> new RuntimeException("No se encuentra adenda"));
-
-                if (aprobacion.getAccion().equals("A")) {
-                    adendaFinal.setEstadoAprobacionLogistica(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.APROBADO));  // aprobado
-                    adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO)); // asignado
-
-                    Long idPerfContrato = persoReempFinal.getIdSolicitud();
-                    SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
-
-                    Aprobacion aprob = new Aprobacion();
-                    aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.VISTO_BUENO));
-                    aprob.setRemplazoPersonal(persoReempFinal);
-                    aprob.setNumeroExpediente(sicoesSolicitudDao.obtenerNumExpedienteAprobacion(solicitud.getIdSolicitud()));
-                    DocumentoReemplazo doc = documentoReemDao.obtenerPorIdReemplazoSeccion(persoReempFinal.getIdReemplazo(),
-                            listadoDetalleDao.listarListadoDetallePorCoodigo(Constantes.LISTADO.SECCION_DOC_REEMPLAZO.PROYECTO_ADENDA).get(0).getIdListadoDetalle()).get(0);
-                    aprob.setDocumento(doc);
-                    Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO);
-                    aprob.setIdRol(rolUsuarioInterno.getIdRol());
-
-                    aprob.setFechaIngreso(new Date());
-                    aprob.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
-                    aprob.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
-                    aprob.setEstadoAprobGerenteLinea(null);
-
-                    AuditoriaUtil.setAuditoriaRegistro(aprob, contexto);
-                    aprobacionDao.save(aprob);
-
-                    Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO)
-                            .stream()
-                            .findFirst()
-                            .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
-
-                    if (usuario.isPresent()) {
-                        notificacionContratoService.notificarAprobacionPendiente(usuario.get(), obtenerNroExpPersona(persoReempFinal), contexto);
-                    } else {
-                        throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G2_NO_EXISTE);
-                    }
-                } else {
-                    aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  // desaprobado
-                    adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO)); // rechazado
-
-                    // Cambiar rol
-                    Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
-                    aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
-                }
-                adendaFinal.setFecActualizacion(new Date());
-                AuditoriaUtil.setAuditoriaRegistro(adendaFinal, contexto);
-                adendaDao.save(adendaFinal);
-
                 procesarAprobacionAdenda(aprobacion, aprobacionFinal, persoReempFinal, contexto);
                 break;
 
@@ -1547,7 +1496,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,Boolean conforme, Contexto contexto) {
+    public PersonalReemplazo registrarInicioServicioSolContr(PersonalReemplazo personalReemplazo,boolean conforme, Contexto contexto) {
         Long id = personalReemplazo.getIdReemplazo();
         if (id == null) {
             throw new ValidacionException("No existe id");
@@ -1814,7 +1763,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,Boolean conforme, String accion, Contexto contexto) {
+    public PersonalReemplazo evaluarDocumentos(PersonalReemplazoDTO personalReemplazo,boolean conforme, String accion, Contexto contexto) {
         logger.info("evaluar documentos personalReemplazo: {}", personalReemplazo);
         logger.info("evaluar documentos conforme: {}", conforme);
         logger.info("evaluar documentos accion: {}", accion);
@@ -2051,6 +2000,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         SicoesSolicitud solicitud = sicoesSolicitudDao.findById(personalReemplazo.getIdSolicitud())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_EXISTE));
         String nombrePersonal = nombrePersonal(personalReemplazo);
+        //String nombrePerfil = personalReemplazo.getPerfil().getNombre();
         notificacionContratoService.notificarRevDocumentos122(solicitud.getSupervisora(), nombrePersonal, "", "", new ArrayList<>(), contexto);
     }
 

@@ -107,11 +107,12 @@ public class SupervisoraMovimientoServiceImpl implements SupervisoraMovimientoSe
 	public SupervisoraMovimiento ultimoMovimiento(Long idSupervisora, Contexto contexto) {
 		List<SupervisoraMovimiento> movimientos = supervisoraMovimientoDao.listarUltimoMovimientoSinSubsector(idSupervisora);
 		if(!movimientos.isEmpty() ) {
-			SupervisoraMovimiento ultimoMovimiento =  movimientos.get(0);
-			return ultimoMovimiento;
+			return movimientos.get(0);
 		}else {
 			SupervisoraMovimiento sup = new SupervisoraMovimiento();
-			sup.setEstado(listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO, Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
+			sup.setEstado(listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_SUP_PERFIL.CODIGO,
+					Constantes.LISTADO.ESTADO_SUP_PERFIL.ACTIVO));
 			return sup;
 		}
 	}

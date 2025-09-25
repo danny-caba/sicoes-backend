@@ -31,8 +31,8 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PostMapping("/reemplazo/solicitud/visto/")
     public Map<String,Object> vistoBueno(@RequestBody FirmaRequestDTO firmaRequestDTO){
         logger.info("visto bueno inicio {}", firmaRequestDTO);
-        return adendaReemplazoService.iniciarFirma(firmaRequestDTO.getIdAdenda(), firmaRequestDTO.getVisto(),
-                firmaRequestDTO.getFirmaJefe(),firmaRequestDTO.getFirmaGerente());
+        return adendaReemplazoService.iniciarFirma(firmaRequestDTO.getIdAdenda(), firmaRequestDTO.isVisto(),
+                firmaRequestDTO.isFirmaJefe(),firmaRequestDTO.isFirmaGerente());
     }
 
     @PostMapping("/reemplazo/solicitud/finalizar-visto/")
@@ -51,8 +51,8 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PostMapping("/reemplazo/solicitud/firmar/")
     public Map<String,Object> firmar(@RequestBody FirmaRequestDTO firmaRequestDTO){
         logger.info("firma inicio {}", firmaRequestDTO);
-        return adendaReemplazoService.iniciarFirma(firmaRequestDTO.getIdAdenda(), firmaRequestDTO.getVisto(),
-                firmaRequestDTO.getFirmaJefe(),firmaRequestDTO.getFirmaGerente());
+        return adendaReemplazoService.iniciarFirma(firmaRequestDTO.getIdAdenda(), firmaRequestDTO.isVisto(),
+                firmaRequestDTO.isFirmaJefe(),firmaRequestDTO.isFirmaGerente());
     }
 
     @PostMapping("/reemplazo/solicitud/finalizar-firma/")
@@ -71,8 +71,8 @@ public class AdendaReemplazoRestController extends BaseRestController {
     @PutMapping("/reemplazo/solicitud/rechazar-firma")
     @Raml("adendaReemplazo.listar.properties")
     public AdendaReemplazo rechazarFirma(@RequestBody AdendaReemplazo adendaReemplazo,
-                                         @RequestParam(required = false) Boolean firmaJefe,
-                                         @RequestParam(required = false) Boolean firmaGerente){
+                                         @RequestParam(required = false) boolean firmaJefe,
+                                         @RequestParam(required = false) boolean firmaGerente){
         logger.info(" rechazar firma {}", adendaReemplazo);
         return adendaReemplazoService.rechazarFirma(adendaReemplazo,firmaJefe,firmaGerente,getContexto());
     }
