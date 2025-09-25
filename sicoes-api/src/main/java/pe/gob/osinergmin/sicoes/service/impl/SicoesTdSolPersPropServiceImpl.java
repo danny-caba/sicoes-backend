@@ -24,7 +24,7 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 @Service
 public class SicoesTdSolPersPropServiceImpl implements SicoesTdSolPersPropService{
 
-	private final static Logger logger = LogManager.getLogger(SicoesTdSolPersPropServiceImpl.class);
+	private static final Logger logger = LogManager.getLogger(SicoesTdSolPersPropServiceImpl.class);
 
 	private final SicoesTdSoliPersPropDao sicoesTdSoliPersPropDao;
 	private final PropuestaProfesionalService propuestaProfesionalService;
