@@ -1400,8 +1400,8 @@ public class ArchivoServiceImpl implements ArchivoService {
 				tamanioByte=archivo.getContenido().length;
 			}
 			tamanioMB=tamanioByte/(1024.0*1024.0);
-			logger.info("tamanio bytes : "+tamanioByte);
-			logger.info("tamanio : "+tamanioMB);
+			logger.info("tamanio bytes {}: {}",tamanioByte);
+			logger.info("tamanio {}: {} ",tamanioMB);
 		} catch (IOException e) {
 			logger.info(e.getMessage(),e);
 		}

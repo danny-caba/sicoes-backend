@@ -311,17 +311,15 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         AdendaReemplazo adenda = getAdendaReemplazo(firmaRequestDTO.getIdAdenda());
         try {
             //Vamos actualizar adenda el flag visto bueno
-            //String listadoAprobacion = Constantes.LISTADO.ESTADO_APROBACION.CODIGO;
             String listadoAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.CODIGO;
             String listadoEstadoSolicitud = Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO;
             String listadoTipoAprob = Constantes.LISTADO.TIPO_APROBACION.CODIGO;
 
-            //String descAprobacion = Constantes.LISTADO.ESTADO_APROBACION.APROBADO;
             String descAprobacionAdenda = Constantes.LISTADO.ESTADO_ADENDA.APROBADO;
             String descAsignado = Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO;
             String descConcluido = Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO;
 
-            //ListadoDetalle estadoApro = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacion, descAprobacion);
+
             ListadoDetalle estadoAproAdenda = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAprobacionAdenda);
             ListadoDetalle estadoAsig = listadoDetalleDao.obtenerListadoDetalle(listadoAprobacionAdenda, descAsignado);
             ListadoDetalle estadoConcluido = listadoDetalleDao.obtenerListadoDetalle(listadoEstadoSolicitud,descConcluido);
@@ -359,7 +357,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
                             contexto);
                 }
                 if (Boolean.TRUE.equals(firmaRequestDTO.isFirmaGerente())){
-                    actualizarPersonalReemplazoYNotificar(adenda,estadoConcluido,firmaRequestDTO,contexto);
+                    actualizarPersonalReemplazoYNotificar(adenda,estadoConcluido,contexto);
                     adenda.setEstadoFirmaGerencia(estadoAproAdenda);
                     adenda.setEstadoAprobacion(estadoConcluido);
                     adenda.setObservacionFirmaGerencia(firmaRequestDTO.getObservacion());
@@ -614,7 +612,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         }
 
         if (firmaRequestDTO.isFirmaGerente()) {
-            actualizarPersonalReemplazoYNotificar(adenda, estadoConcluido, firmaRequestDTO, contexto);
+            actualizarPersonalReemplazoYNotificar(adenda, estadoConcluido, contexto);
             adenda.setEstadoFirmaGerencia(estadoApro);
             adenda.setEstadoAprobacion(estadoConcluido);
             adenda.setObservacionFirmaGerencia(firmaRequestDTO.getObservacion());
@@ -638,8 +636,7 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
         }
     }
 
-    private void actualizarPersonalReemplazoYNotificar(AdendaReemplazo adenda, ListadoDetalle estadoConcluido,
-                                                       FirmaRequestDTO firmaRequestDTO, Contexto contexto) {
+    private void actualizarPersonalReemplazoYNotificar(AdendaReemplazo adenda, ListadoDetalle estadoConcluido, Contexto contexto) {
         Optional<PersonalReemplazo> personalReemplazo = reemplazoDao.findById(adenda.getIdReemplazoPersonal());
         if (!personalReemplazo.isPresent()) {
             throw new ValidacionException(Constantes.CODIGO_MENSAJE.REEMPLAZO_PERSONAL_NO_EXISTE);
