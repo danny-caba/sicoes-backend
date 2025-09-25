@@ -509,10 +509,8 @@ public class ArchivoServiceImpl implements ArchivoService {
                                             a.getNombre().matches(V2_FILE_PATTERN));
                                           
 		for (Archivo archivo : archivos) {
-            // Si hay _v2, solo procesamos los _v2. Si no hay _v2, procesamos todos
-            if (!tieneV2 || (tieneV2 && archivo.getNombre() != null && 
-                            archivo.getNombre().matches(V2_FILE_PATTERN))) {
-                
+			if (!tieneV2 ||
+					(archivo.getNombre() != null && archivo.getNombre().matches(V2_FILE_PATTERN))) {
                 try {
                     byte[] contenido = sigedOldConsumer.descargarArchivosAlfresco(archivo);
                     if (contenido == null || contenido.length == 0) {
@@ -1400,8 +1398,8 @@ public class ArchivoServiceImpl implements ArchivoService {
 				tamanioByte=archivo.getContenido().length;
 			}
 			tamanioMB=tamanioByte/(1024.0*1024.0);
-			logger.info("tamanio bytes : "+tamanioByte);
-			logger.info("tamanio : "+tamanioMB);
+			logger.info("tamanio bytes :{} ",tamanioByte);
+			logger.info("tamanio :{} ",tamanioMB);
 		} catch (IOException e) {
 			logger.info(e.getMessage(),e);
 		}
