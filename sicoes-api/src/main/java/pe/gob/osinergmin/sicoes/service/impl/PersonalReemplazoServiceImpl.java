@@ -547,7 +547,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             }
         } catch (Exception e) {
             logger.error("Error al agregar documento en SIGED", e);
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, expedienteOutRO.getMessage());
+            String mensajeError = (expedienteOutRO != null) ? expedienteOutRO.getMessage() : e.getMessage();
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, mensajeError);
         }
     }
 
@@ -1308,7 +1309,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 break;
 
             default:
-                throw new RuntimeException("Requerimiento no reconocido");
+                throw new ValidacionException("Requerimiento no reconocido");
         }
 
         aprobacionFinal.setFecActualizacion(new Date());
@@ -1999,7 +2000,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
         SicoesSolicitud solicitud = sicoesSolicitudDao.findById(personalReemplazo.getIdSolicitud())
                 .orElseThrow(() -> new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_NO_EXISTE));
         String nombrePersonal = nombrePersonal(personalReemplazo);
-        //String nombrePerfil = personalReemplazo.getPerfil().getNombre();
         notificacionContratoService.notificarRevDocumentos122(solicitud.getSupervisora(), nombrePersonal, "", "", new ArrayList<>(), contexto);
     }
 
@@ -2099,7 +2099,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO));
             Long idPerfContrato = persoReempFinal.getIdSolicitud();
             SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
-            //Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
 
             Aprobacion aprob = new Aprobacion();
             aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.VISTO_BUENO));
