@@ -61,7 +61,6 @@ public class AdendaReemplazoServiceImpl implements AdendaReemplazoService {
     private final AdendaReemplazoService adendaReemplazoService;
     private static final String ARCHIVOS_KEY = "archivos";
 
-    @Autowired
     public AdendaReemplazoServiceImpl(AdendaReemplazoDao adendaReemplazoDao,
                                       PersonalReemplazoDao reemplazoDao,
                                       PersonalReemplazoService personalReemplazoService,

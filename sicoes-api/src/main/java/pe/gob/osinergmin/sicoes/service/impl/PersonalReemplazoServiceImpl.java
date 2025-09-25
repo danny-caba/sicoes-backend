@@ -114,7 +114,6 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     @Value("${path.temporal}")
     private String pathTemporal;
 
-    @Autowired
     public PersonalReemplazoServiceImpl(PersonalReemplazoDao reemplazoDao,
                                         DocumentoReemDao documentoReemDao,
                                         DocumentoReemService documentoReemService,
