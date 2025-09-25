@@ -547,7 +547,8 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             }
         } catch (Exception e) {
             logger.error("Error al agregar documento en SIGED", e);
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, expedienteOutRO.getMessage());
+            String mensajeError = (expedienteOutRO != null) ? expedienteOutRO.getMessage() : e.getMessage();
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SOLICITUD_GUARDAR_FORMATO_RESULTADO, mensajeError);
         }
     }
 
