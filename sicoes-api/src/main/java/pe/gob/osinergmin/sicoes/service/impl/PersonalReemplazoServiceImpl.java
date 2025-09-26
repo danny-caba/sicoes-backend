@@ -2101,29 +2101,30 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     // Función para procesar la aprobación en G3
     private void procesarEvaluacionAprobacionG3(AprobacionDTO aprobacion, Aprobacion aprobacionFinal, PersonalReemplazo persoReempFinal, String numeroExpediente, Contexto contexto) {
         if (aprobacion.getAccion().equals("A")) {
-            aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.APROBADO));
-            persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO));
-            persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
+            aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.APROBADO));
+            aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.APROBADO));  //aprobado
+            persoReempFinal.setEstadoAprobacionInforme(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO)); //concluido
+            persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
             persoReempFinal.setEstadoAprobacionAdenda(null);
             persoReempFinal.setEstadoEvalDocIniServ(null);
 
-            Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.RESPONSABLE_TECNICO)
+            Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.EVALUADOR_CONTRATOS)
                     .stream()
                     .findFirst()
                     .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
-
-            Rol rol = rolDao.obtenerCodigo(Constantes.ROLES.RESPONSABLE_TECNICO);
+            Rol rol = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
             if (usuario.isPresent()) {
+                numeroExpediente = obtenerNroExpPersona(persoReempFinal);
                 notificacionContratoService.notificarRevisarDocumentacionPendiente(usuario.get(), numeroExpediente, rol.getNombre(), contexto);
             } else {
-                throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.EVALUADOR_CONTRATOS_NO_EXISTE);
             }
         } else {
-            aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
-            aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
-            persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
+            aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
+            aprobacionFinal.setEstadoAprobGerenteLinea(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
+            persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO,Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
 
-            Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_TECNICO);
+            Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.RESPONSABLE_TECNICO);
             aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
         }
 
