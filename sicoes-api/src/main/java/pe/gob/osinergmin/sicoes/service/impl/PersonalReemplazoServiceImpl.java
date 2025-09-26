@@ -1341,8 +1341,7 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
                 throw new ValidacionException("Requerimiento no reconocido");
         }
 
-        aprobacionFinal.setFecActualizacion(new Date());
-        AuditoriaUtil.setAuditoriaRegistro(aprobacionFinal, contexto);
+        AuditoriaUtil.setAuditoriaActualizacion(aprobacionFinal, contexto);
         return aprobacionDao.save(aprobacionFinal);
     }
 
@@ -2069,65 +2068,83 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
     // Función común para procesar evaluación y aprobación en G2 y G3
     private void procesarEvaluacionAprobacionG2(AprobacionDTO aprobacion, Aprobacion aprobacionFinal, PersonalReemplazo persoReempFinal, String numeroExpediente, Contexto contexto) {
         if (aprobacion.getAccion().equals("A")) {
-            actualizarEstadoAprobacion(aprobacionFinal, persoReempFinal, Constantes.LISTADO.ESTADO_APROBACION.APROBADO, Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO);
-            notificarUsuarioPorRol(Constantes.ROLES.RESPONSABLE_TECNICO, numeroExpediente, contexto);
+            aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.APROBADO));
+            persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO));
+            persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
+            persoReempFinal.setEstadoAprobacionAdenda(null);
+            persoReempFinal.setEstadoEvalDocIniServ(null);
+
+            Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.RESPONSABLE_TECNICO)
+                    .stream()
+                    .findFirst()
+                    .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+
+            Rol rol = rolDao.obtenerCodigo(Constantes.ROLES.RESPONSABLE_TECNICO);
+            if (usuario.isPresent()) {
+                notificacionContratoService.notificarRevisarDocumentacionPendiente(usuario.get(), numeroExpediente, rol.getNombre(), contexto);
+            } else {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
+            }
         } else {
-            actualizarEstadoAprobacion(aprobacionFinal, persoReempFinal, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
+            aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
+            aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
+            persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
+
             Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_TECNICO);
             aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
         }
-        persoReempFinal.setFecActualizacion(new Date());
-        AuditoriaUtil.setAuditoriaRegistro(persoReempFinal, contexto);
+
+        AuditoriaUtil.setAuditoriaActualizacion(persoReempFinal, contexto);
         reemplazoDao.save(persoReempFinal);
     }
 
     // Función para procesar la aprobación en G3
     private void procesarEvaluacionAprobacionG3(AprobacionDTO aprobacion, Aprobacion aprobacionFinal, PersonalReemplazo persoReempFinal, String numeroExpediente, Contexto contexto) {
         if (aprobacion.getAccion().equals("A")) {
-            actualizarEstadoAprobacion(aprobacionFinal, persoReempFinal, Constantes.LISTADO.ESTADO_APROBACION.APROBADO, Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO);
-            notificarUsuarioPorRol(Constantes.ROLES.EVALUADOR_CONTRATOS, numeroExpediente, contexto);
+            aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.APROBADO));
+            persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.CONCLUIDO));
+            persoReempFinal.setEstadoRevisarEval(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
+            persoReempFinal.setEstadoAprobacionAdenda(null);
+            persoReempFinal.setEstadoEvalDocIniServ(null);
+
+            Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.RESPONSABLE_TECNICO)
+                    .stream()
+                    .findFirst()
+                    .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+
+            Rol rol = rolDao.obtenerCodigo(Constantes.ROLES.RESPONSABLE_TECNICO);
+            if (usuario.isPresent()) {
+                notificacionContratoService.notificarRevisarDocumentacionPendiente(usuario.get(), numeroExpediente, rol.getNombre(), contexto);
+            } else {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
+            }
         } else {
-            actualizarEstadoAprobacion(aprobacionFinal, persoReempFinal, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR);
+            aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
+            aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO));
+            persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.BORRADOR));
+
             Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_TECNICO);
             aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
         }
-        persoReempFinal.setFecActualizacion(new Date());
-        AuditoriaUtil.setAuditoriaRegistro(persoReempFinal, contexto);
+
+        AuditoriaUtil.setAuditoriaActualizacion(persoReempFinal, contexto);
         reemplazoDao.save(persoReempFinal);
-    }
-
-    // Función común para actualizar los estados de Aprobación y Reemplazo Personal
-    private void actualizarEstadoAprobacion(Aprobacion aprobacionFinal, PersonalReemplazo persoReempFinal, String estadoAprobacion, String estadoSolicitud) {
-        aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, estadoAprobacion));
-        aprobacionFinal.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, estadoAprobacion));
-        persoReempFinal.setEstadoEvalDoc(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_SOLICITUD.CODIGO, estadoSolicitud));
-    }
-
-    // Función común para notificar al usuario por rol
-    private void notificarUsuarioPorRol(String rolCodigo, String numeroExpediente, Contexto contexto) {
-        Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(rolCodigo)
-                .stream()
-                .findFirst()
-                .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
-
-        Rol rol = rolDao.obtenerCodigo(rolCodigo);
-        if (usuario.isPresent()) {
-            notificacionContratoService.notificarRevisarDocumentacionPendiente(usuario.get(), numeroExpediente, rol.getNombre(), contexto);
-        } else {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_RESPONSABLE_TECNICO_NO_EXISTE);
-        }
     }
 
     // Función para procesar la aprobación de la adenda
     private void procesarAprobacionAdenda(AprobacionDTO aprobacion, Aprobacion aprobacionFinal, PersonalReemplazo persoReempFinal, Contexto contexto) {
         Adenda adendaFinal = adendaDao.obtenerAdenda(persoReempFinal.getIdReemplazo())
-                .stream().findFirst().orElseThrow(() -> new RuntimeException("No se encuentra adenda"));
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No se encuentra adenda"));
 
         if (aprobacion.getAccion().equals("A")) {
             adendaFinal.setEstadoAprobacionLogistica(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.APROBADO));
             adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.ASIGNADO));
+
             Long idPerfContrato = persoReempFinal.getIdSolicitud();
             SicoesSolicitud solicitud = sicoesSolicitudDao.obtenerSolicitudDetallado(idPerfContrato);
+            Supervisora supervisora = supervisoraDao.obtener(solicitud.getSupervisora().getIdSupervisora());
 
             Aprobacion aprob = new Aprobacion();
             aprob.setCoTipoAprobacion(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO, Constantes.LISTADO.TIPO_APROBACION.VISTO_BUENO));
@@ -2138,7 +2155,9 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             aprob.setDocumento(doc);
             Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO);
             aprob.setIdRol(rolUsuarioInterno.getIdRol());
-
+            aprob.setDeTp(supervisora.getTipoPersona().getValor());
+            aprob.setIdContratista(supervisora.getIdSupervisora());
+            aprob.setCoTipoSolicitud(solicitud.getTipoSolicitud());
             aprob.setFechaIngreso(new Date());
             aprob.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.EN_APROBACION));
             aprob.setEstadoAprobGerenteDiv(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO));
@@ -2147,14 +2166,23 @@ public class PersonalReemplazoServiceImpl implements PersonalReemplazoService {
             AuditoriaUtil.setAuditoriaRegistro(aprob, contexto);
             aprobacionDao.save(aprob);
 
-            notificarUsuarioPorRol(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO, obtenerNroExpPersona(persoReempFinal), contexto);
+            Optional<Usuario> usuario = usuarioRolDao.obtenerUsuariosRol(Constantes.ROLES.G2_APROBADOR_ADMINISTRATIVO)
+                    .stream()
+                    .findFirst()
+                    .map(rol -> usuarioDao.obtener(rol.getUsuario().getIdUsuario()));
+            if (usuario.isPresent()) {
+                notificacionContratoService.notificarAprobacionPendiente(usuario.get(), obtenerNroExpPersona(persoReempFinal), contexto);
+            } else {
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.USUARIO_G2_NO_EXISTE);
+            }
         } else {
             aprobacionFinal.setEstadoAprob(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.APROBADO));
             adendaFinal.setEstadoVbGAF(listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_ADENDA.CODIGO, Constantes.LISTADO.ESTADO_ADENDA.RECHAZADO));
-        }
 
-        adendaFinal.setFecActualizacion(new Date());
-        AuditoriaUtil.setAuditoriaRegistro(adendaFinal, contexto);
+            Rol rolUsuarioInterno = rolDao.obtenerCodigo(Constantes.ROLES.EVALUADOR_CONTRATOS);
+            aprobacionFinal.setIdRol(rolUsuarioInterno.getIdRol());
+        }
+        AuditoriaUtil.setAuditoriaActualizacion(adendaFinal, contexto);
         adendaDao.save(adendaFinal);
     }
 
