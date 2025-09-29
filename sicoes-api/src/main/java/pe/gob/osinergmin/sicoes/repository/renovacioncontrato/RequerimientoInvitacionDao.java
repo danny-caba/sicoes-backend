@@ -21,7 +21,7 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
             "WHERE ri.idReqInvitacion = :id")
     Optional<RequerimientoInvitacion> findByIdWithRequerimientoRenovacion(@Param("id") Long id);
 
-    @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.flActivo = '1' ORDER BY r.fecCreacion DESC")
+    @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.flActivo = '1' ORDER BY r.idReqInvitacion DESC")
     List<RequerimientoInvitacion> listarActivos();
 
     @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.idReqInvitacion = :id AND r.flActivo = '1'")
@@ -40,16 +40,30 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
            "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
            "AND (:tipoSector IS NULL OR UPPER(req.tiSector) LIKE UPPER(CONCAT('%', :tipoSector, '%'))) " +
            "AND (:estadoInvitacion IS NULL OR e.idListadoDetalle = :estadoInvitacion) " +
-           "ORDER BY r.fecCreacion DESC")
+           "ORDER BY r.idReqInvitacion DESC")
     Page<RequerimientoInvitacion> buscarInvitaciones(@Param("numeroExpediente") String numeroExpediente,
                                                      @Param("tipoSector") String tipoSector,
+                                                     @Param("estadoInvitacion") Integer estadoInvitacion,
+                                                     Pageable pageable);
+
+    // Overloaded method to match service call with nombreItem parameter
+    @Query("SELECT r FROM RequerimientoInvitacion r " +
+           "LEFT JOIN r.requerimientoRenovacion req " +
+           "LEFT JOIN r.estadoInvitacion e " +
+           "WHERE r.flActivo = '1' " +
+           "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
+           "AND (:nombreItem IS NULL OR UPPER(req.noItem) LIKE UPPER(CONCAT('%', :nombreItem, '%'))) " +
+           "AND (:estadoInvitacion IS NULL OR e.idListadoDetalle = :estadoInvitacion) " +
+           "ORDER BY r.idReqInvitacion DESC")
+    Page<RequerimientoInvitacion> buscarInvitaciones(@Param("numeroExpediente") String numeroExpediente,
+                                                     @Param("nombreItem") String nombreItem,
                                                      @Param("estadoInvitacion") Integer estadoInvitacion,
                                                      Pageable pageable);
 
     @Query("SELECT r FROM RequerimientoInvitacion r " +
            "WHERE r.flActivo = '1' " +
            "AND r.fecCreacion BETWEEN STR_TO_DATE(:fechaDesde, '%d/%m/%Y') AND STR_TO_DATE(:fechaHasta, '%d/%m/%Y') " +
-           "ORDER BY r.fecCreacion DESC")
+           "ORDER BY r.idReqInvitacion DESC")
     List<RequerimientoInvitacion> buscarPorRangoFechas(@Param("fechaDesde") String fechaDesde,
                                                        @Param("fechaHasta") String fechaHasta);
 

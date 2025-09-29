@@ -232,8 +232,28 @@ public class CrearInformeRenovacionContratoImpl  {
             informe.setNecesidad(dto.getNecesidad());
             informe.setConclusiones(dto.getConclusiones());
 
+            // ACTUALIZADO: Establecer ES_APROBACION_INFORME = 944 (En proceso) cuando se completa y deriva a G1
             ListadoDetalle estadoInformeEnProceso = listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_SOLICITUD.EN_PROCESO);
             informe.setEstadoAprobacionInforme(estadoInformeEnProceso);
+            
+            // Verificar que el estado obtenido corresponda al código 944
+            if (estadoInformeEnProceso != null) {
+                logger.info("Estado En Proceso obtenido del catálogo para informe - ID: {}", estadoInformeEnProceso.getIdListadoDetalle());
+                if (!estadoInformeEnProceso.getIdListadoDetalle().equals(944L)) {
+                    logger.warn("ADVERTENCIA: El estado 'En Proceso' tiene ID {} pero se esperaba 944", estadoInformeEnProceso.getIdListadoDetalle());
+                }
+            } else {
+                logger.error("No se pudo obtener estado En Proceso del catálogo para el informe");
+            }
+            
+            // AGREGADO: Actualizar también el estado del requerimiento de renovación a "En proceso" (944)
+            // Esto es requerido cuando se completa el informe y se deriva a G1
+            if (requerimientoRenovacion != null) {
+                requerimientoRenovacion.setEsReqRenovacion(944L); // En proceso
+                requerimientoRenovacionDao.save(requerimientoRenovacion);
+                logger.info("Estado del requerimiento de renovación actualizado a En Proceso (944) - ID: {}", 
+                           requerimientoRenovacion.getIdReqRenovacion());
+            }
 
             File jrxml = new File(pathJasper + "Formato_Informe_RenovacionContrato.jrxml");
             Usuario usuarioG1 = usuarioDao.obtener(listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1());
@@ -298,17 +318,25 @@ public class CrearInformeRenovacionContratoImpl  {
             logger.info("Archivo registrado en DB con ID: {} y Ruta Alfresco: {} ", archivoInformePdf.getIdArchivo(), rutaAlfresco);
 
             // Enviar notificación y capturar el ID
+            logger.info("Iniciando proceso de notificación para usuarioG1: {} y expediente: {}", usuarioG1.getIdUsuario(), numExpediente);
             Long idNotificacion = notificacionRenovacionContratoService.notificacionInformePorAprobar(usuarioG1, numExpediente, contexto);
+            logger.info("ID de notificación recibido: {}", idNotificacion);
             
             // Actualizar el informe con el ID de la notificación
-            if (idNotificacion != null) {
+            if (idNotificacion != null && idNotificacion > 0) {
+                logger.info("Buscando notificación con ID: {}", idNotificacion);
                 // Buscar la notificación por ID y asignarla al informe
                 pe.gob.osinergmin.sicoes.model.Notificacion notificacion = notificacionDao.findById(idNotificacion).orElse(null);
                 if (notificacion != null) {
+                    logger.info("Notificación encontrada con ID: {}, asignando al informe: {}", idNotificacion, nuevoInformeRenovacionContrato.getIdInformeRenovacion());
                     nuevoInformeRenovacionContrato.setNotificacion(notificacion);
                     nuevoInformeRenovacionContrato = informeRenovacionContratoDao.save(nuevoInformeRenovacionContrato);
-                    logger.info("Informe actualizado con ID de notificación: {}", idNotificacion);
+                    logger.info("Informe actualizado exitosamente con ID de notificación: {}", idNotificacion);
+                } else {
+                    logger.error("No se encontró la notificación con ID: {}", idNotificacion);
                 }
+            } else {
+                logger.error("ID de notificación es null o inválido: {}", idNotificacion);
             }
 
             RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(
@@ -321,19 +349,12 @@ public class CrearInformeRenovacionContratoImpl  {
             AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1, contexto);
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG1);
             historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
-
-            // Crear requerimiento de aprobación para G2 si existe aprobador G2
-            if (listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG2() != null) {
-                RequerimientoAprobacion requerimientoAprobacionG2 = buildRequerimientoAprobacionG2(
-                        nuevoInformeRenovacionContrato.getIdInformeRenovacion(),
-                        listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG2(),
-                        contexto.getUsuario().getIdUsuario(),
-                        contexto.getIp()
-                );
-                AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG2, contexto);
-                RequerimientoAprobacion requerimientoAprobacionG2Result = requerimientoAprobacionDao.save(requerimientoAprobacionG2);
-                historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionG2Result, contexto);
-            }
+            
+            // CORREGIDO: Solo crear requerimiento de aprobación G1 (ID_GRUPO_LD = 542) al crear el informe
+            // La creación del requerimiento G2 se debe hacer cuando G1 apruebe, no al crear el informe
+            logger.info("Requerimiento de aprobación G1 creado exitosamente con ID: {} para informe: {}", 
+                       requerimientoAprobacionResult.getIdReqAprobacion(), 
+                       nuevoInformeRenovacionContrato.getIdInformeRenovacion());
 
         }else{
             throw new ValidacionException(
@@ -352,11 +373,15 @@ public class CrearInformeRenovacionContratoImpl  {
         requerimientoAprobacionG1.setIdUsuario(idUsuarioG1);
         requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
 
-        ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPOS",
                 "G1"
         );
-        requerimientoAprobacionG1.setIdGrupoLd(g2GrupoLD.getIdListadoDetalle());
+        if (g1GrupoLD == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el grupo G1 en listado detalle");
+        }
+        requerimientoAprobacionG1.setIdGrupoLd(g1GrupoLD.getIdListadoDetalle());
+        logger.info("RequerimientoAprobacionG1 configurado con ID_GRUPO_LD: {} (debe ser 542 para G1)", g1GrupoLD.getIdListadoDetalle());
         ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
                 "ESTADO_APROBACION",
                 "ASIGNADO"
@@ -374,11 +399,11 @@ public class CrearInformeRenovacionContratoImpl  {
                 "JEFE_UNIDAD"
         );
         requerimientoAprobacionG1.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
-        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
+        ListadoDetalle tipoAprobacionG1LD = listadoDetalleService.obtenerListadoDetalle(
             "TIPO_APROBACION",
             "APROBAR"
         );
-        requerimientoAprobacionG1.setIdTipoLd(g1GrupoLD.getIdListadoDetalle()); 
+        requerimientoAprobacionG1.setIdTipoLd(tipoAprobacionG1LD.getIdListadoDetalle()); 
 
         return requerimientoAprobacionG1;
     }
@@ -398,34 +423,54 @@ public class CrearInformeRenovacionContratoImpl  {
                 "GRUPOS",
                 "G2"
         );
+        if (g2GrupoLD == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el grupo G2 en listado detalle");
+        }
         requerimientoAprobacionG2.setIdGrupoLd(g2GrupoLD.getIdListadoDetalle());
         
         ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
                 "ESTADO_APROBACION",
                 "ASIGNADO"
         );
+        if (asignadoEstadoLD == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el estado ASIGNADO en listado detalle");
+        }
         requerimientoAprobacionG2.setIdEstadoLd(asignadoEstadoLD.getIdListadoDetalle());
 
         ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
                 "TIPO_EVALUADOR",
                 "APROBADOR_TECNICO"
         );
+        if (tecnicoTipoEvaluadorLD == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el tipo APROBADOR_TECNICO en listado detalle");
+        }
         requerimientoAprobacionG2.setIdTipoAprobadorLd(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
 
         ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPO_APROBACION",
-                "GERENTE_DIVISION"
+                "GERENTE"
         );
+        if (grupoAprobadorLD == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el grupo aprobador GERENTE en listado detalle");
+        }
         requerimientoAprobacionG2.setIdGrupoAprobadorLd(grupoAprobadorLD.getIdListadoDetalle());
         
         ListadoDetalle tipoAprobacionLD = listadoDetalleService.obtenerListadoDetalle(
             "TIPO_APROBACION",
             "APROBAR"
         );
+        if (tipoAprobacionLD == null) {
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el tipo APROBAR en listado detalle");
+        }
         requerimientoAprobacionG2.setIdTipoLd(tipoAprobacionLD.getIdListadoDetalle()); 
 
-        // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD en G2
-        requerimientoAprobacionG2.setIdFirmadoLd(962L);
+        // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
+        if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
+            requerimientoAprobacionG2.setIdFirmadoLd(962L);
+        }
+
+        logger.info("RequerimientoAprobacionG2 construido exitosamente para informe: {}, usuario G2: {}, grupo LD: {}", 
+                   idInformeRenovacion, idUsuarioG2, requerimientoAprobacionG2.getIdGrupoLd());
 
         return requerimientoAprobacionG2;
     }

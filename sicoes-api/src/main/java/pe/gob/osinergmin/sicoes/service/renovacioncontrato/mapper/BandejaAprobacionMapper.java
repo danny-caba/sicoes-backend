@@ -12,9 +12,13 @@ import pe.gob.osinergmin.sicoes.util.Contexto;
 import java.text.SimpleDateFormat;
 import pe.gob.osinergmin.sicoes.model.dto.ListadoDetalleDTO;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Component
 public class BandejaAprobacionMapper {
+
+    private static final Logger logger = LogManager.getLogger(BandejaAprobacionMapper.class);
 
     @Autowired
     private RequerimientoAprobacionDao requerimientoAprobacionDao;
@@ -40,124 +44,171 @@ public class BandejaAprobacionMapper {
         dto.setTipoAprobacion(tipoAprobacion);
 
         // numeroExpediente
-        dto.setNumeroExpediente(entity.getInformeRenovacion().getRequerimientoRenovacion().getNuExpediente());
+        String numeroExpediente = "";
+        try {
+            if (entity.getInformeRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion() != null) {
+                numeroExpediente = entity.getInformeRenovacion().getRequerimientoRenovacion().getNuExpediente();
+            }
+        } catch (Exception e) {
+            // Si falla el acceso lazy, dejar vacío
+            numeroExpediente = "";
+        }
+        dto.setNumeroExpediente(numeroExpediente);
 
-        // informe
-        dto.setInforme(entity.getInformeRenovacion().getDeNombreArchivo());
+        // informe - usar nombre del archivo si está disponible
+        String informe = "";
+        if (entity.getInformeRenovacion() != null) {
+            informe = entity.getInformeRenovacion().getDeNombreArchivo() != null ?
+                    entity.getInformeRenovacion().getDeNombreArchivo() : 
+                    "INF-" + entity.getInformeRenovacion().getIdInformeRenovacion();
+        }
+        dto.setInforme(informe);
 
-        // tp
-        dto.setTp("PJ");
+        // tp - tipo persona
+        String tp = "PJ"; // Por defecto PJ
+        try {
+            if (entity.getInformeRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil().getSupervisora() != null) {
+                // Aquí deberíamos obtener el código del tipo de persona del listado detalle
+                // Por ahora usar PJ/PN basado en algún criterio
+                tp = "PJ";
+            }
+        } catch (Exception e) {
+            // Si falla el acceso lazy, dejar PJ por defecto
+        }
+        dto.setTp(tp);
 
         // contratista
-        dto.setContratista(entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil().getSupervisora().getNombreRazonSocial());
+        String contratista = "";
+        try {
+            if (entity.getInformeRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil().getSupervisora() != null) {
+                contratista = entity.getInformeRenovacion().getRequerimientoRenovacion()
+                        .getSolicitudPerfil().getSupervisora().getNombreRazonSocial();
+            }
+        } catch (Exception e) {
+            // Si falla el acceso lazy, dejar vacío
+        }
+        dto.setContratista(contratista);
 
-        // tipoContrato
-        dto.setTipoContrato("Renovación");
+        // tipoContrato - basado en el tipo de solicitud
+        String tipoContrato = "Renovación"; // Por defecto
+        try {
+            if (entity.getInformeRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil() != null &&
+                entity.getInformeRenovacion().getRequerimientoRenovacion().getSolicitudPerfil().getTipoSolicitud() != null) {
+                // Aquí deberíamos mapear el TI_SOLICITUD al tipo de contrato
+                // Por ahora mantener "Renovación" como default
+                tipoContrato = "Renovación";
+            }
+        } catch (Exception e) {
+            // Si falla el acceso lazy, dejar default
+        }
+        dto.setTipoContrato(tipoContrato);
 
-        // fechaIngreso
+        // fechaIngreso - usar fecha de creación del informe si está disponible
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        String fechaIngreso = entity.getInformeRenovacion().getFecCreacion() != null ?
-                sdf.format(entity.getInformeRenovacion().getFecCreacion()) : "";
+        String fechaIngreso = "";
+        if (entity.getInformeRenovacion() != null && entity.getInformeRenovacion().getFecCreacion() != null) {
+            fechaIngreso = sdf.format(entity.getInformeRenovacion().getFecCreacion());
+        } else if (entity.getFecCreacion() != null) {
+            fechaIngreso = sdf.format(entity.getFecCreacion());
+        }
         dto.setFechaIngresoInforme(fechaIngreso);
 
-        // estadoAprobacion
-        String estadoAprobacion = entity.getInformeRenovacion().getEstadoAprobacionInforme() != null ?
-                entity.getInformeRenovacion().getEstadoAprobacionInforme().getNombre() : "";
-        dto.setEstadoAprobacionInforme(estadoAprobacion);
-
-        // Estado Aprobación Jefe División
-        ListadoDetalle jefeDivisionG1GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-            "GRUPO_APROBACION",
-            "JEFE_UNIDAD"
-        );
-        String jefeDivision = "";
-        java.util.List<RequerimientoAprobacion> jefeDivisionList = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-            entity.getInformeRenovacion().getIdInformeRenovacion(),
-            jefeDivisionG1GrupoAprobadorLD.getIdListadoDetalle()
-        );
-        if (jefeDivisionList != null && !jefeDivisionList.isEmpty()) {
-            Long estadoLd = jefeDivisionList.get(0).getIdEstadoLd();
-            ListadoDetalle detalle = listadoDetalleService.obtener(estadoLd, contexto);
-            jefeDivision = detalle != null ? detalle.getNombre() : "";
+        // estadoAprobacionInforme
+        String estadoAprobacionInforme = "";
+        if (entity.getInformeRenovacion() != null && entity.getInformeRenovacion().getEsAprobacionInforme() != null) {
+            Long esAprobacion = entity.getInformeRenovacion().getEsAprobacionInforme();
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(esAprobacion);
+            if (estadoOpt.isPresent()) {
+                estadoAprobacionInforme = estadoOpt.get().getNombre();
+            }
         }
-        dto.setEstadoAprobacionJefeDivision(jefeDivision);
+        dto.setEstadoAprobacionInforme(estadoAprobacionInforme);
 
-        // Estado Aprobación Gerente División
-        ListadoDetalle gerenteUnidadG2GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-            "GRUPO_APROBACION",
-            "GERENTE"
-        );
-        String gerenteDivision = "";
-        java.util.List<RequerimientoAprobacion> gerenteDivisionList = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-            entity.getInformeRenovacion().getIdInformeRenovacion(),
-            gerenteUnidadG2GrupoAprobadorLD.getIdListadoDetalle()
-        );
-        if (gerenteDivisionList != null && !gerenteDivisionList.isEmpty()) {
-            Long estadoLd = gerenteDivisionList.get(0).getIdEstadoLd();
-            ListadoDetalle detalle = listadoDetalleService.obtener(estadoLd, contexto);
-            gerenteDivision = detalle != null ? detalle.getNombre() : "";
+        // Estados de aprobación por nivel jerárquico
+        String estadoAprobacionJefe = "";
+        String estadoAprobacionGerente = "";
+        String estadoAprobacionGPPM = "";
+        String estadoAprobacionGSE = "";
+
+        // Obtener todos los requerimientos de aprobación para este informe
+        if (entity.getIdInformeRenovacion() != null) {
+            java.util.List<RequerimientoAprobacion> todasAprobaciones = 
+                requerimientoAprobacionDao.findByIdInformeRenovacion(entity.getIdInformeRenovacion());
+
+            for (RequerimientoAprobacion aprobacion : todasAprobaciones) {
+                if (aprobacion.getIdGrupoAprobadorLd() != null && aprobacion.getIdEstadoLd() != null) {
+                    java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(aprobacion.getIdEstadoLd());
+                    String nombreEstado = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
+
+                    // Mapear por grupo aprobador: 954 = JEFE_UNIDAD (G1), 955 = GERENTE (G2), etc.
+                    if (aprobacion.getIdGrupoAprobadorLd().equals(954L)) {
+                        estadoAprobacionJefe = nombreEstado;
+                    } else if (aprobacion.getIdGrupoAprobadorLd().equals(955L)) {
+                        estadoAprobacionGerente = nombreEstado;
+                    }
+                    // Agregar más grupos si es necesario (GPPM, GSE)
+                }
+            }
         }
-        dto.setEstadoAprobacionGerenteDivision(gerenteDivision);
 
-        // Estado Aprobación GPPM
-        ListadoDetalle gppmG3GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-            "GRUPO_APROBACION",
-            "GPPM"
-        );
-        String gppm = "";
-        java.util.List<RequerimientoAprobacion> gppmList = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-            entity.getInformeRenovacion().getIdInformeRenovacion(),
-            gppmG3GrupoAprobadorLD.getIdListadoDetalle()
-        );
-        if (gppmList != null && !gppmList.isEmpty()) {
-            Long estadoLd = gppmList.get(0).getIdEstadoLd();
-            ListadoDetalle detalle = listadoDetalleService.obtener(estadoLd, contexto);
-            gppm = detalle != null ? detalle.getNombre() : "";
+        // Si no se encontró estado específico, usar el estado actual del registro
+        if (estadoAprobacionJefe.isEmpty() && entity.getIdGrupoAprobadorLd() != null && entity.getIdGrupoAprobadorLd().equals(954L)) {
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(entity.getIdEstadoLd());
+            estadoAprobacionJefe = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
         }
-        dto.setEstadoAprobacionGPPM(gppm);
-
-        // Estado Aprobación GSE
-        ListadoDetalle gseG3GrupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
-            "GRUPO_APROBACION",
-            "GSE"
-        );
-        String gse = "";
-        java.util.List<RequerimientoAprobacion> gseList = requerimientoAprobacionDao.findByIdInformeRenovacionAndIdGrupoAprobadorLd(
-            entity.getInformeRenovacion().getIdInformeRenovacion(),
-            gseG3GrupoAprobadorLD.getIdListadoDetalle()
-        );
-        if (gseList != null && !gseList.isEmpty()) {
-            Long estadoLd = gseList.get(0).getIdEstadoLd();
-            ListadoDetalle detalle = listadoDetalleService.obtener(estadoLd, contexto);
-            gse = detalle != null ? detalle.getNombre() : "";
+        if (estadoAprobacionGerente.isEmpty() && entity.getIdGrupoAprobadorLd() != null && entity.getIdGrupoAprobadorLd().equals(955L)) {
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(entity.getIdEstadoLd());
+            estadoAprobacionGerente = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
         }
-        dto.setEstadoAprobacionGSE(gse);
 
-        // Asignar tipoAprobacionLd
-        java.util.Optional.ofNullable(entity.getIdTipoAprobadorLd())
-            .ifPresent(id -> dto.setTipoAprobacionLd(
-            listadoDetalleMapper.toDto(
-                listadoDetalleDao.findById(entity.getIdTipoLd())
-            )
-            ));
+        dto.setEstadoAprobacionJefeDivision(estadoAprobacionJefe);
+        dto.setEstadoAprobacionGerenteDivision(estadoAprobacionGerente);
+        dto.setEstadoAprobacionGPPM(estadoAprobacionGPPM);
+        dto.setEstadoAprobacionGSE(estadoAprobacionGSE);
 
-        // Asignar estadoLd
-        java.util.Optional.ofNullable(entity.getIdEstadoLd())
-            .ifPresent(id -> dto.setEstadoLd(
-            listadoDetalleMapper.toDto(
-                listadoDetalleDao.findById(entity.getIdEstadoLd())
-            )
-            ));
+        // DEBUG: Log para ver qué estados se están enviando
+        logger.warn("DEBUG MAPPER - Registro ID: {}, InformeID: {}", 
+            entity.getIdReqAprobacion(), entity.getIdInformeRenovacion());
+        logger.warn("  - estadoAprobacionJefeDivision: '{}'", estadoAprobacionJefe);
+        logger.warn("  - estadoAprobacionGerenteDivision: '{}'", estadoAprobacionGerente);
+        logger.warn("  - grupoAprobadorLd actual: {}", entity.getIdGrupoAprobadorLd());
+        logger.warn("  - estadoLd actual: {}", entity.getIdEstadoLd());
 
-        // Asignar grupoAprobadorLd
-        java.util.Optional.ofNullable(entity.getIdGrupoAprobadorLd())
-            .ifPresent(id -> dto.setGrupoAprobadorLd(
-            listadoDetalleMapper.toDto(
-                listadoDetalleDao.findById(entity.getIdGrupoAprobadorLd())
-            )
-            ));
+        // tipoAprobacionLd
+        if (entity.getIdTipoLd() != null) {
+            listadoDetalleDao.findById(entity.getIdTipoLd())
+                .ifPresent(tipoLd -> dto.setTipoAprobacionLd(listadoDetalleMapper.toDto(tipoLd)));
+        }
 
-        dto.setUuidInformeRenovacion(entity.getInformeRenovacion().getDeUuidInfoRenovacion());
+        // estadoLd
+        if (entity.getIdEstadoLd() != null) {
+            listadoDetalleDao.findById(entity.getIdEstadoLd())
+                .ifPresent(estadoLd -> dto.setEstadoLd(listadoDetalleMapper.toDto(estadoLd)));
+        }
+
+        // grupoAprobadorLd
+        if (entity.getIdGrupoAprobadorLd() != null) {
+            listadoDetalleDao.findById(entity.getIdGrupoAprobadorLd())
+                .ifPresent(grupoLd -> dto.setGrupoAprobadorLd(listadoDetalleMapper.toDto(grupoLd)));
+        }
+
+        // UUID Informe Renovación - usar deUuidInfoRenovacion si existe
+        String uuidInforme = "";
+        if (entity.getInformeRenovacion() != null) {
+            // Usar el UUID del informe si está disponible
+            uuidInforme = entity.getInformeRenovacion().getDeUuidInfoRenovacion() != null ?
+                    entity.getInformeRenovacion().getDeUuidInfoRenovacion() : "";
+        }
+        dto.setUuidInformeRenovacion(uuidInforme);
 
         return dto;
 

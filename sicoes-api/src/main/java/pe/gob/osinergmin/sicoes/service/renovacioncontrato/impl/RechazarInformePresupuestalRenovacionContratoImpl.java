@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprob
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.RequerimientoAprobacionMapper;
+import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
@@ -86,12 +88,16 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         );
         requerimientoAprobacion.setIdGrupoLd(estadoAprobacionGrupoLD.getIdListadoDetalle());
         
-        ListadoDetalle estadoLD = listadoDetalleService.obtenerListadoDetalle(
-            "ESTADO_APROBACION"    ,
-            "DESAPROBADO"
-        );
-        requerimientoAprobacion.setIdEstadoLd(estadoLD.getIdListadoDetalle());
+        // CORREGIDO: Usar ID_ESTADO_LD = 960 para rechazo según requerimiento
+        requerimientoAprobacion.setIdEstadoLd(960L);
+        
+        // AGREGADO: Establecer FE_RECHAZO con la fecha actual
+        requerimientoAprobacion.setFeRechazo(new Date());
+        
         requerimientoAprobacion.setIdReqInforme(requerimientoAprobacionDTO.getIdReqInforme());
+
+        // AGREGADO: Asignar datos de auditoría completos
+        AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacion, contexto);
 
         requerimientoAprobacion = requerimientoAprobacionDao.save(requerimientoAprobacion);
             

@@ -178,7 +178,11 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setFeRegistro(new Date());
 		ListadoDetalle estadoPreliminar = listadoDetalleService.obtenerListadoDetalle(
 				Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO, Constantes.LISTADO.ESTADO_REQ_RENOVACION.PRELIMINAR);
+		if (estadoPreliminar == null) {
+			throw new ValidacionException("No se encontró el estado PRELIMINAR en la configuración del sistema");
+		}
 		requerimientoRenovacion.setEstadoReqRenovacion(estadoPreliminar);
+		requerimientoRenovacion.setEsReqRenovacion(estadoPreliminar.getIdListadoDetalle());
 
 		List<Archivo> archivosRegistrados = obtenerArchivosRegistrados(new ArrayList<>(), sicoesSolicitud, contexto);
 		List<File> archivosAlfresco = new ArrayList<>();
@@ -191,11 +195,19 @@ public class RequerimientoRenovacionServiceImpl implements RequerimientoRenovaci
 		requerimientoRenovacion.setNoItem("Item"+sicoesSolicitud.getPropuesta().getProcesoItem().getNumeroItem());
 		requerimientoRenovacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
 		requerimientoRenovacion.setSolicitudPerfil(sicoesSolicitud);
+		requerimientoRenovacion.setIdSoliPerfCont(sicoesSolicitud.getIdSolicitud());
 		AuditoriaUtil.setAuditoriaRegistro(requerimientoRenovacion,contexto);
 		requerimientoRenovacion.setIdUsuario(contexto.getUsuario().getIdUsuario());
-        requerimientoRenovacionDao.save(requerimientoRenovacion);
-        historialRequerimientoRenovacionService.registrarHistorialRequerimientoRenovacion(requerimientoRenovacion,contexto);
-        return requerimientoRenovacion;
+		
+		try {
+			requerimientoRenovacion = requerimientoRenovacionDao.save(requerimientoRenovacion);
+			logger.info("Requerimiento renovación guardado con ID: {}", requerimientoRenovacion.getIdReqRenovacion());
+			historialRequerimientoRenovacionService.registrarHistorialRequerimientoRenovacion(requerimientoRenovacion,contexto);
+			return requerimientoRenovacion;
+		} catch (Exception e) {
+			logger.error("Error al guardar requerimiento de renovación en BD", e);
+			throw new ValidacionException("Error al guardar requerimiento de renovación: " + e.getMessage());
+		}
 	}
 
 	private String enviarArchivos(List<File> archivosAlfresco, SicoesSolicitud solicitud, Contexto contexto) throws Exception {

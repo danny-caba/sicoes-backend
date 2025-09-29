@@ -45,7 +45,8 @@ public class RenovacionRestController extends BaseRestController {
         try {
             return requerimientoRenovacionService.guardar(requerimientoRenovacion,getContexto());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            logger.error("Error al registrar requerimiento de renovación", e);
+            throw new RuntimeException("Error al registrar requerimiento: " + e.getMessage(), e);
         }
     }
 

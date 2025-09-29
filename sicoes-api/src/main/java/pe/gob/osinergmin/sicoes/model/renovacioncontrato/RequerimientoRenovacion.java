@@ -60,8 +60,11 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
 
 
+    @Column(name = "ES_REQ_RENOVACION", insertable = true, updatable = true)
+    private Long esReqRenovacion;
+    
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ES_REQ_RENOVACION" )
+    @JoinColumn(name = "ES_REQ_RENOVACION", insertable = false, updatable = false)
     private ListadoDetalle estadoReqRenovacion;
 
     @Column(name = "DE_OBSERVACION", length = 500)
@@ -187,6 +190,14 @@ public class RequerimientoRenovacion extends BaseModel implements Serializable {
 
     public void setEsRegistro(String esRegistro) {
         this.esRegistro = esRegistro;
+    }
+
+    public Long getEsReqRenovacion() {
+        return esReqRenovacion;
+    }
+
+    public void setEsReqRenovacion(Long esReqRenovacion) {
+        this.esReqRenovacion = esReqRenovacion;
     }
 
     @Override

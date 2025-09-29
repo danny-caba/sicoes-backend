@@ -206,6 +206,11 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionG2.setIdGrupoAprobadorLd(
                 datosService.obtenerIdLd("GRUPO_APROBACION", "GERENTE")
             );
+            
+            // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
+            if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
+                requerimientoAprobacionG2.setIdFirmadoLd(962L);
+            }
 
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG2);
             historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
@@ -260,6 +265,11 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             );
             requerimientoAprobacionG2.setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionG2.setDeObservacion(requestDTO.getObservacion());
+            
+            // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
+            if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
+                requerimientoAprobacionG2.setIdFirmadoLd(962L);
+            }
             
             // 3.5.3 Actualiza el campo "Estado Aprobación Informe" = Concluido
             ListadoDetalle concluidoEstadoAprobacionInforme = listadoDetalleService.obtenerListadoDetalle(
@@ -477,6 +487,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
         requerimiento.setUsuActualizacion(contexto.getUsuario().getIdUsuario().toString());
         requerimiento.setFecActualizacion(new Date());
     }
+
 
     /**
      * Obtiene el contrato de perfeccionamiento asociado a un informe de renovación

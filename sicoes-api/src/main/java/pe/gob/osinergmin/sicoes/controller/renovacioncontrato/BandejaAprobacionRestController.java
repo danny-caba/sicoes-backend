@@ -98,14 +98,14 @@ public class BandejaAprobacionRestController extends BaseRestController {
             @RequestParam(required = false) Long estadoAprobacionInforme,
             @RequestParam(required = false) Long idContratista,
             @RequestParam(required = false) String nombreContratista,
+            @RequestParam(required = false) Integer grupoUsuario,
             Pageable pageable) {
 
-        logger.info("get listarInformes: {} {} {} {}", numeroExpediente, estadoAprobacionInforme, idContratista, nombreContratista);
+        logger.info("get listarInformes: {} {} {} {} grupoUsuario: {}", numeroExpediente, estadoAprobacionInforme, idContratista, nombreContratista, grupoUsuario);
 
         Contexto contexto = getContexto();
         return bandejaAprobacionService.listaApobaciones(
-
-                numeroExpediente, estadoAprobacionInforme, idContratista, nombreContratista, contexto, pageable);
+                numeroExpediente, estadoAprobacionInforme, idContratista, nombreContratista, grupoUsuario, contexto, pageable);
     }
     
     @GetMapping("/tipo-aprobador")

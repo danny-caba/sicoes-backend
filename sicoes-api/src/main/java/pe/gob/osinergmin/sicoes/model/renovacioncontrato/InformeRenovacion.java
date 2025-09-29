@@ -87,6 +87,9 @@ public class InformeRenovacion extends BaseModel implements Serializable {
     @Column(name = "ES_VIGENTE", precision = 1, nullable = false)
     private Integer esVigente;
 
+    @Column(name = "ES_APROBACION_INFORME", insertable = true, updatable = true)
+    private Long esAprobacionInforme;
+    
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ES_APROBACION_INFORME", insertable = false, updatable = false)
     private ListadoDetalle estadoAprobacionInforme;
