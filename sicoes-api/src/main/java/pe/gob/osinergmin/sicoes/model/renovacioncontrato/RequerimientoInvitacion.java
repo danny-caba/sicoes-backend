@@ -49,11 +49,17 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     private PlazoConfirmacion plazoConfirmacion;
 
 
+    @Column(name = "ID_REQ_RENOVACION", precision = 38)
+    private Long idReqRenovacion;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_REQ_RENOVACION", insertable = false, updatable = false)
     @JsonIgnore
     private RequerimientoRenovacion requerimientoRenovacion;
 
+    @Column(name = "ID_ESTADO_LD", precision = 38)
+    private Long idEstadoLd;
+    
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_ESTADO_LD", insertable = false, updatable = false)
     private ListadoDetalle estadoInvitacion;
@@ -228,6 +234,22 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     public void setEstadoInvitacion(ListadoDetalle estadoInvitacion) {
         this.estadoInvitacion = estadoInvitacion;
+    }
+
+    public Long getIdReqRenovacion() {
+        return idReqRenovacion;
+    }
+
+    public void setIdReqRenovacion(Long idReqRenovacion) {
+        this.idReqRenovacion = idReqRenovacion;
+    }
+
+    public Long getIdEstadoLd() {
+        return idEstadoLd;
+    }
+
+    public void setIdEstadoLd(Long idEstadoLd) {
+        this.idEstadoLd = idEstadoLd;
     }
 
     @Override

@@ -11,6 +11,7 @@ import java.util.Date;
 public interface RequerimientoInvitacionService {
 
 	public RequerimientoInvitacion aceptar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto)throws Exception;
+	public RequerimientoInvitacion rechazar(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto)throws Exception;
 	public int cancelarCaducados(Date fecha, Contexto contexto)throws Exception;
 
 }

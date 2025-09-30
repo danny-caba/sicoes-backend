@@ -72,8 +72,6 @@ public class BandejaAprobacionImplService {
         
         // DEBUG: Información completa del usuario
         if (contexto.getUsuario() != null) {
-            logger.warn("Usuario nombre: {}", contexto.getUsuario().getNombre());
-            logger.warn("Usuario email: {}", contexto.getUsuario().getEmail());
             
             if (contexto.getUsuario().getRoles() != null) {
                 logger.warn("Roles del usuario:");

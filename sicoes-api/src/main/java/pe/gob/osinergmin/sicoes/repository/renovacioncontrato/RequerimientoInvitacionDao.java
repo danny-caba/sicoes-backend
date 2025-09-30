@@ -38,20 +38,6 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
            "LEFT JOIN r.estadoInvitacion e " +
            "WHERE r.flActivo = '1' " +
            "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
-           "AND (:tipoSector IS NULL OR UPPER(req.tiSector) LIKE UPPER(CONCAT('%', :tipoSector, '%'))) " +
-           "AND (:estadoInvitacion IS NULL OR e.idListadoDetalle = :estadoInvitacion) " +
-           "ORDER BY r.idReqInvitacion DESC")
-    Page<RequerimientoInvitacion> buscarInvitaciones(@Param("numeroExpediente") String numeroExpediente,
-                                                     @Param("tipoSector") String tipoSector,
-                                                     @Param("estadoInvitacion") Integer estadoInvitacion,
-                                                     Pageable pageable);
-
-    // Overloaded method to match service call with nombreItem parameter
-    @Query("SELECT r FROM RequerimientoInvitacion r " +
-           "LEFT JOIN r.requerimientoRenovacion req " +
-           "LEFT JOIN r.estadoInvitacion e " +
-           "WHERE r.flActivo = '1' " +
-           "AND (:numeroExpediente IS NULL OR UPPER(req.nuExpediente) LIKE UPPER(CONCAT('%', :numeroExpediente, '%'))) " +
            "AND (:nombreItem IS NULL OR UPPER(req.noItem) LIKE UPPER(CONCAT('%', :nombreItem, '%'))) " +
            "AND (:estadoInvitacion IS NULL OR e.idListadoDetalle = :estadoInvitacion) " +
            "ORDER BY r.idReqInvitacion DESC")
