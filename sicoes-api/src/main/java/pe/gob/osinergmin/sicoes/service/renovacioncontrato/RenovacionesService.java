@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
@@ -48,7 +49,7 @@ public interface RenovacionesService {
      * @param contexto Contexto del usuario
      * @return Página de invitaciones
      */
-    Page<InvitacionResponseDTO> listarInvitaciones(
+    Page<RequerimientoInvitacion> listarInvitaciones(
             String numeroExpediente,
             String nombreItem,
             Integer estadoInvitacion,

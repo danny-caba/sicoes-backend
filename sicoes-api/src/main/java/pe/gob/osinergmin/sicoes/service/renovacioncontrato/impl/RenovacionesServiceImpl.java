@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.model.Bitacora;
 import pe.gob.osinergmin.sicoes.model.Rol;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
@@ -28,11 +29,14 @@ import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoInvitacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
 import pe.gob.osinergmin.sicoes.service.BitacoraService;
+import pe.gob.osinergmin.sicoes.service.SupervisoraService;
 import pe.gob.osinergmin.sicoes.service.UsuarioService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RenovacionesService;
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.DateUtil;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 @Service
 @Transactional
@@ -54,6 +58,8 @@ public class RenovacionesServiceImpl implements RenovacionesService {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private SupervisoraService supervisoraService;
 
     @Override
     @Transactional(readOnly = true)
@@ -312,7 +318,7 @@ public class RenovacionesServiceImpl implements RenovacionesService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<InvitacionResponseDTO> listarInvitaciones(
+    public Page<RequerimientoInvitacion> listarInvitaciones(
             String numeroExpediente,
             String nombreItem,
             Integer estadoInvitacion,
@@ -320,50 +326,37 @@ public class RenovacionesServiceImpl implements RenovacionesService {
             String fechaHasta,
             Pageable pageable,
             Contexto contexto) {
-        
         logger.info("listarInvitaciones - Usuario: {}, Expediente: {}, Item: {}", 
                     contexto.getUsuario().getIdUsuario(), numeroExpediente, nombreItem);
-        
+
+        // 1. Validar y limpiar parámetros de entrada
+        String numeroExpedienteLimpio = limpiarParametro(numeroExpediente);
+        String nombreItemLimpio = limpiarParametro(nombreItem);
+
+        // 2. Validar permisos del usuario
+        if (!validarPermisosConsultaInvitaciones(contexto))
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ACCESO_NO_AUTORIZADO);
+
+        // 3. asignar valores a fechas en caso no sean nulas
+        Date fechaInicio = null;
+        Date fechaFin = null;
+        if (fechaDesde != null)
+            fechaInicio = DateUtil.getInitDay(fechaDesde);
+        if (fechaHasta != null)
+            fechaFin = DateUtil.getEndDay(fechaHasta);
+
+        // 4. Obtener invitaciones desde el DAO
         try {
-            // 1. Validar y limpiar parámetros de entrada
-            String numeroExpedienteLimpio = limpiarParametro(numeroExpediente);
-            String nombreItemLimpio = limpiarParametro(nombreItem);
-            
-            // 2. Validar permisos del usuario
-            if (!validarPermisosConsultaInvitaciones(contexto)) {
-                logger.warn("Usuario {} no tiene permisos para listar invitaciones", contexto.getUsuario().getIdUsuario());
-                return new PageImpl<>(new ArrayList<>(), pageable, 0);
-            }
-            
-            // 3. Obtener invitaciones desde el DAO
-            Page<RequerimientoInvitacion> invitacionesEntity;
-            
-            if (tieneParametrosFecha(fechaDesde, fechaHasta)) {
-                invitacionesEntity = buscarInvitacionesConFiltroFechas(
-                    numeroExpedienteLimpio, nombreItemLimpio, estadoInvitacion, 
-                    fechaDesde, fechaHasta, pageable, contexto);
-            } else {
-                invitacionesEntity = requerimientoInvitacionDao.buscarInvitaciones(
-                    numeroExpedienteLimpio, nombreItemLimpio, estadoInvitacion, pageable);
-            }
-            
-            // 4. Convertir entities a DTOs
-            List<InvitacionResponseDTO> invitacionesDTO = convertirAInvitacionResponseDTO(invitacionesEntity.getContent());
-            
-            // 5. Aplicar filtros de seguridad adicionales
-            List<InvitacionResponseDTO> invitacionesFiltradas = aplicarFiltrosSeguridadInvitaciones(invitacionesDTO, contexto);
-            
-            // 6. Registrar consulta en bitácora
             registrarConsultaInvitacionesBitacora(numeroExpedienteLimpio, nombreItemLimpio, contexto);
-            
-            logger.info("Búsqueda de invitaciones completada - Encontradas {} invitaciones para usuario {}", 
-                       invitacionesFiltradas.size(), contexto.getUsuario().getIdUsuario());
-            
-            return new PageImpl<>(invitacionesFiltradas, pageable, invitacionesEntity.getTotalElements());
-            
+            Supervisora supervisora = supervisoraService.obtenerSupervisoraXRUCVigente(contexto.getUsuario().getCodigoRuc());
+            Long idSupervisora = supervisora != null ? supervisora.getIdSupervisora() : null;
+
+            return requerimientoInvitacionDao.listarInvitaciones(
+                    numeroExpedienteLimpio, nombreItemLimpio, estadoInvitacion,
+                    fechaInicio, fechaFin, idSupervisora, pageable);
         } catch (Exception e) {
             logger.error("Error al listar invitaciones", e);
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
         }
     }
 
@@ -389,160 +382,6 @@ public class RenovacionesServiceImpl implements RenovacionesService {
         } catch (Exception e) {
             logger.warn("Error al validar permisos de consulta de invitaciones", e);
             return false;
-        }
-    }
-    
-    private Page<RequerimientoInvitacion> buscarInvitacionesConFiltroFechas(
-            String numeroExpediente, String nombreItem, Integer estadoInvitacion,
-            String fechaDesde, String fechaHasta, Pageable pageable, Contexto contexto) {
-        
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-            Date fechaDesdeDate = null;
-            Date fechaHastaDate = null;
-            
-            if (fechaDesde != null && !fechaDesde.trim().isEmpty()) {
-                fechaDesdeDate = dateFormat.parse(fechaDesde);
-            }
-            
-            if (fechaHasta != null && !fechaHasta.trim().isEmpty()) {
-                fechaHastaDate = dateFormat.parse(fechaHasta);
-            }
-            
-            if (fechaDesdeDate != null && fechaHastaDate != null) {
-                List<RequerimientoInvitacion> invitacionesPorFecha = 
-                    requerimientoInvitacionDao.buscarPorRangoFechas(fechaDesde, fechaHasta);
-                
-                List<RequerimientoInvitacion> invitacionesFiltradas = aplicarFiltrosAdicionalesInvitaciones(
-                    invitacionesPorFecha, numeroExpediente, nombreItem, estadoInvitacion);
-                
-                int inicio = (int) pageable.getOffset();
-                int fin = Math.min(inicio + pageable.getPageSize(), invitacionesFiltradas.size());
-                List<RequerimientoInvitacion> paginaActual = invitacionesFiltradas.subList(inicio, fin);
-                
-                return new PageImpl<>(paginaActual, pageable, invitacionesFiltradas.size());
-            } else {
-                return requerimientoInvitacionDao.buscarInvitaciones(
-                    numeroExpediente, nombreItem, estadoInvitacion, pageable);
-            }
-            
-        } catch (ParseException e) {
-            logger.error("Error al parsear fechas para invitaciones - fechaDesde: {}, fechaHasta: {}", fechaDesde, fechaHasta, e);
-            return requerimientoInvitacionDao.buscarInvitaciones(
-                numeroExpediente, nombreItem, estadoInvitacion, pageable);
-        }
-    }
-    
-    private List<RequerimientoInvitacion> aplicarFiltrosAdicionalesInvitaciones(
-            List<RequerimientoInvitacion> invitaciones, String numeroExpediente,
-            String nombreItem, Integer estadoInvitacion) {
-        
-        List<RequerimientoInvitacion> filtradas = new ArrayList<>();
-        
-        for (RequerimientoInvitacion invitacion : invitaciones) {
-            boolean cumpleFiltros = true;
-            
-            if (numeroExpediente != null && invitacion.getRequerimientoRenovacion() != null &&
-                !invitacion.getRequerimientoRenovacion().getNuExpediente().toLowerCase()
-                    .contains(numeroExpediente.toLowerCase())) {
-                cumpleFiltros = false;
-            }
-            
-            if (nombreItem != null && invitacion.getRequerimientoRenovacion() != null &&
-                !invitacion.getRequerimientoRenovacion().getNoItem().toLowerCase()
-                    .contains(nombreItem.toLowerCase())) {
-                cumpleFiltros = false;
-            }
-            
-            if (estadoInvitacion != null && invitacion.getEstadoInvitacion() != null &&
-                !estadoInvitacion.equals(invitacion.getEstadoInvitacion().getIdListadoDetalle().intValue())) {
-                cumpleFiltros = false;
-            }
-            
-            if (cumpleFiltros) {
-                filtradas.add(invitacion);
-            }
-        }
-        
-        return filtradas;
-    }
-    
-    private List<InvitacionResponseDTO> convertirAInvitacionResponseDTO(List<RequerimientoInvitacion> invitaciones) {
-        List<InvitacionResponseDTO> invitacionesDTO = new ArrayList<>();
-
-        for (RequerimientoInvitacion invitacion : invitaciones) {
-            InvitacionResponseDTO dto = new InvitacionResponseDTO();
-            
-            dto.setIdRequerimientoInvitacion(invitacion.getIdReqInvitacion() != null ? invitacion.getIdReqInvitacion().intValue() : null);
-            
-            if (invitacion.getRequerimientoRenovacion() != null) {
-                dto.setNumeroExpediente(invitacion.getRequerimientoRenovacion().getNuExpediente());
-                dto.setNombreItem(invitacion.getRequerimientoRenovacion().getNoItem());
-            }
-            
-            // Información de supervisora se debe obtener por ID
-            if (invitacion.getIdSupervisora() != null) {
-                // TODO: Implementar carga de supervisora por ID cuando sea necesario
-                dto.setIdSupervisora(invitacion.getIdSupervisora());
-            }
-            
-            if (invitacion.getEstadoInvitacion() != null) {
-                dto.setEstadoInvitacion(invitacion.getEstadoInvitacion().getIdListadoDetalle().intValue());
-                dto.setEstado(invitacion.getEstadoInvitacion());
-                dto.setDescripcionEstado(invitacion.getEstadoInvitacion().getDescripcion());
-            }
-            
-            dto.setFechaCreacion(invitacion.getFecCreacion() != null ? 
-                invitacion.getFecCreacion().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
-            if (invitacion.getFeCaducidad() != null) {
-                dto.setFechaVencimiento(
-                        Instant.ofEpochMilli(invitacion.getFeCaducidad().getTime())
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDateTime()
-                );
-            }
-            dto.setFeInvitacion(invitacion.getFeInvitacion());
-            dto.setFeAceptacion(invitacion.getFeAceptacion());
-
-            // Observaciones no están en el modelo base
-            // dto.setObservaciones(invitacion.getDeObservaciones());
-            
-            // Usuario creación se obtiene por ID desde BaseModel
-            if (invitacion.getUsuCreacion() != null) {
-                dto.setNombreUsuarioCreacion(invitacion.getUsuCreacion());
-            }
-            if(invitacion.getRequerimientoRenovacion()!=null){
-                dto.setSector(invitacion.getRequerimientoRenovacion().getTiSector());
-                dto.setSubSector(invitacion.getRequerimientoRenovacion().getTiSubSector());
-            }
-            invitacionesDTO.add(dto);
-        }
-        
-        return invitacionesDTO;
-    }
-    
-    private List<InvitacionResponseDTO> aplicarFiltrosSeguridadInvitaciones(
-            List<InvitacionResponseDTO> invitaciones, Contexto contexto) {
-        
-        try {
-            String tipoUsuario = obtenerTipoUsuario(contexto);
-            
-            if ("EXTERNO".equals(tipoUsuario)) {
-                // Usuario externo solo ve invitaciones dirigidas a él
-                return invitaciones.stream()
-                    .filter(inv -> {
-                        // Aquí deberías implementar la lógica para verificar si la invitación
-                        // está dirigida al usuario actual (por ejemplo, por RUC o ID de supervisora)
-                        return true; // Placeholder - implementar lógica específica
-                    })
-                    .collect(java.util.stream.Collectors.toList());
-            }
-            
-            return invitaciones;
-            
-        } catch (Exception e) {
-            logger.warn("Error al aplicar filtros de seguridad en invitaciones", e);
-            return invitaciones;
         }
     }
     

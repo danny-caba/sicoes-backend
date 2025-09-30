@@ -1,4 +1,5 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
+import org.springframework.transaction.annotation.Transactional;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.*;
 
@@ -6,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.InformeRenovacionContratoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
@@ -75,6 +77,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
     private HistorialAprobacionRenovacionService historialAprobacionRenovacionService;
 
     @Override
+    @Transactional
     public AprobacionInformeRenovacionCreateResponseDTO aprobarInformeRenovacion(
             AprobacionInformeRenovacionCreateRequestDTO requestDTO,
             Contexto contexto) throws DataNotFoundException {
@@ -85,6 +88,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             try {
                 // 1) Obtener requerimiento
                 RequerimientoAprobacion entity = requerimientoAprobacionDao.obtenerPorId(idReqApr);
+                // Guardamos el historico previo a la aprobacion
+                HistorialEstadoAprobacionCampo historial = historialAprobacionRenovacionService.registrarHistorialPreAprobacion(entity, contexto);
                 ListadoDetalle grupoAprobadorLd = listadoDetalleService.obtener(
                         entity.getIdGrupoAprobadorLd(),contexto);
                 String codigoGrupo = grupoAprobadorLd.getCodigo();
@@ -121,6 +126,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 }
 
                 RequerimientoAprobacion entityBefore = requerimientoAprobacionDao.obtenerPorId(idReqApr);
+                historialAprobacionRenovacionService.registrarHistorialPostAprobacion(historial, entityBefore, contexto);
                 // Mapear requerimiento a DTO usando el mapper
                 AprobacionCreateResponseDTO aprobacionDTO = aprobacionCreateMapper.toDto(entityBefore);
                 aprobaciones.add(aprobacionDTO);
@@ -209,7 +215,6 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG2);
             historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
-
             // 3.5.4 Realiza notificación
             Usuario usuarioG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
