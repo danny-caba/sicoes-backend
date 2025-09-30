@@ -1069,8 +1069,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeInvitacionRenovacion(RequerimientoInvitacion invitacion, Contexto contexto) {
 		Notificacion notificacion = new Notificacion();
 		notificacion.setAsunto("INVITACIÓN PARA RENOVACIÓN");
-		notificacion.setCorreo("tripalovski5@gmail.com");
-//		notificacion.setCorreo(invitacion.getSupervisora().getCorreo());
+		notificacion.setCorreo(invitacion.getSupervisora().getCorreo());
 		final Context ctx = new Context();
 		ctx.setVariable("expediente", invitacion.getRequerimientoRenovacion().getNuExpediente());
 		ctx.setVariable("supervisor", invitacion.getSupervisora().getNombreRazonSocial());
