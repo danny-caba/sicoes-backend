@@ -1,17 +1,25 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionRequestDTO;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.PlazoConfirmacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoInvitacionDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoRenovacionDao;
+import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
+import pe.gob.osinergmin.sicoes.service.NotificacionService;
+import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
+import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.SicoesSolicitud;
@@ -46,19 +54,20 @@ public class InvitacionImplService implements InvitacionService {
     @Autowired
     private ListadoDetalleDao listadoDetalleDao;
 
-    public InvitacionCreateResponseDTO registrarInvitacion(InvitacionCreateRequestDTO requestDTO) {
-        if (requestDTO.getIdReqRenovacion() == null) {
-            throw new DataNotFoundException("El campo idReqRenovacion es obligatorio");
-        }
+    @Autowired
+    private NotificacionService notificacionService;
 
+    @Transactional
+    public RequerimientoInvitacion registrarInvitacion(InvitacionCreateRequestDTO requestDTO, Contexto contexto) {
+        if (requestDTO.getIdReqRenovacion() == null)
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.REQUERIMIENTO_NO_ENVIADO);
 
-        if (requestDTO.getUsuario() == null || requestDTO.getUsuario().trim().isEmpty()) {
-            throw new DataNotFoundException("El campo usuario es obligatorio");
-        }
+        RequerimientoRenovacion requerimientoRenovacionDB = requerimientoRenovacionDao.obtenerPorId(requestDTO.getIdReqRenovacion());
+        SicoesSolicitud solicitud = requerimientoRenovacionDB.getSolicitudPerfil();
+        Supervisora supervisora = solicitud.getSupervisora();
 
-        if (requestDTO.getIp() == null || requestDTO.getIp().trim().isEmpty()) {
-            throw new DataNotFoundException("El campo ip es obligatorio");
-        }
+        if (supervisora == null)
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.SUPERVISORA_NO_ENCONTRADA);
 
         List<PlazoConfirmacion> plazosConfirmacion = plazoConfirmacionDao.buscarPorEstado(EstadoRegistro.ACTIVO.getCodigo());
         if (plazosConfirmacion == null || plazosConfirmacion.isEmpty()) {
@@ -67,65 +76,55 @@ public class InvitacionImplService implements InvitacionService {
 
         PlazoConfirmacion plazoConfirmacion = plazosConfirmacion.get(0);
 
-        RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao.obtenerPorId(requestDTO.getIdReqRenovacion());
-        if (requerimientoRenovacion == null) {
-            throw new DataNotFoundException("No se encontró el requerimiento de renovación con ID: " + requestDTO.getIdReqRenovacion());
-        }
-
-        SicoesSolicitud solicitud = requerimientoRenovacion.getSolicitudPerfil();
-        if (solicitud == null) {
-            throw new DataNotFoundException("No se encontró la solicitud asociada al requerimiento");
-        }
-
-        Supervisora supervisora = solicitud.getSupervisora();
-        if (supervisora == null) {
-            throw new DataNotFoundException("No se encontró la supervisora asociada a la solicitud");
-        }
-
         Date fechaInvitacion = new Date();
-        
+
         String tipoPlazo;
         if (TipoDia.CALENDARIO.getCodigo().equals(plazoConfirmacion.getInTipoDia().toString())) {
-            tipoPlazo = "C";
+            tipoPlazo = Constantes.DIAS_CALENDARIO;
         } else {
             tipoPlazo = Constantes.DIAS_HABILES;
         }
 
         Date fechaCaducidad = sigedApiConsumer.calcularFechaFin(fechaInvitacion, plazoConfirmacion.getNuDias().longValue(), tipoPlazo);
 
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fechaCaducidad);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        fechaCaducidad = calendar.getTime();
+
+        ListadoDetalle estadoInvitado = listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_INVITACION.INVITADO);
+
+        RequerimientoInvitacion invitacion = new RequerimientoInvitacion();
+        invitacion.setRequerimientoRenovacion(requerimientoRenovacionDB);
+        invitacion.setSupervisora(supervisora);
+        invitacion.setFeInvitacion(new Date());
+        invitacion.setFeCaducidad(fechaCaducidad);
+        invitacion.setEstadoInvitacion(estadoInvitado);
+        invitacion.setFlActivo(EstadoRegistro.ACTIVO.getCodigo());
+        invitacion.setCoUuid(UUID.randomUUID().toString());
+        invitacion.setPlazoConfirmacion(plazoConfirmacion);
+
+        AuditoriaUtil.setAuditoriaRegistro(invitacion, contexto);
+        notificacionService.enviarMensajeInvitacionRenovacion(invitacion, contexto);
+        return requerimientoInvitacionDao.save(invitacion);
+    }
+
+    @Override
+    public void eliminarInvitacion(InvitacionRequestDTO requestDTO, Contexto contexto) {
+        RequerimientoInvitacion invitacionDB = requerimientoInvitacionDao.
+                obtenerPorUuid(requestDTO.getUuid()).orElseThrow(() ->
+                        new ValidacionException(Constantes.CODIGO_MENSAJE.INVITACION_NO_ENCONTRADA));
+
         ListadoDetalle estadoInvitacion = listadoDetalleDao.obtenerListadoDetalle(
-            Constantes.LISTADO.ESTADO_INVITACION.CODIGO, 
-            EstadoInvitacion.INVITACION.getCodigo()
-        );
-
-        RequerimientoInvitacion nuevaInvitacion = new RequerimientoInvitacion();
-        nuevaInvitacion.setRequerimientoRenovacion(requerimientoRenovacion);
-        nuevaInvitacion.setIdSupervisora(supervisora.getIdSupervisora());
-        nuevaInvitacion.setPlazoConfirmacion(plazoConfirmacion);
-        nuevaInvitacion.setFeInvitacion(fechaInvitacion);
-        nuevaInvitacion.setFeCaducidad(fechaCaducidad);
-        nuevaInvitacion.setEstadoInvitacion(estadoInvitacion);
-        nuevaInvitacion.setFlActivo(EstadoRegistro.ACTIVO.getCodigo());
-        nuevaInvitacion.setUsuCreacion(requestDTO.getUsuario());
-        nuevaInvitacion.setFecCreacion(fechaInvitacion);
-        nuevaInvitacion.setIpCreacion(requestDTO.getIp());
-
-        RequerimientoInvitacion invitacionGuardada = requerimientoInvitacionDao.save(nuevaInvitacion);
-
-        InvitacionCreateResponseDTO response = new InvitacionCreateResponseDTO();
-        response.setIdReqInvitacion(invitacionGuardada.getIdReqInvitacion());
-        response.setRequerimientoRenovacion(requerimientoRenovacion);
-        response.setPlazoConfirmacion(invitacionGuardada.getPlazoConfirmacion());
-        response.setEstadoInvitacion(invitacionGuardada.getEstadoInvitacion());
-        response.setIdSupervisora(invitacionGuardada.getIdSupervisora());
-        response.setFeInvitacion(invitacionGuardada.getFeInvitacion());
-        response.setFeCaducidad(invitacionGuardada.getFeCaducidad());
-        response.setFeAceptacion(invitacionGuardada.getFeAceptacion());
-        response.setFeRechazo(invitacionGuardada.getFeRechazo());
-        response.setFlActivo(invitacionGuardada.getFlActivo());
-        response.setCoUuid(invitacionGuardada.getCoUuid());
-        response.setFeCancelado(invitacionGuardada.getFeCancelado());
-
-        return response;
+                Constantes.LISTADO.ESTADO_INVITACION.CODIGO,
+                Constantes.LISTADO.ESTADO_INVITACION.ELIMINADO);
+        invitacionDB.setEstadoInvitacion(estadoInvitacion);
+        invitacionDB.setFeCancelado(new Date());
+        invitacionDB.setFlActivo(EstadoRegistro.INACTIVO.getCodigo());
+        AuditoriaUtil.setAuditoriaRegistro(invitacionDB, contexto);
+        requerimientoInvitacionDao.save(invitacionDB);
     }
 }

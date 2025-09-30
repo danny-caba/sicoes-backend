@@ -13,6 +13,7 @@ import pe.gob.osinergmin.sicoes.service.renovacioncontrato.HistorialAprobacionRe
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 /**
  * Implementación del servicio para el registro del historial de aprobación de renovación de contratos.
@@ -67,6 +68,42 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
             logger.error("Error al registrar historial de aprobación para RequerimientoAprobacion ID: {}", 
                         requerimientoAprobacion != null ? requerimientoAprobacion.getIdReqAprobacion() : "null", e);
             throw new RuntimeException("Error al registrar historial de aprobación: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public HistorialEstadoAprobacionCampo registrarHistorialPreAprobacion(RequerimientoAprobacion aprobacion, Contexto contexto) {
+        try {
+            HistorialEstadoAprobacionCampo historial = new HistorialEstadoAprobacionCampo();
+            historial.setIdReqAprobacion(aprobacion.getIdReqAprobacion());
+            historial.setIdUsuario(contexto.getUsuario().getIdUsuario());
+            historial.setDeEstadoAnteriorLd(aprobacion.getIdEstadoLd());
+            historial.setEsRegistro(Constantes.ESTADO.ACTIVO);
+            historial.setIdGrupoLd(aprobacion.getIdGrupoLd());
+            historial.setIdGrupoAprobadorLd(aprobacion.getIdGrupoAprobadorLd());
+
+            return historialEstadoAprobacionCampoDao.save(historial);
+        } catch (Exception e) {
+            logger.error("Error al registrar historial de pre-aprobación para RequerimientoAprobacion ID: {}",
+                        aprobacion != null ? aprobacion.getIdReqAprobacion() : "null", e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
+        }
+    }
+
+    @Override
+    public void registrarHistorialPostAprobacion(HistorialEstadoAprobacionCampo historial, RequerimientoAprobacion aprobacion, Contexto contexto) {
+        try {
+            HistorialEstadoAprobacionCampo historialDB = historialEstadoAprobacionCampoDao
+                    .findById(historial.getIdHistorialEstadoCampo()).orElseThrow(
+                            () -> new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO)
+                    );
+            historialDB.setDeEstadoNuevoLd(aprobacion.getIdEstadoLd());
+            AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
+            historialEstadoAprobacionCampoDao.save(historialDB);
+        } catch (Exception e) {
+            logger.error("Error al registrar historial de pre-aprobación para RequerimientoAprobacion ID: {}",
+                    aprobacion != null ? aprobacion.getIdReqAprobacion() : "null", e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
         }
     }
 

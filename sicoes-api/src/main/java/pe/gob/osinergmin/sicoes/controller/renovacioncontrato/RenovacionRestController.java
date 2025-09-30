@@ -9,9 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionCreateRequestDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.RequerimientoRenovacionListDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
+import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InvitacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RenovacionesService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoRenovacionService;
 import pe.gob.osinergmin.sicoes.util.Raml;
@@ -24,8 +28,12 @@ public class RenovacionRestController extends BaseRestController {
 	
 	@Autowired
     RequerimientoRenovacionService requerimientoRenovacionService;
+
     @Autowired
     private RenovacionesService renovacionesService;
+
+    @Autowired
+    private InvitacionService invitacionService;
 
     @GetMapping("/requerimientos")
     public Page<RequerimientoRenovacionListDTO> buscar(
@@ -58,8 +66,8 @@ public class RenovacionRestController extends BaseRestController {
     }
 
     @GetMapping("/invitaciones")
-    //@Raml("renovacioncontrato.invitaciones.listar.properties")
-    public ResponseEntity<Page<InvitacionResponseDTO>> listarInvitaciones(
+    @Raml("renovacioncontrato.invitaciones.listar.properties")
+    public Page<RequerimientoInvitacion> listarInvitaciones(
             @RequestParam(required = false) String numeroExpediente,
             @RequestParam(required = false) String nombreItem,
             @RequestParam(required = false) Integer estadoInvitacion,
@@ -67,19 +75,25 @@ public class RenovacionRestController extends BaseRestController {
             @RequestParam(required = false) String fechaHasta,
             Pageable pageable) {
 
-        logger.info("listarInvitaciones - Evaluar Invitación - Usuario: {}",
+        logger.info("listarInvitaciones...",
                 getContexto().getUsuario().getIdUsuario());
 
-        try {
-            Page<InvitacionResponseDTO> invitaciones = renovacionesService.listarInvitaciones(
+        return renovacionesService.listarInvitaciones(
                     numeroExpediente, nombreItem, estadoInvitacion,
                     fechaDesde, fechaHasta, pageable, getContexto());
+    }
 
-            return new ResponseEntity<>(invitaciones, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error("Error al listar invitaciones", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @PostMapping("/invitaciones")
+    @Raml("renovacioncontrato.invitacion.obtener.properties")
+    public RequerimientoInvitacion registrarInvitacion(@RequestBody InvitacionCreateRequestDTO request) {
+        logger.info("registrarInvitacion - Request: {}", request);
+        return invitacionService.registrarInvitacion(request, getContexto());
+    }
+
+    @PostMapping("/invitaciones/eliminar")
+    public void eliminarInvitacion(@RequestBody InvitacionRequestDTO request) {
+        logger.info("eliminarInvitacion {}", request);
+        invitacionService.eliminarInvitacion(request, getContexto());
     }
 
 }

@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionCreateRequestDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionCreateResponseDTO;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InvitacionService;
+import pe.gob.osinergmin.sicoes.util.Raml;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.util.model.response.ApiResponse;
 import pe.gob.osinergmin.sicoes.util.renovacioncontrato.ResponseBuilder;
@@ -29,17 +31,9 @@ public class InvitacionRestController extends BaseRestController {
     private InvitacionService invitacionService;
 
     @PostMapping("/registrar")
-    public ResponseEntity<ApiResponse> registrarInvitacion(@RequestBody InvitacionCreateRequestDTO request) {
+    @Raml("renovacioncontrato.invitacion.obtener.properties")
+    public RequerimientoInvitacion registrarInvitacion(@RequestBody InvitacionCreateRequestDTO request) {
         logger.info("registrarInvitacion - Request: {}", request);
-        ApiResponse apiResponse = new ApiResponse();
-
-        try {
-            InvitacionCreateResponseDTO response = invitacionService.registrarInvitacion(request);
-            return ResponseBuilder.buildResponse(apiResponse, "SUCCESS", 201, "Se encontro registro la Invitacion", HttpStatus.CREATED, Arrays.asList(Collections.singletonMap("invitacion", response)));
-        } catch (DataNotFoundException ex) {
-            return ResponseBuilder.buildErrorResponse(apiResponse, "NOT_FOUND", 404, ex.getMessage(), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return ResponseBuilder.buildErrorResponse(apiResponse, "ERROR", 508, "Service Unavailable:" + e.getMessage() + " - ", HttpStatus.OK);
-        }
+            return invitacionService.registrarInvitacion(request, getContexto());
     }
 }
