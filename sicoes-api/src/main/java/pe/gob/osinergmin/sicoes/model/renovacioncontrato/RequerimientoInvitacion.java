@@ -17,10 +17,12 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import pe.gob.osinergmin.sicoes.model.BaseModel;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Supervisora;
 
 /**
  * Entidad para la tabla SICOES_TC_REQ_INVITACION
@@ -48,28 +50,30 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_PLAZO_CONFIRMACION")
     private PlazoConfirmacion plazoConfirmacion;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_REQ_RENOVACION", insertable = false, updatable = false)
-    @JsonIgnore
+    @JoinColumn(name = "ID_REQ_RENOVACION")
     private RequerimientoRenovacion requerimientoRenovacion;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_ESTADO_LD", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ESTADO_LD")
     private ListadoDetalle estadoInvitacion;
 
-    @Column(name = "ID_SUPERVISORA", precision = 38)
-    private Long idSupervisora;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_SUPERVISORA")
+    private Supervisora supervisora;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_INVITACION")
     private Date feInvitacion;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_CADUCIDAD")
     private Date feCaducidad;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_ACEPTACION")
     private Date feAceptacion;
 
@@ -99,9 +103,9 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.flActivo = "1";
     }
 
-    public RequerimientoInvitacion(Long idRequerimiento, Long idSupervisora, String flActivo) {
+    public RequerimientoInvitacion(Long idRequerimiento, Supervisora supervisora, String flActivo) {
         this.idRequerimiento = idRequerimiento;
-        this.idSupervisora = idSupervisora;
+        this.supervisora = supervisora;
         this.flActivo = flActivo != null ? flActivo : "1";
     }
 
@@ -130,16 +134,6 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.notificacion = notificacion;
     }
 
-
-
-    public PlazoConfirmacion getPlazoConfirmacion() {
-        return plazoConfirmacion;
-    }
-
-    public void setPlazoConfirmacion(PlazoConfirmacion plazoConfirmacion) {
-        this.plazoConfirmacion = plazoConfirmacion;
-    }
-
     public RequerimientoRenovacion getRequerimientoRenovacion() {
         return requerimientoRenovacion;
     }
@@ -148,14 +142,20 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.requerimientoRenovacion = requerimientoRenovacion;
     }
 
-
-
-    public Long getIdSupervisora() {
-        return idSupervisora;
+    public Supervisora getSupervisora() {
+        return supervisora;
     }
 
-    public void setIdSupervisora(Long idSupervisora) {
-        this.idSupervisora = idSupervisora;
+    public void setSupervisora(Supervisora supervisora) {
+        this.supervisora = supervisora;
+    }
+
+    public PlazoConfirmacion getPlazoConfirmacion() {
+        return plazoConfirmacion;
+    }
+
+    public void setPlazoConfirmacion(PlazoConfirmacion plazoConfirmacion) {
+        this.plazoConfirmacion = plazoConfirmacion;
     }
 
     public Date getFeInvitacion() {
@@ -235,7 +235,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         return "RequerimientoInvitacion [idReqInvitacion=" + idReqInvitacion 
                 + ", idRequerimiento=" + idRequerimiento
 
-                + ", idSupervisora=" + idSupervisora 
+                + ", supervisora=" + supervisora
                 + ", feInvitacion=" + feInvitacion 
                 + ", feCaducidad=" + feCaducidad 
                 + ", feAceptacion=" + feAceptacion 

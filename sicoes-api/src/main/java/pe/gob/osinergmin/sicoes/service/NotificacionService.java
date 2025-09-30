@@ -51,4 +51,5 @@ public interface NotificacionService extends BaseService<Notificacion, Long> {
 
 	public void enviarMensajeRequerimientoInvitacionGPPM(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
 	public void enviarMensajeRequerimientoInvitacionGSE(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto);
+	void enviarMensajeInvitacionRenovacion(RequerimientoInvitacion invitacion, Contexto contexto);
 }

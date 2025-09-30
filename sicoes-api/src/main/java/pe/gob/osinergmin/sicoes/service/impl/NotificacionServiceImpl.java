@@ -1035,7 +1035,7 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeRequerimientoInvitacionGPPM(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
 		requerimientoInvitacion= requerimientoInvitacionDao.findByIdReqInvitacion(requerimientoInvitacion.getIdReqInvitacion()).orElseThrow(()->new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO));
 		Notificacion notificacion = new Notificacion();
-		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getIdSupervisora());
+		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora());
 		notificacion.setCorreo(supervisora.getCorreo());
 		notificacion.setAsunto("EVALUAR PRESUPUESTO");
 		final Context ctx = new Context();
@@ -1052,12 +1052,33 @@ public class NotificacionServiceImpl implements NotificacionService{
 	public void enviarMensajeRequerimientoInvitacionGSE(RequerimientoInvitacion requerimientoInvitacion, Contexto contexto) {
 		requerimientoInvitacion= requerimientoInvitacionDao.findByIdReqInvitacion(requerimientoInvitacion.getIdReqInvitacion()).orElseThrow(()->new ValidacionException(Constantes.CODIGO_MENSAJE.ARCHIVO_NO_ENCONTRADO));
 		Notificacion notificacion = new Notificacion();
-		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getIdSupervisora());
+		Supervisora supervisora = supervisoraDao.obtener(requerimientoInvitacion.getSupervisora().getIdSupervisora());
 		notificacion.setCorreo(supervisora.getCorreo());
 		notificacion.setAsunto("INFORME POR EVALUAR");
 		final Context ctx = new Context();
 		ctx.setVariable("nroExpediente",requerimientoInvitacion.getRequerimientoRenovacion().getNuExpediente());
 		String htmlContent = templateEngine.process("27-requerimiento-renovacion-gse.html", ctx);
+		notificacion.setMensaje(htmlContent);
+		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
+		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
+		notificacion.setEstado(estadoPendiente);
+		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarMensajeInvitacionRenovacion(RequerimientoInvitacion invitacion, Contexto contexto) {
+		Notificacion notificacion = new Notificacion();
+		notificacion.setAsunto("INVITACIÓN PARA RENOVACIÓN");
+		notificacion.setCorreo("tripalovski5@gmail.com");
+//		notificacion.setCorreo(invitacion.getSupervisora().getCorreo());
+		final Context ctx = new Context();
+		ctx.setVariable("expediente", invitacion.getRequerimientoRenovacion().getNuExpediente());
+		ctx.setVariable("supervisor", invitacion.getSupervisora().getNombreRazonSocial());
+		ctx.setVariable("sector", invitacion.getRequerimientoRenovacion().getTiSector());
+		ctx.setVariable("subSector", invitacion.getRequerimientoRenovacion().getTiSubSector());
+		ctx.setVariable("fechaInvitacion", DateUtil.getDate(invitacion.getFeInvitacion(), "dd/MM/yyyy HH:mm:ss"));
+		ctx.setVariable("fechaCaducidad", DateUtil.getDate(invitacion.getFeCaducidad(), "dd/MM/yyyy HH:mm:ss"));
+		String htmlContent = templateEngine.process("28-invitacion-renovacion.html", ctx);
 		notificacion.setMensaje(htmlContent);
 		AuditoriaUtil.setAuditoriaRegistro(notificacion,contexto);
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);

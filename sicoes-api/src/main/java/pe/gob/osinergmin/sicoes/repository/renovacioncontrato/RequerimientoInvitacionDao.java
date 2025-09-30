@@ -30,7 +30,7 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
     @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.idRequerimiento = :idRequerimiento AND r.flActivo = '1'")
     List<RequerimientoInvitacion> listarPorRequerimiento(@Param("idRequerimiento") Long idRequerimiento);
 
-    @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.idSupervisora = :idSupervisora AND r.flActivo = '1'")
+    @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.supervisora.idSupervisora = :idSupervisora AND r.flActivo = '1'")
     List<RequerimientoInvitacion> listarPorSupervisora(@Param("idSupervisora") Long idSupervisora);
 
     @Query("SELECT r FROM RequerimientoInvitacion r " +
@@ -76,5 +76,38 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
                 "AND ri.flActivo = '1'")
     List<RequerimientoInvitacion> findInvitacionesCaducadas(@Param("fechaReferencia") Date fechaReferencia,
                 @Param("estadoInvitado") String estadoInvitado);
+
+    @Query(value="select distinct ri from RequerimientoInvitacion ri "
+            + "left join fetch ri.requerimientoRenovacion rr "
+            + "left join fetch ri.estadoInvitacion e "
+            + "where (:numeroExpediente is null or UPPER(rr.nuExpediente) like UPPER(:numeroExpediente)) "
+            + "and (:nombreItem is null or UPPER(rr.noItem) like UPPER(:nombreItem)) "
+            + "and (:estadoInvitacion is null or e.idListadoDetalle = :estadoInvitacion) "
+            + "and (:fechaInicio is null or trunc(ri.feInvitacion)>=:fechaInicio) "
+            + "and (:fechaFin is null or trunc(ri.feInvitacion)<=:fechaFin) "
+            + "and (:idSupervisora is null or ri.supervisora.idSupervisora = :idSupervisora) "
+            + "order by ri.fecCreacion desc ",
+            countQuery ="select count(distinct ri) from RequerimientoInvitacion ri "
+                    + "left join ri.requerimientoRenovacion rr "
+                    + "left join ri.estadoInvitacion e "
+                    + "where (:numeroExpediente is null or UPPER(rr.nuExpediente) like UPPER(:numeroExpediente)) "
+                    + "and (:nombreItem is null or UPPER(rr.noItem) like UPPER(:nombreItem)) "
+                    + "and (:estadoInvitacion is null or e.idListadoDetalle = :estadoInvitacion) "
+                    + "and (:fechaInicio is null or trunc(ri.feInvitacion)>=:fechaInicio) "
+                    + "and (:fechaFin is null or trunc(ri.feInvitacion)<=:fechaFin) "
+                    + "and (:idSupervisora is null or ri.supervisora.idSupervisora = :idSupervisora) "
+                    + "order by ri.fecCreacion desc ")
+    Page<RequerimientoInvitacion> listarInvitaciones(
+            String numeroExpediente,
+            String nombreItem,
+            Integer estadoInvitacion,
+            Date fechaInicio,
+            Date fechaFin,
+            Long idSupervisora,
+            Pageable pageable
+    );
+
+    @Query("SELECT r FROM RequerimientoInvitacion r WHERE r.coUuid = :coUuid AND r.flActivo = '1'")
+    Optional<RequerimientoInvitacion> obtenerPorUuid(String coUuid);
 
 }

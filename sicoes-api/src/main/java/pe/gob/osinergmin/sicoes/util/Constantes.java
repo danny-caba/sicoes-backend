@@ -38,6 +38,7 @@ public class Constantes {
 	public static final String USUARIO_ADMIN="SICOES";
 	public static final String CORREO_ADMIN="SICOES";
 	public static final String DIAS_HABILES = "H";
+	public static final String DIAS_CALENDARIO = "C";
 	
 	public static final class TIPO_COMPONENTE {
 		public static final String COMPO01 = "COMPO01";
@@ -314,7 +315,6 @@ public class Constantes {
 			public static final String EVALUACION_9_DIAS					= "PLAZO-17";
 			public static final String PRESENTAR_PERFECCIONAMIENTO			= "PLAZO-18";
 			public static final String SUBSANAR_PERFECCIONAMIENTO			= "PLAZO-19";
-
 		}
 		
 		public static final class TIPO_NOTIFICACION_SOLICITUD {
@@ -512,7 +512,7 @@ public class Constantes {
 			public static final String ACEPTADO			= "ACEPTADO";
 			public static final String RECHAZADO		= "RECHAZADO";
 			public static final String CADUCADO			= "CADUCADO";	
-			
+			public static final String ELIMINADO		= "ELIMINADO";
 		}
 
 		public static final class ETAPA_PROCESO {
@@ -917,7 +917,9 @@ public class Constantes {
 		public static final String APROBACION_NO_ENCONTRADA = "V02004";
 		public static final String CONTRATO_NO_ENCONTRADO = "V02005";
 		public static final String SOLICITUD_NO_ENCONTRADA = "V02006";
-
+		public static final String REQUERIMIENTO_NO_ENVIADO = "V02007";
+		public static final String SUPERVISORA_NO_ENCONTRADA = "V02008";
+		public static final String INVITACION_NO_ENCONTRADA = "V02009";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato;
 
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 
@@ -28,4 +29,6 @@ public interface HistorialAprobacionRenovacionService {
      * @throws RuntimeException Si ocurre un error durante el registro del historial
      */
     void registrarHistorialAprobacionRenovacion(RequerimientoAprobacion requerimientoAprobacion, Contexto contexto);
+    HistorialEstadoAprobacionCampo registrarHistorialPreAprobacion(RequerimientoAprobacion aprobacion, Contexto contexto);
+    void registrarHistorialPostAprobacion(HistorialEstadoAprobacionCampo historial, RequerimientoAprobacion aprobacion, Contexto contexto);
 }
