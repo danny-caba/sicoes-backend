@@ -35,7 +35,7 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_SICOES_SEQ_REQ_INVITACION")
-    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_INVITACION", sequenceName = "SICOES_SEQ_REQ_INVITACION", allocationSize = 1)
+    @SequenceGenerator(name = "GEN_SICOES_SEQ_REQ_INVITACION", sequenceName = "ES_SICOES.SICOES_SEQ_REQ_INVITACION", allocationSize = 1)
     @Column(name = "ID_REQ_INVITACION")
     private Long idReqInvitacion;
 
@@ -54,8 +54,11 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_REQ_RENOVACION")
     private RequerimientoRenovacion requerimientoRenovacion;
 
+    @Column(name = "ID_ESTADO_LD", precision = 38)
+    private Long idEstadoLd;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_ESTADO_LD")
+    @JoinColumn(name = "ID_ESTADO_LD", insertable = false, updatable = false)
     private ListadoDetalle estadoInvitacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -222,12 +225,22 @@ public class RequerimientoInvitacion extends BaseModel implements Serializable {
         this.feCancelado = feCancelado;
     }
 
+    public Long getIdEstadoLd() {
+        return idEstadoLd;
+    }
+
+    public void setIdEstadoLd(Long idEstadoLd) {
+        this.idEstadoLd = idEstadoLd;
+    }
+
     public ListadoDetalle getEstadoInvitacion() {
         return estadoInvitacion;
     }
 
     public void setEstadoInvitacion(ListadoDetalle estadoInvitacion) {
         this.estadoInvitacion = estadoInvitacion;
+        // Sincronizar el ID cuando se establece la entidad
+        this.idEstadoLd = estadoInvitacion != null ? estadoInvitacion.getIdListadoDetalle() : null;
     }
 
     @Override

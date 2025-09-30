@@ -16,12 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EvaluarInvitacionDTO;
-import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InvitacionResponseDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RenovacionesService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoInvitacionService;
-import pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl.RequerimientoInvitacionServiceTest;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -36,9 +34,6 @@ public class RenovacionesController extends BaseRestController {
     
     @Autowired
     private RequerimientoInvitacionService requerimientoInvitacionService;
-    
-    @Autowired
-    private RequerimientoInvitacionServiceTest testService;
 
     @GetMapping("/solicitudes")
     @Raml("renovacioncontrato.solicitudes.buscar.properties")
@@ -260,14 +255,7 @@ public class RenovacionesController extends BaseRestController {
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    // Método de diagnóstico para verificar qué pasa con la invitación
-    @GetMapping("/invitacion/diagnostico/{id}")
-    public ResponseEntity<?> diagnosticarInvitacion(@PathVariable Long id) {
-        Map<String, Object> diagnostico = testService.testBuscarInvitacion(id);
-        return new ResponseEntity<>(diagnostico, HttpStatus.OK);
-    }
-    
+
     // Método de prueba simple sin dependencias
     @GetMapping("/invitacion/test-simple")
     public ResponseEntity<?> testSimple() {

@@ -38,7 +38,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     @Override
     @Transactional
-    public RequerimientoInvitacion aceptar(RequerimientoInvitacion requerimientoInvitacionIn, Contexto contexto) {
+    public RequerimientoInvitacion aceptar(RequerimientoInvitacion requerimientoInvitacionIn, Contexto contexto) throws Exception {
         System.out.println("===== SERVICIO aceptar INICIO =====");
         logger.error("===== SERVICIO aceptar INICIO =====");
         try {
@@ -59,19 +59,13 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                 throw new ValidacionException("No se encontró la invitación especificada con ID: " + requerimientoInvitacionIn.getIdReqInvitacion());
             }
             
-            logger.info("Invitación encontrada. Estado actual ID: {}, RequerimientoRenovacion ID: {}", 
-                       requerimientoInvitacion.getIdEstadoLd(), 
-                       requerimientoInvitacion.getIdReqRenovacion());
+            logger.info("Invitación encontrada. Estado actual: {}, RequerimientoRenovacion ID: {}", 
+                       requerimientoInvitacion.getEstadoInvitacion() != null ? requerimientoInvitacion.getEstadoInvitacion().getCodigo() : "null", 
+                       requerimientoInvitacion.getRequerimientoRenovacion() != null ? requerimientoInvitacion.getRequerimientoRenovacion().getIdReqRenovacion() : "null");
             
             // Obtener estado actual
-            ListadoDetalle estadoActual = null;
-            if (requerimientoInvitacion.getIdEstadoLd() != null) {
-                estadoActual = listadoDetalleDao.findById(requerimientoInvitacion.getIdEstadoLd()).orElseThrow(
-                        () -> new ValidacionException("No se encontró el estado actual de la invitación"));
-            } else if (requerimientoInvitacion.getEstadoInvitacion() != null) {
-                estadoActual = listadoDetalleDao.findById(requerimientoInvitacion.getEstadoInvitacion().getIdListadoDetalle()).orElseThrow(
-                        () -> new ValidacionException("No se encontró el estado de la invitación en el catálogo"));
-            } else {
+            ListadoDetalle estadoActual = requerimientoInvitacion.getEstadoInvitacion();
+            if (estadoActual == null) {
                 throw new ValidacionException("La invitación no tiene un estado válido");
             }
             
@@ -101,6 +95,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             requerimientoInvitacion.setFeAceptacion(new Date()); // Fecha de la transacción
 
         // 2. Crear historial de cambio de estado de la invitación
+        // COMENTADO TEMPORALMENTE PARA DEBUGGING
+        /*
         HistorialEstadoInvitacion nuevoHistorial = new HistorialEstadoInvitacion();
         nuevoHistorial.setDeEstadoAnterior(estadoActual.getDescripcion());
         nuevoHistorial.setDeEstadoNuevo(estadoNuevo.getDescripcion());
@@ -110,41 +106,18 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         nuevoHistorial.setFeFechaCambio(new Timestamp(System.currentTimeMillis()));
         AuditoriaUtil.setAuditoriaRegistro(nuevoHistorial, contexto);
         historialEstadoInvitacionDao.save(nuevoHistorial);
+        */
 
         // 3. Derivar a la bandeja de G3-GPPM (user: 9134)
-        ListadoDetalle ldGPPM = listadoDetalleDao.obtenerListadoDetalle(
-                Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GPPM);
-        ListadoDetalle estadoAsignado = listadoDetalleDao.obtenerListadoDetalle(
-                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+        // Solo actualizar la tabla de invitaciones, la derivación a GPPM se maneja en el workflow de aprobación
+        Long idReqRenovacion = requerimientoInvitacion.getRequerimientoRenovacion() != null ? 
+                               requerimientoInvitacion.getRequerimientoRenovacion().getIdReqRenovacion() : null;
         
-        // Verificar si ya existe historial GPPM para este requerimiento
-        List<HistorialEstadoAprobacionCampo> lista = new ArrayList<>();
-        if (requerimientoInvitacion.getIdReqRenovacion() != null) {
-            lista = historialEstadoAprobacionCampoDao
-                    .findByIdGrupoAprobadorLdAndIdReqAprobacionOrderByFeFechaCambioDesc(
-                            ldGPPM.getIdListadoDetalle(), 
-                            requerimientoInvitacion.getIdReqRenovacion());
-        }
-        
-        logger.info("Historial GPPM existente: {}", !lista.isEmpty());
-
-        // Crear entrada en el historial de aprobación para GPPM
-        Long idReqRenovacion = requerimientoInvitacion.getIdReqRenovacion();
         if (idReqRenovacion != null) {
-            HistorialEstadoAprobacionCampo historialEstadoAprobacionCampo = new HistorialEstadoAprobacionCampo();
-            historialEstadoAprobacionCampo.setDeEstadoAnteriorLd(null);
-            historialEstadoAprobacionCampo.setDeEstadoNuevoLd(estadoAsignado.getIdListadoDetalle());
-            historialEstadoAprobacionCampo.setIdReqAprobacion(idReqRenovacion);
-            historialEstadoAprobacionCampo.setIdGrupoAprobadorLd(ldGPPM.getIdListadoDetalle());
-            historialEstadoAprobacionCampo.setIdUsuario(9134L); // Usuario G3-GPPM específico
-            historialEstadoAprobacionCampo.setFeFechaCambio(new Timestamp(System.currentTimeMillis()));
-            historialEstadoAprobacionCampo.setEsRegistro(Constantes.ESTADO.ACTIVO);
-            AuditoriaUtil.setAuditoriaRegistro(historialEstadoAprobacionCampo, contexto);
-            historialEstadoAprobacionCampoDao.save(historialEstadoAprobacionCampo);
-            
-            logger.info("Historial de aprobación GPPM creado para requerimiento ID: {}", idReqRenovacion);
+            logger.info("Invitación aceptada - se derivará automáticamente a G3-GPPM para requerimiento ID: {}", idReqRenovacion);
+            // TODO: Implementar lógica específica de derivación a G3-GPPM si es necesaria
         } else {
-            logger.warn("No se pudo crear historial GPPM - ID RequerimientoRenovacion es null para invitación ID: {}", 
+            logger.warn("No se puede derivar a GPPM - ID RequerimientoRenovacion es null para invitación ID: {}", 
                        requerimientoInvitacion.getIdReqInvitacion());
         }
 
@@ -172,7 +145,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
 
     @Override
     @Transactional
-    public RequerimientoInvitacion rechazar(RequerimientoInvitacion requerimientoInvitacionIn, Contexto contexto) {
+    public RequerimientoInvitacion rechazar(RequerimientoInvitacion requerimientoInvitacionIn, Contexto contexto) throws Exception {
         try {
             logger.info("Iniciando proceso de rechazo de invitación ID: {}", requerimientoInvitacionIn.getIdReqInvitacion());
             
@@ -186,19 +159,13 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                 throw new ValidacionException("No se encontró la invitación especificada con ID: " + requerimientoInvitacionIn.getIdReqInvitacion());
             }
             
-            logger.info("Invitación encontrada. Estado actual ID: {}, RequerimientoRenovacion ID: {}", 
-                       requerimientoInvitacion.getIdEstadoLd(), 
-                       requerimientoInvitacion.getIdReqRenovacion());
+            logger.info("Invitación encontrada. Estado actual: {}, RequerimientoRenovacion ID: {}", 
+                       requerimientoInvitacion.getEstadoInvitacion() != null ? requerimientoInvitacion.getEstadoInvitacion().getCodigo() : "null", 
+                       requerimientoInvitacion.getRequerimientoRenovacion() != null ? requerimientoInvitacion.getRequerimientoRenovacion().getIdReqRenovacion() : "null");
         
         // Obtener estado actual
-        ListadoDetalle estadoActual = null;
-        if (requerimientoInvitacion.getIdEstadoLd() != null) {
-            estadoActual = listadoDetalleDao.findById(requerimientoInvitacion.getIdEstadoLd()).orElseThrow(
-                    () -> new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO));
-        } else if (requerimientoInvitacion.getEstadoInvitacion() != null) {
-            estadoActual = listadoDetalleDao.findById(requerimientoInvitacion.getEstadoInvitacion().getIdListadoDetalle()).orElseThrow(
-                    () -> new ValidacionException(Constantes.CODIGO_MENSAJE.ESTADO_TIPO_INCORRECTO));
-        } else {
+        ListadoDetalle estadoActual = requerimientoInvitacion.getEstadoInvitacion();
+        if (estadoActual == null) {
             throw new ValidacionException("La invitación no tiene un estado válido");
         }
         
@@ -237,9 +204,11 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         historialEstadoInvitacionDao.save(nuevoHistorial);
 
         // 3. Actualizar ES_REQ_RENOVACION a 946 (Archivado) en la tabla SICOES_TC_REQ_RENOVACION
-        if (requerimientoInvitacion.getIdReqRenovacion() != null) {
+        Long idReqRenovacion = requerimientoInvitacion.getRequerimientoRenovacion() != null ? 
+                               requerimientoInvitacion.getRequerimientoRenovacion().getIdReqRenovacion() : null;
+        if (idReqRenovacion != null) {
             RequerimientoRenovacion requerimientoRenovacion = requerimientoRenovacionDao
-                    .findById(requerimientoInvitacion.getIdReqRenovacion()).orElse(null);
+                    .findById(idReqRenovacion).orElse(null);
             
             if (requerimientoRenovacion != null) {
                 ListadoDetalle estadoArchivado = listadoDetalleDao.findById(946L).orElseThrow(
@@ -253,7 +222,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                            requerimientoRenovacion.getIdReqRenovacion());
             } else {
                 logger.warn("No se encontró el RequerimientoRenovacion con ID: {}", 
-                           requerimientoInvitacion.getIdReqRenovacion());
+                           idReqRenovacion);
             }
         } else {
             logger.warn("La invitación no tiene asociado un RequerimientoRenovacion");

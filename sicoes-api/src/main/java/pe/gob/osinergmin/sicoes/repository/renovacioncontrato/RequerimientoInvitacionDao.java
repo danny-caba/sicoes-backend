@@ -56,6 +56,7 @@ public interface RequerimientoInvitacionDao extends JpaRepository<RequerimientoI
     Optional<RequerimientoInvitacion> findByIdReqInvitacion(Long idReqInvitacion);
 
 
+
     @Query("SELECT ri FROM RequerimientoInvitacion ri " +
                 "WHERE ri.estadoInvitacion.codigo = :estadoInvitado " +
                 "AND ri.feCaducidad < :fechaReferencia " +
