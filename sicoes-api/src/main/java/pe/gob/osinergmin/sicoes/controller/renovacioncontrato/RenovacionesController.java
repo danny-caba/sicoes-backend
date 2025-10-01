@@ -14,12 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EliminarInvitacionDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.EvaluarInvitacionDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
+import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RenovacionesService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoInvitacionService;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.Raml;
 
@@ -179,7 +182,7 @@ public class RenovacionesController extends BaseRestController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Se ha aceptado la invitación");
-            response.put("invitacion", invitacionAceptada);
+            response.put("idInvitacion", invitacionAceptada.getIdReqInvitacion());
             
             logger.error("Invitación aceptada exitosamente - ID: {}", invitacionAceptada.getIdReqInvitacion());
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -230,7 +233,7 @@ public class RenovacionesController extends BaseRestController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Se ha registrado el rechazo a la invitación");
-            response.put("invitacion", invitacionRechazada);
+            response.put("idInvitacion", invitacionRechazada.getIdReqInvitacion());
             
             logger.error("Invitación rechazada exitosamente - ID: {}", invitacionRechazada.getIdReqInvitacion());
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -267,7 +270,9 @@ public class RenovacionesController extends BaseRestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
-    // Método de prueba temporal para debugging
+    @Autowired
+    private ListadoDetalleDao listadoDetalleDao;
+    
     @PostMapping("/invitacion/test-aceptar")
     public ResponseEntity<?> testAceptarInvitacion(@RequestBody Map<String, Object> request) {
         System.out.println("===== TEST ACEPTAR - Request Map =====");

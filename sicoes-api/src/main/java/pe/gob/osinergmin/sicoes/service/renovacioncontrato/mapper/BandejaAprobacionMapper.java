@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.BandejaAprobacionResponseDTO;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.BandejaAprobacionFullDTO;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
 import pe.gob.osinergmin.sicoes.util.Contexto;
@@ -212,5 +213,99 @@ public class BandejaAprobacionMapper {
 
         return dto;
 
+    }
+
+    // Método sobrecargado para trabajar con BandejaAprobacionFullDTO
+    public BandejaAprobacionResponseDTO toDto(BandejaAprobacionFullDTO fullDto, Contexto contexto, ListadoDetalleService listadoDetalleService) {
+        
+        BandejaAprobacionResponseDTO dto = new BandejaAprobacionResponseDTO();
+        
+        // Mapear campos básicos del DTO
+        dto.setIdRequermientoAprobacion(fullDto.getIdReqAprobacion());
+        dto.setIdInformeRenovacion(fullDto.getIdInformeRenovacion());
+        
+        // tipoAprobacion
+        String tipoAprobacion = fullDto.getIdTipoLd() != null ? 
+                listadoDetalleService.obtener(fullDto.getIdTipoLd(), contexto) != null ?
+                listadoDetalleService.obtener(fullDto.getIdTipoLd(), contexto).getNombre() : "" : "";
+        dto.setTipoAprobacion(tipoAprobacion);
+        
+        // Datos directos del DTO completo
+        dto.setNumeroExpediente(fullDto.getNuExpediente() != null ? fullDto.getNuExpediente() : "");
+        dto.setContratista(fullDto.getNoRazonSocial() != null ? fullDto.getNoRazonSocial() : "");
+        dto.setTipoContrato("Renovación"); // Por defecto
+        dto.setTp("PJ"); // Por defecto
+        
+        // Generar nombre de informe - usar nombre del archivo si está disponible
+        String informe = "";
+        if (fullDto.getDeNombreArchivo() != null && !fullDto.getDeNombreArchivo().isEmpty()) {
+            informe = fullDto.getDeNombreArchivo();
+        } else if (fullDto.getIdInformeRenovacion() != null) {
+            informe = "INF-" + fullDto.getIdInformeRenovacion();
+        }
+        dto.setInforme(informe);
+        
+        // Fecha de ingreso
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String fechaIngreso = "";
+        if (fullDto.getFeCreacion() != null) {
+            fechaIngreso = sdf.format(fullDto.getFeCreacion());
+        }
+        dto.setFechaIngresoInforme(fechaIngreso);
+        
+        // Estado de aprobación del informe
+        String estadoAprobacionInforme = "";
+        if (fullDto.getEsAprobacionInforme() != null) {
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(fullDto.getEsAprobacionInforme());
+            if (estadoOpt.isPresent()) {
+                estadoAprobacionInforme = estadoOpt.get().getNombre();
+            }
+        }
+        dto.setEstadoAprobacionInforme(estadoAprobacionInforme);
+        
+        // Estados por nivel jerárquico (simplificado)
+        String estadoAprobacion = "";
+        if (fullDto.getIdEstadoLd() != null) {
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(fullDto.getIdEstadoLd());
+            estadoAprobacion = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
+        }
+        
+        // Mapear por grupo aprobador
+        if (fullDto.getIdGrupoAprobadorLd() != null) {
+            if (fullDto.getIdGrupoAprobadorLd().equals(954L)) {
+                dto.setEstadoAprobacionJefeDivision(estadoAprobacion);
+                dto.setEstadoAprobacionGerenteDivision("");
+            } else if (fullDto.getIdGrupoAprobadorLd().equals(955L)) {
+                dto.setEstadoAprobacionJefeDivision("");
+                dto.setEstadoAprobacionGerenteDivision(estadoAprobacion);
+            }
+        }
+        
+        dto.setEstadoAprobacionGPPM("");
+        dto.setEstadoAprobacionGSE("");
+        
+        // ListadoDetalle objects
+        if (fullDto.getIdTipoLd() != null) {
+            listadoDetalleDao.findById(fullDto.getIdTipoLd())
+                .ifPresent(tipoLd -> dto.setTipoAprobacionLd(listadoDetalleMapper.toDto(tipoLd)));
+        }
+        
+        if (fullDto.getIdEstadoLd() != null) {
+            listadoDetalleDao.findById(fullDto.getIdEstadoLd())
+                .ifPresent(estadoLd -> dto.setEstadoLd(listadoDetalleMapper.toDto(estadoLd)));
+        }
+        
+        if (fullDto.getIdGrupoAprobadorLd() != null) {
+            listadoDetalleDao.findById(fullDto.getIdGrupoAprobadorLd())
+                .ifPresent(grupoLd -> dto.setGrupoAprobadorLd(listadoDetalleMapper.toDto(grupoLd)));
+        }
+        
+        // UUID del informe renovación
+        dto.setUuidInformeRenovacion(fullDto.getDeUuidInfoRenovacion() != null ? fullDto.getDeUuidInfoRenovacion() : "");
+        
+        // Nombre del archivo
+        dto.setNombreArchivo(fullDto.getDeNombreArchivo() != null ? fullDto.getDeNombreArchivo() : "");
+        
+        return dto;
     }
 }

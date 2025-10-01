@@ -11,6 +11,38 @@ import javax.persistence.*;
 import pe.gob.osinergmin.sicoes.model.BaseModel;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
 
+@SqlResultSetMapping(
+    name = "RequerimientoAprobacionMapping",
+    entities = @EntityResult(
+        entityClass = RequerimientoAprobacion.class,
+        fields = {
+            @FieldResult(name = "idReqAprobacion", column = "ID_REQ_APROBACION"),
+            @FieldResult(name = "idRequerimiento", column = "ID_REQUERIMIENTO"),
+            @FieldResult(name = "idReqInforme", column = "ID_REQ_INFORME"),
+            @FieldResult(name = "idReqDocumento", column = "ID_REQ_DOCUMENTO"),
+            @FieldResult(name = "idTipoLd", column = "ID_TIPO_LD"),
+            @FieldResult(name = "idGrupoLd", column = "ID_GRUPO_LD"),
+            @FieldResult(name = "idUsuario", column = "ID_USUARIO"),
+            @FieldResult(name = "idEstadoLd", column = "ID_ESTADO_LD"),
+            @FieldResult(name = "idFirmadoLd", column = "ID_FIRMADO_LD"),
+            @FieldResult(name = "deObservacion", column = "DE_OBSERVACION"),
+            @FieldResult(name = "feAprobacion", column = "FE_APROBACION"),
+            @FieldResult(name = "feRechazo", column = "FE_RECHAZO"),
+            @FieldResult(name = "feFirma", column = "FE_FIRMA"),
+            @FieldResult(name = "idInformeRenovacion", column = "ID_INFORME_RENOVACION"),
+            @FieldResult(name = "feAsignacion", column = "FE_ASIGNACION"),
+            @FieldResult(name = "idTipoAprobadorLd", column = "ID_TIPO_APROBADOR_LD"),
+            @FieldResult(name = "idGrupoAprobadorLd", column = "ID_GRUPO_APROBADOR_LD"),
+            @FieldResult(name = "usuCreacion", column = "US_CREACION"),
+            @FieldResult(name = "ipCreacion", column = "IP_CREACION"),
+            @FieldResult(name = "fecCreacion", column = "FE_CREACION"),
+            @FieldResult(name = "usuActualizacion", column = "US_ACTUALIZACION"),
+            @FieldResult(name = "ipActualizacion", column = "IP_ACTUALIZACION"),
+            @FieldResult(name = "fecActualizacion", column = "FE_ACTUALIZACION")
+        }
+    )
+)
+
 /**
  * Entidad para la tabla SICOES_TC_REQ_APROBACION
  * Representa los requerimientos de aprobación de renovación de contratos
@@ -78,8 +110,11 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @JoinColumn(name = "ID_INFORME_RENOVACION", insertable = false, updatable = false)
     private InformeRenovacion informeRenovacion;
 
+    @Column(name = "ID_NOTIFICACION", precision = 38)
+    private Long idNotificacion;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_NOTIFICACION")
+    @JoinColumn(name = "ID_NOTIFICACION", insertable = false, updatable = false)
     private Notificacion notificacion;
 
     @Temporal(TemporalType.DATE)

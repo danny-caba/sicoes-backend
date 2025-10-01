@@ -174,16 +174,13 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         }
         
             // 1. Cambiar estado de la invitación a RECHAZADO
-            logger.info("Obteniendo estado RECHAZADO. Código listado: {}, Código detalle: {}", 
-                       Constantes.LISTADO.ESTADO_INVITACION.CODIGO, 
-                       Constantes.LISTADO.ESTADO_INVITACION.RECHAZADO);
+            logger.info("Obteniendo estado RECHAZADO - usando ID directo 739");
             
-            ListadoDetalle estadoNuevo = listadoDetalleDao.obtenerListadoDetalle(
-                    Constantes.LISTADO.ESTADO_INVITACION.CODIGO, Constantes.LISTADO.ESTADO_INVITACION.RECHAZADO
-            );
+            // Usar directamente el ID 739 para RECHAZADO
+            ListadoDetalle estadoNuevo = listadoDetalleDao.findById(739L).orElse(null);
             
             if (estadoNuevo == null) {
-                throw new ValidacionException("No se encontró el estado RECHAZADO en el catálogo");
+                throw new ValidacionException("No se encontró el estado RECHAZADO (ID: 739) en el catálogo");
             }
             
             logger.info("Estado RECHAZADO encontrado con ID: {}", estadoNuevo.getIdListadoDetalle());

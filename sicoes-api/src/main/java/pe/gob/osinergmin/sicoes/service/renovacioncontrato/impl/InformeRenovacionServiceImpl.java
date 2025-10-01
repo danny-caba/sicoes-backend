@@ -502,6 +502,36 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             // Observaciones iniciales
             nuevaAprobacionG1.setDeObservacion("Derivado a G1 por rechazo de G2");
             
+            // Crear notificación antes de guardar el requerimiento
+            Notificacion notificacion = new Notificacion();
+            notificacion.setCorreo("sistema@osinergmin.gob.pe");
+            notificacion.setAsunto("Informe de Renovación Derivado para Revisión");
+            notificacion.setMensaje(
+                    "Se ha derivado un informe de renovación para su revisión.\n" +
+                    "ID Informe: " + informe.getIdInformeRenovacion() + "\n" +
+                    "Expediente: " + (informe.getRequerimientoRenovacion() != null && 
+                                     informe.getRequerimientoRenovacion().getNuExpediente() != null ? 
+                                     informe.getRequerimientoRenovacion().getNuExpediente() : "N/A") + "\n" +
+                    "Motivo: Derivado por rechazo de G2\n" +
+                    "Fecha: " + new Date()
+            );
+            
+            ListadoDetalle estadoPendiente = listadoDetalleDao.obtenerListadoDetalle("ESTADO_NOTIFICACION", "PENDIENTE");
+            if (estadoPendiente != null) {
+                notificacion.setEstado(estadoPendiente);
+            }
+            
+            AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+            notificacion = notificacionDao.save(notificacion);
+            
+            logger.info("Notificación creada con ID: {} para derivación a G1", notificacion.getIdNotificacion());
+            
+            // Asignar el ID de notificación al requerimiento
+            if (notificacion.getIdNotificacion() != null) {
+                nuevaAprobacionG1.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al requerimiento G1", notificacion.getIdNotificacion());
+            }
+            
             // Datos de auditoría
             AuditoriaUtil.setAuditoriaRegistro(nuevaAprobacionG1, contexto);
             
@@ -515,6 +545,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.info("  - ID_USUARIO: {}", nuevaAprobacionG1.getIdUsuario());
             logger.info("  - ID_REQUERIMIENTO: {}", nuevaAprobacionG1.getIdRequerimiento());
             logger.info("  - ID_INFORME_RENOVACION: {}", nuevaAprobacionG1.getIdInformeRenovacion());
+            logger.info("  - ID_NOTIFICACION: {}", nuevaAprobacionG1.getIdNotificacion());
             
             // Guardar el registro
             RequerimientoAprobacion registroGuardado = requerimientoAprobacionDao.save(nuevaAprobacionG1);

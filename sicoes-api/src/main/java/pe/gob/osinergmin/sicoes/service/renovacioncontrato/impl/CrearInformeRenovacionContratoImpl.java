@@ -341,11 +341,19 @@ public class CrearInformeRenovacionContratoImpl  {
 
             RequerimientoAprobacion requerimientoAprobacionG1 = buildRequerimientoAprobacionG1(
                     nuevoInformeRenovacionContrato.getIdInformeRenovacion(),
+                    requerimientoRenovacion.getIdReqRenovacion(),
                     listaPerfilesAprobadoresBySolicitud.get(0).getIdAprobadorG1(),
                     contexto.getUsuario().getIdUsuario(),
                     contexto.getIp()
 
             );
+            
+            // Asignar el ID de notificación al requerimiento de aprobación
+            if (idNotificacion != null && idNotificacion > 0) {
+                requerimientoAprobacionG1.setIdNotificacion(idNotificacion);
+                logger.info("Asignando ID de notificación {} al requerimiento de aprobación", idNotificacion);
+            }
+            
             AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1, contexto);
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG1);
             historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
@@ -363,7 +371,7 @@ public class CrearInformeRenovacionContratoImpl  {
         return InformeRenovacionContratoMapper.MAPPER.toDTO(nuevoInformeRenovacionContrato);
     }
 
-    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion,Long idUsuarioG1,Long idUsuario,String ip) {
+    private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion, Long idRequerimiento, Long idUsuarioG1,Long idUsuario,String ip) {
 
         RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
         requerimientoAprobacionG1.setFeAsignacion(new Date());
@@ -372,6 +380,7 @@ public class CrearInformeRenovacionContratoImpl  {
         requerimientoAprobacionG1.setUsuCreacion(idUsuario.toString());
         requerimientoAprobacionG1.setIdUsuario(idUsuarioG1);
         requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
+        requerimientoAprobacionG1.setIdRequerimiento(idRequerimiento);
 
         ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPOS",
