@@ -150,8 +150,8 @@ public class RequerimientoAprobacionDaoImpl implements RequerimientoAprobacionDa
         sql.append("JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION ");
         sql.append("LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT ");
         sql.append("LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA ");
-        sql.append("WHERE r.ID_GRUPO_LD = 543 ");
-        sql.append("AND r.ID_GRUPO_APROBADOR_LD = 955 ");
+        sql.append("WHERE r.ID_GRUPO_LD IN (542, 543) ");
+        sql.append("AND r.ID_GRUPO_APROBADOR_LD IN (954, 955) ");
         sql.append("AND r.ID_ESTADO_LD IN (958, 959, 960, 1160) ");
         
         // Agregar condiciones dinámicamente solo si tienen valor
