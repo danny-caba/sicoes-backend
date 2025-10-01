@@ -28,10 +28,12 @@ import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoRequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamientoContrato;
 import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
+import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.ActualizacionBandejaDTO;
@@ -110,6 +112,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
     @Autowired
     private SigedOldConsumer sigedOldConsumer;
+    
+    @Autowired
+    private SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
 
     @Override
     public Page<InformeRenovacionDTO> buscar(String nuExpediente, String contratista, String estadoAprobacion, Pageable pageable, Contexto contexto) {
@@ -1558,6 +1563,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     }
 
     @Override
+    @Transactional
     public void aprobarInforme(Long idInformeRenovacion, Long idUsuario, String observacion, Contexto contexto) {
         logger.info("aprobarInforme - ID: {}, Usuario: {}", idInformeRenovacion, idUsuario);
         
@@ -1567,13 +1573,123 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 throw new IllegalArgumentException("El ID del informe de renovación es requerido");
             }
 
-            // TODO: Implementar lógica específica de aprobación según requerimientos de negocio
-            // Ejemplos de lo que podría incluir:
-            // 1. Verificar que el informe existe en la base de datos
-            // 2. Verificar permisos del usuario para aprobar
-            // 3. Actualizar estado del informe a "APROBADO"
-            // 4. Registrar en historial de aprobaciones
-            // 5. Generar documentación si es necesario
+            // 1. Obtener el informe
+            InformeRenovacion informe = informeRenovacionDao.obtenerPorId(idInformeRenovacion);
+            if (informe == null) {
+                throw new IllegalArgumentException("No se encontró el informe de renovación con ID: " + idInformeRenovacion);
+            }
+
+            // 2. Buscar el requerimiento de aprobación activo para este informe
+            List<RequerimientoAprobacion> requerimientosAprobacion = requerimientoAprobacionDao
+                    .findByIdInformeRenovacion(idInformeRenovacion);
+            
+            if (requerimientosAprobacion.isEmpty()) {
+                throw new IllegalArgumentException("No se encontró requerimiento de aprobación para el informe ID: " + idInformeRenovacion);
+            }
+
+            // 3. Obtener el requerimiento activo (el que no está aprobado/rechazado)
+            RequerimientoAprobacion requerimientoActivo = null;
+            for (RequerimientoAprobacion req : requerimientosAprobacion) {
+                // Buscar un requerimiento en estado ASIGNADO (958) o EN_REVISION
+                if (req.getIdEstadoLd() != null && 
+                    (req.getIdEstadoLd().equals(958L) || req.getIdEstadoLd().equals(1160L))) {
+                    requerimientoActivo = req;
+                    break;
+                }
+            }
+            
+            if (requerimientoActivo == null) {
+                throw new IllegalArgumentException("No se encontró requerimiento de aprobación activo para procesar");
+            }
+
+            // 4. Determinar el tipo de aprobador (G1, G2, G3)
+            boolean esAprobadorG1 = requerimientoActivo.getIdGrupoLd() != null && 
+                                   requerimientoActivo.getIdGrupoLd().equals(542L);
+            boolean esAprobadorG2 = requerimientoActivo.getIdGrupoLd() != null && 
+                                   requerimientoActivo.getIdGrupoLd().equals(543L);
+            boolean esAprobadorG3 = requerimientoActivo.getIdGrupoLd() != null && 
+                                   requerimientoActivo.getIdGrupoLd().equals(545L);
+
+            logger.info("Tipo de aprobador - G1: {}, G2: {}, G3: {}, ID_GRUPO_LD: {}", 
+                       esAprobadorG1, esAprobadorG2, esAprobadorG3, requerimientoActivo.getIdGrupoLd());
+
+            // 5. Actualizar el requerimiento de aprobación
+            requerimientoActivo.setIdEstadoLd(959L); // APROBADO
+            requerimientoActivo.setFeAprobacion(new Date());
+            requerimientoActivo.setDeObservacion(observacion);
+            
+            // Si se proporciona idUsuario, actualizar
+            if (idUsuario != null) {
+                requerimientoActivo.setIdUsuario(idUsuario);
+            }
+            
+            AuditoriaUtil.setAuditoriaActualizacion(requerimientoActivo, contexto);
+            requerimientoAprobacionDao.save(requerimientoActivo);
+            
+            logger.info("Requerimiento de aprobación actualizado - ID: {}, Estado: APROBADO (959)", 
+                       requerimientoActivo.getIdReqAprobacion());
+
+            // 6. Actualizar el informe según el tipo de aprobador
+            if (esAprobadorG1) {
+                // G1 aprueba: crear registro para G2
+                logger.info("Aprobación G1 detectada, creando registro para G2");
+                
+                // Actualizar estado del informe
+                ListadoDetalle estadoEnAprobacion = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "EN_APROBACION");
+                if (estadoEnAprobacion != null) {
+                    informe.setEstadoAprobacionInforme(estadoEnAprobacion);
+                }
+                
+                // Crear registro G2
+                crearRegistroAprobacionG2(informe, observacion, contexto);
+                
+            } else if (esAprobadorG2) {
+                // G2 aprueba: crear registros para G3 (GPPM y GSE)
+                logger.info("Aprobación G2 detectada, creando registros para G3");
+                
+                // Actualizar estado del informe
+                ListadoDetalle estadoConcluido = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "CONCLUIDO");
+                if (estadoConcluido != null) {
+                    informe.setEstadoAprobacionInforme(estadoConcluido);
+                }
+                
+                // Crear registros G3
+                crearRegistrosAprobacionG3(informe, observacion, contexto);
+                
+            } else if (esAprobadorG3) {
+                // G3 aprueba: finalizar proceso
+                logger.info("Aprobación G3 detectada, finalizando proceso");
+                
+                // Actualizar estado del informe a completamente aprobado
+                ListadoDetalle estadoAprobado = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "APROBADO");
+                if (estadoAprobado != null) {
+                    informe.setEstadoAprobacionInforme(estadoAprobado);
+                }
+            }
+            
+            // 7. Guardar cambios en el informe
+            AuditoriaUtil.setAuditoriaActualizacion(informe, contexto);
+            informeRenovacionDao.save(informe);
+            
+            // 8. Actualizar el requerimiento de renovación si es necesario
+            if (informe.getRequerimientoRenovacion() != null) {
+                RequerimientoRenovacion requerimientoRenovacion = informe.getRequerimientoRenovacion();
+                
+                if (esAprobadorG1) {
+                    requerimientoRenovacion.setEsReqRenovacion(944L); // En proceso
+                } else if (esAprobadorG3) {
+                    requerimientoRenovacion.setEsReqRenovacion(946L); // Aprobado
+                }
+                
+                AuditoriaUtil.setAuditoriaActualizacion(requerimientoRenovacion, contexto);
+                requerimientoRenovacionDao.save(requerimientoRenovacion);
+            }
+
+            // 9. Registrar en bitácora
+            registrarAprobacionEnBitacora(informe, requerimientoActivo, contexto);
+
+            // 10. Enviar notificaciones
+            enviarNotificacionAprobacion(informe, requerimientoActivo, contexto);
 
             logger.info("Informe aprobado exitosamente - ID: {}, Observación: {}", 
                        idInformeRenovacion, observacion);
@@ -1581,6 +1697,137 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
         } catch (Exception e) {
             logger.error("Error al aprobar informe - ID: " + idInformeRenovacion, e);
             throw new RuntimeException("Error al procesar la aprobación del informe", e);
+        }
+    }
+    
+    private void crearRegistroAprobacionG2(InformeRenovacion informe, String observacion, Contexto contexto) {
+        try {
+            // Obtener datos de la solicitud
+            SolicitudPerfecionamientoContrato solicitud = null;
+            if (informe.getRequerimientoRenovacion() != null && 
+                informe.getRequerimientoRenovacion().getSolicitudPerfil() != null) {
+                Long idSolicitud = informe.getRequerimientoRenovacion().getSolicitudPerfil().getIdSolicitud();
+                List<SolicitudPerfecionamientoContrato> perfiles = solicitudPerfecionamientoContratoDao
+                        .getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
+                if (!perfiles.isEmpty()) {
+                    solicitud = perfiles.get(0);
+                }
+            }
+            
+            if (solicitud == null || solicitud.getIdAprobadorG2() == null) {
+                logger.warn("No se pudo obtener el aprobador G2 para el informe ID: {}", 
+                           informe.getIdInformeRenovacion());
+                return;
+            }
+
+            RequerimientoAprobacion requerimientoG2 = new RequerimientoAprobacion();
+            requerimientoG2.setIdInformeRenovacion(informe.getIdInformeRenovacion());
+            requerimientoG2.setIdTipoLd(952L); // TIPO_APROBACION: APROBAR
+            requerimientoG2.setIdGrupoLd(543L); // G2
+            requerimientoG2.setIdEstadoLd(958L); // ASIGNADO
+            requerimientoG2.setIdTipoAprobadorLd(545L); // APROBADOR_GERENTE
+            requerimientoG2.setIdGrupoAprobadorLd(955L); // GERENTE
+            requerimientoG2.setIdUsuario(solicitud.getIdAprobadorG2());
+            requerimientoG2.setFeAsignacion(new Date());
+            requerimientoG2.setDeObservacion("Derivado desde G1: " + observacion);
+            
+            // Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
+            requerimientoG2.setIdFirmadoLd(962L);
+            
+            AuditoriaUtil.setAuditoriaRegistro(requerimientoG2, contexto);
+            requerimientoAprobacionDao.save(requerimientoG2);
+            
+            logger.info("Registro G2 creado exitosamente para informe ID: {}", 
+                       informe.getIdInformeRenovacion());
+            
+        } catch (Exception e) {
+            logger.error("Error al crear registro G2", e);
+        }
+    }
+    
+    private void crearRegistrosAprobacionG3(InformeRenovacion informe, String observacion, Contexto contexto) {
+        try {
+            // Obtener datos de la solicitud
+            SolicitudPerfecionamientoContrato solicitud = null;
+            if (informe.getRequerimientoRenovacion() != null && 
+                informe.getRequerimientoRenovacion().getSolicitudPerfil() != null) {
+                Long idSolicitud = informe.getRequerimientoRenovacion().getSolicitudPerfil().getIdSolicitud();
+                List<SolicitudPerfecionamientoContrato> perfiles = solicitudPerfecionamientoContratoDao
+                        .getPerfilAprobadorByIdPerfilListadoDetalle(idSolicitud);
+                if (!perfiles.isEmpty()) {
+                    solicitud = perfiles.get(0);
+                }
+            }
+            
+            if (solicitud == null) {
+                logger.warn("No se pudo obtener los aprobadores G3 para el informe ID: {}", 
+                           informe.getIdInformeRenovacion());
+                return;
+            }
+
+            // Crear registro G3 - puede ser GPPM o GSE según la configuración
+            if (solicitud.getIdAprobadorG3() != null) {
+                // Determinar si crear GPPM o GSE basado en la lógica de negocio
+                // Por ahora, creamos registro GSE G3 como siguiente paso después de G2
+                
+                RequerimientoAprobacion requerimientoG3 = new RequerimientoAprobacion();
+                requerimientoG3.setIdInformeRenovacion(informe.getIdInformeRenovacion());
+                requerimientoG3.setIdTipoLd(952L); // TIPO_APROBACION: APROBAR
+                requerimientoG3.setIdGrupoLd(545L); // G3
+                requerimientoG3.setIdEstadoLd(958L); // ASIGNADO
+                requerimientoG3.setIdTipoAprobadorLd(547L); // APROBADOR_GSE
+                requerimientoG3.setIdGrupoAprobadorLd(957L); // GSE
+                requerimientoG3.setIdUsuario(solicitud.getIdAprobadorG3());
+                requerimientoG3.setFeAsignacion(new Date());
+                requerimientoG3.setDeObservacion("Derivado desde G2: " + observacion);
+                
+                AuditoriaUtil.setAuditoriaRegistro(requerimientoG3, contexto);
+                requerimientoAprobacionDao.save(requerimientoG3);
+                
+                logger.info("Registro G3 (GSE) creado exitosamente para informe ID: {}", 
+                           informe.getIdInformeRenovacion());
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al crear registros G3", e);
+        }
+    }
+    
+    private void registrarAprobacionEnBitacora(InformeRenovacion informe, RequerimientoAprobacion requerimiento, Contexto contexto) {
+        try {
+            Bitacora bitacora = new Bitacora();
+            bitacora.setUsuario(contexto.getUsuario());
+            bitacora.setFechaHora(new Date());
+            bitacora.setDescripcion("Informe de renovación aprobado. ID: " + informe.getIdInformeRenovacion() +
+                    ". Grupo: " + requerimiento.getIdGrupoLd() +
+                    ". Observaciones: " + (requerimiento.getDeObservacion() != null ? requerimiento.getDeObservacion() : "N/A"));
+            
+            AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
+            bitacoraDao.save(bitacora);
+            
+        } catch (Exception e) {
+            logger.error("Error al registrar aprobación en bitácora", e);
+        }
+    }
+    
+    private void enviarNotificacionAprobacion(InformeRenovacion informe, RequerimientoAprobacion requerimiento, Contexto contexto) {
+        try {
+            Notificacion notificacion = new Notificacion();
+            notificacion.setCorreo("sistema@osinergmin.gob.pe");
+            notificacion.setAsunto("Informe de Renovación Aprobado");
+            notificacion.setMensaje("El informe de renovación ID: " + informe.getIdInformeRenovacion() +
+                    " ha sido aprobado por el grupo " + requerimiento.getIdGrupoLd());
+            
+            ListadoDetalle estadoPendiente = listadoDetalleDao.obtenerListadoDetalle("ESTADO_NOTIFICACION", "PENDIENTE");
+            if (estadoPendiente != null) {
+                notificacion.setEstado(estadoPendiente);
+            }
+            
+            AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+            notificacionDao.save(notificacion);
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de aprobación", e);
         }
     }
 
