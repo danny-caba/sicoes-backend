@@ -380,7 +380,8 @@ public class CrearInformeRenovacionContratoImpl  {
         requerimientoAprobacionG1.setUsuCreacion(idUsuario.toString());
         requerimientoAprobacionG1.setIdUsuario(idUsuarioG1);
         requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
-        requerimientoAprobacionG1.setIdRequerimiento(idRequerimiento);
+        // NO asignar idRequerimiento ya que la FK espera un ID de SICOES_TC_REQUERIMIENTO, no de SICOES_TC_REQ_RENOVACION
+        // requerimientoAprobacionG1.setIdRequerimiento(idRequerimiento);
 
         ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPOS",

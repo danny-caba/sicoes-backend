@@ -60,7 +60,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "ID_REQ_APROBACION")
     private Long idReqAprobacion;
 
-    @Column(name = "ID_REQUERIMIENTO", precision = 38, nullable = false)
+    @Column(name = "ID_REQUERIMIENTO", precision = 38, nullable = true)
     private Long idRequerimiento;
 
     @Column(name = "ID_REQ_INFORME", precision = 38)

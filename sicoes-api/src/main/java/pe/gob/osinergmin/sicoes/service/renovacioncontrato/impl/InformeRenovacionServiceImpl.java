@@ -484,13 +484,13 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.info("ID_USUARIO G1 establecido: {}", idUsuarioG1);
             
             // FKs requeridas
-            // ID_REQUERIMIENTO es requerido - obtenerlo del informe
-            if (informe.getRequerimientoRenovacion() != null) {
-                nuevaAprobacionG1.setIdRequerimiento(informe.getRequerimientoRenovacion().getIdReqRenovacion());
-                logger.info("ID_REQUERIMIENTO establecido: {}", informe.getRequerimientoRenovacion().getIdReqRenovacion());
-            } else {
-                logger.warn("No se pudo obtener ID_REQUERIMIENTO del informe");
-            }
+            // NO asignar idRequerimiento - la FK espera SICOES_TC_REQUERIMIENTO que no existe en el modelo actual
+            // if (informe.getRequerimientoRenovacion() != null) {
+            //     nuevaAprobacionG1.setIdRequerimiento(informe.getRequerimientoRenovacion().getIdReqRenovacion());
+            //     logger.info("ID_REQUERIMIENTO establecido: {}", informe.getRequerimientoRenovacion().getIdReqRenovacion());
+            // } else {
+            //     logger.warn("No se pudo obtener ID_REQUERIMIENTO del informe");
+            // }
             
             // Relación con el informe
             nuevaAprobacionG1.setIdInformeRenovacion(informe.getIdInformeRenovacion());

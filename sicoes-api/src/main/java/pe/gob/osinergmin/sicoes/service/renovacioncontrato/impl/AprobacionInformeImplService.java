@@ -191,7 +191,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
             requerimientoAprobacionG2.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
             
-            // NO asignar idRequerimiento - parece que la FK espera una tabla diferente
+            // NO asignar idRequerimiento - la FK espera SICOES_TC_REQUERIMIENTO que no existe en el modelo actual
             // requerimientoAprobacionG2.setIdRequerimiento(requerimientoAprobacionG1.getIdRequerimiento());
 
             requerimientoAprobacionG2.setIdTipoLd(
@@ -368,8 +368,8 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
             requerimientoAprobacionGseG3.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
             
-            // Copiar el ID del requerimiento del registro GPPM G3
-            requerimientoAprobacionGseG3.setIdRequerimiento(requerimientoAprobacionGppmG3.getIdRequerimiento());
+            // NO asignar idRequerimiento - la FK espera SICOES_TC_REQUERIMIENTO que no existe en el modelo actual
+            // requerimientoAprobacionGseG3.setIdRequerimiento(requerimientoAprobacionGppmG3.getIdRequerimiento());
             
             requerimientoAprobacionGseG3.setIdTipoLd(
                 datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")

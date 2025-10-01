@@ -79,7 +79,7 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         requerimientoAprobacion.setDeObservacion(requerimientoAprobacionDTO.getDeObservacion());
         requerimientoAprobacion.setIdInformeRenovacion(requerimientoAprobacionDTO.getIdReqInforme());
         
-        // NO asignar idRequerimiento - parece que la FK espera una tabla diferente (SICOES_TC_REQUERIMIENTO)
+        // NO asignar idRequerimiento - la FK espera SICOES_TC_REQUERIMIENTO que no existe en el modelo actual
         // if (informeRenovacionContrato.getRequerimiento() != null) {
         //     requerimientoAprobacion.setIdRequerimiento(informeRenovacionContrato.getRequerimiento().getIdReqRenovacion());
         // }
