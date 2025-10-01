@@ -1729,7 +1729,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             requerimientoG2.setIdGrupoAprobadorLd(955L); // GERENTE
             requerimientoG2.setIdUsuario(solicitud.getIdAprobadorG2());
             requerimientoG2.setFeAsignacion(new Date());
-            requerimientoG2.setDeObservacion("Derivado desde G1: " + observacion);
+            requerimientoG2.setDeObservacion("");
             
             // Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
             requerimientoG2.setIdFirmadoLd(962L);
