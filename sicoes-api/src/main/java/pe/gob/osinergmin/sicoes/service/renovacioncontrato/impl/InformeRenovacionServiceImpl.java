@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
+import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
@@ -117,6 +119,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     
     @Autowired
     private SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
+    @Autowired
+    private UsuarioDao usuarioDao;
 
     @Override
     public Page<InformeRenovacionDTO> buscar(String nuExpediente, String contratista, String estadoAprobacion, Pageable pageable, Contexto contexto) {
@@ -358,13 +362,13 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 ListadoDetalle nuevoEstado = listadoDetalleDao.obtener(Long.valueOf(actualizacionDTO.getNuevoEstado()));
                 if (nuevoEstado != null) {
                     // Registrar estado anterior para bitácora
-                    Long estadoAnterior = requerimiento.getEstado().getIdListadoDetalle();
+                    ListadoDetalle estadoAnterior = requerimiento.getEstado();
 
-                    requerimiento.getEstado().setIdListadoDetalle(nuevoEstado.getIdListadoDetalle());
+                    requerimiento.setEstado(nuevoEstado);
 
                     // Registrar cambio de estado en tabla de historial
                     registrarCambioEstadoAprobacion(requerimiento.getIdReqAprobacion(),
-                            estadoAnterior,
+                            estadoAnterior.getIdListadoDetalle(),
                             nuevoEstado.getIdListadoDetalle(),
                             contexto);
                 }
@@ -482,26 +486,33 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.info("Creando registro de derivación a G1 para informe ID: {}", informe.getIdInformeRenovacion());
             
             RequerimientoAprobacion nuevaAprobacionG1 = new RequerimientoAprobacion();
+
+            ListadoDetalle grupo1 = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.GRUPOS.CODIGO, Constantes.LISTADO.GRUPOS.G1);
             
             // Datos según especificación
             nuevaAprobacionG1.setIdTipoLd(952L);
-            nuevaAprobacionG1.getGrupo().setIdListadoDetalle(542L);
+            nuevaAprobacionG1.setGrupo(grupo1);
             
             // CRÍTICO: Usar estado ASIGNADO en lugar de 958 para que aparezca en la bandeja
             // La consulta de bandeja filtra por estado ASIGNADO
             ListadoDetalle estadoAsignado = listadoDetalleService.obtenerListadoDetalle(
                     Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
             if (estadoAsignado != null) {
-                nuevaAprobacionG1.getEstado().setIdListadoDetalle(estadoAsignado.getIdListadoDetalle());
+                nuevaAprobacionG1.setEstado(estadoAsignado);
                 logger.info("Estado ASIGNADO establecido con ID: {}", estadoAsignado.getIdListadoDetalle());
             } else {
                 throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
             }
+
+            ListadoDetalle aprobadorTecnico = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.TIPO_EVALUADOR.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
             
-            nuevaAprobacionG1.getTipoAprobador().setIdListadoDetalle(544L);
+            nuevaAprobacionG1.setTipoAprobador(aprobadorTecnico);
             nuevaAprobacionG1.setIdGrupoAprobadorLd(954L);
             // CORREGIDO: Obtener el usuario G1 correcto en lugar de usar valor hardcodeado
             Long idUsuarioG1 = obtenerUsuarioG1ParaInforme(informe);
+<<<<<<< HEAD
             if (nuevaAprobacionG1.getUsuario() == null) {
                 Usuario usuario = new Usuario();
                 usuario.setIdUsuario(idUsuarioG1);
@@ -509,6 +520,10 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             } else {
                 nuevaAprobacionG1.getUsuario().setIdUsuario(idUsuarioG1);
             }
+=======
+            Usuario usuarioG1 = usuarioDao.obtener(idUsuarioG1);
+            nuevaAprobacionG1.setUsuario(usuarioG1);
+>>>>>>> 7b9ca0163410668975d99932fdcd2082f1936ce6
             logger.info("ID_USUARIO G1 establecido: {}", idUsuarioG1);
             
             // FKs requeridas
@@ -1663,6 +1678,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             
             // Si se proporciona idUsuario, actualizar
             if (idUsuario != null) {
+<<<<<<< HEAD
                 if (requerimientoActivo.getUsuario() == null) {
                     Usuario usuario = new Usuario();
                     usuario.setIdUsuario(idUsuario);
@@ -1670,6 +1686,10 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 } else {
                     requerimientoActivo.getUsuario().setIdUsuario(idUsuario);
                 }
+=======
+                Usuario usuario = usuarioDao.obtener(idUsuario);
+                requerimientoActivo.setUsuario(usuario);
+>>>>>>> 7b9ca0163410668975d99932fdcd2082f1936ce6
             }
             
             AuditoriaUtil.setAuditoriaActualizacion(requerimientoActivo, contexto);
@@ -1788,6 +1808,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                     .obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
                             Constantes.LISTADO.GRUPO_APROBACION.GERENTE);
 
+            Usuario usuarioG2 = usuarioDao.obtener(solicitud.getIdAprobadorG2());
+
             RequerimientoAprobacion requerimientoG2 = new RequerimientoAprobacion();
             requerimientoG2.setIdInformeRenovacion(informe.getIdInformeRenovacion());
             requerimientoG2.setIdTipoLd(tipoAprobar.getIdListadoDetalle()); // TIPO_APROBACION: APROBAR
@@ -1795,6 +1817,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             requerimientoG2.setEstado(estadoAsignado); // ASIGNADO
             requerimientoG2.setTipoAprobador(aprobadorTecnico); // APROBADOR_GERENTE
             requerimientoG2.setIdGrupoAprobadorLd(aprobadorGerente.getIdListadoDetalle()); // GERENTE
+<<<<<<< HEAD
             if (requerimientoG2.getUsuario() == null) {
                 Usuario usuario = new Usuario();
                 usuario.setIdUsuario(solicitud.getIdAprobadorG2());
@@ -1802,6 +1825,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             } else {
                 requerimientoG2.getUsuario().setIdUsuario(solicitud.getIdAprobadorG2());
             }
+=======
+            requerimientoG2.setUsuario(usuarioG2);
+>>>>>>> 7b9ca0163410668975d99932fdcd2082f1936ce6
             requerimientoG2.setFeAsignacion(new Date());
             requerimientoG2.setDeObservacion("");
             
@@ -1863,6 +1889,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 ListadoDetalle aprobadorGSE = listadoDetalleService
                         .obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
                                 Constantes.LISTADO.GRUPO_APROBACION.GSE);
+
+                Usuario usuarioG3 = usuarioDao.obtener(solicitud.getIdAprobadorG3());
                 
                 RequerimientoAprobacion requerimientoG3 = new RequerimientoAprobacion();
                 requerimientoG3.setIdInformeRenovacion(informe.getIdInformeRenovacion());
@@ -1871,6 +1899,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 requerimientoG3.setEstado(estadoAsignado); // ASIGNADO
                 requerimientoG3.setTipoAprobador(aprobadorTecnico); // APROBADOR_GSE
                 requerimientoG3.setIdGrupoAprobadorLd(aprobadorGSE.getIdListadoDetalle()); // GSE
+<<<<<<< HEAD
                 if (requerimientoG3.getUsuario() == null) {
                     Usuario usuario = new Usuario();
                     usuario.setIdUsuario(solicitud.getIdAprobadorG3());
@@ -1878,6 +1907,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 } else {
                     requerimientoG3.getUsuario().setIdUsuario(solicitud.getIdAprobadorG3());
                 }
+=======
+                requerimientoG3.setUsuario(usuarioG3);
+>>>>>>> 7b9ca0163410668975d99932fdcd2082f1936ce6
                 requerimientoG3.setFeAsignacion(new Date());
                 requerimientoG3.setDeObservacion("Derivado desde G2: " + observacion);
                 
