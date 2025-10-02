@@ -146,8 +146,8 @@ public class BandejaAprobacionMapper {
                 requerimientoAprobacionDao.findByIdInformeRenovacion(entity.getIdInformeRenovacion());
 
             for (RequerimientoAprobacion aprobacion : todasAprobaciones) {
-                if (aprobacion.getIdGrupoAprobadorLd() != null && aprobacion.getIdEstadoLd() != null) {
-                    java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(aprobacion.getIdEstadoLd());
+                if (aprobacion.getIdGrupoAprobadorLd() != null && aprobacion.getEstado() != null) {
+                    java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(aprobacion.getEstado().getIdListadoDetalle());
                     String nombreEstado = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
 
                     // Mapear por grupo aprobador: 954 = JEFE_UNIDAD (G1), 955 = GERENTE (G2), etc.
@@ -163,11 +163,11 @@ public class BandejaAprobacionMapper {
 
         // Si no se encontró estado específico, usar el estado actual del registro
         if (estadoAprobacionJefe.isEmpty() && entity.getIdGrupoAprobadorLd() != null && entity.getIdGrupoAprobadorLd().equals(954L)) {
-            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(entity.getIdEstadoLd());
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(entity.getEstado().getIdListadoDetalle());
             estadoAprobacionJefe = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
         }
         if (estadoAprobacionGerente.isEmpty() && entity.getIdGrupoAprobadorLd() != null && entity.getIdGrupoAprobadorLd().equals(955L)) {
-            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(entity.getIdEstadoLd());
+            java.util.Optional<ListadoDetalle> estadoOpt = listadoDetalleDao.findById(entity.getEstado().getIdListadoDetalle());
             estadoAprobacionGerente = estadoOpt.isPresent() ? estadoOpt.get().getNombre() : "";
         }
 
@@ -182,7 +182,7 @@ public class BandejaAprobacionMapper {
         logger.warn("  - estadoAprobacionJefeDivision: '{}'", estadoAprobacionJefe);
         logger.warn("  - estadoAprobacionGerenteDivision: '{}'", estadoAprobacionGerente);
         logger.warn("  - grupoAprobadorLd actual: {}", entity.getIdGrupoAprobadorLd());
-        logger.warn("  - estadoLd actual: {}", entity.getIdEstadoLd());
+        logger.warn("  - estadoLd actual: {}", entity.getEstado().getIdListadoDetalle());
 
         // tipoAprobacionLd
         if (entity.getIdTipoLd() != null) {
@@ -191,8 +191,8 @@ public class BandejaAprobacionMapper {
         }
 
         // estadoLd
-        if (entity.getIdEstadoLd() != null) {
-            listadoDetalleDao.findById(entity.getIdEstadoLd())
+        if (entity.getEstado() != null) {
+            listadoDetalleDao.findById(entity.getEstado().getIdListadoDetalle())
                 .ifPresent(estadoLd -> dto.setEstadoLd(listadoDetalleMapper.toDto(estadoLd)));
         }
 

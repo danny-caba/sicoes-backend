@@ -15,6 +15,9 @@ import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 /**
  * Implementación del servicio para el registro del historial de aprobación de renovación de contratos.
  * 
@@ -46,7 +49,7 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
             validarParametrosEntrada(requerimientoAprobacion, contexto);
 
             // Verificar si tiene ID_ESTADO_LD (condición del trigger)
-            if (requerimientoAprobacion.getIdEstadoLd() == null) {
+            if (requerimientoAprobacion.getEstado() == null) {
                 logger.debug("RequerimientoAprobacion ID {} no tiene ID_ESTADO_LD, no se registra historial", 
                            requerimientoAprobacion.getIdReqAprobacion());
                 return;
@@ -77,10 +80,11 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
             HistorialEstadoAprobacionCampo historial = new HistorialEstadoAprobacionCampo();
             historial.setIdReqAprobacion(aprobacion.getIdReqAprobacion());
             historial.setIdUsuario(contexto.getUsuario().getIdUsuario());
-            historial.setDeEstadoAnteriorLd(aprobacion.getIdEstadoLd());
+            historial.setDeEstadoAnteriorLd(aprobacion.getEstado().getIdListadoDetalle());
             historial.setEsRegistro(Constantes.ESTADO.ACTIVO);
-            historial.setIdGrupoLd(aprobacion.getIdGrupoLd());
+            historial.setIdGrupoLd(aprobacion.getGrupo().getIdListadoDetalle());
             historial.setIdGrupoAprobadorLd(aprobacion.getIdGrupoAprobadorLd());
+            historial.setFeFechaCambio(new Timestamp(new Date().getTime()));
 
             return historialEstadoAprobacionCampoDao.save(historial);
         } catch (Exception e) {
@@ -97,7 +101,8 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
                     .findById(historial.getIdHistorialEstadoCampo()).orElseThrow(
                             () -> new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO)
                     );
-            historialDB.setDeEstadoNuevoLd(aprobacion.getIdEstadoLd());
+            historialDB.setDeEstadoNuevoLd(aprobacion.getEstado().getIdListadoDetalle());
+            historialDB.setFeFechaCambio(new Timestamp(new Date().getTime()));
             AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
             historialEstadoAprobacionCampoDao.save(historialDB);
         } catch (Exception e) {
@@ -147,22 +152,22 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
 
         // Campos según el trigger Oracle
         historial.setIdReqAprobacion(requerimientoAprobacion.getIdReqAprobacion());
-        historial.setIdUsuario(requerimientoAprobacion.getIdUsuario());
+        historial.setIdUsuario(requerimientoAprobacion.getUsuario().getIdUsuario());
         
         // DE_ESTADO_ANTERIOR_LD = NULL (no existía estado anterior en inserción)
         historial.setDeEstadoAnteriorLd(null);
         
         // DE_ESTADO_NUEVO_LD = ID_ESTADO_LD del requerimiento
-        historial.setDeEstadoNuevoLd(requerimientoAprobacion.getIdEstadoLd());
+        historial.setDeEstadoNuevoLd(requerimientoAprobacion.getEstado().getIdListadoDetalle());
         
         // ID_GRUPO_LD del requerimiento
-        historial.setIdGrupoLd(requerimientoAprobacion.getIdGrupoLd());
+        historial.setIdGrupoLd(requerimientoAprobacion.getGrupo().getIdListadoDetalle());
         
         // ID_GRUPO_APROBADOR_LD del requerimiento
         historial.setIdGrupoAprobadorLd(requerimientoAprobacion.getIdGrupoAprobadorLd());
         
         // FE_FECHA_CAMBIO = SYSDATE (se establece automáticamente en el constructor)
-        historial.setFeFechaCambio(new java.sql.Timestamp(System.currentTimeMillis()));
+        historial.setFeFechaCambio(new Timestamp(new Date().getTime()));
         
         // ES_REGISTRO = '1' (activo)
         historial.setEsRegistro(Constantes.ESTADO.ACTIVO);

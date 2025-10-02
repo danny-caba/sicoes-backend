@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import pe.gob.osinergmin.sicoes.controller.BaseRestController;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionService;
+import pe.gob.osinergmin.sicoes.util.Raml;
 
 @RestController
 @RequestMapping("/api/informe/renovacion")
@@ -40,6 +42,13 @@ public class InformeRenovacionRestController extends BaseRestController {
         return informeRenovacionService.listarInformesRenovacion(numeroExpediente, empresaSupervisora, tipoInforme, estadoEvaluacion, pageable, getContexto());
     }
 
-
+    @GetMapping("/historial-aprobaciones")
+    @Raml("aprobacionRenovacion.listar.properties")
+    public Page<RequerimientoAprobacion> listarHistorialAprobaciones(
+            @RequestParam Long idInformeRenovacion,
+            Pageable pageable) {
+        logger.info("listarHistorialAprobaciones - idInformeRenovacion: {}", idInformeRenovacion);
+        return informeRenovacionService.listarHistorialAprobacionesV2(idInformeRenovacion, pageable);
+    }
 
 }

@@ -26,6 +26,7 @@ import pe.gob.osinergmin.sicoes.service.renovacioncontrato.mapper.AprobacionCrea
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.AprobacionInformeService;
 
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.ValidaAprobacionInformeService;
+import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
 import pe.gob.osinergmin.sicoes.util.common.exceptionHandler.DataNotFoundException;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprobacionDao;
@@ -178,10 +179,11 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             
             RequerimientoAprobacion requerimientoAprobacionG1 = requerimientosG1.get(0);
             asignarAuditoriaActualizacion(requerimientoAprobacionG1, contexto);
-            requerimientoAprobacionG1.setIdEstadoLd(
-                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
+            requerimientoAprobacionG1.setEstado(
+                    listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionG1.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG1());
+            requerimientoAprobacionG1.getUsuario().setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG1());
             requerimientoAprobacionG1.setDeObservacion(requestDTO.getObservacion());
 
             
@@ -198,18 +200,25 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")
             );
 
-            requerimientoAprobacionG2.setIdGrupoLd(
-                datosService.obtenerIdLd("GRUPOS", "G2")
+            requerimientoAprobacionG2.setGrupo(
+                    listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G2
+                    )
             );
             
-            requerimientoAprobacionG2.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
+            requerimientoAprobacionG2.getUsuario().setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
             
-            requerimientoAprobacionG2.setIdEstadoLd(
-                datosService.obtenerIdLd("ESTADO_APROBACION", "ASIGNADO")
+            requerimientoAprobacionG2.setEstado(
+                    listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
             );
-            
-            requerimientoAprobacionG2.setIdTipoAprobadorLd(
-                datosService.obtenerIdLd("TIPO_EVALUADOR", "APROBADOR_TECNICO")
+
+            requerimientoAprobacionG2.setTipoAprobador(
+                    listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                            Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO
+                    )
             );
             
             requerimientoAprobacionG2.setIdGrupoAprobadorLd(
@@ -217,8 +226,21 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             );
             
             // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
-            if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
-                requerimientoAprobacionG2.setIdFirmadoLd(962L);
+//            if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
+//                requerimientoAprobacionG2.setIdFirmadoLd(962L);
+//            }
+
+            ListadoDetalle g2 = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.GRUPOS.CODIGO,
+                    Constantes.LISTADO.GRUPOS.G2
+            );
+
+            if (requerimientoAprobacionG2.getGrupo() != null && requerimientoAprobacionG2.getGrupo().equals(g2)) {
+                ListadoDetalle estadoFirmado = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_FIRMADO.CODIGO,
+                        Constantes.LISTADO.ESTADO_FIRMADO.FIRMADO
+                );
+                requerimientoAprobacionG2.setIdFirmadoLd(estadoFirmado.getIdListadoDetalle());
             }
 
             // 3.5.4 Primero crear la notificación antes de guardar el requerimiento G2
@@ -280,17 +302,31 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             RequerimientoAprobacion requerimientoAprobacionG2 = requerimientosG2.get(0);
             asignarAuditoriaActualizacion(requerimientoAprobacionG2, contexto);
 
-            requerimientoAprobacionG2.setIdEstadoLd(
-                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
+            requerimientoAprobacionG2.setEstado(
+                    listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionG2.setIdUsuario(contexto.getUsuario().getIdUsuario());
+            requerimientoAprobacionG2.getUsuario().setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionG2.setDeObservacion(requestDTO.getObservacion());
             
             // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
-            if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
-                requerimientoAprobacionG2.setIdFirmadoLd(962L);
+//            if (requerimientoAprobacionG2.getIdGrupoLd() != null && requerimientoAprobacionG2.getIdGrupoLd().equals(543L)) {
+//                requerimientoAprobacionG2.setIdFirmadoLd(962L);
+//            }
+
+            ListadoDetalle g2 = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.GRUPOS.CODIGO,
+                    Constantes.LISTADO.GRUPOS.G2
+            );
+
+            if (requerimientoAprobacionG2.getGrupo() != null && requerimientoAprobacionG2.getGrupo().equals(g2)) {
+                ListadoDetalle estadoFirmado = listadoDetalleService.obtenerListadoDetalle(
+                        Constantes.LISTADO.ESTADO_FIRMADO.CODIGO,
+                        Constantes.LISTADO.ESTADO_FIRMADO.FIRMADO
+                );
+                requerimientoAprobacionG2.setIdFirmadoLd(estadoFirmado.getIdListadoDetalle());
             }
-            
+
             // 3.5.3 Actualiza el campo "Estado Aprobación Informe" = Concluido
             ListadoDetalle concluidoEstadoAprobacionInforme = listadoDetalleService.obtenerListadoDetalle(
                 "ESTADO_REQUERIMIENTO", 
@@ -356,10 +392,11 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             RequerimientoAprobacion requerimientoAprobacionGppmG3 = requerimientosGppmG3.get(0);
             asignarAuditoriaActualizacion(requerimientoAprobacionGppmG3, contexto);
 
-            requerimientoAprobacionGppmG3.setIdEstadoLd(
-                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
+            requerimientoAprobacionGppmG3.setEstado(
+                    listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionGppmG3.setIdUsuario(contexto.getUsuario().getIdUsuario());
+            requerimientoAprobacionGppmG3.getUsuario().setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionGppmG3.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Registra el campo "Estado Aprobación GSE G3" = Asignado
@@ -374,19 +411,26 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             requerimientoAprobacionGseG3.setIdTipoLd(
                 datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")
             );
-            
-            requerimientoAprobacionGseG3.setIdGrupoLd(
-                datosService.obtenerIdLd("GRUPOS", "G3")
+
+            requerimientoAprobacionGseG3.setGrupo(
+                    listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G3
+                    )
             );
             
-            requerimientoAprobacionGseG3.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG3());
+            requerimientoAprobacionGseG3.getUsuario().setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG3());
             
-            requerimientoAprobacionGseG3.setIdEstadoLd(
-                datosService.obtenerIdLd("ESTADO_APROBACION", "ASIGNADO")
+            requerimientoAprobacionGseG3.setEstado(
+                    listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO)
             );
-            
-            requerimientoAprobacionGseG3.setIdTipoAprobadorLd(
-                datosService.obtenerIdLd("TIPO_EVALUADOR", "APROBADOR_TECNICO")
+
+            requerimientoAprobacionGseG3.setTipoAprobador(
+                    listadoDetalleService.obtenerListadoDetalle(
+                            Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                            Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO
+                    )
             );
             
             requerimientoAprobacionGseG3.setIdGrupoAprobadorLd(
@@ -451,10 +495,11 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             RequerimientoAprobacion requerimientoAprobacionGseG3 = requerimientosGseG3.get(0);
             asignarAuditoriaActualizacion(requerimientoAprobacionGseG3, contexto);
 
-            requerimientoAprobacionGseG3.setIdEstadoLd(
-                datosService.obtenerIdLd("ESTADO_APROBACION", "APROBADO")
+            requerimientoAprobacionGseG3.setEstado(
+                    listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionGseG3.setIdUsuario(contexto.getUsuario().getIdUsuario());
+            requerimientoAprobacionGseG3.getUsuario().setIdUsuario(contexto.getUsuario().getIdUsuario());
             requerimientoAprobacionGseG3.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Actualiza el campo estado requerimiento renovacion = 'CONCLUIDO'

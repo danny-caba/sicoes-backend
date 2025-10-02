@@ -38,8 +38,8 @@ public class AprobacionCreateMapper {
         dto.setFechaFirma(entity.getFeFirma());
         
         // ListadoDetalle relacionados
-        if (entity.getIdEstadoLd() != null) {
-            dto.setEstadoLd(listadoDetalleMapper.toDto(listadoDetalleDao.findById(entity.getIdEstadoLd())));
+        if (entity.getEstado() != null) {
+            dto.setEstadoLd(listadoDetalleMapper.toDto(listadoDetalleDao.findById(entity.getEstado().getIdListadoDetalle())));
         }
         if (entity.getIdTipoLd() != null) {
             dto.setTipoAprobacionLd(listadoDetalleMapper.toDto(listadoDetalleDao.findById(entity.getIdTipoLd())));
@@ -49,8 +49,8 @@ public class AprobacionCreateMapper {
         }
         
         // Usuario
-        if (entity.getIdUsuario() != null) {
-            Usuario usuario = usuarioDao.obtener(entity.getIdUsuario());
+        if (entity.getUsuario() != null) {
+            Usuario usuario = usuarioDao.obtener(entity.getUsuario().getIdUsuario());
             if (usuario != null) {
                 UsuarioCreateResponseDTO usuarioDto = new UsuarioCreateResponseDTO();
                 usuarioDto.setIdUsuario(usuario.getIdUsuario());
