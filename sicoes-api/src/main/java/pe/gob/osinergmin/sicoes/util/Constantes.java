@@ -648,6 +648,12 @@ public class Constantes {
 			public static final String MODIFICACION		= "MODIFICACION";
 		}
 
+		public static final class  ESTADO_FIRMADO {
+			public static final String CODIGO			= "ESTADO_FIRMADO";
+			public static final String PENDIENTE		= "PENDIENTE";
+			public static final String FIRMADO			= "FIRMADO";
+		}
+
 	}
 	
 
@@ -922,6 +928,7 @@ public class Constantes {
 		public static final String REQUERIMIENTO_NO_ENVIADO = "V02007";
 		public static final String SUPERVISORA_NO_ENCONTRADA = "V02008";
 		public static final String INVITACION_NO_ENCONTRADA = "V02009";
+		public static final String FILE_NO_ENCONTRADO = "V02010";
 	}
 	public static final class ROLES {
 		public static final String RESPONSABLE_ADMINISTRATIVO 	= "01";

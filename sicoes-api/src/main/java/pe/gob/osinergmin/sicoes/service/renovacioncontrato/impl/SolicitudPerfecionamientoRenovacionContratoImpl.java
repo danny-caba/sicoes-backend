@@ -97,7 +97,7 @@ public class SolicitudPerfecionamientoRenovacionContratoImpl {
                 Constantes.LISTADO.GRUPO_APROBACION.CODIGO, Constantes.LISTADO.GRUPO_APROBACION.GSE);
         
         return informeRenovacionContratoOptional.getAprobaciones().stream()
-                .filter(req -> req.getIdEstadoLd().equals(grupo.getIdListadoDetalle())
+                .filter(req -> req.getEstado().getIdListadoDetalle().equals(grupo.getIdListadoDetalle())
                         && req.getIdGrupoAprobadorLd().equals(grupoAprobador.getIdListadoDetalle()))
                 .map(RequerimientoAprobacion::getFeAprobacion)
                 .findFirst()

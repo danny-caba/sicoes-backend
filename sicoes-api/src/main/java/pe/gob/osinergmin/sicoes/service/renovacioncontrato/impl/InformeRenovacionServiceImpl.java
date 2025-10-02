@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -58,6 +59,7 @@ import pe.gob.osinergmin.sicoes.service.renovacioncontrato.InformeRenovacionServ
 import pe.gob.osinergmin.sicoes.util.AuditoriaUtil;
 import pe.gob.osinergmin.sicoes.util.Constantes;
 import pe.gob.osinergmin.sicoes.util.Contexto;
+import pe.gob.osinergmin.sicoes.util.ValidacionException;
 
 
 @Service
@@ -223,12 +225,14 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             
             logger.info("Actualizando requerimiento ID: {}, estado actual: {}, usuario: {}", 
                        requerimientoAprobacion.getIdReqAprobacion(),
-                       requerimientoAprobacion.getIdEstadoLd(),
-                       requerimientoAprobacion.getIdUsuario());
+                       requerimientoAprobacion.getEstado().getIdListadoDetalle(),
+                       requerimientoAprobacion.getUsuario().getIdUsuario());
             
             // CORREGIDO: Usar ID_ESTADO_LD = 960 para rechazo según requerimiento
             //requerimientoAprobacion.setIdEstadoLd(960L);
-            requerimientoAprobacion.setIdEstadoLd(desaprobado.getIdListadoDetalle());
+            ListadoDetalle estadoRechazado = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
+            requerimientoAprobacion.setEstado(estadoRechazado);
 
             // AGREGADO: Establecer FE_RECHAZO con la fecha actual
             Date fechaRechazo = new Date();
@@ -249,8 +253,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
             // 5. Actualizar SICOES_TD_INFORME_RENOVACION con valores específicos para rechazo
             // Determinar si es G1 o G2 según el ID_GRUPO_LD del requerimiento de aprobación
-            boolean esRechazoG2 = (requerimientoAprobacion.getIdGrupoLd() != null && 
-                                   requerimientoAprobacion.getIdGrupoLd().equals(543L)); // 543 = G2
+            boolean esRechazoG2 = (requerimientoAprobacion.getGrupo() != null &&
+                                   requerimientoAprobacion.getGrupo().getIdListadoDetalle().equals(543L)); // 543 = G2
             
             // Establecer ES_APROBACION_INFORME según el tipo de rechazo
             if (esRechazoG2) {
@@ -308,14 +312,14 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
             // 7. Crear registro de derivación a G1 solo si es rechazo de G2
             logger.info("Evaluando si crear derivación G1 - esRechazoG2: {}, ID_GRUPO_LD: {}", 
-                       esRechazoG2, requerimientoAprobacion.getIdGrupoLd());
+                       esRechazoG2, requerimientoAprobacion.getGrupo().getIdListadoDetalle());
             if (esRechazoG2) {
                 logger.info("INICIANDO creación de registro de derivación a G1 por rechazo G2");
                 crearRegistroDerivacionG1(informe, contexto);
                 logger.info("COMPLETADO - Registro de derivación a G1 creado por rechazo G2");
             } else {
                 logger.info("No se crea derivación a G1 - rechazo realizado por G1 u otro grupo (ID_GRUPO_LD: {})", 
-                           requerimientoAprobacion.getIdGrupoLd());
+                           requerimientoAprobacion.getGrupo().getIdListadoDetalle());
             }
 
             // 8. Registrar en bitácora
@@ -354,9 +358,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 ListadoDetalle nuevoEstado = listadoDetalleDao.obtener(Long.valueOf(actualizacionDTO.getNuevoEstado()));
                 if (nuevoEstado != null) {
                     // Registrar estado anterior para bitácora
-                    Long estadoAnterior = requerimiento.getIdEstadoLd();
+                    Long estadoAnterior = requerimiento.getEstado().getIdListadoDetalle();
 
-                    requerimiento.setIdEstadoLd(nuevoEstado.getIdListadoDetalle());
+                    requerimiento.getEstado().setIdListadoDetalle(nuevoEstado.getIdListadoDetalle());
 
                     // Registrar cambio de estado en tabla de historial
                     registrarCambioEstadoAprobacion(requerimiento.getIdReqAprobacion(),
@@ -481,25 +485,24 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             
             // Datos según especificación
             nuevaAprobacionG1.setIdTipoLd(952L);
-            nuevaAprobacionG1.setIdGrupoLd(542L);
+            nuevaAprobacionG1.getGrupo().setIdListadoDetalle(542L);
             
             // CRÍTICO: Usar estado ASIGNADO en lugar de 958 para que aparezca en la bandeja
             // La consulta de bandeja filtra por estado ASIGNADO
             ListadoDetalle estadoAsignado = listadoDetalleService.obtenerListadoDetalle(
-                    "ESTADO_APROBACION", "ASIGNADO");
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
             if (estadoAsignado != null) {
-                nuevaAprobacionG1.setIdEstadoLd(estadoAsignado.getIdListadoDetalle());
+                nuevaAprobacionG1.getEstado().setIdListadoDetalle(estadoAsignado.getIdListadoDetalle());
                 logger.info("Estado ASIGNADO establecido con ID: {}", estadoAsignado.getIdListadoDetalle());
             } else {
-                nuevaAprobacionG1.setIdEstadoLd(958L); // Fallback al valor especificado
-                logger.warn("No se encontró estado ASIGNADO, usando 958 como fallback");
+                throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
             }
             
-            nuevaAprobacionG1.setIdTipoAprobadorLd(544L);
+            nuevaAprobacionG1.getTipoAprobador().setIdListadoDetalle(544L);
             nuevaAprobacionG1.setIdGrupoAprobadorLd(954L);
             // CORREGIDO: Obtener el usuario G1 correcto en lugar de usar valor hardcodeado
             Long idUsuarioG1 = obtenerUsuarioG1ParaInforme(informe);
-            nuevaAprobacionG1.setIdUsuario(idUsuarioG1);
+            nuevaAprobacionG1.getUsuario().setIdUsuario(idUsuarioG1);
             logger.info("ID_USUARIO G1 establecido: {}", idUsuarioG1);
             
             // FKs requeridas
@@ -557,11 +560,11 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             // Logging antes de guardar
             logger.info("Datos del registro G1 antes de guardar:");
             logger.info("  - ID_TIPO_LD: {}", nuevaAprobacionG1.getIdTipoLd());
-            logger.info("  - ID_GRUPO_LD: {}", nuevaAprobacionG1.getIdGrupoLd());
-            logger.info("  - ID_ESTADO_LD: {}", nuevaAprobacionG1.getIdEstadoLd());
-            logger.info("  - ID_TIPO_APROBADOR_LD: {}", nuevaAprobacionG1.getIdTipoAprobadorLd());
+            logger.info("  - ID_GRUPO_LD: {}", nuevaAprobacionG1.getGrupo().getIdListadoDetalle());
+            logger.info("  - ID_ESTADO_LD: {}", nuevaAprobacionG1.getEstado().getIdListadoDetalle());
+            logger.info("  - ID_TIPO_APROBADOR_LD: {}", nuevaAprobacionG1.getTipoAprobador().getIdListadoDetalle());
             logger.info("  - ID_GRUPO_APROBADOR_LD: {}", nuevaAprobacionG1.getIdGrupoAprobadorLd());
-            logger.info("  - ID_USUARIO: {}", nuevaAprobacionG1.getIdUsuario());
+            logger.info("  - ID_USUARIO: {}", nuevaAprobacionG1.getUsuario().getIdUsuario());
             logger.info("  - ID_REQUERIMIENTO: {}", nuevaAprobacionG1.getIdRequerimiento());
             logger.info("  - ID_INFORME_RENOVACION: {}", nuevaAprobacionG1.getIdInformeRenovacion());
             logger.info("  - ID_NOTIFICACION: {}", nuevaAprobacionG1.getIdNotificacion());
@@ -572,7 +575,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.info("Registro G1 creado exitosamente con ID: {} para informe: {}", 
                        registroGuardado.getIdReqAprobacion(), informe.getIdInformeRenovacion());
             logger.info("Verificación post-guardado - ID_GRUPO_LD: {}, ID_ESTADO_LD: {}", 
-                       registroGuardado.getIdGrupoLd(), registroGuardado.getIdEstadoLd());
+                       registroGuardado.getGrupo().getIdListadoDetalle(), registroGuardado.getEstado().getIdListadoDetalle());
             
         } catch (Exception e) {
             logger.error("Error al crear registro de derivación G1 para informe ID: " + informe.getIdInformeRenovacion(), e);
@@ -606,7 +609,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             bitacora.setUsuario(contexto.getUsuario());
             bitacora.setFechaHora(new Date());
             bitacora.setDescripcion("Actualización de bandeja de aprobaciones. ID: " + requerimiento.getIdReqAprobacion() +
-                    ". Estado: " + (requerimiento.getIdEstadoLd() != null ? requerimiento.getIdEstadoLd() : "N/A") +
+                    ". Estado: " + (requerimiento.getEstado() != null ? requerimiento.getEstado().getIdListadoDetalle() : "N/A") +
                     ". Observaciones: " + (requerimiento.getDeObservacion() != null ? requerimiento.getDeObservacion() : "N/A"));
 
             AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
@@ -649,6 +652,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             historial.setDeEstadoAnteriorLd(estadoAnterior);
             historial.setDeEstadoNuevoLd(estadoNuevo);
             historial.setEsRegistro(Constantes.ESTADO.ACTIVO);
+            historial.setFeFechaCambio(new Timestamp(new Date().getTime()));
 
             AuditoriaUtil.setAuditoriaRegistro(historial, contexto);
 
@@ -1743,7 +1747,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             requerimientoG2.setIdGrupoAprobadorLd(955L); // GERENTE
             requerimientoG2.setIdUsuario(solicitud.getIdAprobadorG2());
             requerimientoG2.setFeAsignacion(new Date());
-            requerimientoG2.setDeObservacion("Derivado desde G1: " + observacion);
+            requerimientoG2.setDeObservacion("");
             
             // Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
             requerimientoG2.setIdFirmadoLd(962L);
@@ -1879,7 +1883,17 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             throw new RuntimeException("Error al procesar la solicitud de perfeccionamiento", e);
         }
     }
-    
+
+    @Override
+    public Page<RequerimientoAprobacion> listarHistorialAprobacionesV2(Long idInformeRenovacion, Pageable pageable) {
+        try {
+            return requerimientoAprobacionDao.obtenerPorInformeRenovacion(idInformeRenovacion, pageable);
+        } catch (Exception e) {
+            logger.error("Error al listar historial de aprobaciones V2 para informe ID: " + idInformeRenovacion, e);
+            throw new ValidacionException(Constantes.CODIGO_MENSAJE.ERROR_EN_SERVICIO);
+        }
+    }
+
     /**
      * Obtiene el ID del usuario G1 asignado para un informe específico
      */
@@ -1893,7 +1907,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                     );
             
             if (!requerimientosG1.isEmpty()) {
-                Long idUsuarioG1 = requerimientosG1.get(0).getIdUsuario();
+                Long idUsuarioG1 = requerimientosG1.get(0).getUsuario().getIdUsuario();
                 logger.info("Usuario G1 encontrado en requerimientos existentes: {}", idUsuarioG1);
                 return idUsuarioG1;
             }

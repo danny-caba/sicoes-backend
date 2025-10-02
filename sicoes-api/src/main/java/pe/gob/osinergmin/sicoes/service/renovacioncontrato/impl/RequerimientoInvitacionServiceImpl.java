@@ -196,9 +196,25 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         nuevoHistorial.setEsRegistro(Constantes.ESTADO.ACTIVO);
         nuevoHistorial.setIdReqInvitacion(requerimientoInvitacion.getIdReqInvitacion());
         nuevoHistorial.setIdUsuario(contexto.getUsuario().getIdUsuario());
-        nuevoHistorial.setFeFechaCambio(new Timestamp(System.currentTimeMillis()));
-        AuditoriaUtil.setAuditoriaRegistro(nuevoHistorial, contexto);
+        nuevoHistorial.setFeFechaCambio(new Timestamp(new Date().getTime()));
+        AuditoriaUtil.setAuditoriaRegistro(nuevoHistorial,contexto);
         historialEstadoInvitacionDao.save(nuevoHistorial);
+
+        ListadoDetalle ldGPPM = listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,Constantes.LISTADO.GRUPO_APROBACION.GPPM);
+        ListadoDetalle estadoAsignado = listadoDetalleDao.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+        List<HistorialEstadoAprobacionCampo> lista = historialEstadoAprobacionCampoDao.findByIdGrupoAprobadorLdAndIdReqAprobacionOrderByFeFechaCambioDesc(
+                ldGPPM.getIdListadoDetalle(),requerimientoInvitacion.getRequerimientoRenovacion().getIdReqRenovacion());
+        logger.info("Sin historial GPPM: {}",lista.isEmpty());
+
+        HistorialEstadoAprobacionCampo historialEstadoAprobacionCampo= new HistorialEstadoAprobacionCampo();
+        historialEstadoAprobacionCampo.setDeEstadoAnteriorLd(null);
+        historialEstadoAprobacionCampo.setDeEstadoNuevoLd(estadoAsignado.getIdListadoDetalle());
+        historialEstadoAprobacionCampo.setIdReqAprobacion(168L);
+        historialEstadoAprobacionCampo.setIdUsuario(contexto.getUsuario().getIdUsuario());
+        historialEstadoAprobacionCampo.setFeFechaCambio(new Timestamp(new Date().getTime()));
+        historialEstadoAprobacionCampo.setEsRegistro(Constantes.ESTADO.ACTIVO);
+        AuditoriaUtil.setAuditoriaRegistro(historialEstadoAprobacionCampo,contexto);
+        historialEstadoAprobacionCampoDao.save(historialEstadoAprobacionCampo);
 
         // 3. Actualizar ES_REQ_RENOVACION a 946 (Archivado) en la tabla SICOES_TC_REQ_RENOVACION
         Long idReqRenovacion = requerimientoInvitacion.getRequerimientoRenovacion() != null ? 
@@ -285,7 +301,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                     historialInvitacion.setEsRegistro(Constantes.ESTADO.ACTIVO);
                     historialInvitacion.setIdReqInvitacion(invitacion.getIdReqInvitacion());
                     historialInvitacion.setIdUsuario(contexto.getUsuario().getIdUsuario());
-                    historialInvitacion.setFeFechaCambio(new Timestamp(System.currentTimeMillis()));
+                    historialInvitacion.setFeFechaCambio(new Timestamp(new Date().getTime()));
                     AuditoriaUtil.setAuditoriaRegistro(historialInvitacion, contexto);
                     historialEstadoInvitacionDao.save(historialInvitacion);
 

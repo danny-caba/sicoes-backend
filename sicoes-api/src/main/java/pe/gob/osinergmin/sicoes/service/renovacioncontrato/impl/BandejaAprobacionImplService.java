@@ -113,9 +113,20 @@ public class BandejaAprobacionImplService {
                                    (nombreContratista != null && !nombreContratista.trim().isEmpty()) ||
                                    (estadoAprobacionInforme != null);
 
-                if (esUsuarioG2) {
-                    logger.warn("DEBUG - Ejecutando buscarByIdUsuarioG2ConFiltrosDinamicos para usuario {}", idUsuario);
-                    // Usar método dinámico que construye la query según los parámetros
+                if (hayFiltros) {
+                    // Cuando hay filtros, tanto G1 como G2 ven todos los registros
+                    logger.warn("DEBUG - Hay filtros aplicados, mostrando todos los registros para usuario {}", idUsuario);
+                    // Usar la consulta de G2 que ahora muestra todos los registros
+                    listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioG2ConFiltrosDinamicos(
+                            numeroExpediente,
+                            estadoAprobacionInforme,
+                            idContratista,
+                            nombreContratista,
+                            pageable
+                    );
+                } else if (esUsuarioG2) {
+                    logger.warn("DEBUG - Sin filtros, ejecutando buscarByIdUsuarioG2ConFiltrosDinamicos para usuario G2 {}", idUsuario);
+                    // Sin filtros, G2 usa su consulta normal
                     listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioG2ConFiltrosDinamicos(
                             numeroExpediente,
                             estadoAprobacionInforme,
@@ -124,8 +135,8 @@ public class BandejaAprobacionImplService {
                             pageable
                     );
                 } else if(esUsuarioG1) {
-                    logger.warn("DEBUG - Ejecutando buscarByIdUsuarioConFiltrosDinamicos para usuario {} (G1)", idUsuario);
-                    // Usar método dinámico que construye la query según los parámetros
+                    logger.warn("DEBUG - Sin filtros, ejecutando buscarByIdUsuarioConFiltrosDinamicos para usuario G1 {}", idUsuario);
+                    // Sin filtros, G1 usa su consulta normal restringida
                     listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioConFiltrosDinamicos(
                             numeroExpediente,
                             estadoAprobacionInforme,

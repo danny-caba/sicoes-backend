@@ -79,11 +79,11 @@ public class ListarInformeRenovacionContratoImpl {
                     if (aprobacion.getIdGrupoAprobadorLd() != null) {
                         idsListadoDetalle.add(aprobacion.getIdGrupoAprobadorLd());
                     }
-                    if (aprobacion.getIdTipoAprobadorLd() != null) {
-                        idsListadoDetalle.add(aprobacion.getIdTipoAprobadorLd());
+                    if (aprobacion.getTipoAprobador() != null) {
+                        idsListadoDetalle.add(aprobacion.getTipoAprobador().getIdListadoDetalle());
                     }
-                    if (aprobacion.getIdGrupoLd() != null) {
-                        idsListadoDetalle.add(aprobacion.getIdGrupoLd());
+                    if (aprobacion.getGrupo() != null) {
+                        idsListadoDetalle.add(aprobacion.getGrupo().getIdListadoDetalle());
                     }
                 }
             }

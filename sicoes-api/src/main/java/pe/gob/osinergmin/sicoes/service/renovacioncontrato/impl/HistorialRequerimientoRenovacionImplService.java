@@ -1,6 +1,7 @@
 package pe.gob.osinergmin.sicoes.service.renovacioncontrato.impl;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,7 +56,7 @@ public class HistorialRequerimientoRenovacionImplService implements HistorialReq
                 historial.setIdUsuario(requerimientoRenovacion.getIdUsuario());
                 historial.setDeEstadoAnteriorLd(null); // Estado anterior (no existía en inserción)
                 historial.setDeEstadoNuevoLd(requerimientoRenovacion.getEstadoReqRenovacion().getIdListadoDetalle()); // Estado nuevo
-                historial.setFeFechaCambio(new Timestamp(System.currentTimeMillis())); // SYSDATE equivalente
+                historial.setFeFechaCambio(new Timestamp(new Date().getTime())); // SYSDATE equivalente
                 historial.setEsRegistro(Constantes.ESTADO.ACTIVO); // '1'
                 
                 // Setear campos de auditoría usando AuditoriaUtil
