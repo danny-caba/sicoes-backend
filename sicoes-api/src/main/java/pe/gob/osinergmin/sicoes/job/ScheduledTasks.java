@@ -175,6 +175,7 @@ public class ScheduledTasks {
 	}
 
 	//TODO: definir el timepo de ejecucion @Scheduled(fixedRate = 5*60*1000)  @Scheduled(cron = "0 3 18 * * ?")
+	@Scheduled(cron = "0 32 21 * * ?")
 	public void cancelarInvitacionesCaducada()throws Exception{
 		logger.info("Ini cancelarInvitacionesCaducada");
 		int i=requerimientoInvitacionService.cancelarCaducados(new Date(),getContextoAnonimo());
