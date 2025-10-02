@@ -178,8 +178,20 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     public void rechazarInforme(RechazoInformeDTO rechazoDTO, Contexto contexto) {
         logger.info("rechazarInforme - Informe: {}, Usuario: {}",
                 rechazoDTO.getIdInformeRenovacion(), contexto.getUsuario().getIdUsuario());
-
         try {
+            // Buscando estado
+            ListadoDetalle desaprobado = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
+
+            ListadoDetalle informeDesapr = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_REQ_RENOVACION.DESAPROBADO);
+
+            ListadoDetalle enProceso = listadoDetalleService.obtenerListadoDetalle(
+                    Constantes.LISTADO.ESTADO_REQ_RENOVACION.CODIGO,
+                    Constantes.LISTADO.ESTADO_REQ_RENOVACION.EN_PROCESO);
+
             // 1. Validar que el informe existe
             InformeRenovacion informe = informeRenovacionDao.obtenerPorId(rechazoDTO.getIdInformeRenovacion());
             if (informe == null) {
@@ -215,8 +227,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                        requerimientoAprobacion.getIdUsuario());
             
             // CORREGIDO: Usar ID_ESTADO_LD = 960 para rechazo según requerimiento
-            requerimientoAprobacion.setIdEstadoLd(960L);
-            
+            //requerimientoAprobacion.setIdEstadoLd(960L);
+            requerimientoAprobacion.setIdEstadoLd(desaprobado.getIdListadoDetalle());
+
             // AGREGADO: Establecer FE_RECHAZO con la fecha actual
             Date fechaRechazo = new Date();
             requerimientoAprobacion.setFeRechazo(fechaRechazo);
@@ -242,8 +255,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             // Establecer ES_APROBACION_INFORME según el tipo de rechazo
             if (esRechazoG2) {
                 // G2 rechaza: Estado Aprobación Informe = "En aprobación" (código 943)
-                informe.setEsAprobacionInforme(943L);
-                logger.info("Rechazo G2: ES_APROBACION_INFORME establecido a 943 (En aprobación)");
+                //informe.setEsAprobacionInforme(943L);
+                informe.setEsAprobacionInforme(informeDesapr.getIdListadoDetalle());
             } else {
                 // G1 rechaza: Estado Aprobación Informe = "Rechazado" 
                 // Necesito determinar el código correcto para "Rechazado"
@@ -276,7 +289,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 
                 if (esRechazoG2) {
                     // G2 rechaza: Estado Requerimiento = "En Proceso" (código 944)
-                    requerimiento.setEsReqRenovacion(944L);
+                    // requerimiento.setEsReqRenovacion(944L);
+                    requerimiento.setEsReqRenovacion(enProceso.getIdListadoDetalle());
                     logger.info("Rechazo G2: ES_REQ_RENOVACION establecido a 944 (En Proceso)");
                 } else {
                     // G1 rechaza: Estado Requerimiento = "Preliminar" (942)

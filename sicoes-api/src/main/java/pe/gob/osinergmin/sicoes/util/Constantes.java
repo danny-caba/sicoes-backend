@@ -488,6 +488,8 @@ public class Constantes {
 			public static final String EN_PROCESO		= "EN_PROCESO";
 			public static final String CONCLUIDO		= "CONCLUIDO";
 			public static final String ARCHIVADO		= "ARCHIVADO";
+			public static final String FINALIZADO		= "FINALIZADO";
+			public static final String DESAPROBADO		= "DESAPROBADO";
 		}
 
 		public static final class GRUPO_APROBACION {
