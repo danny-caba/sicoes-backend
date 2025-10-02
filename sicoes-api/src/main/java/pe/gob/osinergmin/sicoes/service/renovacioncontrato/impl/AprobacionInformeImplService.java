@@ -183,9 +183,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                             Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-
             Usuario usuarioG1 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG1());
-
             requerimientoAprobacionG1.setUsuario(usuarioG1);
             requerimientoAprobacionG1.setDeObservacion(requestDTO.getObservacion());
 

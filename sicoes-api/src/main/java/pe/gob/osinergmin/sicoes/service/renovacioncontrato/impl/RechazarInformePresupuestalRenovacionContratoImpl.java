@@ -83,6 +83,7 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         // if (informeRenovacionContrato.getRequerimiento() != null) {
         //     requerimientoAprobacion.setIdRequerimiento(informeRenovacionContrato.getRequerimiento().getIdReqRenovacion());
         // }
+        
         requerimientoAprobacion.setUsuario(contexto.getUsuario());
         requerimientoAprobacion.setIdTipoLd(1L);//revisar si aplica
 
