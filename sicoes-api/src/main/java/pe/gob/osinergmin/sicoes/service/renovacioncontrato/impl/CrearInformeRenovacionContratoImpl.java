@@ -377,36 +377,29 @@ public class CrearInformeRenovacionContratoImpl {
 
     private RequerimientoAprobacion buildRequerimientoAprobacionG1(Long idInformeRenovacion, Long idRequerimiento, Long idUsuarioG1,Long idUsuario,String ip) {
 
+        Usuario usuarioG1 = usuarioDao.obtener(idUsuarioG1);
+
         RequerimientoAprobacion requerimientoAprobacionG1 = new RequerimientoAprobacion();
         requerimientoAprobacionG1.setFeAsignacion(new Date());
         requerimientoAprobacionG1.setFecCreacion(new Date());
         requerimientoAprobacionG1.setIpCreacion(ip);
         requerimientoAprobacionG1.setUsuCreacion(idUsuario.toString());
-        requerimientoAprobacionG1.getUsuario().setIdUsuario(idUsuarioG1);
+        requerimientoAprobacionG1.setUsuario(usuarioG1);
         requerimientoAprobacionG1.setIdInformeRenovacion(idInformeRenovacion);
         // NO asignar idRequerimiento ya que la FK espera un ID de SICOES_TC_REQUERIMIENTO, no de SICOES_TC_REQ_RENOVACION
         // requerimientoAprobacionG1.setIdRequerimiento(idRequerimiento);
 
-        ListadoDetalle g1GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPOS",
-                "G1"
-        );
-        if (g1GrupoLD == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el grupo G1 en listado detalle");
-        }
-        requerimientoAprobacionG1.getGrupo().setIdListadoDetalle(g1GrupoLD.getIdListadoDetalle());
-        logger.info("RequerimientoAprobacionG1 configurado con ID_GRUPO_LD: {} (debe ser 542 para G1)", g1GrupoLD.getIdListadoDetalle());
-        ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION",
-                "ASIGNADO"
-        );
-        requerimientoAprobacionG1.getEstado().setIdListadoDetalle(asignadoEstadoLD.getIdListadoDetalle());
+        ListadoDetalle grupo1 = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPOS.CODIGO, Constantes.LISTADO.GRUPOS.G1);
+        requerimientoAprobacionG1.setGrupo(grupo1);
+        
+        ListadoDetalle estadoAsignado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+        requerimientoAprobacionG1.setEstado(estadoAsignado);
 
-        ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "TIPO_EVALUADOR",
-                "APROBADOR_TECNICO"
-        );
-        requerimientoAprobacionG1.getTipoAprobador().setIdListadoDetalle(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
+        ListadoDetalle aprobadorTecnico = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_EVALUADOR.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+        requerimientoAprobacionG1.setTipoAprobador(aprobadorTecnico);
 
         ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPO_APROBACION",
@@ -424,41 +417,28 @@ public class CrearInformeRenovacionContratoImpl {
 
     private RequerimientoAprobacion buildRequerimientoAprobacionG2(Long idInformeRenovacion, Long idUsuarioG2, Long idUsuario, String ip) {
 
+        Usuario usuarioG2 = usuarioDao.obtener(idUsuarioG2);
+
         RequerimientoAprobacion requerimientoAprobacionG2 = new RequerimientoAprobacion();
         requerimientoAprobacionG2.setFeAsignacion(new Date());
         requerimientoAprobacionG2.setFecCreacion(new Date());
         requerimientoAprobacionG2.setIpCreacion(ip);
         requerimientoAprobacionG2.setUsuCreacion(idUsuario.toString());
-        requerimientoAprobacionG2.getUsuario().setIdUsuario(idUsuarioG2);
+        requerimientoAprobacionG2.setUsuario(usuarioG2);
         requerimientoAprobacionG2.setIdInformeRenovacion(idInformeRenovacion);
 
         // Configurar como grupo G2
-        ListadoDetalle g2GrupoLD = listadoDetalleService.obtenerListadoDetalle(
-                "GRUPOS",
-                "G2"
-        );
-        if (g2GrupoLD == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el grupo G2 en listado detalle");
-        }
-        requerimientoAprobacionG2.getGrupo().setIdListadoDetalle(g2GrupoLD.getIdListadoDetalle());
+        ListadoDetalle grupo2 = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.GRUPOS.CODIGO, Constantes.LISTADO.GRUPOS.G2);
+        requerimientoAprobacionG2.setGrupo(grupo2);
 
-        ListadoDetalle asignadoEstadoLD = listadoDetalleService.obtenerListadoDetalle(
-                "ESTADO_APROBACION",
-                "ASIGNADO"
-        );
-        if (asignadoEstadoLD == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el estado ASIGNADO en listado detalle");
-        }
-        requerimientoAprobacionG2.getEstado().setIdListadoDetalle(asignadoEstadoLD.getIdListadoDetalle());
+        ListadoDetalle estadoAsignado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+        requerimientoAprobacionG2.setEstado(estadoAsignado);
 
-        ListadoDetalle tecnicoTipoEvaluadorLD = listadoDetalleService.obtenerListadoDetalle(
-                "TIPO_EVALUADOR",
-                "APROBADOR_TECNICO"
-        );
-        if (tecnicoTipoEvaluadorLD == null) {
-            throw new ValidacionException(Constantes.CODIGO_MENSAJE.LISTADO_DETALLE_NO_ENCONTRADO, "No se encontró el tipo APROBADOR_TECNICO en listado detalle");
-        }
-        requerimientoAprobacionG2.getTipoAprobador().setIdListadoDetalle(tecnicoTipoEvaluadorLD.getIdListadoDetalle());
+        ListadoDetalle aprobadorTecnico = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.TIPO_EVALUADOR.CODIGO, Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+        requerimientoAprobacionG2.setTipoAprobador(aprobadorTecnico);
 
         ListadoDetalle grupoAprobadorLD = listadoDetalleService.obtenerListadoDetalle(
                 "GRUPO_APROBACION",
