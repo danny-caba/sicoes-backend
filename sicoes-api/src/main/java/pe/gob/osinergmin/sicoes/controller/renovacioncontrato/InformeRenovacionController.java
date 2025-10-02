@@ -496,9 +496,9 @@ public class InformeRenovacionController extends BaseRestController {
             return ResponseEntity.badRequest()
                     .body(Collections.singletonMap("message", e.getMessage()));
         } catch (Exception e) {
-            logger.error("Error al aprobar informe de renovación", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonMap("message", "Error al procesar la aprobación del informe"));
+                    .body(Collections.singletonMap("message", "Error al procesar la aprobación del informe: " + e.getMessage()));
         }
     }
 

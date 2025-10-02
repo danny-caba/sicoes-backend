@@ -512,8 +512,23 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             nuevaAprobacionG1.setIdGrupoAprobadorLd(954L);
             // CORREGIDO: Obtener el usuario G1 correcto en lugar de usar valor hardcodeado
             Long idUsuarioG1 = obtenerUsuarioG1ParaInforme(informe);
-            Usuario usuarioG1 = usuarioDao.obtener(idUsuarioG1);
-            nuevaAprobacionG1.setUsuario(usuarioG1);
+            try {
+                Usuario usuarioG1 = usuarioDao.obtener(idUsuarioG1);
+                if (usuarioG1 != null) {
+                    nuevaAprobacionG1.setUsuario(usuarioG1);
+                } else {
+                    // If user not found, create a minimal user entity
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(idUsuarioG1);
+                    nuevaAprobacionG1.setUsuario(usuario);
+                    logger.warn("Usuario {} no encontrado en BD, usando entidad mínima", idUsuarioG1);
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener usuario {}, usando entidad mínima: {}", idUsuarioG1, e.getMessage());
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(idUsuarioG1);
+                nuevaAprobacionG1.setUsuario(usuario);
+            }
             logger.info("ID_USUARIO G1 establecido: {}", idUsuarioG1);
             
             // FKs requeridas
@@ -1594,7 +1609,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     @Override
     @Transactional
     public void aprobarInforme(Long idInformeRenovacion, Long idUsuario, String observacion, Contexto contexto) {
-        logger.info("aprobarInforme - ID: {}, Usuario: {}", idInformeRenovacion, idUsuario);
+        logger.info("aprobarInforme - INICIO - ID: {}, Usuario: {}, Observacion: {}, ContextoUsuario: {}", 
+                   idInformeRenovacion, idUsuario, observacion, 
+                   contexto != null && contexto.getUsuario() != null ? contexto.getUsuario().getIdUsuario() : "NULL");
         
         try {
             // Validar que el informe existe
@@ -1603,39 +1620,77 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             }
 
             // 1. Obtener el informe
-            InformeRenovacion informe = informeRenovacionDao.obtenerPorId(idInformeRenovacion);
-            if (informe == null) {
-                throw new IllegalArgumentException("No se encontró el informe de renovación con ID: " + idInformeRenovacion);
+            InformeRenovacion informe = null;
+            try {
+                // Try the custom method first
+                informe = informeRenovacionDao.obtenerPorId(idInformeRenovacion);
+                
+                // If null, it might be because esRegistro = '0', try with findById
+                if (informe == null) {
+                    Optional<InformeRenovacion> informeOpt = informeRenovacionDao.findById(idInformeRenovacion);
+                    if (informeOpt.isPresent()) {
+                        informe = informeOpt.get();
+                        // Warn that the informe has esRegistro = '0'
+                        if (!"1".equals(informe.getEsRegistro())) {
+                            throw new IllegalArgumentException("El informe ID " + idInformeRenovacion + " no está activo (esRegistro=" + informe.getEsRegistro() + ")");
+                        }
+                    }
+                }
+            } catch (IllegalArgumentException ie) {
+                throw ie;
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error al buscar informe ID " + idInformeRenovacion + ": " + e.getMessage());
             }
+            
+            if (informe == null) {
+                throw new IllegalArgumentException("No existe el informe de renovación con ID: " + idInformeRenovacion);
+            }
+            logger.info("Informe encontrado - ID: {}, Requerimiento: {}", 
+                       informe.getIdInformeRenovacion(), 
+                       informe.getRequerimientoRenovacion() != null ? informe.getRequerimientoRenovacion().getIdReqRenovacion() : "NULL");
 
             // 2. Buscar el requerimiento de aprobación activo para este informe
-            List<RequerimientoAprobacion> requerimientosAprobacion = requerimientoAprobacionDao
-                    .findByIdInformeRenovacion(idInformeRenovacion);
+            List<RequerimientoAprobacion> requerimientosAprobacion = null;
+            try {
+                requerimientosAprobacion = requerimientoAprobacionDao.findByIdInformeRenovacion(idInformeRenovacion);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error al buscar requerimientos de aprobación: " + e.getMessage());
+            }
             
-            if (requerimientosAprobacion.isEmpty()) {
-                throw new IllegalArgumentException("No se encontró requerimiento de aprobación para el informe ID: " + idInformeRenovacion);
+            if (requerimientosAprobacion == null || requerimientosAprobacion.isEmpty()) {
+                throw new IllegalArgumentException("No existen requerimientos de aprobación para el informe ID: " + idInformeRenovacion + 
+                    ". El informe debe tener al menos un registro en bandeja de aprobaciones.");
             }
 
             // 3. Obtener el requerimiento activo (el que no está aprobado/rechazado)
             RequerimientoAprobacion requerimientoActivo = null;
             for (RequerimientoAprobacion req : requerimientosAprobacion) {
-                // Buscar un requerimiento en estado ASIGNADO (958) o EN_REVISION
-                ListadoDetalle estadoAsignado = listadoDetalleService
-                        .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
-                                Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
-
-                ListadoDetalle estadoDesaprobado = listadoDetalleService
-                        .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
-                                Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
-                if (req.getEstado() != null &&
-                    (req.getEstado().equals(estadoAsignado) || req.getEstado().equals(estadoDesaprobado))) {
-                    requerimientoActivo = req;
-                    break;
+                logger.info("Revisando requerimiento ID: {}, Estado: {}, Grupo: {}", 
+                           req.getIdReqAprobacion(), 
+                           req.getEstado() != null ? req.getEstado().getIdListadoDetalle() : "NULL",
+                           req.getGrupo() != null ? req.getGrupo().getIdListadoDetalle() : "NULL");
+                
+                // Buscar un requerimiento en estado ASIGNADO (958) o DESAPROBADO (960)
+                if (req.getEstado() != null) {
+                    Long estadoId = req.getEstado().getIdListadoDetalle();
+                    // 958 = ASIGNADO, 960 = DESAPROBADO
+                    if (estadoId.equals(958L) || estadoId.equals(960L)) {
+                        requerimientoActivo = req;
+                        logger.info("Requerimiento activo encontrado: {}", req.getIdReqAprobacion());
+                        break;
+                    }
                 }
             }
             
             if (requerimientoActivo == null) {
-                throw new IllegalArgumentException("No se encontró requerimiento de aprobación activo para procesar");
+                StringBuilder estados = new StringBuilder();
+                for (RequerimientoAprobacion req : requerimientosAprobacion) {
+                    estados.append("ReqID:").append(req.getIdReqAprobacion())
+                          .append(" EstadoID:").append(req.getEstado() != null ? req.getEstado().getIdListadoDetalle() : "NULL")
+                          .append(" GrupoID:").append(req.getGrupo() != null ? req.getGrupo().getIdListadoDetalle() : "NULL")
+                          .append("; ");
+                }
+                throw new IllegalArgumentException("No se encontró requerimiento en estado ASIGNADO o DESAPROBADO. Estados encontrados: " + estados.toString());
             }
 
             // 4. Determinar el tipo de aprobador (G1, G2, G3)
@@ -1668,8 +1723,22 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             
             // Si se proporciona idUsuario, actualizar
             if (idUsuario != null) {
-                Usuario usuario = usuarioDao.obtener(idUsuario);
-                requerimientoActivo.setUsuario(usuario);
+                try {
+                    Usuario usuario = usuarioDao.obtener(idUsuario);
+                    if (usuario != null) {
+                        requerimientoActivo.setUsuario(usuario);
+                    } else {
+                        Usuario usuarioMin = new Usuario();
+                        usuarioMin.setIdUsuario(idUsuario);
+                        requerimientoActivo.setUsuario(usuarioMin);
+                        logger.warn("Usuario {} no encontrado, usando entidad mínima", idUsuario);
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error al obtener usuario {}, usando entidad mínima: {}", idUsuario, e.getMessage());
+                    Usuario usuarioMin = new Usuario();
+                    usuarioMin.setIdUsuario(idUsuario);
+                    requerimientoActivo.setUsuario(usuarioMin);
+                }
             }
             
             AuditoriaUtil.setAuditoriaActualizacion(requerimientoActivo, contexto);
@@ -1742,9 +1811,16 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.info("Informe aprobado exitosamente - ID: {}, Observación: {}", 
                        idInformeRenovacion, observacion);
 
+        } catch (IllegalArgumentException e) {
+            // Re-throw validation errors with the same message
+            throw e;
         } catch (Exception e) {
-            logger.error("Error al aprobar informe - ID: " + idInformeRenovacion, e);
-            throw new RuntimeException("Error al procesar la aprobación del informe", e);
+            logger.error("Error al aprobar informe - ID: " + idInformeRenovacion + ", Detalle: " + e.getMessage(), e);
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                throw new RuntimeException("Error en aprobación: " + e.getMessage(), e);
+            } else {
+                throw new RuntimeException("Error interno al procesar la aprobación del informe", e);
+            }
         }
     }
     
@@ -1777,8 +1853,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                             Constantes.LISTADO.GRUPOS.G2);
 
             ListadoDetalle estadoAsignado = listadoDetalleService
-                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
-                            Constantes.LISTADO.GRUPOS.G2);
+                    .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
 
             ListadoDetalle aprobadorTecnico = listadoDetalleService
                     .obtenerListadoDetalle(Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
@@ -1788,8 +1864,6 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                     .obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
                             Constantes.LISTADO.GRUPO_APROBACION.GERENTE);
 
-            Usuario usuarioG2 = usuarioDao.obtener(solicitud.getIdAprobadorG2());
-
             RequerimientoAprobacion requerimientoG2 = new RequerimientoAprobacion();
             requerimientoG2.setIdInformeRenovacion(informe.getIdInformeRenovacion());
             requerimientoG2.setIdTipoLd(tipoAprobar.getIdListadoDetalle()); // TIPO_APROBACION: APROBAR
@@ -1797,7 +1871,23 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             requerimientoG2.setEstado(estadoAsignado); // ASIGNADO
             requerimientoG2.setTipoAprobador(aprobadorTecnico); // APROBADOR_GERENTE
             requerimientoG2.setIdGrupoAprobadorLd(aprobadorGerente.getIdListadoDetalle()); // GERENTE
-            requerimientoG2.setUsuario(usuarioG2);
+            
+            try {
+                Usuario usuarioG2 = usuarioDao.obtener(solicitud.getIdAprobadorG2());
+                if (usuarioG2 != null) {
+                    requerimientoG2.setUsuario(usuarioG2);
+                } else {
+                    Usuario usuarioMin = new Usuario();
+                    usuarioMin.setIdUsuario(solicitud.getIdAprobadorG2());
+                    requerimientoG2.setUsuario(usuarioMin);
+                    logger.warn("Usuario G2 {} no encontrado, usando entidad mínima", solicitud.getIdAprobadorG2());
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener usuario G2 {}: {}", solicitud.getIdAprobadorG2(), e.getMessage());
+                Usuario usuarioMin = new Usuario();
+                usuarioMin.setIdUsuario(solicitud.getIdAprobadorG2());
+                requerimientoG2.setUsuario(usuarioMin);
+            }
             requerimientoG2.setFeAsignacion(new Date());
             requerimientoG2.setDeObservacion("");
             
@@ -1849,8 +1939,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                                 Constantes.LISTADO.GRUPOS.G3);
 
                 ListadoDetalle estadoAsignado = listadoDetalleService
-                        .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
-                                Constantes.LISTADO.GRUPOS.G2);
+                        .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                                Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
 
                 ListadoDetalle aprobadorTecnico = listadoDetalleService
                         .obtenerListadoDetalle(Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
@@ -1860,8 +1950,6 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                         .obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
                                 Constantes.LISTADO.GRUPO_APROBACION.GSE);
 
-                Usuario usuarioG3 = usuarioDao.obtener(solicitud.getIdAprobadorG3());
-                
                 RequerimientoAprobacion requerimientoG3 = new RequerimientoAprobacion();
                 requerimientoG3.setIdInformeRenovacion(informe.getIdInformeRenovacion());
                 requerimientoG3.setIdTipoLd(tipoAprobar.getIdListadoDetalle()); // TIPO_APROBACION: APROBAR
@@ -1869,7 +1957,23 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 requerimientoG3.setEstado(estadoAsignado); // ASIGNADO
                 requerimientoG3.setTipoAprobador(aprobadorTecnico); // APROBADOR_GSE
                 requerimientoG3.setIdGrupoAprobadorLd(aprobadorGSE.getIdListadoDetalle()); // GSE
-                requerimientoG3.setUsuario(usuarioG3);
+                
+                try {
+                    Usuario usuarioG3 = usuarioDao.obtener(solicitud.getIdAprobadorG3());
+                    if (usuarioG3 != null) {
+                        requerimientoG3.setUsuario(usuarioG3);
+                    } else {
+                        Usuario usuarioMin = new Usuario();
+                        usuarioMin.setIdUsuario(solicitud.getIdAprobadorG3());
+                        requerimientoG3.setUsuario(usuarioMin);
+                        logger.warn("Usuario G3 {} no encontrado, usando entidad mínima", solicitud.getIdAprobadorG3());
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error al obtener usuario G3 {}: {}", solicitud.getIdAprobadorG3(), e.getMessage());
+                    Usuario usuarioMin = new Usuario();
+                    usuarioMin.setIdUsuario(solicitud.getIdAprobadorG3());
+                    requerimientoG3.setUsuario(usuarioMin);
+                }
                 requerimientoG3.setFeAsignacion(new Date());
                 requerimientoG3.setDeObservacion("Derivado desde G2: " + observacion);
                 

@@ -183,8 +183,22 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                             Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            Usuario usuarioG1 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG1());
-            requerimientoAprobacionG1.setUsuario(usuarioG1);
+            try {
+                Usuario usuarioG1 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG1());
+                if (usuarioG1 != null) {
+                    requerimientoAprobacionG1.setUsuario(usuarioG1);
+                } else {
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG1());
+                    requerimientoAprobacionG1.setUsuario(usuario);
+                    logger.warn("Usuario G1 {} no encontrado, usando entidad mínima", solicitudPerfecionamientoContrato.getIdAprobadorG1());
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener usuario G1 {}: {}", solicitudPerfecionamientoContrato.getIdAprobadorG1(), e.getMessage());
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG1());
+                requerimientoAprobacionG1.setUsuario(usuario);
+            }
             requerimientoAprobacionG1.setDeObservacion(requestDTO.getObservacion());
 
             
@@ -208,9 +222,22 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     )
             );
 
-            Usuario aprobadorG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
-            
-            requerimientoAprobacionG2.setUsuario(aprobadorG2);
+            try {
+                Usuario aprobadorG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
+                if (aprobadorG2 != null) {
+                    requerimientoAprobacionG2.setUsuario(aprobadorG2);
+                } else {
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
+                    requerimientoAprobacionG2.setUsuario(usuario);
+                    logger.warn("Usuario G2 {} no encontrado, usando entidad mínima", solicitudPerfecionamientoContrato.getIdAprobadorG2());
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener usuario G2 {}: {}", solicitudPerfecionamientoContrato.getIdAprobadorG2(), e.getMessage());
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
+                requerimientoAprobacionG2.setUsuario(usuario);
+            }
             
             requerimientoAprobacionG2.setEstado(
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
