@@ -162,7 +162,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     
     @Query("SELECT r FROM RequerimientoAprobacion r " +
            "WHERE r.idInformeRenovacion = :idInformeRenovacion " +
-           "AND r.idGrupoLd = :idGrupoLd " +
+           "AND r.grupo.idListadoDetalle = :idGrupoLd " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> findByIdInformeRenovacionAndIdGrupoLd(
         @Param("idInformeRenovacion") Long idInformeRenovacion, 
@@ -227,7 +227,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
 
     // Query específica para verificar registros G2 existentes
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.idGrupoLd = 543 " +
+           "WHERE r.grupo.idListadoDetalle = 543 " +
            "AND r.idGrupoAprobadorLd = 955 " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> debugRegistrosG2();
