@@ -444,8 +444,8 @@ public class SigedOldConsumerImpl implements SigedOldConsumer{
 			String response = restTemplate.getForObject(url, String.class);
 			logger.info("response: " + response);
 			while (true) {
-				Integer indexInformeVerificacion = response.indexOf("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_");
-				Integer indexInformeResultado = response.indexOf("INFORME_RENOVACION_CONTRATO_B_"+idInformeRenovacion+"_");
+				Integer indexInformeVerificacion = response.indexOf("INFORME_RENOVACION_CONTRATO_"+numeroExpediente);
+				Integer indexInformeResultado = response.indexOf("INFORME_RENOVACION_CONTRATO_"+numeroExpediente);
 				if (indexInformeVerificacion > 0 || indexInformeResultado > 0) {
 					Integer indexInforme = indexInformeVerificacion > 0 ? indexInformeVerificacion : indexInformeResultado;
 					// Obtener los campos del informe
