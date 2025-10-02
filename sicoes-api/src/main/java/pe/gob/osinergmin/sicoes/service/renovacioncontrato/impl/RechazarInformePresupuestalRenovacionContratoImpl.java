@@ -85,14 +85,24 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         // }
         
         Usuario usuario = contexto.getUsuario();
-        requerimientoAprobacion.getUsuario().setIdUsuario(usuario.getIdUsuario());
+        if (requerimientoAprobacion.getUsuario() == null) {
+            Usuario usuarioReq = new Usuario();
+            usuarioReq.setIdUsuario(usuario.getIdUsuario());
+            requerimientoAprobacion.setUsuario(usuarioReq);
+        } else {
+            requerimientoAprobacion.getUsuario().setIdUsuario(usuario.getIdUsuario());
+        }
         requerimientoAprobacion.setIdTipoLd(1L);//revisar si aplica
 
         ListadoDetalle estadoAprobacionGrupoLD = listadoDetalleService.obtenerListadoDetalle(
             "GRUPOS"    ,
             "G3"
         );
-        requerimientoAprobacion.getGrupo().setIdListadoDetalle(estadoAprobacionGrupoLD.getIdListadoDetalle());
+        if (requerimientoAprobacion.getGrupo() == null) {
+            requerimientoAprobacion.setGrupo(estadoAprobacionGrupoLD);
+        } else {
+            requerimientoAprobacion.getGrupo().setIdListadoDetalle(estadoAprobacionGrupoLD.getIdListadoDetalle());
+        }
         
         // CORREGIDO: Usar ID_ESTADO_LD = 960 para rechazo según requerimiento
         ListadoDetalle estadoRechazado = listadoDetalleService.obtenerListadoDetalle(

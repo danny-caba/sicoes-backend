@@ -502,7 +502,13 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             nuevaAprobacionG1.setIdGrupoAprobadorLd(954L);
             // CORREGIDO: Obtener el usuario G1 correcto en lugar de usar valor hardcodeado
             Long idUsuarioG1 = obtenerUsuarioG1ParaInforme(informe);
-            nuevaAprobacionG1.getUsuario().setIdUsuario(idUsuarioG1);
+            if (nuevaAprobacionG1.getUsuario() == null) {
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(idUsuarioG1);
+                nuevaAprobacionG1.setUsuario(usuario);
+            } else {
+                nuevaAprobacionG1.getUsuario().setIdUsuario(idUsuarioG1);
+            }
             logger.info("ID_USUARIO G1 establecido: {}", idUsuarioG1);
             
             // FKs requeridas
@@ -1657,7 +1663,13 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             
             // Si se proporciona idUsuario, actualizar
             if (idUsuario != null) {
-                requerimientoActivo.getUsuario().setIdUsuario(idUsuario);
+                if (requerimientoActivo.getUsuario() == null) {
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(idUsuario);
+                    requerimientoActivo.setUsuario(usuario);
+                } else {
+                    requerimientoActivo.getUsuario().setIdUsuario(idUsuario);
+                }
             }
             
             AuditoriaUtil.setAuditoriaActualizacion(requerimientoActivo, contexto);
@@ -1783,7 +1795,13 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             requerimientoG2.setEstado(estadoAsignado); // ASIGNADO
             requerimientoG2.setTipoAprobador(aprobadorTecnico); // APROBADOR_GERENTE
             requerimientoG2.setIdGrupoAprobadorLd(aprobadorGerente.getIdListadoDetalle()); // GERENTE
-            requerimientoG2.getUsuario().setIdUsuario(solicitud.getIdAprobadorG2());
+            if (requerimientoG2.getUsuario() == null) {
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(solicitud.getIdAprobadorG2());
+                requerimientoG2.setUsuario(usuario);
+            } else {
+                requerimientoG2.getUsuario().setIdUsuario(solicitud.getIdAprobadorG2());
+            }
             requerimientoG2.setFeAsignacion(new Date());
             requerimientoG2.setDeObservacion("");
             
@@ -1853,7 +1871,13 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 requerimientoG3.setEstado(estadoAsignado); // ASIGNADO
                 requerimientoG3.setTipoAprobador(aprobadorTecnico); // APROBADOR_GSE
                 requerimientoG3.setIdGrupoAprobadorLd(aprobadorGSE.getIdListadoDetalle()); // GSE
-                requerimientoG3.getUsuario().setIdUsuario(solicitud.getIdAprobadorG3());
+                if (requerimientoG3.getUsuario() == null) {
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(solicitud.getIdAprobadorG3());
+                    requerimientoG3.setUsuario(usuario);
+                } else {
+                    requerimientoG3.getUsuario().setIdUsuario(solicitud.getIdAprobadorG3());
+                }
                 requerimientoG3.setFeAsignacion(new Date());
                 requerimientoG3.setDeObservacion("Derivado desde G2: " + observacion);
                 
