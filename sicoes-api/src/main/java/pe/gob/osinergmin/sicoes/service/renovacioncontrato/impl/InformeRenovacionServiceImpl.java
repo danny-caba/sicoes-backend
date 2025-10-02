@@ -225,8 +225,12 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             }
 
             // 4. Actualizar el requerimiento de aprobación con estado rechazado
-            RequerimientoAprobacion requerimientoAprobacion = requerimientosAprobacion.get(0);
-            
+            RequerimientoAprobacion requerimientoAprobacion = requerimientosAprobacion.stream()
+                    .filter(req -> req.getGrupo() != null && req.getGrupo().getIdListadoDetalle().equals(
+                            rechazoDTO.getIdGrupoAprobador()))
+                    .findFirst()
+                    .orElse(null);
+
             logger.info("Actualizando requerimiento ID: {}, estado actual: {}, usuario: {}", 
                        requerimientoAprobacion.getIdReqAprobacion(),
                        requerimientoAprobacion.getEstado().getIdListadoDetalle(),
@@ -493,7 +497,6 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             // Datos según especificación
             nuevaAprobacionG1.setIdTipoLd(952L);
             nuevaAprobacionG1.setGrupo(grupo1);
-            
             // CRÍTICO: Usar estado ASIGNADO en lugar de 958 para que aparezca en la bandeja
             // La consulta de bandeja filtra por estado ASIGNADO
             ListadoDetalle estadoAsignado = listadoDetalleService.obtenerListadoDetalle(
