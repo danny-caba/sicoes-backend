@@ -1595,8 +1595,15 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             RequerimientoAprobacion requerimientoActivo = null;
             for (RequerimientoAprobacion req : requerimientosAprobacion) {
                 // Buscar un requerimiento en estado ASIGNADO (958) o EN_REVISION
-                if (req.getIdEstadoLd() != null && 
-                    (req.getIdEstadoLd().equals(958L) || req.getIdEstadoLd().equals(1160L))) {
+                ListadoDetalle estadoAsignado = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                                Constantes.LISTADO.ESTADO_APROBACION.ASIGNADO);
+
+                ListadoDetalle estadoDesaprobado = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                                Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
+                if (req.getEstado() != null &&
+                    (req.getEstado().equals(estadoAsignado) || req.getEstado().equals(estadoDesaprobado))) {
                     requerimientoActivo = req;
                     break;
                 }
@@ -1607,24 +1614,36 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             }
 
             // 4. Determinar el tipo de aprobador (G1, G2, G3)
-            boolean esAprobadorG1 = requerimientoActivo.getIdGrupoLd() != null && 
-                                   requerimientoActivo.getIdGrupoLd().equals(542L);
-            boolean esAprobadorG2 = requerimientoActivo.getIdGrupoLd() != null && 
-                                   requerimientoActivo.getIdGrupoLd().equals(543L);
-            boolean esAprobadorG3 = requerimientoActivo.getIdGrupoLd() != null && 
-                                   requerimientoActivo.getIdGrupoLd().equals(545L);
+            ListadoDetalle grupo1 = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G1);
+            ListadoDetalle grupo2 = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G2);
+            ListadoDetalle grupo3 = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G3);
+            boolean esAprobadorG1 = requerimientoActivo.getGrupo() != null &&
+                                    requerimientoActivo.getGrupo().equals(grupo1);
+            boolean esAprobadorG2 = requerimientoActivo.getGrupo() != null &&
+                                    requerimientoActivo.getGrupo().equals(grupo2);
+            boolean esAprobadorG3 = requerimientoActivo.getGrupo() != null &&
+                                    requerimientoActivo.getGrupo().equals(grupo3);
 
             logger.info("Tipo de aprobador - G1: {}, G2: {}, G3: {}, ID_GRUPO_LD: {}", 
-                       esAprobadorG1, esAprobadorG2, esAprobadorG3, requerimientoActivo.getIdGrupoLd());
+                       esAprobadorG1, esAprobadorG2, esAprobadorG3, requerimientoActivo.getGrupo().getIdListadoDetalle());
 
             // 5. Actualizar el requerimiento de aprobación
-            requerimientoActivo.setIdEstadoLd(959L); // APROBADO
+            ListadoDetalle estadoAprobado = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
+                            Constantes.LISTADO.ESTADO_APROBACION.APROBADO);
+            requerimientoActivo.setEstado(estadoAprobado); // APROBADO
             requerimientoActivo.setFeAprobacion(new Date());
             requerimientoActivo.setDeObservacion(observacion);
             
             // Si se proporciona idUsuario, actualizar
             if (idUsuario != null) {
-                requerimientoActivo.setIdUsuario(idUsuario);
+                requerimientoActivo.getUsuario().setIdUsuario(idUsuario);
             }
             
             AuditoriaUtil.setAuditoriaActualizacion(requerimientoActivo, contexto);
@@ -1665,7 +1684,6 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 logger.info("Aprobación G3 detectada, finalizando proceso");
                 
                 // Actualizar estado del informe a completamente aprobado
-                ListadoDetalle estadoAprobado = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "APROBADO");
                 if (estadoAprobado != null) {
                     informe.setEstadoAprobacionInforme(estadoAprobado);
                 }
@@ -1724,14 +1742,34 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 return;
             }
 
+            ListadoDetalle tipoAprobar = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                            Constantes.LISTADO.TIPO_APROBACION.APROBAR);
+
+            ListadoDetalle grupo2 = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G2);
+
+            ListadoDetalle estadoAsignado = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                            Constantes.LISTADO.GRUPOS.G2);
+
+            ListadoDetalle aprobadorTecnico = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                            Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+
+            ListadoDetalle aprobadorGerente = listadoDetalleService
+                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                            Constantes.LISTADO.GRUPO_APROBACION.GERENTE);
+
             RequerimientoAprobacion requerimientoG2 = new RequerimientoAprobacion();
             requerimientoG2.setIdInformeRenovacion(informe.getIdInformeRenovacion());
-            requerimientoG2.setIdTipoLd(952L); // TIPO_APROBACION: APROBAR
-            requerimientoG2.setIdGrupoLd(543L); // G2
-            requerimientoG2.setIdEstadoLd(958L); // ASIGNADO
-            requerimientoG2.setIdTipoAprobadorLd(545L); // APROBADOR_GERENTE
-            requerimientoG2.setIdGrupoAprobadorLd(955L); // GERENTE
-            requerimientoG2.setIdUsuario(solicitud.getIdAprobadorG2());
+            requerimientoG2.setIdTipoLd(tipoAprobar.getIdListadoDetalle()); // TIPO_APROBACION: APROBAR
+            requerimientoG2.setGrupo(grupo2); // G2
+            requerimientoG2.setEstado(estadoAsignado); // ASIGNADO
+            requerimientoG2.setTipoAprobador(aprobadorTecnico); // APROBADOR_GERENTE
+            requerimientoG2.setIdGrupoAprobadorLd(aprobadorGerente.getIdListadoDetalle()); // GERENTE
+            requerimientoG2.getUsuario().setIdUsuario(solicitud.getIdAprobadorG2());
             requerimientoG2.setFeAsignacion(new Date());
             requerimientoG2.setDeObservacion("");
             
@@ -1773,15 +1811,35 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             if (solicitud.getIdAprobadorG3() != null) {
                 // Determinar si crear GPPM o GSE basado en la lógica de negocio
                 // Por ahora, creamos registro GSE G3 como siguiente paso después de G2
+
+                ListadoDetalle tipoAprobar = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.TIPO_APROBACION.CODIGO,
+                                Constantes.LISTADO.TIPO_APROBACION.APROBAR);
+
+                ListadoDetalle grupo3 = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                                Constantes.LISTADO.GRUPOS.G3);
+
+                ListadoDetalle estadoAsignado = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
+                                Constantes.LISTADO.GRUPOS.G2);
+
+                ListadoDetalle aprobadorTecnico = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.TIPO_EVALUADOR.CODIGO,
+                                Constantes.LISTADO.TIPO_EVALUADOR.APROBADOR_TECNICO);
+
+                ListadoDetalle aprobadorGSE = listadoDetalleService
+                        .obtenerListadoDetalle(Constantes.LISTADO.GRUPO_APROBACION.CODIGO,
+                                Constantes.LISTADO.GRUPO_APROBACION.GSE);
                 
                 RequerimientoAprobacion requerimientoG3 = new RequerimientoAprobacion();
                 requerimientoG3.setIdInformeRenovacion(informe.getIdInformeRenovacion());
-                requerimientoG3.setIdTipoLd(952L); // TIPO_APROBACION: APROBAR
-                requerimientoG3.setIdGrupoLd(545L); // G3
-                requerimientoG3.setIdEstadoLd(958L); // ASIGNADO
-                requerimientoG3.setIdTipoAprobadorLd(547L); // APROBADOR_GSE
-                requerimientoG3.setIdGrupoAprobadorLd(957L); // GSE
-                requerimientoG3.setIdUsuario(solicitud.getIdAprobadorG3());
+                requerimientoG3.setIdTipoLd(tipoAprobar.getIdListadoDetalle()); // TIPO_APROBACION: APROBAR
+                requerimientoG3.setGrupo(grupo3); // G3
+                requerimientoG3.setEstado(estadoAsignado); // ASIGNADO
+                requerimientoG3.setTipoAprobador(aprobadorTecnico); // APROBADOR_GSE
+                requerimientoG3.setIdGrupoAprobadorLd(aprobadorGSE.getIdListadoDetalle()); // GSE
+                requerimientoG3.getUsuario().setIdUsuario(solicitud.getIdAprobadorG3());
                 requerimientoG3.setFeAsignacion(new Date());
                 requerimientoG3.setDeObservacion("Derivado desde G2: " + observacion);
                 
@@ -1803,7 +1861,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             bitacora.setUsuario(contexto.getUsuario());
             bitacora.setFechaHora(new Date());
             bitacora.setDescripcion("Informe de renovación aprobado. ID: " + informe.getIdInformeRenovacion() +
-                    ". Grupo: " + requerimiento.getIdGrupoLd() +
+                    ". Grupo: " + requerimiento.getGrupo().getIdListadoDetalle() +
                     ". Observaciones: " + (requerimiento.getDeObservacion() != null ? requerimiento.getDeObservacion() : "N/A"));
             
             AuditoriaUtil.setAuditoriaRegistro(bitacora, contexto);
@@ -1820,7 +1878,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             notificacion.setCorreo("sistema@osinergmin.gob.pe");
             notificacion.setAsunto("Informe de Renovación Aprobado");
             notificacion.setMensaje("El informe de renovación ID: " + informe.getIdInformeRenovacion() +
-                    " ha sido aprobado por el grupo " + requerimiento.getIdGrupoLd());
+                    " ha sido aprobado por el grupo " + requerimiento.getGrupo().getIdListadoDetalle());
             
             ListadoDetalle estadoPendiente = listadoDetalleDao.obtenerListadoDetalle("ESTADO_NOTIFICACION", "PENDIENTE");
             if (estadoPendiente != null) {
