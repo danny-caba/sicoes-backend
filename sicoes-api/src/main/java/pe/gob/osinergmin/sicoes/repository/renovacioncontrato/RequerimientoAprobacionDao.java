@@ -9,37 +9,127 @@ import org.springframework.stereotype.Repository;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.BandejaAprobacionFullDTO;
 
 @Repository
-public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoAprobacion, Long> {
+public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoAprobacion, Long>, RequerimientoAprobacionDaoCustom {
 
 
 
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 542 " +
-           "AND r.idGrupoAprobadorLd = 954 " +
-           "AND r.idUsuario = :idUsuario " +
-           "AND (:estadoAprobacion IS NULL OR i.esAprobacionInforme = :estadoAprobacion) " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 960, 1160) " +
-           "AND NOT EXISTS (SELECT 1 FROM RequerimientoAprobacion r2 WHERE r2.idInformeRenovacion = r.idInformeRenovacion AND r2.idGrupoAprobadorLd = 954 AND r2.idEstadoLd = 959) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarByIdUsuario(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 542 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 954 " +
+           "AND r.ID_USUARIO = :idUsuario " +
+           "AND r.ID_ESTADO_LD IN (958, 960, 1160) " +
+           "AND NOT EXISTS (SELECT 1 FROM ES_SICOES.SICOES_TC_REQ_APROBACION r2 WHERE r2.ID_INFORME_RENOVACION = r.ID_INFORME_RENOVACION AND r2.ID_GRUPO_APROBADOR_LD = 954 AND r2.ID_ESTADO_LD = 959) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarByIdUsuarioSimple(
+           @Param("idUsuario") int idUsuario,
+           Pageable pageable
+    );
+
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 542 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 954 " +
+           "AND r.ID_USUARIO = :idUsuario " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:estadoAprobacionInforme = -1 OR i.ES_APROBACION_INFORME = :estadoAprobacionInforme) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 960, 1160) " +
+           "AND NOT EXISTS (SELECT 1 FROM ES_SICOES.SICOES_TC_REQ_APROBACION r2 WHERE r2.ID_INFORME_RENOVACION = r.ID_INFORME_RENOVACION AND r2.ID_GRUPO_APROBADOR_LD = 954 AND r2.ID_ESTADO_LD = 959) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarByIdUsuarioConFiltros(
+           @Param("numeroExpediente") String numeroExpediente,
+           @Param("estadoAprobacionInforme") Long estadoAprobacionInforme,
+           @Param("idContratista") Long idContratista,
+           @Param("nombreContratista") String nombreContratista,
+           @Param("idUsuario") int idUsuario,
+           Pageable pageable
+    );
+
+
+    
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 542 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 954 " +
+           "AND r.ID_USUARIO = :idUsuario " +
+           "AND (:estadoAprobacion IS NULL OR i.ES_APROBACION_INFORME = :estadoAprobacion) " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 960, 1160) " +
+           "AND NOT EXISTS (SELECT 1 FROM ES_SICOES.SICOES_TC_REQ_APROBACION r2 WHERE r2.ID_INFORME_RENOVACION = r.ID_INFORME_RENOVACION AND r2.ID_GRUPO_APROBADOR_LD = 954 AND r2.ID_ESTADO_LD = 959) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarByIdUsuarioSinFiltroVigente(
            @Param("numeroExpediente") String numeroExpediente,
            @Param("estadoAprobacion") Long estadoAprobacion,
            @Param("idContratista") Long idContratista,
            @Param("nombreContratista") String nombreContratista,
            @Param("idUsuario") Long idUsuario,
-           @Param("esVigente") Integer esVigente,
            Pageable pageable
     );
 
     @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idEstadoLd = '1' ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarActivos();
+    
+    // Consulta simple para debug sin JOINs
+    @Query(value = "SELECT * FROM ES_SICOES.SICOES_TC_REQ_APROBACION WHERE ROWNUM <= 5", nativeQuery = true)
+    List<RequerimientoAprobacion> debugConsultaSimple();
 
     @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idReqAprobacion = :id  ")
     RequerimientoAprobacion obtenerPorId(@Param("id") Long id);
@@ -92,24 +182,39 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     List<RequerimientoAprobacion> findByIdInformeRenovacion(
         @Param("idInformeRenovacion") Long idInformeRenovacion);
 
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 542 " +
-           "AND r.idGrupoAprobadorLd = 954 " +
-           "AND (:estadoAprobacion IS NULL OR i.esAprobacionInforme = :estadoAprobacion) " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 960, 1160) " +
-           "AND NOT EXISTS (SELECT 1 FROM RequerimientoAprobacion r2 WHERE r2.idInformeRenovacion = r.idInformeRenovacion AND r2.idGrupoAprobadorLd = 954 AND r2.idEstadoLd = 959) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarSinFiltroUsuario(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 542 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 954 " +
+           "AND (:estadoAprobacion IS NULL OR i.ES_APROBACION_INFORME = :estadoAprobacion) " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 960, 1160) " +
+           "AND NOT EXISTS (SELECT 1 FROM ES_SICOES.SICOES_TC_REQ_APROBACION r2 WHERE r2.ID_INFORME_RENOVACION = r.ID_INFORME_RENOVACION AND r2.ID_GRUPO_APROBADOR_LD = 954 AND r2.ID_ESTADO_LD = 959) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarSinFiltroUsuario(
         @Param("numeroExpediente") String numeroExpediente,
         @Param("estadoAprobacion") Long estadoAprobacion,
         @Param("idContratista") Long idContratista,
         @Param("nombreContratista") String nombreContratista,
-        @Param("esVigente") Integer esVigente,
         Pageable pageable
     );
 
@@ -128,130 +233,247 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     List<RequerimientoAprobacion> debugRegistrosG2();
 
     // Nueva consulta para búsqueda por estadoAprobacionInforme sin filtro de estado del requerimiento
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 542 " +
-           "AND r.idGrupoAprobadorLd = 954 " +
-           "AND r.idUsuario = :idUsuario " +
-           "AND i.esAprobacionInforme = :estadoAprobacion " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 960, 1160) " +
-           "AND NOT EXISTS (SELECT 1 FROM RequerimientoAprobacion r2 WHERE r2.idInformeRenovacion = r.idInformeRenovacion AND r2.idGrupoAprobadorLd = 954 AND r2.idEstadoLd = 959) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarPorEstadoAprobacionInforme(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 542 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 954 " +
+           "AND r.ID_USUARIO = :idUsuario " +
+           "AND i.ES_APROBACION_INFORME = :estadoAprobacion " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 960, 1160) " +
+           "AND NOT EXISTS (SELECT 1 FROM ES_SICOES.SICOES_TC_REQ_APROBACION r2 WHERE r2.ID_INFORME_RENOVACION = r.ID_INFORME_RENOVACION AND r2.ID_GRUPO_APROBADOR_LD = 954 AND r2.ID_ESTADO_LD = 959) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarPorEstadoAprobacionInforme(
            @Param("estadoAprobacion") Long estadoAprobacion,
            @Param("numeroExpediente") String numeroExpediente,
            @Param("idContratista") Long idContratista,
            @Param("nombreContratista") String nombreContratista,
            @Param("idUsuario") Long idUsuario,
-           @Param("esVigente") Integer esVigente,
            Pageable pageable
     );
 
     // Nueva consulta sin filtro de usuario para búsqueda por estadoAprobacionInforme
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 542 " +
-           "AND r.idGrupoAprobadorLd = 954 " +
-           "AND i.esAprobacionInforme = :estadoAprobacion " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 960, 1160) " +
-           "AND NOT EXISTS (SELECT 1 FROM RequerimientoAprobacion r2 WHERE r2.idInformeRenovacion = r.idInformeRenovacion AND r2.idGrupoAprobadorLd = 954 AND r2.idEstadoLd = 959) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarPorEstadoAprobacionInformeSinFiltroUsuario(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 542 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 954 " +
+           "AND i.ES_APROBACION_INFORME = :estadoAprobacion " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 960, 1160) " +
+           "AND NOT EXISTS (SELECT 1 FROM ES_SICOES.SICOES_TC_REQ_APROBACION r2 WHERE r2.ID_INFORME_RENOVACION = r.ID_INFORME_RENOVACION AND r2.ID_GRUPO_APROBADOR_LD = 954 AND r2.ID_ESTADO_LD = 959) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarPorEstadoAprobacionInformeSinFiltroUsuario(
         @Param("estadoAprobacion") Long estadoAprobacion,
         @Param("numeroExpediente") String numeroExpediente,
         @Param("idContratista") Long idContratista,
         @Param("nombreContratista") String nombreContratista,
-        @Param("esVigente") Integer esVigente,
         Pageable pageable
     );
 
     // ================= QUERIES PARA G2 (ID_GRUPO_LD = 543 AND ID_GRUPO_APROBADOR_LD = 955) =================
     
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 543 " +
-           "AND r.idGrupoAprobadorLd = 955 " +
-           "AND (:estadoAprobacion IS NULL OR i.esAprobacionInforme = :estadoAprobacion) " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 959, 960, 1160) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarByIdUsuarioG2(
-           @Param("numeroExpediente") String numeroExpediente,
-           @Param("estadoAprobacion") Long estadoAprobacion,
-           @Param("idContratista") Long idContratista,
-           @Param("nombreContratista") String nombreContratista,
-           @Param("esVigente") Integer esVigente,
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 543 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 955 " +
+           "AND r.ID_ESTADO_LD IN (958, 959, 960, 1160) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarByIdUsuarioG2Simple(
            Pageable pageable
     );
 
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 543 " +
-           "AND r.idGrupoAprobadorLd = 955 " +
-           "AND (:estadoAprobacion IS NULL OR i.esAprobacionInforme = :estadoAprobacion) " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 959, 960, 1160) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarSinFiltroUsuarioG2(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 543 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 955 " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:estadoAprobacionInforme = -1 OR i.ES_APROBACION_INFORME = :estadoAprobacionInforme) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 959, 960, 1160) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarByIdUsuarioG2ConFiltros(
+           @Param("numeroExpediente") String numeroExpediente,
+           @Param("estadoAprobacionInforme") Long estadoAprobacionInforme,
+           @Param("idContratista") Long idContratista,
+           @Param("nombreContratista") String nombreContratista,
+           Pageable pageable
+    );
+
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 543 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 955 " +
+           "AND (:estadoAprobacion IS NULL OR i.ES_APROBACION_INFORME = :estadoAprobacion) " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 959, 960, 1160) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarSinFiltroUsuarioG2(
         @Param("numeroExpediente") String numeroExpediente,
         @Param("estadoAprobacion") Long estadoAprobacion,
         @Param("idContratista") Long idContratista,
         @Param("nombreContratista") String nombreContratista,
-        @Param("esVigente") Integer esVigente,
         Pageable pageable
     );
 
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 543 " +
-           "AND r.idGrupoAprobadorLd = 955 " +
-           "AND i.esAprobacionInforme = :estadoAprobacion " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 959, 960, 1160) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarPorEstadoAprobacionInformeG2(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 543 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 955 " +
+           "AND i.ES_APROBACION_INFORME = :estadoAprobacion " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 959, 960, 1160) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarPorEstadoAprobacionInformeG2(
            @Param("estadoAprobacion") Long estadoAprobacion,
            @Param("numeroExpediente") String numeroExpediente,
            @Param("idContratista") Long idContratista,
            @Param("nombreContratista") String nombreContratista,
-           @Param("esVigente") Integer esVigente,
            Pageable pageable
     );
 
-    @Query("SELECT DISTINCT r FROM RequerimientoAprobacion r " +
-           "JOIN r.informeRenovacion i " +
-           "WHERE r.idGrupoLd = 543 " +
-           "AND r.idGrupoAprobadorLd = 955 " +
-           "AND i.esAprobacionInforme = :estadoAprobacion " +
-           "AND (:numeroExpediente IS NULL OR i.requerimientoRenovacion.nuExpediente = :numeroExpediente) " +
-           "AND (:idContratista IS NULL OR i.requerimientoRenovacion.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
-           "AND (:nombreContratista IS NULL OR UPPER(i.requerimientoRenovacion.solicitudPerfil.supervisora.nombreRazonSocial) LIKE UPPER(CONCAT('%', :nombreContratista, '%'))) " +
-           "AND (:esVigente IS NULL OR i.esVigente = :esVigente) " +
-           "AND r.idEstadoLd IN (958, 959, 960, 1160) " +
-           "ORDER BY r.fecCreacion DESC")
-    Page<RequerimientoAprobacion> buscarPorEstadoAprobacionInformeSinFiltroUsuarioG2(
+    @Query(value = "SELECT r.ID_REQ_APROBACION as idReqAprobacion, r.ID_REQUERIMIENTO as idRequerimiento, " +
+           "r.ID_REQ_INFORME as idReqInforme, r.ID_REQ_DOCUMENTO as idReqDocumento, " +
+           "r.ID_TIPO_LD as idTipoLd, r.ID_GRUPO_LD as idGrupoLd, r.ID_USUARIO as idUsuario, " +
+           "r.ID_ESTADO_LD as idEstadoLd, r.ID_FIRMADO_LD as idFirmadoLd, r.DE_OBSERVACION as deObservacion, " +
+           "r.FE_APROBACION as feAprobacion, r.FE_RECHAZO as feRechazo, r.FE_FIRMA as feFirma, " +
+           "r.ID_INFORME_RENOVACION as idInformeRenovacion, r.ID_NOTIFICACION as idNotificacion, " +
+           "r.FE_ASIGNACION as feAsignacion, r.ID_TIPO_APROBADOR_LD as idTipoAprobadorLd, " +
+           "r.ID_GRUPO_APROBADOR_LD as idGrupoAprobadorLd, " +
+           "r.US_CREACION as usCreacion, r.IP_CREACION as ipCreacion, r.FE_CREACION as feCreacion, " +
+           "r.US_ACTUALIZACION as usActualizacion, r.IP_ACTUALIZACION as ipActualizacion, r.FE_ACTUALIZACION as feActualizacion, " +
+           "i.ES_VIGENTE as esVigente, i.ES_APROBACION_INFORME as esAprobacionInforme, " +
+           "i.DE_UUID_INFO_RENOVACION as deUuidInfoRenovacion, i.DE_NOMBRE_ARCHIVO as deNombreArchivo, " +
+           "rr.NU_EXPEDIENTE as nuExpediente, rr.TI_SECTOR as tiSector, rr.TI_SUB_SECTOR as tiSubSector, rr.NO_ITEM as noItem, " +
+           "s.NO_RAZON_SOCIAL as noRazonSocial, s.ID_SUPERVISORA as idSupervisora " +
+           "FROM ES_SICOES.SICOES_TC_REQ_APROBACION r " +
+           "JOIN ES_SICOES.SICOES_TD_INFORME_RENOVACION i ON r.ID_INFORME_RENOVACION = i.ID_INFORME_RENOVACION " +
+           "JOIN ES_SICOES.SICOES_TC_REQ_RENOVACION rr ON i.ID_REQUERIMIENTO = rr.ID_REQ_RENOVACION " +
+           "LEFT JOIN ES_SICOES.SICOES_TC_SOLI_PERF_CONT spc ON rr.ID_SOLI_PERF_CONT = spc.ID_SOLI_PERF_CONT " +
+           "LEFT JOIN ES_SICOES.SICOES_TM_SUPERVISORA s ON spc.ID_SUPERVISORA = s.ID_SUPERVISORA " +
+           "WHERE r.ID_GRUPO_LD = 543 " +
+           "AND r.ID_GRUPO_APROBADOR_LD = 955 " +
+           "AND i.ES_APROBACION_INFORME = :estadoAprobacion " +
+           "AND (:numeroExpediente IS NULL OR rr.NU_EXPEDIENTE = :numeroExpediente) " +
+           "AND (:idContratista IS NULL OR spc.ID_SUPERVISORA = :idContratista) " +
+           "AND (:nombreContratista IS NULL OR UPPER(s.NO_RAZON_SOCIAL) LIKE UPPER('%' || :nombreContratista || '%')) " +
+           "AND r.ID_ESTADO_LD IN (958, 959, 960, 1160) " +
+           "ORDER BY r.FE_CREACION DESC", nativeQuery = true)
+    Page<BandejaAprobacionFullDTO> buscarPorEstadoAprobacionInformeSinFiltroUsuarioG2(
         @Param("estadoAprobacion") Long estadoAprobacion,
         @Param("numeroExpediente") String numeroExpediente,
         @Param("idContratista") Long idContratista,
         @Param("nombreContratista") String nombreContratista,
-        @Param("esVigente") Integer esVigente,
         Pageable pageable
     );
 
@@ -265,4 +487,21 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
             countQuery ="SELECT COUNT(DISTINCT r) FROM RequerimientoAprobacion r "
             + "WHERE r.informeRenovacion.idInformeRenovacion = :idInformeRenovacion ")
     Page<RequerimientoAprobacion> obtenerPorInformeRenovacion(Long idInformeRenovacion, Pageable pageable);
+
+    // Query para determinar si un usuario es G1 o G2 usando SICOES_TX_PERFIL_APROBADOR
+    @Query(value = "SELECT " +
+           "CASE " +
+           "    WHEN COUNT(CASE WHEN ID_APROBADOR_G1 = :idUsuario THEN 1 END) > 0 " +
+           "     AND COUNT(CASE WHEN ID_APROBADOR_G2 = :idUsuario THEN 1 END) > 0 THEN 'G1,G2' " +
+           "    WHEN COUNT(CASE WHEN ID_APROBADOR_G1 = :idUsuario THEN 1 END) > 0 THEN 'G1' " +
+           "    WHEN COUNT(CASE WHEN ID_APROBADOR_G2 = :idUsuario THEN 1 END) > 0 THEN 'G2' " +
+           "    ELSE 'No es G1 ni G2' " +
+           "END AS TIPO_APROBADOR " +
+           "FROM ( " +
+           "    SELECT ID_APROBADOR_G1, ID_APROBADOR_G2 " +
+           "    FROM ES_SICOES.SICOES_TX_PERFIL_APROBADOR " +
+           "    WHERE (ID_APROBADOR_G1 = :idUsuario OR ID_APROBADOR_G2 = :idUsuario) " +
+           "    AND ID_PERFIL IN (282,257,304) " +
+           ")", nativeQuery = true)
+    String obtenerTipoAprobador(@Param("idUsuario") Long idUsuario);
 }

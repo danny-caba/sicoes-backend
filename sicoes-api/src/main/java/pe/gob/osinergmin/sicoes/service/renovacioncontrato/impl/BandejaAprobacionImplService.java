@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
+import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.BandejaAprobacionFullDTO;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.BandejaAprobacionResponseDTO;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.RequerimientoAprobacionDao;
 import pe.gob.osinergmin.sicoes.service.ListadoDetalleService;
@@ -54,26 +55,30 @@ public class BandejaAprobacionImplService {
             Contexto contexto,
             Pageable pageable) {
 
-        Long idUsuario = contexto.getUsuario().getIdUsuario();
+        String idUsuario;
+
+        if(contexto.getUsuario()!=null){
+            idUsuario=contexto.getUsuario().getIdUsuario().toString();
+        }else {
+            idUsuario=contexto.getUsuarioApp();
+        }
+        // Determinar tipo de usuario usando consulta a SICOES_TX_PERFIL_APROBADOR
+        Long idUsuarioLong = Long.valueOf(idUsuario);
+        String tipoAprobador = requerimientoAprobacionDao.obtenerTipoAprobador(idUsuarioLong);
         
-        // MODIFICADO: Permitir que G2 vea informes rechazados por G1 (ES_VIGENTE = 0)
-        // Determinar si el usuario es G2 - usar parámetro del frontend o detección automática
-        boolean esUsuarioG2 = (grupoUsuario != null && grupoUsuario == 3) ? true : esUsuarioAprobadorG2(contexto);
-        boolean esUsuarioG1 = !esUsuarioG2; // Si no es G2, entonces es G1
-        Integer esVigente = esUsuarioG2 ? null : 1; // G2 ve todos, otros solo vigentes
+        // Determinar si es G1 o G2 basado en la consulta
+        boolean esUsuarioG1 = tipoAprobador != null && (tipoAprobador.contains("G1") || tipoAprobador.equals("G1,G2"));
+        boolean esUsuarioG2 = tipoAprobador != null && (tipoAprobador.contains("G2") || tipoAprobador.equals("G1,G2"));
         
         // DEBUG: Logs detallados para debug
         logger.warn("=== DEBUG USUARIO ===");
         logger.warn("Usuario ID: {}", idUsuario);
-        logger.warn("grupoUsuario param: {}", grupoUsuario);
-        logger.warn("esUsuarioG2: {}", esUsuarioG2);
+        logger.warn("tipoAprobador desde BD: {}", tipoAprobador);
         logger.warn("esUsuarioG1: {}", esUsuarioG1);
-        logger.warn("esVigente: {}", esVigente);
+        logger.warn("esUsuarioG2: {}", esUsuarioG2);
         
         // DEBUG: Información completa del usuario
         if (contexto.getUsuario() != null) {
-            logger.warn("Usuario nombre: {}", contexto.getUsuario().getNombre());
-            logger.warn("Usuario email: {}", contexto.getUsuario().getEmail());
             
             if (contexto.getUsuario().getRoles() != null) {
                 logger.warn("Roles del usuario:");
@@ -87,113 +92,71 @@ public class BandejaAprobacionImplService {
         }
         logger.warn("===================");
         
+        // DEBUG: Log de parámetros de búsqueda
+        logger.warn("=== PARÁMETROS DE BÚSQUEDA ===");
+        logger.warn("numeroExpediente: {}", numeroExpediente);
+        logger.warn("estadoAprobacionInforme: {}", estadoAprobacionInforme);
+        logger.warn("idContratista: {}", idContratista);
+        logger.warn("nombreContratista: {}", nombreContratista);
+        logger.warn("grupoUsuario: {}", grupoUsuario);
+        logger.warn("==============================");
 
         // Si se proporciona cualquier parámetro de búsqueda, usar búsqueda abierta
-        Page<RequerimientoAprobacion> listaAprobaciones;
-        boolean usarBusquedaAbierta = (numeroExpediente != null && !numeroExpediente.trim().isEmpty()) ||
-                                    (nombreContratista != null && !nombreContratista.trim().isEmpty()) ||
-                                    (estadoAprobacionInforme != null);
+        Page<BandejaAprobacionFullDTO> listaAprobaciones;
+
         
-        if (usarBusquedaAbierta) {
-            // Debug específico para estado de aprobación
-            if (estadoAprobacionInforme != null) {
-                // Si se busca específicamente por estadoAprobacionInforme, usar consulta especializada según G1/G2
-                if (esUsuarioG2) {
-                    listaAprobaciones = requerimientoAprobacionDao.buscarPorEstadoAprobacionInformeSinFiltroUsuarioG2(
-                            estadoAprobacionInforme,
-                            numeroExpediente,
-                            idContratista,
-                            nombreContratista,
-                            esVigente,
-                            pageable
-                    );
-                } else {
-                    listaAprobaciones = requerimientoAprobacionDao.buscarPorEstadoAprobacionInformeSinFiltroUsuario(
-                            estadoAprobacionInforme,
-                            numeroExpediente,
-                            idContratista,
-                            nombreContratista,
-                            esVigente,
-                            pageable
-                    );
-                }
-            } else {
-                // Búsqueda normal sin filtro de usuario según G1/G2
-                if (esUsuarioG2) {
-                    listaAprobaciones = requerimientoAprobacionDao.buscarSinFiltroUsuarioG2(
-                            numeroExpediente,
-                            estadoAprobacionInforme,
-                            idContratista,
-                            nombreContratista,
-                            esVigente,
-                            pageable
-                    );
-                } else {
-                    listaAprobaciones = requerimientoAprobacionDao.buscarSinFiltroUsuario(
-                            numeroExpediente,
-                            estadoAprobacionInforme,
-                            idContratista,
-                            nombreContratista,
-                            esVigente,
-                            pageable
-                    );
-                }
-            }
-        } else {
-            // Búsqueda normal filtrada por usuario (bandeja personal) según G1/G2
-            
-            if (estadoAprobacionInforme != null) {
-                // Si se busca específicamente por estadoAprobacionInforme, usar consulta especializada según G1/G2
-                if (esUsuarioG2) {
-                    listaAprobaciones = requerimientoAprobacionDao.buscarPorEstadoAprobacionInformeG2(
-                            estadoAprobacionInforme,
-                            numeroExpediente,
-                            idContratista,
-                            nombreContratista,
-                            esVigente,
-                            pageable
-                    );
-                } else {
-                    listaAprobaciones = requerimientoAprobacionDao.buscarPorEstadoAprobacionInforme(
-                            estadoAprobacionInforme,
-                            numeroExpediente,
-                            idContratista,
-                            nombreContratista,
-                            idUsuario,
-                            esVigente,
-                            pageable
-                    );
-                }
-            } else {
+
                 // Búsqueda normal con filtro de usuario según G1/G2
-                if (esUsuarioG2) {
-                    logger.warn("DEBUG - Ejecutando buscarByIdUsuarioG2 para usuario {}", idUsuario);
-                    listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioG2(
+                // Verificar si hay filtros que requieran condiciones NULL problemáticas
+                boolean hayFiltros = (numeroExpediente != null && !numeroExpediente.trim().isEmpty()) ||
+                                   (idContratista != null) ||
+                                   (nombreContratista != null && !nombreContratista.trim().isEmpty()) ||
+                                   (estadoAprobacionInforme != null);
+
+                if (hayFiltros) {
+                    // Cuando hay filtros, tanto G1 como G2 ven todos los registros
+                    logger.warn("DEBUG - Hay filtros aplicados, mostrando todos los registros para usuario {}", idUsuario);
+                    // Usar la consulta de G2 que ahora muestra todos los registros
+                    listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioG2ConFiltrosDinamicos(
                             numeroExpediente,
                             estadoAprobacionInforme,
                             idContratista,
                             nombreContratista,
-                            esVigente,
+                            pageable
+                    );
+                } else if (esUsuarioG2) {
+                    logger.warn("DEBUG - Sin filtros, ejecutando buscarByIdUsuarioG2ConFiltrosDinamicos para usuario G2 {}", idUsuario);
+                    // Sin filtros, G2 usa su consulta normal
+                    listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioG2ConFiltrosDinamicos(
+                            numeroExpediente,
+                            estadoAprobacionInforme,
+                            idContratista,
+                            nombreContratista,
+                            pageable
+                    );
+                } else if(esUsuarioG1) {
+                    logger.warn("DEBUG - Sin filtros, ejecutando buscarByIdUsuarioConFiltrosDinamicos para usuario G1 {}", idUsuario);
+                    // Sin filtros, G1 usa su consulta normal restringida
+                    listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuarioConFiltrosDinamicos(
+                            numeroExpediente,
+                            estadoAprobacionInforme,
+                            idContratista,
+                            nombreContratista,
+                            idUsuarioLong.intValue(),
                             pageable
                     );
                 } else {
-                    logger.warn("DEBUG - Ejecutando buscarByIdUsuario para usuario {} (G1)", idUsuario);
-                    listaAprobaciones = requerimientoAprobacionDao.buscarByIdUsuario(
-                            numeroExpediente,
-                            estadoAprobacionInforme,
-                            idContratista,
-                            nombreContratista,
-                            idUsuario,
-                            esVigente,
-                            pageable
-                    );
+                    // Usuario no es ni G1 ni G2 - retornar página vacía
+                    logger.warn("DEBUG - Usuario {} no es ni G1 ni G2", idUsuario);
+                    listaAprobaciones = Page.empty(pageable);
                 }
-            }
-        }
+
+
+
         
 
         List<BandejaAprobacionResponseDTO> dtos = listaAprobaciones.getContent().stream()
-                .map(entity -> bandejaAprobacionMapper.toDto(entity, contexto, listadoDetalleService))
+                .map(dto -> bandejaAprobacionMapper.toDto(dto, contexto, listadoDetalleService))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtos, pageable, listaAprobaciones.getTotalElements());

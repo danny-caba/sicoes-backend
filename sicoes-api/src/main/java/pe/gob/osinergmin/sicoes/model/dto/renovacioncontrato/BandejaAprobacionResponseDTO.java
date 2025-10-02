@@ -31,6 +31,7 @@ public class BandejaAprobacionResponseDTO {
     private ListadoDetalleDTO estadoLd;
     private ListadoDetalleDTO grupoAprobadorLd;
     private String uuidInformeRenovacion;
+    private String nombreArchivo;
 
 
 }

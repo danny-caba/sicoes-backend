@@ -192,6 +192,9 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             asignarAuditoriaCreacion(requerimientoAprobacionG2, contexto);
 
             requerimientoAprobacionG2.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
+            
+            // NO asignar idRequerimiento - la FK espera SICOES_TC_REQUERIMIENTO que no existe en el modelo actual
+            // requerimientoAprobacionG2.setIdRequerimiento(requerimientoAprobacionG1.getIdRequerimiento());
 
             requerimientoAprobacionG2.setIdTipoLd(
                 datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")
@@ -240,13 +243,25 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 requerimientoAprobacionG2.setIdFirmadoLd(estadoFirmado.getIdListadoDetalle());
             }
 
-            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG2);
-            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
-            // 3.5.4 Realiza notificación
+            // 3.5.4 Primero crear la notificación antes de guardar el requerimiento G2
             Usuario usuarioG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
             Notificacion notificacion = notificacionAprobacionInformeService.notificacionInformePorAprobaryFirmar(usuarioG2, numExpediente, contexto);
-            requerimientoAprobacionG1.setNotificacion(notificacion);
+            
+            // Asignar el ID de notificación al requerimiento G2 antes de guardarlo
+            if (notificacion != null && notificacion.getIdNotificacion() != null) {
+                requerimientoAprobacionG2.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al nuevo requerimiento G2", notificacion.getIdNotificacion());
+            }
+            
+            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG2);
+            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+            
+            // Asignar el ID de notificación al requerimiento G1
+            if (notificacion != null && notificacion.getIdNotificacion() != null) {
+                requerimientoAprobacionG1.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al requerimiento G1", notificacion.getIdNotificacion());
+            }
             // Guardar cambios
             requerimientoAprobacionDao.save(requerimientoAprobacionG1);
         }
@@ -327,7 +342,12 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
 
             Notificacion notificacion =  notificacionAprobacionInformeService.notificacionInformePorRevisar(evaluadorContratosUsuario, numExpediente, contexto);
-            requerimientoAprobacionG2.setNotificacion(notificacion);
+            
+            // Asignar el ID de notificación al requerimiento G2
+            if (notificacion != null && notificacion.getIdNotificacion() != null) {
+                requerimientoAprobacionG2.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al requerimiento G2", notificacion.getIdNotificacion());
+            }
 
             // Guardar cambios
             requerimientoAprobacionDao.save(requerimientoAprobacionG2);
@@ -385,6 +405,9 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
 
             requerimientoAprobacionGseG3.setIdInformeRenovacion(informeRequest.getIdInformeRenovacion());
             
+            // NO asignar idRequerimiento - la FK espera SICOES_TC_REQUERIMIENTO que no existe en el modelo actual
+            // requerimientoAprobacionGseG3.setIdRequerimiento(requerimientoAprobacionGppmG3.getIdRequerimiento());
+            
             requerimientoAprobacionGseG3.setIdTipoLd(
                 datosService.obtenerIdLd("TIPO_APROBACION", "APROBAR")
             );
@@ -414,14 +437,25 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                 datosService.obtenerIdLd("GRUPO_APROBACION", "GSE")
             );
 
-            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
-            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
-
-            // 3.5.4 Envía notificación por correo al rol GSE G3 para la evaluación
+            // 3.5.4 Primero crear la notificación antes de guardar el requerimiento GSE G3
             Usuario gseG3Usuario = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG3());
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
             Notificacion notificacion = notificacionAprobacionInformeService.notificacionInformePorEvaluar(gseG3Usuario, numExpediente, contexto);
-            requerimientoAprobacionGppmG3.setNotificacion(notificacion);
+            
+            // Asignar el ID de notificación al nuevo requerimiento GSE G3 antes de guardarlo
+            if (notificacion != null && notificacion.getIdNotificacion() != null) {
+                requerimientoAprobacionGseG3.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al nuevo requerimiento GSE G3", notificacion.getIdNotificacion());
+            }
+            
+            RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
+            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+            
+            // Asignar el ID de notificación al requerimiento GPPM G3
+            if (notificacion != null && notificacion.getIdNotificacion() != null) {
+                requerimientoAprobacionGppmG3.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al requerimiento GPPM G3", notificacion.getIdNotificacion());
+            }
             // Guardar cambios
             requerimientoAprobacionDao.save(requerimientoAprobacionGppmG3);
         }
@@ -484,7 +518,12 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             String numExpediente = informeRenovacionContrato.getRequerimiento().getNuExpediente();
 
             Notificacion notificacion =  notificacionAprobacionInformeService.notificacionSolicitudDeContratos(evaluadorContratosUsuario, numExpediente, contexto);
-            requerimientoAprobacionGseG3.setNotificacion(notificacion);
+            
+            // Asignar el ID de notificación al requerimiento GSE G3
+            if (notificacion != null && notificacion.getIdNotificacion() != null) {
+                requerimientoAprobacionGseG3.setIdNotificacion(notificacion.getIdNotificacion());
+                logger.info("Asignando ID de notificación {} al requerimiento GSE G3", notificacion.getIdNotificacion());
+            }
             // Guardar cambios
             requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
         }
