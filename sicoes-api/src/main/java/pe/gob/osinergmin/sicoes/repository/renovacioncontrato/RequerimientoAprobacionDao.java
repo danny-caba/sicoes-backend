@@ -124,7 +124,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
            Pageable pageable
     );
 
-    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.idEstadoLd = '1' ORDER BY r.fecCreacion DESC")
+    @Query("SELECT r FROM RequerimientoAprobacion r WHERE r.estado.idListadoDetalle = '1' ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarActivos();
     
     // Consulta simple para debug sin JOINs
@@ -135,19 +135,19 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     RequerimientoAprobacion obtenerPorId(@Param("id") Long id);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.idEstadoLd = '1' " +
+           "WHERE r.estado.idListadoDetalle = '1' " +
            "AND r.informeRenovacion.idInformeRenovacion = :idInforme " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorInforme(@Param("idInforme") Long idInforme);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.idEstadoLd = '1' " +
-           "AND r.idEstadoLd = :estadoId " +
+           "WHERE r.estado.idListadoDetalle = '1' " +
+           "AND r.estado.idListadoDetalle = :estadoId " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorEstado(@Param("estadoId") Long estadoId);
 
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE  r.idEstadoLd = '1' " +
+           "WHERE  r.estado.idListadoDetalle = '1' " +
            "AND r.idGrupoAprobadorLd = :idUsuario " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> listarPorAprobador(@Param("idUsuario") Long idUsuario);
@@ -162,15 +162,15 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
     
     @Query("SELECT r FROM RequerimientoAprobacion r " +
            "WHERE r.idInformeRenovacion = :idInformeRenovacion " +
-           "AND r.idGrupoLd = :idGrupoLd " +
+           "AND r.grupo.idListadoDetalle = :idGrupoLd " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> findByIdInformeRenovacionAndIdGrupoLd(
         @Param("idInformeRenovacion") Long idInformeRenovacion, 
         @Param("idGrupoLd") Long idGrupoLd);
     
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.idUsuario = :idUsuario " +
-           "AND r.idEstadoLd = :idEstadoLd " +
+           "WHERE r.usuario.idUsuario = :idUsuario " +
+           "AND r.estado.idListadoDetalle = :idEstadoLd " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> findByIdUsuarioAndIdEstadoLd(
         @Param("idUsuario") Long idUsuario,
@@ -227,7 +227,7 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
 
     // Query específica para verificar registros G2 existentes
     @Query("SELECT r FROM RequerimientoAprobacion r " +
-           "WHERE r.idGrupoLd = 543 " +
+           "WHERE r.grupo.idListadoDetalle = 543 " +
            "AND r.idGrupoAprobadorLd = 955 " +
            "ORDER BY r.fecCreacion DESC")
     List<RequerimientoAprobacion> debugRegistrosG2();

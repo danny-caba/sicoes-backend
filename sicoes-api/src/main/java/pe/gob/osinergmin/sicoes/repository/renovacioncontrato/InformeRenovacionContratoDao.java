@@ -27,7 +27,7 @@ public interface InformeRenovacionContratoDao extends JpaRepository<InformeRenov
                     "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
                     "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
                     "AND (:vigente IS NULL OR i.vigente = :vigente) " +
-                    "AND EXISTS (SELECT apr FROM i.aprobaciones apr WHERE apr.idUsuario = :idUsuario) " +
+                    "AND EXISTS (SELECT apr FROM i.aprobaciones apr WHERE apr.usuario.idUsuario = :idUsuario) " +
                     "ORDER BY i.usuCreacion DESC",
             countQuery = "SELECT COUNT(i) FROM InformeRenovacionContrato i " +
                     "JOIN i.requerimiento r " +
@@ -35,7 +35,7 @@ public interface InformeRenovacionContratoDao extends JpaRepository<InformeRenov
                     "AND (:numeroExpediente IS NULL OR r.nuExpediente = :numeroExpediente) " +
                     "AND (:idContratista IS NULL OR r.solicitudPerfil.supervisora.idSupervisora = :idContratista) " +
                     "AND (:vigente IS NULL OR i.vigente = :vigente) " +
-                    "AND EXISTS (SELECT apr FROM i.aprobaciones apr WHERE apr.idUsuario = :idUsuario)"
+                    "AND EXISTS (SELECT apr FROM i.aprobaciones apr WHERE apr.usuario.idUsuario = :idUsuario)"
     )
     Page<InformeRenovacionContrato> findByFiltrosWithJoins2(
             @Param("numeroExpediente") String numeroExpediente,
