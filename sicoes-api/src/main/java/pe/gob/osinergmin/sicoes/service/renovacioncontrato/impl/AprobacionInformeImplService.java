@@ -183,7 +183,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                             Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionG1.getUsuario().setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG1());
+
+            Usuario usuarioG1 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG1());
+
+            requerimientoAprobacionG1.setUsuario(usuarioG1);
             requerimientoAprobacionG1.setDeObservacion(requestDTO.getObservacion());
 
             
@@ -206,8 +209,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                             Constantes.LISTADO.GRUPOS.G2
                     )
             );
+
+            Usuario aprobadorG2 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG2());
             
-            requerimientoAprobacionG2.getUsuario().setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG2());
+            requerimientoAprobacionG2.setUsuario(aprobadorG2);
             
             requerimientoAprobacionG2.setEstado(
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
@@ -306,7 +311,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                             Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionG2.getUsuario().setIdUsuario(contexto.getUsuario().getIdUsuario());
+            requerimientoAprobacionG2.setUsuario(contexto.getUsuario());
             requerimientoAprobacionG2.setDeObservacion(requestDTO.getObservacion());
             
             // IMPORTANTE: Asignar el valor 962 para ID_FIRMADO_LD cuando ID_GRUPO_LD es 543 (G2)
@@ -396,7 +401,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                             Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionGppmG3.getUsuario().setIdUsuario(contexto.getUsuario().getIdUsuario());
+            requerimientoAprobacionGppmG3.setUsuario(contexto.getUsuario());
             requerimientoAprobacionGppmG3.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Registra el campo "Estado Aprobación GSE G3" = Asignado
@@ -418,8 +423,10 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                             Constantes.LISTADO.GRUPOS.G3
                     )
             );
+
+            Usuario aprobadorG3 = usuarioService.obtener(solicitudPerfecionamientoContrato.getIdAprobadorG3());
             
-            requerimientoAprobacionGseG3.getUsuario().setIdUsuario(solicitudPerfecionamientoContrato.getIdAprobadorG3());
+            requerimientoAprobacionGseG3.setUsuario(aprobadorG3);
             
             requerimientoAprobacionGseG3.setEstado(
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
@@ -499,7 +506,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
                     listadoDetalleService.obtenerListadoDetalle(Constantes.LISTADO.ESTADO_APROBACION.CODIGO,
                             Constantes.LISTADO.ESTADO_APROBACION.APROBADO)
             );
-            requerimientoAprobacionGseG3.getUsuario().setIdUsuario(contexto.getUsuario().getIdUsuario());
+            requerimientoAprobacionGseG3.setUsuario(contexto.getUsuario());
             requerimientoAprobacionGseG3.setDeObservacion(requestDTO.getObservacion());
             
             // 3.5.3 Actualiza el campo estado requerimiento renovacion = 'CONCLUIDO'
