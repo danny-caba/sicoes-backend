@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
+import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoAprobacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoInvitacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.RequerimientoRenovacion;
 
@@ -164,4 +165,6 @@ public interface InformeRenovacionService {
         String observacion, 
         String fechaSolicitud, 
         Contexto contexto);
+
+    Page<RequerimientoAprobacion> listarHistorialAprobacionesV2(Long idInformeRenovacion, Pageable pageable);
 }

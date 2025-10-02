@@ -254,4 +254,15 @@ public interface RequerimientoAprobacionDao extends JpaRepository<RequerimientoA
         @Param("esVigente") Integer esVigente,
         Pageable pageable
     );
+
+    @Query(value="SELECT r FROM RequerimientoAprobacion r "
+            + "LEFT JOIN FETCH r.tipoAprobador t "
+            + "LEFT JOIN FETCH r.grupo g "
+            + "LEFT JOIN FETCH r.usuario u "
+            + "LEFT JOIN FETCH r.estado e "
+            + "WHERE r.informeRenovacion.idInformeRenovacion = :idInformeRenovacion "
+            + "ORDER BY r.fecCreacion DESC ",
+            countQuery ="SELECT COUNT(DISTINCT r) FROM RequerimientoAprobacion r "
+            + "WHERE r.informeRenovacion.idInformeRenovacion = :idInformeRenovacion ")
+    Page<RequerimientoAprobacion> obtenerPorInformeRenovacion(Long idInformeRenovacion, Pageable pageable);
 }

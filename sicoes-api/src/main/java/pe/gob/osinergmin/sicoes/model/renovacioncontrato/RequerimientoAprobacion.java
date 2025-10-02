@@ -9,7 +9,9 @@ import java.util.Date;
 import javax.persistence.*;
 
 import pe.gob.osinergmin.sicoes.model.BaseModel;
+import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.Notificacion;
+import pe.gob.osinergmin.sicoes.model.Usuario;
 
 /**
  * Entidad para la tabla SICOES_TC_REQ_APROBACION
@@ -44,14 +46,17 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "ID_TIPO_LD", precision = 38)
     private Long idTipoLd;
 
-    @Column(name = "ID_GRUPO_LD", precision = 38)
-    private Long idGrupoLd;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_GRUPO_LD")
+    private ListadoDetalle grupo;
 
-    @Column(name = "ID_USUARIO", precision = 38)
-    private Long idUsuario;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO")
+    private Usuario usuario;
 
-    @Column(name = "ID_ESTADO_LD", precision = 38)
-    private Long idEstadoLd;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ESTADO_LD")
+    private ListadoDetalle estado;
 
     @Column(name = "ID_FIRMADO_LD", precision = 38)
     private Long idFirmadoLd;
@@ -86,8 +91,9 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     @Column(name = "FE_ASIGNACION")
     private Date feAsignacion;
 
-    @Column(name = "ID_TIPO_APROBADOR_LD", precision = 38)
-    private Long idTipoAprobadorLd;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_TIPO_APROBADOR_LD")
+    private ListadoDetalle tipoAprobador;
 
     @Column(name = "ID_GRUPO_APROBADOR_LD", precision = 38)
     private Long idGrupoAprobadorLd;

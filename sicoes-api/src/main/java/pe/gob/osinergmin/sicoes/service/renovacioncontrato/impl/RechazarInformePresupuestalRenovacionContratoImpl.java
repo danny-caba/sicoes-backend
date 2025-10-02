@@ -79,17 +79,19 @@ public class RechazarInformePresupuestalRenovacionContratoImpl {
         requerimientoAprobacion.setDeObservacion(requerimientoAprobacionDTO.getDeObservacion());
         requerimientoAprobacion.setIdInformeRenovacion(requerimientoAprobacionDTO.getIdReqInforme());
         Usuario usuario = contexto.getUsuario();
-        requerimientoAprobacion.setIdUsuario(usuario.getIdUsuario());
+        requerimientoAprobacion.getUsuario().setIdUsuario(usuario.getIdUsuario());
         requerimientoAprobacion.setIdTipoLd(1L);//revisar si aplica
 
         ListadoDetalle estadoAprobacionGrupoLD = listadoDetalleService.obtenerListadoDetalle(
             "GRUPOS"    ,
             "G3"
         );
-        requerimientoAprobacion.setIdGrupoLd(estadoAprobacionGrupoLD.getIdListadoDetalle());
+        requerimientoAprobacion.getGrupo().setIdListadoDetalle(estadoAprobacionGrupoLD.getIdListadoDetalle());
         
         // CORREGIDO: Usar ID_ESTADO_LD = 960 para rechazo según requerimiento
-        requerimientoAprobacion.setIdEstadoLd(960L);
+        ListadoDetalle estadoRechazado = listadoDetalleService.obtenerListadoDetalle(
+                Constantes.LISTADO.ESTADO_APROBACION.CODIGO, Constantes.LISTADO.ESTADO_APROBACION.DESAPROBADO);
+        requerimientoAprobacion.setEstado(estadoRechazado);
         
         // AGREGADO: Establecer FE_RECHAZO con la fecha actual
         requerimientoAprobacion.setFeRechazo(new Date());
