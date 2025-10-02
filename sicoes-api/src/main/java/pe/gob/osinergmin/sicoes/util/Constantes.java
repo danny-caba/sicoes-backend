@@ -652,6 +652,13 @@ public class Constantes {
 			public static final String FIRMADO			= "FIRMADO";
 		}
 
+		public static final class  TIPO_APROBACION {
+			public static final String CODIGO			= "TIPO_APROBACION";
+			public static final String VISTO_BUENO			= "VISTO_BUENO";
+			public static final String APROBAR	= "APROBAR";
+			public static final String FIRMAR	= "FIRMAR";
+		}
+
 	}
 	
 
