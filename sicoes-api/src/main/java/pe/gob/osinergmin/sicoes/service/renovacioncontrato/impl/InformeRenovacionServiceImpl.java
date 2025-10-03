@@ -35,6 +35,7 @@ import pe.gob.osinergmin.sicoes.model.renovacioncontrato.SolicitudPerfecionamien
 import pe.gob.osinergmin.sicoes.repository.BitacoraDao;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.NotificacionDao;
+import pe.gob.osinergmin.sicoes.repository.PerfilAprobadorDao;
 import pe.gob.osinergmin.sicoes.repository.SicoesSolicitudDao;
 import pe.gob.osinergmin.sicoes.repository.UsuarioDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.SolicitudPerfecionamientoContratoDao;
@@ -122,6 +123,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
     private SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
     @Autowired
     private UsuarioDao usuarioDao;
+    @Autowired
+    private PerfilAprobadorDao perfilAprobadorDao;
 
     @Override
     public Page<InformeRenovacionDTO> buscar(String nuExpediente, String contratista, String estadoAprobacion, Pageable pageable, Contexto contexto) {
@@ -1698,24 +1701,34 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             }
 
             // 4. Determinar el tipo de aprobador (G1, G2, G3)
-            ListadoDetalle grupo1 = listadoDetalleService
-                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
-                            Constantes.LISTADO.GRUPOS.G1);
-            ListadoDetalle grupo2 = listadoDetalleService
-                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
-                            Constantes.LISTADO.GRUPOS.G2);
-            ListadoDetalle grupo3 = listadoDetalleService
-                    .obtenerListadoDetalle(Constantes.LISTADO.GRUPOS.CODIGO,
-                            Constantes.LISTADO.GRUPOS.G3);
-            boolean esAprobadorG1 = requerimientoActivo.getGrupo() != null &&
-                                    requerimientoActivo.getGrupo().equals(grupo1);
-            boolean esAprobadorG2 = requerimientoActivo.getGrupo() != null &&
-                                    requerimientoActivo.getGrupo().equals(grupo2);
-            boolean esAprobadorG3 = requerimientoActivo.getGrupo() != null &&
-                                    requerimientoActivo.getGrupo().equals(grupo3);
+            if(contexto.getUsuario()!=null){
+                idUsuario= Long.valueOf(contexto.getUsuario().getIdUsuario().toString());
+            }else {
+                idUsuario= Long.valueOf(contexto.getUsuarioApp());
+            }
+            String tipoAprobador = perfilAprobadorDao.determinarTipoAprobador(idUsuario);
+
+            boolean esAprobadorG1 = false;
+            boolean esAprobadorG2 = false;
+            boolean esAprobadorG3 = false;
+            
+            // Verificar el grupo del requerimiento activo para determinar qué aprobación aplica
+            Long grupoRequerimiento = requerimientoActivo.getGrupo() != null ? 
+                                     requerimientoActivo.getGrupo().getIdListadoDetalle() : null;
+            
+            if ("G1".equals(tipoAprobador) || "AMBOS".equals(tipoAprobador)) {
+                esAprobadorG1 = grupoRequerimiento != null && grupoRequerimiento.equals(542L);
+            }
+            if ("G2".equals(tipoAprobador) || "AMBOS".equals(tipoAprobador)) {
+                esAprobadorG2 = grupoRequerimiento != null && grupoRequerimiento.equals(543L);
+            }
+            if ("G3".equals(tipoAprobador) || "AMBOS".equals(tipoAprobador)) {
+                esAprobadorG3 = grupoRequerimiento != null && grupoRequerimiento.equals(544L);
+            }
+
 
             logger.info("Tipo de aprobador - G1: {}, G2: {}, G3: {}, ID_GRUPO_LD: {}", 
-                       esAprobadorG1, esAprobadorG2, esAprobadorG3, requerimientoActivo.getGrupo().getIdListadoDetalle());
+                       esAprobadorG1, esAprobadorG2, esAprobadorG3, grupoRequerimiento);
 
             // 5. Actualizar el requerimiento de aprobación
             ListadoDetalle estadoAprobado = listadoDetalleService
