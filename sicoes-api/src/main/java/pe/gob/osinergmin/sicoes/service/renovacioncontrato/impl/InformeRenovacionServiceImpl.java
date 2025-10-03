@@ -11,6 +11,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import gob.osinergmin.siged.remote.rest.ro.in.ClienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.DireccionxClienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.DocumentoInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.ExpedienteInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.list.ClienteListInRO;
+import gob.osinergmin.siged.remote.rest.ro.in.list.DireccionxClienteListInRO;
+import gob.osinergmin.siged.remote.rest.ro.out.ExpedienteOutRO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +27,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
 import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
-import pe.gob.osinergmin.sicoes.model.Usuario;
+import pe.gob.osinergmin.sicoes.model.*;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
 import org.springframework.transaction.annotation.Transactional;
-import pe.gob.osinergmin.sicoes.ro.siged.*;
 import java.io.File;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 
-import pe.gob.osinergmin.sicoes.model.Bitacora;
-import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
-import pe.gob.osinergmin.sicoes.model.Notificacion;
-import pe.gob.osinergmin.sicoes.model.Representante;
-import pe.gob.osinergmin.sicoes.model.Supervisora;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoAprobacionCampo;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.HistorialEstadoRequerimientoRenovacion;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.InformeRenovacion;
@@ -1797,9 +1798,9 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 logger.info("Aprobación G2 detectada, creando expediente en SIGED");
                 
                 // Actualizar estado del informe a APROBADO
-                ListadoDetalle estadoAprobado = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "APROBADO");
-                if (estadoAprobado != null) {
-                    informe.setEstadoAprobacionInforme(estadoAprobado);
+                ListadoDetalle estadoAprobadoInforme = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "APROBADO");
+                if (estadoAprobadoInforme != null) {
+                    informe.setEstadoAprobacionInforme(estadoAprobadoInforme);
                 }
                 
                 // Crear expediente en SIGED
@@ -2298,15 +2299,6 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             if (estadoPendiente != null) {
                 notificacion.setEstado(estadoPendiente);
             }
-            
-            // Establecer tipo de notificación
-            ListadoDetalle tipoNotificacion = listadoDetalleDao.obtenerListadoDetalle("TIPO_NOTIFICACION", "INFORME_APROBADO");
-            if (tipoNotificacion != null) {
-                notificacion.setTipoNotificacion(tipoNotificacion);
-            }
-            
-            // Guardar fecha de envío
-            notificacion.setFechaEnvio(new Date());
             
             // Auditoría
             AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
