@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +102,7 @@ public interface PerfilAprobadorDao extends JpaRepository<PerfilAprobador, Long>
 		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
 		"    THEN 'G3' " +
 		"    ELSE 'NINGUNO' " +
-		"END AS TIPO_APROBADOR " +
+		"END " +
 		"FROM DUAL")
-	String determinarTipoAprobador(Long idUsuario);
+	String determinarTipoAprobador(@Param("idUsuario") Long idUsuario);
 }
