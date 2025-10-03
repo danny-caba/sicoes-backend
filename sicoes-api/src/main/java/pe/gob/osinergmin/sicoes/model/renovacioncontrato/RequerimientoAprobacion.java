@@ -1,5 +1,6 @@
 package pe.gob.osinergmin.sicoes.model.renovacioncontrato;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -97,14 +98,17 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private String deObservacion;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_APROBACION")
     private Date feAprobacion;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_RECHAZO")
     private Date feRechazo;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_FIRMA")
     private Date feFirma;
 
@@ -123,6 +127,7 @@ public class RequerimientoAprobacion extends BaseModel implements Serializable {
     private Notificacion notificacion;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "FE_ASIGNACION")
     private Date feAsignacion;
 
