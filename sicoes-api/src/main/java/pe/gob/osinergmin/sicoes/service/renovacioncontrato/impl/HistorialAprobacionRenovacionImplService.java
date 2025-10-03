@@ -62,10 +62,10 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
             HistorialEstadoAprobacionCampo historial = crearHistorialEstadoAprobacion(requerimientoAprobacion, contexto);
 
             // Guardar el historial
-            HistorialEstadoAprobacionCampo historialGuardado = historialEstadoAprobacionCampoDao.save(historial);
+            // HistorialEstadoAprobacionCampo historialGuardado = historialEstadoAprobacionCampoDao.save(historial);
 
-            logger.info("Historial registrado exitosamente con ID: {} para RequerimientoAprobacion ID: {}", 
-                       historialGuardado.getIdHistorialEstadoCampo(), requerimientoAprobacion.getIdReqAprobacion());
+            // logger.info("Historial registrado exitosamente con ID: {} para RequerimientoAprobacion ID: {}", 
+            //            historialGuardado.getIdHistorialEstadoCampo(), requerimientoAprobacion.getIdReqAprobacion());
 
         } catch (Exception e) {
             logger.error("Error al registrar historial de aprobación para RequerimientoAprobacion ID: {}", 
@@ -86,7 +86,8 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
             historial.setIdGrupoAprobadorLd(aprobacion.getIdGrupoAprobadorLd());
             historial.setFeFechaCambio(new Timestamp(new Date().getTime()));
 
-            return historialEstadoAprobacionCampoDao.save(historial);
+            // return historialEstadoAprobacionCampoDao.save(historial);
+            return historial;
         } catch (Exception e) {
             logger.error("Error al registrar historial de pre-aprobación para RequerimientoAprobacion ID: {}",
                         aprobacion != null ? aprobacion.getIdReqAprobacion() : "null", e);
@@ -104,7 +105,7 @@ public class HistorialAprobacionRenovacionImplService implements HistorialAproba
             historialDB.setDeEstadoNuevoLd(aprobacion.getEstado().getIdListadoDetalle());
             historialDB.setFeFechaCambio(new Timestamp(new Date().getTime()));
             AuditoriaUtil.setAuditoriaRegistro(aprobacion, contexto);
-            historialEstadoAprobacionCampoDao.save(historialDB);
+            // historialEstadoAprobacionCampoDao.save(historialDB);
         } catch (Exception e) {
             logger.error("Error al registrar historial de pre-aprobación para RequerimientoAprobacion ID: {}",
                     aprobacion != null ? aprobacion.getIdReqAprobacion() : "null", e);
