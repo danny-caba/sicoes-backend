@@ -19,9 +19,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.gob.osinergmin.sicoes.consumer.SigedOldConsumer;
+import pe.gob.osinergmin.sicoes.consumer.SigedApiConsumer;
 import pe.gob.osinergmin.sicoes.model.Usuario;
 import pe.gob.osinergmin.sicoes.model.dto.renovacioncontrato.InformeRenovacionDTO;
 import org.springframework.transaction.annotation.Transactional;
+import pe.gob.osinergmin.sicoes.ro.siged.*;
+import java.io.File;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 
 import pe.gob.osinergmin.sicoes.model.Bitacora;
 import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
@@ -118,6 +123,15 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
     @Autowired
     private SigedOldConsumer sigedOldConsumer;
+    
+    @Autowired
+    private SigedApiConsumer sigedApiConsumer;
+    
+    @Autowired
+    private Environment env;
+    
+    @Value("${path.jasper}")
+    private String pathJasper;
     
     @Autowired
     private SolicitudPerfecionamientoContratoDao solicitudPerfecionamientoContratoDao;
@@ -1779,17 +1793,20 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 crearRegistroAprobacionG2(informe, observacion, contexto);
                 
             } else if (esAprobadorG2) {
-                // G2 aprueba: crear registros para G3 (GPPM y GSE)
-                logger.info("Aprobación G2 detectada, creando registros para G3");
+                // G2 aprueba: crear expediente en SIGED y notificar evaluador técnico
+                logger.info("Aprobación G2 detectada, creando expediente en SIGED");
                 
-                // Actualizar estado del informe
-                ListadoDetalle estadoConcluido = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "CONCLUIDO");
-                if (estadoConcluido != null) {
-                    informe.setEstadoAprobacionInforme(estadoConcluido);
+                // Actualizar estado del informe a APROBADO
+                ListadoDetalle estadoAprobado = listadoDetalleService.obtenerListadoDetalle("ESTADO_REQUERIMIENTO", "APROBADO");
+                if (estadoAprobado != null) {
+                    informe.setEstadoAprobacionInforme(estadoAprobado);
                 }
                 
-                // Crear registros G3
-                crearRegistrosAprobacionG3(informe, observacion, contexto);
+                // Crear expediente en SIGED
+                crearExpedienteSigedInforme(informe, contexto);
+                
+                // Notificar a evaluador técnico de contratos
+                notificarEvaluadorTecnico(informe, contexto);
                 
             } else if (esAprobadorG3) {
                 // G3 aprueba: finalizar proceso
@@ -2116,5 +2133,201 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
             logger.error("Error al obtener usuario G1 para informe ID: " + informe.getIdInformeRenovacion(), e);
             return 9121L; // Valor por defecto en caso de error
         }
+    }
+    
+    /**
+     * Crea expediente en SIGED cuando G2 aprueba el informe
+     */
+    private void crearExpedienteSigedInforme(InformeRenovacion informe, Contexto contexto) {
+        try {
+            logger.info("Iniciando creación de expediente en SIGED para informe ID: {}", informe.getIdInformeRenovacion());
+            
+            // Obtener datos necesarios
+            RequerimientoRenovacion requerimiento = informe.getRequerimientoRenovacion();
+            if (requerimiento == null || requerimiento.getSolicitudPerfil() == null) {
+                logger.error("No se puede crear expediente: requerimiento o solicitud nulos");
+                return;
+            }
+            
+            SicoesSolicitud solicitud = requerimiento.getSolicitudPerfil();
+            
+            // Crear expediente en SIGED
+            ExpedienteInRO expedienteInRO = crearExpedienteInforme(informe, solicitud, contexto);
+            
+            // Generar PDF del informe aprobado
+            List<File> archivosAlfresco = new ArrayList<>();
+            File pdfInforme = generarPdfInformeAprobado(informe, contexto);
+            if (pdfInforme != null) {
+                archivosAlfresco.add(pdfInforme);
+            } else {
+                // Si no se puede generar el PDF, usar archivo vacío
+                archivosAlfresco.add(new File(pathJasper + "vacio.pdf"));
+            }
+            
+            // Enviar a SIGED
+            ExpedienteOutRO expedienteOutRO = sigedApiConsumer.crearExpediente(expedienteInRO, archivosAlfresco);
+            
+            if (expedienteOutRO.getResultCode() != 1) {
+                logger.error("Error al crear expediente en SIGED: {}", expedienteOutRO.getMessage());
+                throw new RuntimeException("Error al crear expediente en SIGED: " + expedienteOutRO.getMessage());
+            }
+            
+            // Guardar número de expediente en el informe
+            String numeroExpediente = expedienteOutRO.getCodigoExpediente();
+            informe.setNumeroExpedienteSiged(numeroExpediente);
+            informeRenovacionDao.save(informe);
+            
+            logger.info("Expediente creado exitosamente en SIGED. Número: {}", numeroExpediente);
+            
+        } catch (Exception e) {
+            logger.error("Error al crear expediente en SIGED para informe ID: " + informe.getIdInformeRenovacion(), e);
+            throw new RuntimeException("Error al crear expediente en SIGED: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Crea el objeto ExpedienteInRO para el informe
+     */
+    private ExpedienteInRO crearExpedienteInforme(InformeRenovacion informe, SicoesSolicitud solicitud, Contexto contexto) {
+        ExpedienteInRO expediente = new ExpedienteInRO();
+        DocumentoInRO documento = new DocumentoInRO();
+        ClienteListInRO clientes = new ClienteListInRO();
+        ClienteInRO cs = new ClienteInRO();
+        List<ClienteInRO> cliente = new ArrayList<>();
+        DireccionxClienteListInRO direcciones = new DireccionxClienteListInRO();
+        DireccionxClienteInRO d = new DireccionxClienteInRO();
+        List<DireccionxClienteInRO> direccion = new ArrayList<>();
+        
+        expediente.setProceso(Integer.parseInt(env.getProperty("crear.expediente.parametros.proceso")));
+        expediente.setDocumento(documento);
+        
+        documento.setAsunto("Informe de Renovación de Contrato Aprobado - Expediente: " + 
+                           informe.getRequerimientoRenovacion().getNuExpediente());
+        documento.setAppNameInvokes("SICOES");
+        
+        cs.setCodigoTipoIdentificacion(1);
+        cs.setNombre(solicitud.getSupervisora().getNombreRazonSocial());
+        cs.setApellidoPaterno("-");
+        cs.setApellidoMaterno("-");
+        cs.setRazonSocial(solicitud.getSupervisora().getNombreRazonSocial());
+        cs.setNroIdentificacion(solicitud.getSupervisora().getNumeroDocumento());
+        cs.setTipoCliente(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.cliente")));
+        
+        cliente.add(cs);
+        
+        d.setDireccion(solicitud.getSupervisora().getDireccion());
+        d.setDireccionPrincipal(true);
+        d.setEstado(env.getProperty("crear.expediente.parametros.direccion.estado").charAt(0));
+        d.setTelefono(solicitud.getSupervisora().getTelefono1());
+        
+        if (solicitud.getSupervisora().getCodigoDistrito() != null) {
+            d.setUbigeo(Integer.parseInt(solicitud.getSupervisora().getCodigoDistrito()));
+        }
+        
+        direccion.add(d);
+        direcciones.setDireccion(direccion);
+        cs.setDirecciones(direcciones);
+        clientes.setCliente(cliente);
+        documento.setClientes(clientes);
+        
+        documento.setCodTipoDocumento(Integer.parseInt(env.getProperty("crear.expediente.parametros.tipo.documento.crear")));
+        documento.setEnumerado(env.getProperty("crear.expediente.parametros.enumerado").charAt(0));
+        documento.setEstaEnFlujo(env.getProperty("crear.expediente.parametros.esta.en.flujo").charAt(0));
+        documento.setFirmado(env.getProperty("crear.expediente.parametros.firmado").charAt(0));
+        documento.setCreaExpediente(env.getProperty("crear.expediente.parametros.crea.expediente").charAt(0));
+        documento.setPublico(env.getProperty("crear.expediente.parametros.crea.publico").charAt(0));
+        documento.setNroFolios(Integer.parseInt(env.getProperty("crear.expediente.parametros.crea.folio")));
+        documento.setUsuarioCreador(Integer.parseInt(env.getProperty("siged.bus.server.id.usuario")));
+        
+        return expediente;
+    }
+    
+    /**
+     * Genera el PDF del informe aprobado
+     */
+    private File generarPdfInformeAprobado(InformeRenovacion informe, Contexto contexto) {
+        try {
+            // TODO: Implementar generación de PDF con los datos del informe
+            // Por ahora retornamos null para usar el archivo vacío
+            logger.warn("Generación de PDF no implementada, usando archivo vacío");
+            return null;
+        } catch (Exception e) {
+            logger.error("Error al generar PDF del informe", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Notifica al evaluador técnico de contratos que el informe fue aprobado
+     */
+    private void notificarEvaluadorTecnico(InformeRenovacion informe, Contexto contexto) {
+        try {
+            logger.info("Enviando notificación a evaluador técnico para informe ID: {}", informe.getIdInformeRenovacion());
+            
+            // Crear notificación
+            Notificacion notificacion = new Notificacion();
+            
+            // Buscar evaluador técnico de contratos
+            // TODO: Implementar lógica para obtener el evaluador técnico asignado
+            String correoEvaluador = obtenerCorreoEvaluadorTecnico(informe);
+            
+            notificacion.setCorreo(correoEvaluador);
+            notificacion.setAsunto("Informe de Renovación Aprobado - Requiere Evaluación Técnica");
+            
+            String mensaje = String.format(
+                "Estimado Evaluador Técnico,\n\n" +
+                "Se le notifica que el Informe de Renovación de Contrato ha sido aprobado y requiere su evaluación técnica.\n\n" +
+                "Detalles del Informe:\n" +
+                "- N° Expediente: %s\n" +
+                "- Contratista: %s\n" +
+                "- Ítem: %s\n" +
+                "- Fecha de Aprobación: %s\n\n" +
+                "Por favor, ingrese al sistema SICOES para realizar la evaluación correspondiente.\n\n" +
+                "Atentamente,\n" +
+                "Sistema SICOES",
+                informe.getRequerimientoRenovacion().getNuExpediente(),
+                informe.getRequerimientoRenovacion().getSolicitudPerfil().getSupervisora().getNombreRazonSocial(),
+                informe.getRequerimientoRenovacion().getNoItem(),
+                new SimpleDateFormat("dd/MM/yyyy").format(new Date())
+            );
+            
+            notificacion.setMensaje(mensaje);
+            
+            // Establecer estado pendiente
+            ListadoDetalle estadoPendiente = listadoDetalleDao.obtenerListadoDetalle("ESTADO_NOTIFICACION", "PENDIENTE");
+            if (estadoPendiente != null) {
+                notificacion.setEstado(estadoPendiente);
+            }
+            
+            // Establecer tipo de notificación
+            ListadoDetalle tipoNotificacion = listadoDetalleDao.obtenerListadoDetalle("TIPO_NOTIFICACION", "INFORME_APROBADO");
+            if (tipoNotificacion != null) {
+                notificacion.setTipoNotificacion(tipoNotificacion);
+            }
+            
+            // Guardar fecha de envío
+            notificacion.setFechaEnvio(new Date());
+            
+            // Auditoría
+            AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+            
+            // Guardar notificación
+            notificacionDao.save(notificacion);
+            
+            logger.info("Notificación enviada exitosamente al evaluador técnico");
+            
+        } catch (Exception e) {
+            logger.error("Error al notificar al evaluador técnico", e);
+            // No lanzamos excepción para no detener el proceso principal
+        }
+    }
+    
+    /**
+     * Obtiene el correo del evaluador técnico asignado
+     */
+    private String obtenerCorreoEvaluadorTecnico(InformeRenovacion informe) {
+        // TODO: Implementar lógica para obtener el evaluador técnico desde la base de datos
+        // Por ahora retornamos un correo por defecto
+        return "evaluador.tecnico@osinergmin.gob.pe";
     }
 }

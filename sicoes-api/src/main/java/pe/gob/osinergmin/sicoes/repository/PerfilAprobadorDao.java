@@ -83,23 +83,23 @@ public interface PerfilAprobadorDao extends JpaRepository<PerfilAprobador, Long>
 	@Query(nativeQuery = true, value = 
 		"SELECT CASE " +
 		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
-		"                 WHERE ID_APROBADOR_GPPM_G1 = :idUsuario " +
-		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"                 WHERE ID_APROBADOR_G1 = :idUsuario " +
+		"                 AND ID_PERFIL IN (282, 257, 304)) " +
 		"         AND EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
-		"                     WHERE ID_APROBADOR_GPPM_G2 = :idUsuario " +
-		"                     AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"                     WHERE ID_APROBADOR_G2 = :idUsuario " +
+		"                     AND ID_PERFIL IN (282, 257, 304)) " +
 		"    THEN 'AMBOS' " +
 		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
-		"                 WHERE ID_APROBADOR_GPPM_G1 = :idUsuario " +
-		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"                 WHERE ID_APROBADOR_G1 = :idUsuario " +
+		"                 AND ID_PERFIL IN (282, 257, 304)) " +
 		"    THEN 'G1' " +
 		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
-		"                 WHERE ID_APROBADOR_GPPM_G2 = :idUsuario " +
-		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"                 WHERE ID_APROBADOR_G2 = :idUsuario " +
+		"                 AND ID_PERFIL IN (282, 257, 304)) " +
 		"    THEN 'G2' " +
 		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
-		"                 WHERE ID_APROBADOR_GPPM_G3 = :idUsuario " +
-		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"                 WHERE ID_APROBADOR_G3 = :idUsuario " +
+		"                 AND ID_PERFIL IN (282, 257, 304)) " +
 		"    THEN 'G3' " +
 		"    ELSE 'NINGUNO' " +
 		"END " +

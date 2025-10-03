@@ -108,6 +108,9 @@ public class InformeRenovacion extends BaseModel implements Serializable {
 
     @Column(name = "ES_REGISTRO", length = 1, nullable = false)
     private String esRegistro;
+    
+    @Column(name = "NU_EXPEDIENTE_SIGED", length = 50)
+    private String numeroExpedienteSiged;
 
     // Constructores
     public InformeRenovacion() {
