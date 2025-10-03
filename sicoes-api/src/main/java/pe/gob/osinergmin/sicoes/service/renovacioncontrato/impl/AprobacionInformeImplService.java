@@ -285,7 +285,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionG2);
-            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+            // historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
             
             // Asignar el ID de notificación al requerimiento G1
             if (notificacion != null && notificacion.getIdNotificacion() != null) {
@@ -481,7 +481,7 @@ public class AprobacionInformeImplService implements AprobacionInformeService {
             }
             
             RequerimientoAprobacion requerimientoAprobacionResult=requerimientoAprobacionDao.save(requerimientoAprobacionGseG3);
-            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+            // historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
             
             // Asignar el ID de notificación al requerimiento GPPM G3
             if (notificacion != null && notificacion.getIdNotificacion() != null) {
