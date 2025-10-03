@@ -63,7 +63,7 @@ public class HistorialRequerimientoRenovacionImplService implements HistorialReq
                 AuditoriaUtil.setAuditoriaRegistro(historial, contexto);
                 
                 // Guardar en la base de datos
-                historialEstadoRequerimientoRenovacionDao.save(historial);
+                // historialEstadoRequerimientoRenovacionDao.save(historial);
                 
                 logger.info("Historial registrado exitosamente con ID: {} para requerimiento: {}", 
                            historial.getIdHistorialEstadoCampo(), 

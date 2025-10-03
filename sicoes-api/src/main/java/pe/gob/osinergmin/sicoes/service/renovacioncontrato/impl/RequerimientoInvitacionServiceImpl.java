@@ -9,6 +9,7 @@ import pe.gob.osinergmin.sicoes.model.ListadoDetalle;
 import pe.gob.osinergmin.sicoes.model.renovacioncontrato.*;
 import pe.gob.osinergmin.sicoes.repository.ListadoDetalleDao;
 import pe.gob.osinergmin.sicoes.repository.renovacioncontrato.*;
+import pe.gob.osinergmin.sicoes.service.NotificacionService;
 import pe.gob.osinergmin.sicoes.service.renovacioncontrato.RequerimientoInvitacionService;
 import pe.gob.osinergmin.sicoes.util.*;
 
@@ -31,6 +32,8 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
     private HistorialEstadoAprobacionCampoDao historialEstadoAprobacionCampoDao;
     @Autowired
     private ListadoDetalleDao listadoDetalleDao;
+    @Autowired
+    private NotificacionService notificacionService;
 
     Logger logger = LogManager.getLogger(RequerimientoInvitacionServiceImpl.class);
     @Autowired
@@ -95,8 +98,6 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
             requerimientoInvitacion.setFeAceptacion(new Date()); // Fecha de la transacción
 
         // 2. Crear historial de cambio de estado de la invitación
-        // COMENTADO TEMPORALMENTE PARA DEBUGGING
-        /*
         HistorialEstadoInvitacion nuevoHistorial = new HistorialEstadoInvitacion();
         nuevoHistorial.setDeEstadoAnterior(estadoActual.getDescripcion());
         nuevoHistorial.setDeEstadoNuevo(estadoNuevo.getDescripcion());
@@ -106,7 +107,6 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         nuevoHistorial.setFeFechaCambio(new Timestamp(System.currentTimeMillis()));
         AuditoriaUtil.setAuditoriaRegistro(nuevoHistorial, contexto);
         historialEstadoInvitacionDao.save(nuevoHistorial);
-        */
 
         // 3. Derivar a la bandeja de G3-GPPM (user: 9134)
         // Solo actualizar la tabla de invitaciones, la derivación a GPPM se maneja en el workflow de aprobación
@@ -126,7 +126,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         requerimientoInvitacionDao.save(requerimientoInvitacion);
         
         // TODO: 5. Implementar notificación a G3-GPPM de la aceptación
-        // enviarNotificacionAceptacionGPPM(requerimientoInvitacion, contexto);
+        notificacionService.enviarNotificacionAceptacionGPPM(requerimientoInvitacion, contexto);
         
             logger.info("Proceso de aceptación completado exitosamente para invitación ID: {} - Derivado a G3-GPPM (user: 9134)", 
                        requerimientoInvitacion.getIdReqInvitacion());
@@ -206,6 +206,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
                 ldGPPM.getIdListadoDetalle(),requerimientoInvitacion.getRequerimientoRenovacion().getIdReqRenovacion());
         logger.info("Sin historial GPPM: {}",lista.isEmpty());
 
+        /*
         HistorialEstadoAprobacionCampo historialEstadoAprobacionCampo= new HistorialEstadoAprobacionCampo();
         historialEstadoAprobacionCampo.setDeEstadoAnteriorLd(null);
         historialEstadoAprobacionCampo.setDeEstadoNuevoLd(estadoAsignado.getIdListadoDetalle());
@@ -215,6 +216,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         historialEstadoAprobacionCampo.setEsRegistro(Constantes.ESTADO.ACTIVO);
         AuditoriaUtil.setAuditoriaRegistro(historialEstadoAprobacionCampo,contexto);
         historialEstadoAprobacionCampoDao.save(historialEstadoAprobacionCampo);
+         */
 
         // 3. Actualizar ES_REQ_RENOVACION a 946 (Archivado) en la tabla SICOES_TC_REQ_RENOVACION
         Long idReqRenovacion = requerimientoInvitacion.getRequerimientoRenovacion() != null ? 
@@ -246,8 +248,7 @@ public class RequerimientoInvitacionServiceImpl implements RequerimientoInvitaci
         requerimientoInvitacionDao.save(requerimientoInvitacion);
         
         // TODO: 5. Implementar notificación a G3-GPPM del rechazo
-        // enviarNotificacionRechazoGPPM(requerimientoInvitacion, contexto);
-        
+            notificacionService.enviarNotificacionRechazoGPPM(requerimientoInvitacion, contexto);
             logger.info("Proceso de rechazo completado exitosamente para invitación ID: {}", 
                        requerimientoInvitacion.getIdReqInvitacion());
             

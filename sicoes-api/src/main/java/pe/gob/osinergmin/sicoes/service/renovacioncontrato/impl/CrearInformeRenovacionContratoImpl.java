@@ -360,7 +360,7 @@ public class CrearInformeRenovacionContratoImpl {
             
             AuditoriaUtil.setAuditoriaRegistro(requerimientoAprobacionG1, contexto);
             RequerimientoAprobacion requerimientoAprobacionResult = requerimientoAprobacionDao.save(requerimientoAprobacionG1);
-            historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
+            // historialAprobacionRenovacionService.registrarHistorialAprobacionRenovacion(requerimientoAprobacionResult, contexto);
 
             // CORREGIDO: Solo crear requerimiento de aprobación G1 (ID_GRUPO_LD = 542) al crear el informe
             // La creación del requerimiento G2 se debe hacer cuando G1 apruebe, no al crear el informe

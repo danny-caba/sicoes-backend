@@ -689,7 +689,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
             AuditoriaUtil.setAuditoriaRegistro(historial, contexto);
 
-            historialEstadoAprobacionCampoDao.save(historial);
+            // historialEstadoAprobacionCampoDao.save(historial);
 
             logger.info("Registrado cambio de estado de aprobación - Req: {}, Historial ID: {}, De: {} A: {}",
                     idRequerimiento, historial.getIdHistorialEstadoCampo(), estadoAnterior, estadoNuevo);
@@ -709,7 +709,7 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
 
             AuditoriaUtil.setAuditoriaRegistro(historial, contexto);
 
-            historialEstadoRequerimientoRenovacionDao.save(historial);
+            // historialEstadoRequerimientoRenovacionDao.save(historial);
 
             logger.info("Registrado cambio de estado de renovación - Req: {}, Historial ID: {}, De: {} A: {}",
                     idRequerimiento, historial.getIdHistorialEstadoCampo(), estadoAnterior, estadoNuevo);

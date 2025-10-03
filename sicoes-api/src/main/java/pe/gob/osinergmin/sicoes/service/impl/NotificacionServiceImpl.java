@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.mail.internet.MimeMessage;
 
@@ -1083,6 +1084,81 @@ public class NotificacionServiceImpl implements NotificacionService{
 		ListadoDetalle estadoPendiente	= listadoDetalleService.obtenerListadoDetalle( Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE);
 		notificacion.setEstado(estadoPendiente);
 		notificacionDao.save(notificacion);
+	}
+
+	@Override
+	public void enviarNotificacionRechazoGPPM(RequerimientoInvitacion invitacion, Contexto contexto) {
+		logger.info("enviarNotificacionRechazoGPPM - Usuario: {}", contexto.getUsuario().getIdUsuario());
+
+		try {
+			Notificacion notificacion = new Notificacion();
+			String asunto = "RECHAZO DE INVITACIÓN POR RENOVACIÓN";
+			List<UsuarioRol> usuarios=usuarioRolDao.obtenerUsuariosRol(
+					Constantes.ROLES.RESPONSABLE_APROBADOR_GPPM);
+			String correos = usuarios.stream()
+					.map(usuarioRol -> usuarioRol.getUsuario().getCorreo())
+					.collect(Collectors.joining(";"));
+
+			final Context ctx = new Context();
+			notificacion.setAsunto(asunto);
+			notificacion.setCorreo(correos);
+			ctx.setVariable("nombreUsuario",contexto.getUsuario().getNombreUsuario());
+			ctx.setVariable("expediente", invitacion.getRequerimientoRenovacion().getNuExpediente());
+			ctx.setVariable("supervisor", invitacion.getSupervisora().getNombreRazonSocial());
+			ctx.setVariable("sector", invitacion.getRequerimientoRenovacion().getTiSector());
+			ctx.setVariable("subSector", invitacion.getRequerimientoRenovacion().getTiSubSector());
+			ctx.setVariable("fechaInvitacion", DateUtil.getDate(invitacion.getFeInvitacion(), "dd/MM/yyyy HH:mm:ss"));
+			ctx.setVariable("fechaCaducidad", DateUtil.getDate(invitacion.getFeCaducidad(), "dd/MM/yyyy HH:mm:ss"));
+			String htmlContent = templateEngine.process("29-rechazo-invitacion-renovacion.html", ctx);
+			notificacion.setMensaje(htmlContent);
+			// Configurar estado como pendiente
+			ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+					Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE
+			);
+			notificacion.setEstado(estadoPendiente);
+			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+			notificacionDao.save(notificacion);
+			logger.info("Notificación de rechazo de invitación creada exitosamente - ID: {}", notificacion.getIdNotificacion());
+		} catch (Exception e) {
+			logger.error("Error al enviar notificación de rechazo {}", e);
+			throw new RuntimeException("Error al procesar la notificación de rechazo", e);
+		}
+	}
+
+	@Override
+	public void enviarNotificacionAceptacionGPPM(RequerimientoInvitacion invitacion, Contexto contexto) {
+		logger.info("enviarNotificacionAceptacionGPPM - Usuario: {}", contexto.getUsuario().getIdUsuario());
+
+		try {
+			Notificacion notificacion = new Notificacion();
+			String asunto = "EVALUAR PRESUPUESTO";
+			List<UsuarioRol> usuarios=usuarioRolDao.obtenerUsuariosRol(
+					Constantes.ROLES.RESPONSABLE_APROBADOR_GPPM);
+			String correos = usuarios.stream()
+					.map(usuarioRol -> usuarioRol.getUsuario().getCorreo())
+					.collect(Collectors.joining(";"));
+
+			final Context ctx = new Context();
+			notificacion.setAsunto(asunto);
+			notificacion.setCorreo(correos);
+			ctx.setVariable("nombreUsuario",contexto.getUsuario().getNombreUsuario());
+			ctx.setVariable("expediente", invitacion.getRequerimientoRenovacion().getNuExpediente());
+			String htmlContent = templateEngine.process("30-aceptar-invitacion-renovacion.html", ctx);
+			notificacion.setMensaje(htmlContent);
+			// Configurar estado como pendiente
+			ListadoDetalle estadoPendiente = listadoDetalleService.obtenerListadoDetalle(
+					Constantes.LISTADO.ESTADO_NOTIFICACIONES.CODIGO,
+					Constantes.LISTADO.ESTADO_NOTIFICACIONES.PENDIENTE
+			);
+			notificacion.setEstado(estadoPendiente);
+			AuditoriaUtil.setAuditoriaRegistro(notificacion, contexto);
+			notificacionDao.save(notificacion);
+			logger.info("Notificación de aceptación de invitación creada exitosamente - ID: {}", notificacion.getIdNotificacion());
+		} catch (Exception e) {
+			logger.error("Error al enviar notificación de aceptación de invitación {}", e);
+			throw new RuntimeException("Error al procesar notificación de aceptación de invitación", e);
+		}
 	}
 
 	@Override
