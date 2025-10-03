@@ -78,4 +78,30 @@ public interface PerfilAprobadorDao extends JpaRepository<PerfilAprobador, Long>
 			+ "where p.idListadoDetalle = :idListadoDetalle "
 			+ "and pa.aprobadorG1.idUsuario = :idUsuario")
 	Optional<PerfilAprobador> obtenerPerfilAprobadorPorIdPerfilAndIdUsuario(Long idListadoDetalle, Long idUsuario);
+	
+	@Query(nativeQuery = true, value = 
+		"SELECT CASE " +
+		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
+		"                 WHERE ID_APROBADOR_GPPM_G1 = :idUsuario " +
+		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"         AND EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
+		"                     WHERE ID_APROBADOR_GPPM_G2 = :idUsuario " +
+		"                     AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"    THEN 'AMBOS' " +
+		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
+		"                 WHERE ID_APROBADOR_GPPM_G1 = :idUsuario " +
+		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"    THEN 'G1' " +
+		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
+		"                 WHERE ID_APROBADOR_GPPM_G2 = :idUsuario " +
+		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"    THEN 'G2' " +
+		"    WHEN EXISTS (SELECT 1 FROM SICOES_TX_PERFIL_APROBADOR " +
+		"                 WHERE ID_APROBADOR_GPPM_G3 = :idUsuario " +
+		"                 AND ID_PERFIL_LD IN (282, 257, 304)) " +
+		"    THEN 'G3' " +
+		"    ELSE 'NINGUNO' " +
+		"END AS TIPO_APROBADOR " +
+		"FROM DUAL")
+	String determinarTipoAprobador(Long idUsuario);
 }
