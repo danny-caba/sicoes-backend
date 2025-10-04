@@ -2162,7 +2162,17 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 archivosAlfresco.add(pdfInforme);
             } else {
                 // Si no se puede generar el PDF, usar archivo vacío
-                archivosAlfresco.add(new File(pathJasper + "vacio.pdf"));
+                File archivoVacio = new File(pathJasper + "vacio.pdf");
+                logger.info("Intentando usar archivo vacio.pdf desde: {}", archivoVacio.getAbsolutePath());
+                
+                if (!archivoVacio.exists()) {
+                    logger.error("ADVERTENCIA: El archivo vacio.pdf NO EXISTE en la ruta: {}", archivoVacio.getAbsolutePath());
+                    logger.error("No se enviará ningún archivo a SIGED");
+                    // Podríamos continuar sin archivos o lanzar excepción
+                } else {
+                    logger.info("Archivo vacio.pdf encontrado. Tamaño: {} bytes", archivoVacio.length());
+                    archivosAlfresco.add(archivoVacio);
+                }
             }
             
             // Enviar a SIGED
@@ -2173,11 +2183,8 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
                 throw new RuntimeException("Error al crear expediente en SIGED: " + expedienteOutRO.getMessage());
             }
             
-            // Guardar número de expediente en el informe
+            // Expediente creado exitosamente
             String numeroExpediente = expedienteOutRO.getCodigoExpediente();
-            informe.setNumeroExpedienteSiged(numeroExpediente);
-            informeRenovacionDao.save(informe);
-            
             logger.info("Expediente creado exitosamente en SIGED. Número: {}", numeroExpediente);
             
         } catch (Exception e) {
@@ -2248,12 +2255,41 @@ public class InformeRenovacionServiceImpl implements InformeRenovacionService {
      */
     private File generarPdfInformeAprobado(InformeRenovacion informe, Contexto contexto) {
         try {
-            // TODO: Implementar generación de PDF con los datos del informe
-            // Por ahora retornamos null para usar el archivo vacío
-            logger.warn("Generación de PDF no implementada, usando archivo vacío");
+            // Verificar si el informe ya tiene un archivo guardado
+            if (informe.getDeNombreArchivo() != null && informe.getDeRutaArchivo() != null) {
+                logger.info("Buscando archivo del informe existente: {} en ruta: {}", 
+                           informe.getDeNombreArchivo(), informe.getDeRutaArchivo());
+                
+                // El archivo debería estar en el directorio de jasper
+                File archivoInforme = new File(pathJasper + informe.getDeNombreArchivo());
+                
+                if (archivoInforme.exists()) {
+                    logger.info("Archivo del informe encontrado: {}. Tamaño: {} bytes", 
+                               archivoInforme.getAbsolutePath(), archivoInforme.length());
+                    return archivoInforme;
+                } else {
+                    logger.warn("Archivo del informe NO encontrado en: {}", archivoInforme.getAbsolutePath());
+                    
+                    // Intentar buscar en la ruta completa guardada
+                    File archivoInformeRutaCompleta = new File(informe.getDeRutaArchivo());
+                    if (archivoInformeRutaCompleta.exists()) {
+                        logger.info("Archivo del informe encontrado en ruta completa: {}. Tamaño: {} bytes", 
+                                   archivoInformeRutaCompleta.getAbsolutePath(), archivoInformeRutaCompleta.length());
+                        return archivoInformeRutaCompleta;
+                    } else {
+                        logger.error("Archivo del informe NO encontrado en ninguna ubicación");
+                    }
+                }
+            } else {
+                logger.warn("El informe no tiene información del archivo guardado. " +
+                           "DeNombreArchivo: {}, DeRutaArchivo: {}", 
+                           informe.getDeNombreArchivo(), informe.getDeRutaArchivo());
+            }
+            
+            logger.warn("No se pudo obtener el PDF del informe, se usará archivo vacío");
             return null;
         } catch (Exception e) {
-            logger.error("Error al generar PDF del informe", e);
+            logger.error("Error al obtener PDF del informe", e);
             return null;
         }
     }
