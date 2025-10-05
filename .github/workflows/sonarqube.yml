@@ -1,7 +1,6 @@
 name: Build
 
 on:
-  worflow_dispatch:
   push:
     branches:
       - develop-1709-sonar
